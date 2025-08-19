@@ -11,6 +11,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { CareerAssessment } from './components/student/CareerAssessment';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -37,6 +38,7 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/assessment" element={<CareerAssessment />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

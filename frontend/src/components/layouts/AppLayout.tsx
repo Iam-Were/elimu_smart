@@ -200,6 +200,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   color: location.pathname === '/dashboard' ? 'var(--primary)' : undefined,
                 }}
               />
+
+              {user?.role === 'student' && (
+                <NavLink
+                  href="#"
+                  label="Career Assessment"
+                  leftSection="🧭"
+                  active={location.pathname === '/assessment'}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/assessment');
+                  }}
+                  style={{
+                    borderRadius: 'var(--radius)',
+                    color: location.pathname === '/assessment' ? 'var(--primary)' : undefined,
+                  }}
+                />
+              )}
               
               <NavLink
                 href="#"
