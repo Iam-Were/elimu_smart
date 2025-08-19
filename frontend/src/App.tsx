@@ -5,8 +5,12 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingOverlay } from './components/common/LoadingOverlay';
 import { AppLayout } from './components/layouts/AppLayout';
 import { useAuth } from './hooks/useAuth';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ProfilePage } from './pages/ProfilePage';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -19,8 +23,11 @@ const AppContent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
@@ -29,6 +36,7 @@ const AppContent: React.FC = () => {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

@@ -11,11 +11,14 @@ import {
   Switch,
   Divider,
   Stack,
+  NavLink,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../common/ThemeProvider';
+import { DemoModeSwitch } from '../common/DemoModeSwitch';
 import type { ThemeRole } from '../../types';
 
 interface AppLayoutProps {
@@ -24,6 +27,8 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [opened, { toggle }] = useDisclosure();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const { currentTheme, setTheme, isDark, toggleDarkMode } = useThemeContext();
 
@@ -205,7 +210,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <Divider my="xs" />
                 
                 <Menu.Label>Account</Menu.Label>
-                <Menu.Item onClick={handleLogout} color="red">
+                <Menu.Item 
+                  onClick={() => navigate('/profile')}
+                  leftSection="👤"
+                >
+                  Profile Settings
+                </Menu.Item>
+                <Menu.Item onClick={handleLogout} color="red" leftSection="🚪">
                   Logout
                 </Menu.Item>
               </Menu.Dropdown>
@@ -215,13 +226,63 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </AppShell.Header>
 
       <AppShell.Navbar p="md" className="theme-transition">
-        <Stack gap="sm">
-          <Title order={4} c="dimmed">
-            Navigation
-          </Title>
-          <Text size="sm" c="dimmed">
-            Navigation menu will be implemented in upcoming sprints
-          </Text>
+        <Stack gap="lg" h="100%">
+          <Stack gap="sm">
+            <Title order={4} c="dimmed">
+              Navigation
+            </Title>
+            
+            <Stack gap="xs">
+              <NavLink
+                href="#"
+                label="Dashboard"
+                leftSection="📊"
+                active={location.pathname === '/dashboard'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/dashboard');
+                }}
+                style={{
+                  borderRadius: 'var(--radius)',
+                  color: location.pathname === '/dashboard' ? 'var(--primary)' : undefined,
+                }}
+              />
+              
+              <NavLink
+                href="#"
+                label="Profile"
+                leftSection="👤"
+                active={location.pathname === '/profile'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/profile');
+                }}
+                style={{
+                  borderRadius: 'var(--radius)',
+                  color: location.pathname === '/profile' ? 'var(--primary)' : undefined,
+                }}
+              />
+
+              <NavLink
+                href="#"
+                label="Settings"
+                leftSection="⚙️"
+                onClick={(e) => {
+                  e.preventDefault();
+                  notifications.show({
+                    title: 'Coming Soon',
+                    message: 'Settings page will be available in upcoming sprints',
+                    color: 'blue',
+                  });
+                }}
+                style={{ borderRadius: 'var(--radius)' }}
+              />
+            </Stack>
+          </Stack>
+
+          <div style={{ flex: 1 }} />
+
+          <DemoModeSwitch />
         </Stack>
       </AppShell.Navbar>
 
