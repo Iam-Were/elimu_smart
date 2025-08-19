@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect } from 'react';
 import {
   AppShell,
   Burger,
@@ -17,7 +17,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { useThemeContext } from '../common/ThemeProvider';
+import { useThemeContext } from '../../hooks/useThemeContext';
 import { DemoModeSwitch } from '../common/DemoModeSwitch';
 import type { ThemeRole } from '../../types';
 

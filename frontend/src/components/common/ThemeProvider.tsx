@@ -1,26 +1,9 @@
-import React, { createContext, useContext, useMemo, type ReactNode } from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { getMantineProviderProps } from '../../theme/mantineTheme';
 import { useTheme } from '../../hooks/useTheme';
-import type { ThemeRole } from '../../types';
-
-interface ThemeContextType {
-  currentTheme: ThemeRole;
-  setTheme: (theme: ThemeRole) => void;
-  isDark: boolean;
-  toggleDarkMode: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  return context;
-};
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 
 interface ThemeProviderProps {

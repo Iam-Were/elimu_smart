@@ -17,7 +17,7 @@ import {
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../hooks/useAuth';
-import { useThemeContext } from '../components/common/ThemeProvider';
+import { useThemeContext } from '../hooks/useThemeContext';
 
 export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);

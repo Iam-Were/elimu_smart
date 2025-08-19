@@ -8,7 +8,7 @@ import {
   Group,
   Switch,
 } from '@mantine/core';
-import { useThemeContext } from '../common/ThemeProvider';
+import { useThemeContext } from '../../hooks/useThemeContext';
 
 interface AuthLayoutProps {
   children: ReactNode;

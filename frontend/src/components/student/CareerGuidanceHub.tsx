@@ -11,7 +11,6 @@ import {
   SimpleGrid,
   TextInput,
   Select,
-  Image,
   Tabs,
   ScrollArea,
   Alert,

@@ -10,13 +10,11 @@ import {
   Group,
   Button,
   Alert,
-  Progress,
   RingProgress,
   SimpleGrid,
-  Divider,
 } from '@mantine/core';
 import { useAuth } from '../hooks/useAuth';
-import { useThemeContext } from '../components/common/ThemeProvider';
+import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
