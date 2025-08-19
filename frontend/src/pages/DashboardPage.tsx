@@ -254,13 +254,14 @@ export const DashboardPage: React.FC = () => {
                         variant="light"
                         size="md"
                         leftSection="🎯"
+                        onClick={() => navigate('/subject-mapper')}
                         style={{
                           backgroundColor: 'var(--secondary)',
                           color: 'var(--secondary-foreground)',
                           justifyContent: 'flex-start',
                         }}
                       >
-                        View Career Matches
+                        Subject-Career Mapper
                       </Button>
                       <Button 
                         variant="light"
@@ -278,13 +279,14 @@ export const DashboardPage: React.FC = () => {
                         variant="light"
                         size="md"
                         leftSection="📚"
+                        onClick={() => navigate('/career-hub')}
                         style={{
                           backgroundColor: 'var(--secondary)',
                           color: 'var(--secondary-foreground)',
                           justifyContent: 'flex-start',
                         }}
                       >
-                        Explore Resources
+                        Career Hub
                       </Button>
                     </SimpleGrid>
                   </Stack>

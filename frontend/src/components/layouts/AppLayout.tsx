@@ -202,20 +202,50 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               />
 
               {user?.role === 'student' && (
-                <NavLink
-                  href="#"
-                  label="Career Assessment"
-                  leftSection="🧭"
-                  active={location.pathname === '/assessment'}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate('/assessment');
-                  }}
-                  style={{
-                    borderRadius: 'var(--radius)',
-                    color: location.pathname === '/assessment' ? 'var(--primary)' : undefined,
-                  }}
-                />
+                <>
+                  <NavLink
+                    href="#"
+                    label="Career Assessment"
+                    leftSection="🧭"
+                    active={location.pathname === '/assessment'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/assessment');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color: location.pathname === '/assessment' ? 'var(--primary)' : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Subject Mapper"
+                    leftSection="🎯"
+                    active={location.pathname === '/subject-mapper'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/subject-mapper');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color: location.pathname === '/subject-mapper' ? 'var(--primary)' : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Career Hub"
+                    leftSection="📚"
+                    active={location.pathname === '/career-hub'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/career-hub');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color: location.pathname === '/career-hub' ? 'var(--primary)' : undefined,
+                    }}
+                  />
+                </>
               )}
               
               <NavLink
