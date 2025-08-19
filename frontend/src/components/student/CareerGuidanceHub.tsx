@@ -18,6 +18,19 @@ import {
   Modal,
   Divider,
 } from '@mantine/core';
+import {
+  MagnifyingGlassIcon,
+  BookmarkIcon,
+  BookmarkFilledIcon,
+  TrendingUpIcon,
+  StarIcon,
+  PersonIcon,
+  ExternalLinkIcon,
+  VideoIcon,
+  FileTextIcon,
+  BookOpenIcon,
+  GlobeIcon,
+} from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 
@@ -281,7 +294,7 @@ export const CareerGuidanceHub: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.currentTarget.value)}
               style={{ flex: 1 }}
-              leftSection="🔍"
+              leftSection={<MagnifyingGlassIcon size={16} />}
             />
             <Select
               placeholder="Category"
@@ -290,7 +303,7 @@ export const CareerGuidanceHub: React.FC = () => {
               onChange={(value) => setSelectedCategory(value || 'All')}
               style={{ minWidth: 150 }}
             />
-            <Button variant="light" color="blue">
+            <Button variant="light" color="blue" leftSection={<BookmarkIcon size={16} />}>
               Bookmarks ({bookmarkedCareers.length})
             </Button>
           </Group>
@@ -317,10 +330,11 @@ export const CareerGuidanceHub: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '3rem',
+                  color: 'var(--primary)',
                 }}>
-                  {career.category === 'Technology' ? '💻' : 
-                   career.category === 'Healthcare' ? '⚕️' :
-                   career.category === 'Education' ? '📚' : '👨‍💼'}
+                  {career.category === 'Technology' ? <GlobeIcon size={80} /> : 
+                   career.category === 'Healthcare' ? <PersonIcon size={80} /> :
+                   career.category === 'Education' ? <BookOpenIcon size={80} /> : <PersonIcon size={80} />}
                 </div>
 
                 {/* Career Info */}
@@ -337,7 +351,7 @@ export const CareerGuidanceHub: React.FC = () => {
                         toggleBookmark(career.id);
                       }}
                     >
-                      {bookmarkedCareers.includes(career.id) ? '⭐' : '☆'}
+                      {bookmarkedCareers.includes(career.id) ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
                     </ActionIcon>
                   </Group>
                   
@@ -355,10 +369,10 @@ export const CareerGuidanceHub: React.FC = () => {
                   <Badge color="green" variant="light" size="xs">
                     {formatSalary(career.salary.entry)} - {formatSalary(career.salary.senior)}
                   </Badge>
-                  <Badge color={getDemandColor(career.jobOutlook.demand)} variant="light" size="xs">
+                  <Badge color={getDemandColor(career.jobOutlook.demand)} variant="light" size="xs" leftSection={<StarIcon size={12} />}>
                     {career.jobOutlook.demand} Demand
                   </Badge>
-                  <Badge color="blue" variant="light" size="xs">
+                  <Badge color="blue" variant="light" size="xs" leftSection={<TrendingUpIcon size={12} />}>
                     +{career.jobOutlook.growth}% Growth
                   </Badge>
                 </Group>
@@ -551,18 +565,18 @@ export const CareerGuidanceHub: React.FC = () => {
                     {selectedCareer.resources.map((resource, index) => (
                       <Card key={index} shadow="xs" padding="md" radius="sm">
                         <Group gap="sm">
-                          <Text>
-                            {resource.type === 'course' ? '📚' :
-                             resource.type === 'article' ? '📰' :
-                             resource.type === 'video' ? '🎥' : '🌐'}
-                          </Text>
+                          <div style={{ color: 'var(--primary)' }}>
+                            {resource.type === 'course' ? <BookOpenIcon size={16} /> :
+                             resource.type === 'article' ? <FileTextIcon size={16} /> :
+                             resource.type === 'video' ? <VideoIcon size={16} /> : <GlobeIcon size={16} />}
+                          </div>
                           <Stack gap={2} style={{ flex: 1 }}>
                             <Text fw={500} size="sm">{resource.title}</Text>
                             <Badge size="xs" variant="light">
                               {resource.type}
                             </Badge>
                           </Stack>
-                          <Button variant="subtle" size="xs">
+                          <Button variant="subtle" size="xs" rightSection={<ExternalLinkIcon size={12} />}>
                             View
                           </Button>
                         </Group>

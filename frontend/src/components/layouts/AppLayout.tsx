@@ -13,6 +13,17 @@ import {
   Stack,
   NavLink,
 } from '@mantine/core';
+import {
+  DashboardIcon,
+  PersonIcon,
+  GearIcon,
+  ExitIcon,
+  CompassIcon,
+  TargetIcon,
+  BookOpenIcon,
+  MoonIcon,
+  SunIcon,
+} from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -151,7 +162,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 
                 <Menu.Item>
                   <Group justify="space-between">
-                    <Text size="sm">Dark Mode</Text>
+                    <Group gap="sm">
+                      {isDark ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+                      <Text size="sm">Dark Mode</Text>
+                    </Group>
                     <Switch
                       checked={isDark}
                       onChange={toggleDarkMode}
@@ -165,11 +179,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <Menu.Label>Account</Menu.Label>
                 <Menu.Item 
                   onClick={() => navigate('/profile')}
-                  leftSection="👤"
+                  leftSection={<PersonIcon size={16} />}
                 >
                   Profile Settings
                 </Menu.Item>
-                <Menu.Item onClick={handleLogout} color="red" leftSection="🚪">
+                <Menu.Item onClick={handleLogout} color="red" leftSection={<ExitIcon size={16} />}>
                   Logout
                 </Menu.Item>
               </Menu.Dropdown>
@@ -189,7 +203,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Dashboard"
-                leftSection="📊"
+                leftSection={<DashboardIcon />}
                 active={location.pathname === '/dashboard'}
                 onClick={(e) => {
                   e.preventDefault();
@@ -206,7 +220,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Career Assessment"
-                    leftSection="🧭"
+                    leftSection={<CompassIcon />}
                     active={location.pathname === '/assessment'}
                     onClick={(e) => {
                       e.preventDefault();
@@ -220,7 +234,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Subject Mapper"
-                    leftSection="🎯"
+                    leftSection={<TargetIcon />}
                     active={location.pathname === '/subject-mapper'}
                     onClick={(e) => {
                       e.preventDefault();
@@ -234,7 +248,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Career Hub"
-                    leftSection="📚"
+                    leftSection={<BookOpenIcon />}
                     active={location.pathname === '/career-hub'}
                     onClick={(e) => {
                       e.preventDefault();
@@ -251,7 +265,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Profile"
-                leftSection="👤"
+                leftSection={<PersonIcon />}
                 active={location.pathname === '/profile'}
                 onClick={(e) => {
                   e.preventDefault();
@@ -266,7 +280,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Settings"
-                leftSection="⚙️"
+                leftSection={<GearIcon />}
                 onClick={(e) => {
                   e.preventDefault();
                   notifications.show({

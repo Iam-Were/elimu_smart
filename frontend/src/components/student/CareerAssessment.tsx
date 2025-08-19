@@ -15,6 +15,13 @@ import {
   Divider,
   SimpleGrid,
 } from '@mantine/core';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckCircledIcon,
+  ReloadIcon,
+  TargetIcon,
+} from '@radix-ui/react-icons';
 import { notifications } from '@mantine/notifications';
 
 interface AssessmentQuestion {
@@ -266,7 +273,7 @@ export const CareerAssessment: React.FC = () => {
         <Card shadow="sm" padding="xl" radius="md">
           <Stack gap="lg">
             <Group justify="center">
-              <Badge size="xl" color="green" variant="light">
+              <Badge size="xl" color="green" variant="light" leftSection={<CheckCircledIcon />}>
                 Assessment Complete! 
               </Badge>
             </Group>
@@ -319,6 +326,7 @@ export const CareerAssessment: React.FC = () => {
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
                 }}
+                leftSection={<ReloadIcon />}
                 onClick={() => {
                   setIsCompleted(false);
                   setCurrentQuestionIndex(0);
@@ -328,7 +336,7 @@ export const CareerAssessment: React.FC = () => {
               >
                 Take Assessment Again
               </Button>
-              <Button variant="light" size="md">
+              <Button variant="light" size="md" leftSection={<TargetIcon />}>
                 View Career Matches
               </Button>
             </Group>
@@ -382,6 +390,7 @@ export const CareerAssessment: React.FC = () => {
               variant="subtle"
               disabled={currentQuestionIndex === 0}
               onClick={handlePrevious}
+              leftSection={<ArrowLeftIcon />}
             >
               Previous
             </Button>
@@ -397,6 +406,7 @@ export const CareerAssessment: React.FC = () => {
               }}
               onClick={handleNext}
               disabled={currentResponse === null}
+              rightSection={currentQuestionIndex === assessmentQuestions.length - 1 ? <CheckCircledIcon /> : <ArrowRightIcon />}
             >
               {currentQuestionIndex === assessmentQuestions.length - 1 ? 'Complete' : 'Next'}
             </Button>

@@ -15,6 +15,15 @@ import {
   Tabs,
   ScrollArea,
 } from '@mantine/core';
+import {
+  BookOpenIcon,
+  TargetIcon,
+  CheckIcon,
+  CrossCircledIcon,
+  StarIcon,
+  TrendingUpIcon,
+  InfoCircledIcon,
+} from '@radix-ui/react-icons';
 import { notifications } from '@mantine/notifications';
 
 interface Subject {
@@ -243,8 +252,12 @@ export const SubjectCareerMapper: React.FC = () => {
 
         <Tabs value={activeTab} onChange={setActiveTab}>
           <Tabs.List>
-            <Tabs.Tab value="subjects">Select Subjects</Tabs.Tab>
-            <Tabs.Tab value="careers">Career Matches ({matchingCareers.filter(c => c.matchPercentage > 0).length})</Tabs.Tab>
+            <Tabs.Tab value="subjects" leftSection={<BookOpenIcon size={16} />}>
+              Select Subjects
+            </Tabs.Tab>
+            <Tabs.Tab value="careers" leftSection={<TargetIcon size={16} />}>
+              Career Matches ({matchingCareers.filter(c => c.matchPercentage > 0).length})
+            </Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="subjects" pt="lg">
@@ -373,8 +386,9 @@ export const SubjectCareerMapper: React.FC = () => {
                                   color={isSelected ? 'green' : 'red'}
                                   variant="light"
                                   size="sm"
+                                  leftSection={isSelected ? <CheckIcon size={12} /> : <CrossCircledIcon size={12} />}
                                 >
-                                  {subject?.name} ({grade}) {isSelected ? '✓' : '✗'}
+                                  {subject?.name} ({grade})
                                 </Badge>
                               );
                             })}
@@ -395,10 +409,12 @@ export const SubjectCareerMapper: React.FC = () => {
                           <Stack gap="xs">
                             <Text fw={500} size="sm">Job Market</Text>
                             <Group gap="xs">
-                              <Badge color={getDemandColor(career.prospects.demand)} size="sm">
+                              <Badge color={getDemandColor(career.prospects.demand)} size="sm" leftSection={<StarIcon size={12} />}>
                                 {career.prospects.demand} Demand
                               </Badge>
-                              <Text size="sm">+{career.prospects.jobGrowth}% growth</Text>
+                              <Badge color="blue" variant="light" size="sm" leftSection={<TrendingUpIcon size={12} />}>
+                                +{career.prospects.jobGrowth}% growth
+                              </Badge>
                             </Group>
                           </Stack>
 
@@ -428,7 +444,7 @@ export const SubjectCareerMapper: React.FC = () => {
                         </Stack>
 
                         {career.matchPercentage < 50 && (
-                          <Alert color="orange" variant="light">
+                          <Alert color="orange" variant="light" icon={<InfoCircledIcon />}>
                             <Text size="sm">
                               <strong>Missing subjects:</strong> Consider adding{' '}
                               {career.missingSubjects?.map(subjectId => {

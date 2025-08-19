@@ -13,6 +13,14 @@ import {
   RingProgress,
   SimpleGrid,
 } from '@mantine/core';
+import {
+  CompassIcon,
+  TargetIcon,
+  BookOpenIcon,
+  PersonIcon,
+  StarIcon,
+  CheckCircledIcon,
+} from '@radix-ui/react-icons';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
@@ -202,13 +210,15 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs" align="center">
-                <Title 
-                  order={2} 
-                  size="2rem"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  🎯
-                </Title>
+                <div style={{ 
+                  color: 'var(--primary)',
+                  fontSize: '2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <TargetIcon size={32} />
+                </div>
                 <Text fw={500} size="sm" ta="center">Next Goal</Text>
                 <Text size="xs" c="dimmed" ta="center">
                   Complete Skills Assessment
@@ -238,7 +248,7 @@ export const DashboardPage: React.FC = () => {
                       <Button 
                         variant="light"
                         size="md"
-                        leftSection="📊"
+                        leftSection={<CompassIcon size={18} />}
                         onClick={() => navigate('/assessment')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -251,7 +261,7 @@ export const DashboardPage: React.FC = () => {
                       <Button 
                         variant="light"
                         size="md"
-                        leftSection="🎯"
+                        leftSection={<TargetIcon size={18} />}
                         onClick={() => navigate('/subject-mapper')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -264,7 +274,8 @@ export const DashboardPage: React.FC = () => {
                       <Button 
                         variant="light"
                         size="md"
-                        leftSection="👤"
+                        leftSection={<PersonIcon size={18} />}
+                        onClick={() => navigate('/profile')}
                         style={{
                           backgroundColor: 'var(--secondary)',
                           color: 'var(--secondary-foreground)',
@@ -276,7 +287,7 @@ export const DashboardPage: React.FC = () => {
                       <Button 
                         variant="light"
                         size="md"
-                        leftSection="📚"
+                        leftSection={<BookOpenIcon size={18} />}
                         onClick={() => navigate('/career-hub')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -306,16 +317,10 @@ export const DashboardPage: React.FC = () => {
                     <Stack gap="sm">
                       {studentStats.recentActivity.map((activity) => (
                         <Group key={activity.id} gap="md">
-                          <Text 
-                            size="xs" 
-                            style={{
-                              color: 'var(--primary)',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {activity.type === 'assessment' ? '📊' : 
-                             activity.type === 'profile' ? '👤' : '🎯'}
-                          </Text>
+                          <div style={{ color: 'var(--primary)' }}>
+                            {activity.type === 'assessment' ? <CompassIcon size={16} /> : 
+                             activity.type === 'profile' ? <PersonIcon size={16} /> : <TargetIcon size={16} />}
+                          </div>
                           <Stack gap={2} style={{ flex: 1 }}>
                             <Text size="sm">{activity.action}</Text>
                             <Text size="xs" c="dimmed">{activity.time}</Text>
@@ -382,7 +387,12 @@ export const DashboardPage: React.FC = () => {
                     <Stack gap="sm">
                       {studentStats.achievements.map((achievement) => (
                         <Group key={achievement.id} gap="sm">
-                          <Text size="lg">{achievement.unlocked ? '🏆' : '🔒'}</Text>
+                          <div style={{ 
+                            color: achievement.unlocked ? 'var(--success)' : 'var(--muted-foreground)',
+                            fontSize: '18px',
+                          }}>
+                            {achievement.unlocked ? <StarIcon size={18} /> : <CheckCircledIcon size={18} />}
+                          </div>
                           <Stack gap={2} style={{ flex: 1 }}>
                             <Text 
                               size="sm" 
