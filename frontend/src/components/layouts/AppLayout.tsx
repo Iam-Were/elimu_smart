@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 import {
   AppShell,
   Burger,
@@ -62,15 +62,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         color: 'red',
       });
     }
-  };
-
-  const handleThemeChange = (newTheme: ThemeRole) => {
-    setTheme(newTheme);
-    notifications.show({
-      title: 'Theme changed',
-      message: `Switched to ${newTheme} theme`,
-      color: 'blue',
-    });
   };
 
   const getThemeColor = (theme: ThemeRole) => {
@@ -156,61 +147,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Label>Theme Settings</Menu.Label>
+                <Menu.Label>Settings</Menu.Label>
                 
-                <Menu.Item
-                  color={currentTheme === 'student' ? 'orange' : undefined}
-                  onClick={() => handleThemeChange('student')}
-                  leftSection={
-                    <div
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        backgroundColor: '#f97316',
-                      }}
-                    />
-                  }
-                >
-                  Student Theme
-                </Menu.Item>
-                
-                <Menu.Item
-                  color={currentTheme === 'counselor' ? 'yellow' : undefined}
-                  onClick={() => handleThemeChange('counselor')}
-                  leftSection={
-                    <div
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        backgroundColor: '#eab308',
-                      }}
-                    />
-                  }
-                >
-                  Counselor Theme
-                </Menu.Item>
-                
-                <Menu.Item
-                  color={currentTheme === 'admin' ? 'violet' : undefined}
-                  onClick={() => handleThemeChange('admin')}
-                  leftSection={
-                    <div
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        backgroundColor: '#a855f7',
-                      }}
-                    />
-                  }
-                >
-                  Admin Theme
-                </Menu.Item>
-
-                <Divider my="xs" />
-
                 <Menu.Item>
                   <Group justify="space-between">
                     <Text size="sm">Dark Mode</Text>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, type ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { getMantineProviderProps } from '../../theme/mantineTheme';
@@ -30,14 +30,19 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const themeHook = useTheme();
 
-  const mantineProps = getMantineProviderProps(themeHook.currentTheme);
+  const mantineTheme = useMemo(() => {
+    return getMantineProviderProps(themeHook.currentTheme).theme;
+  }, [themeHook.currentTheme]);
+
+  const colorScheme = themeHook.isDark ? 'dark' : 'light';
 
   return (
     <ThemeContext.Provider value={themeHook}>
       <MantineProvider 
-        theme={mantineProps.theme}
-        defaultColorScheme={themeHook.isDark ? 'dark' : 'light'}
-        forceColorScheme={themeHook.isDark ? 'dark' : 'light'}
+        theme={mantineTheme}
+        defaultColorScheme={colorScheme}
+        forceColorScheme={colorScheme}
+        key={`${themeHook.currentTheme}-${themeHook.isDark}`}
       >
         <Notifications position="top-right" />
         {children}

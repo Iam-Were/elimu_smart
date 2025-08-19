@@ -4,8 +4,8 @@ import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 // Mock authentication service - replace with real API calls
 const mockAuthService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate API delay - reduced for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Mock validation
     if (credentials.email === 'admin@elimu.com' && credentials.password === 'admin') {
@@ -47,8 +47,8 @@ const mockAuthService = {
   },
 
   register: async (data: RegisterData): Promise<User> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate API delay - reduced for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Mock user creation
     return {

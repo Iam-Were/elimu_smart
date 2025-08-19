@@ -45,6 +45,8 @@ export const LoginPage: React.FC = () => {
         message: 'Welcome back to Elimu Smart!',
         color: 'green',
       });
+      // Explicit navigation after successful login
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
     } finally {
