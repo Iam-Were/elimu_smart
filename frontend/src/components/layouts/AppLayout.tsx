@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useEffect } from 'react';
 import {
   AppShell,
   Burger,
@@ -31,6 +31,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { currentTheme, setTheme, isDark, toggleDarkMode } = useThemeContext();
+
+  // Automatically update theme when user role changes
+  useEffect(() => {
+    if (user?.role) {
+      const roleTheme: ThemeRole = user.role === 'admin' || user.role === 'super_admin' 
+        ? 'admin' 
+        : user.role === 'counselor' || user.role === 'career_counselor'
+        ? 'counselor'
+        : 'student';
+      
+      if (currentTheme !== roleTheme) {
+        setTheme(roleTheme);
+      }
+    }
+  }, [user?.role, currentTheme, setTheme]);
 
   const handleLogout = async () => {
     try {

@@ -12,8 +12,8 @@ const mockAuthService = {
       return {
         id: '1',
         email: credentials.email,
-        firstName: 'Admin',
-        lastName: 'User',
+        firstName: 'Mike',
+        lastName: 'Admin',
         role: 'admin',
         isActive: true,
         createdAt: new Date().toISOString(),
@@ -23,7 +23,7 @@ const mockAuthService = {
       return {
         id: '2',
         email: credentials.email,
-        firstName: 'Career',
+        firstName: 'Sarah',
         lastName: 'Counselor',
         role: 'counselor',
         isActive: true,
@@ -34,8 +34,8 @@ const mockAuthService = {
       return {
         id: '3',
         email: credentials.email,
-        firstName: 'Student',
-        lastName: 'User',
+        firstName: 'Alex',
+        lastName: 'Student',
         role: 'student',
         isActive: true,
         createdAt: new Date().toISOString(),
