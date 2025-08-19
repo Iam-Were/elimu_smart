@@ -1,0 +1,290 @@
+/* ELIMU SMART DESIGN SYSTEM - COMPLETE THEME CONFIGURATION */
+/* Copy this entire file to your new project's /styles/globals.css */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Base Configuration */
+  --font-size: 14px;
+  --radius: 0.625rem;
+
+  /* Base Theme - Student (Orange) */
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  
+  /* Primary Colors - Student Theme */
+  --primary: #f97316;                /* Orange 500 - Main brand color */
+  --primary-foreground: #ffffff;
+  --secondary: #fef3c7;              /* Orange 100 - Light background */
+  --secondary-foreground: #92400e;   /* Orange 800 - Dark text */
+  --muted: #fef9e7;                  /* Orange 50 - Subtle background */
+  --muted-foreground: #a16207;       /* Orange 700 - Muted text */
+  --accent: #fed7aa;                 /* Orange 200 - Accent elements */
+  --accent-foreground: #9a3412;      /* Orange 900 - Accent text */
+  
+  /* System Colors */
+  --destructive: #dc2626;            /* Red 600 - Error states */
+  --destructive-foreground: #ffffff;
+  --success: #059669;                /* Green 600 - Success states */
+  --success-foreground: #ffffff;
+  --warning: #d97706;                /* Amber 600 - Warning states */
+  --warning-foreground: #ffffff;
+  --info: #0ea5e9;                   /* Sky 500 - Info states */
+  --info-foreground: #ffffff;
+  
+  /* Interactive Elements */
+  --border: rgba(249, 115, 22, 0.2); /* Orange with opacity */
+  --input: transparent;
+  --input-background: #fef9e7;       /* Light orange for inputs */
+  --switch-background: #fed7aa;      /* Orange 200 for switches */
+  --ring: #f97316;                   /* Focus ring color */
+  
+  /* Chart Colors */
+  --chart-1: #f97316;  /* Orange 500 */
+  --chart-2: #eab308;  /* Yellow 500 */
+  --chart-3: #f59e0b;  /* Amber 500 */
+  --chart-4: #d97706;  /* Amber 600 */
+  --chart-5: #ea580c;  /* Orange 600 */
+  
+  /* Sidebar Colors */
+  --sidebar: #fef9e7;
+  --sidebar-foreground: #92400e;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fed7aa;
+  --sidebar-accent-foreground: #9a3412;
+  --sidebar-border: rgba(249, 115, 22, 0.2);
+  --sidebar-ring: #f97316;
+
+  /* Admin Theme - Purple/Violet */
+  --admin-primary: #a855f7;          /* Violet 500 */
+  --admin-primary-foreground: #ffffff;
+  --admin-secondary: #f3e8ff;        /* Violet 100 */
+  --admin-secondary-foreground: #7c3aed; /* Violet 600 */
+  --admin-muted: #faf5ff;            /* Violet 50 */
+  --admin-muted-foreground: #8b5cf6; /* Violet 500 */
+  --admin-accent: #ddd6fe;           /* Violet 200 */
+  --admin-accent-foreground: #6d28d9; /* Violet 700 */
+  --admin-border: rgba(168, 85, 247, 0.2);
+  --admin-sidebar: #faf5ff;
+  --admin-sidebar-foreground: #7c3aed;
+  --admin-sidebar-primary: #a855f7;
+  --admin-sidebar-accent: #ddd6fe;
+  --admin-sidebar-border: rgba(168, 85, 247, 0.2);
+
+  /* Counselor Theme - Yellow */
+  --counselor-primary: #eab308;      /* Yellow 500 */
+  --counselor-primary-foreground: #ffffff;
+  --counselor-secondary: #fef3c7;    /* Yellow 100 */
+  --counselor-secondary-foreground: #ca8a04; /* Yellow 600 */
+  --counselor-muted: #fefce8;        /* Yellow 50 */
+  --counselor-muted-foreground: #facc15; /* Yellow 400 */
+  --counselor-accent: #fde047;       /* Yellow 300 */
+  --counselor-accent-foreground: #a16207; /* Yellow 700 */
+  --counselor-border: rgba(234, 179, 8, 0.2);
+  --counselor-sidebar: #fefce8;
+  --counselor-sidebar-foreground: #ca8a04;
+  --counselor-sidebar-primary: #eab308;
+  --counselor-sidebar-accent: #fde047;
+  --counselor-sidebar-border: rgba(234, 179, 8, 0.2);
+
+  /* Typography Weights */
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing System - 8px Grid */
+  --space-1: 0.125rem;  /* 2px */
+  --space-2: 0.25rem;   /* 4px */
+  --space-3: 0.5rem;    /* 8px - Base unit */
+  --space-4: 0.75rem;   /* 12px */
+  --space-5: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* Animation Timings */
+  --transition-fast: 150ms ease-out;
+  --transition-base: 300ms ease-out;
+  --transition-slow: 500ms ease-out;
+}
+
+/* Dark Mode Theme */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #fafafa;
+  --card: #262626;
+  --card-foreground: #fafafa;
+  --popover: #262626;
+  --popover-foreground: #fafafa;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #404040;
+  --secondary-foreground: #fbbf24;
+  --muted: #404040;
+  --muted-foreground: #a3a3a3;
+  --accent: #525252;
+  --accent-foreground: #fbbf24;
+  --destructive: #dc2626;
+  --destructive-foreground: #fafafa;
+  --border: rgba(249, 115, 22, 0.3);
+  --input: #404040;
+  --input-background: #404040;
+  --ring: #f97316;
+  --sidebar: #262626;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #404040;
+  --sidebar-accent-foreground: #fbbf24;
+  --sidebar-border: rgba(249, 115, 22, 0.3);
+
+  /* Dark mode admin theme */
+  --admin-primary: #a855f7;
+  --admin-secondary: #3730a3;
+  --admin-muted: #312e81;
+  --admin-accent: #4c1d95;
+  --admin-border: rgba(168, 85, 247, 0.3);
+  --admin-sidebar: #312e81;
+  --admin-sidebar-foreground: #c4b5fd;
+
+  /* Dark mode counselor theme */
+  --counselor-primary: #eab308;
+  --counselor-secondary: #713f12;
+  --counselor-muted: #451a03;
+  --counselor-accent: #92400e;
+  --counselor-border: rgba(234, 179, 8, 0.3);
+  --counselor-sidebar: #451a03;
+  --counselor-sidebar-foreground: #fef3c7;
+}
+
+/* Base Layer - Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: var(--font-size);
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Role-based theme classes - Applied to body */
+.theme-admin {
+  --primary: var(--admin-primary);
+  --primary-foreground: var(--admin-primary-foreground);
+  --secondary: var(--admin-secondary);
+  --secondary-foreground: var(--admin-secondary-foreground);
+  --muted: var(--admin-muted);
+  --muted-foreground: var(--admin-muted-foreground);
+  --accent: var(--admin-accent);
+  --accent-foreground: var(--admin-accent-foreground);
+  --border: var(--admin-border);
+  --sidebar: var(--admin-sidebar);
+  --sidebar-foreground: var(--admin-sidebar-foreground);
+  --sidebar-primary: var(--admin-sidebar-primary);
+  --sidebar-accent: var(--admin-sidebar-accent);
+  --sidebar-border: var(--admin-sidebar-border);
+}
+
+.theme-counselor {
+  --primary: var(--counselor-primary);
+  --primary-foreground: var(--counselor-primary-foreground);
+  --secondary: var(--counselor-secondary);
+  --secondary-foreground: var(--counselor-secondary-foreground);
+  --muted: var(--counselor-muted);
+  --muted-foreground: var(--counselor-muted-foreground);
+  --accent: var(--counselor-accent);
+  --accent-foreground: var(--counselor-accent-foreground);
+  --border: var(--counselor-border);
+  --sidebar: var(--counselor-sidebar);
+  --sidebar-foreground: var(--counselor-sidebar-foreground);
+  --sidebar-primary: var(--counselor-sidebar-primary);
+  --sidebar-accent: var(--counselor-sidebar-accent);
+  --sidebar-border: var(--counselor-sidebar-border);
+}
+
+/* Interactive Effects */
+.hover-lift {
+  transition: transform var(--transition-fast);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.theme-transition {
+  transition: 
+    background-color var(--transition-base),
+    color var(--transition-base),
+    border-color var(--transition-base);
+}
+
+/* Loading Animations */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--muted);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus Management */
+.focus-ring:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.focus-visible:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
