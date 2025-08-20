@@ -357,6 +357,84 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 </>
               )}
 
+              {(user?.role === 'admin' || user?.role === 'super_admin') && (
+                <>
+                  <NavLink
+                    href="#"
+                    label="Admin Dashboard"
+                    leftSection={<DashboardIcon />}
+                    active={location.pathname === '/admin/dashboard'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/dashboard');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/dashboard'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="User Management"
+                    leftSection={<PersonIcon />}
+                    active={location.pathname === '/admin/users'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/users');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/users'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="System Analytics"
+                    leftSection={<BarChartIcon />}
+                    active={location.pathname === '/admin/analytics'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/analytics');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/analytics'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="System Settings"
+                    leftSection={<GearIcon />}
+                    active={location.pathname === '/admin/settings'}
+                    onClick={e => {
+                      e.preventDefault();
+                      notifications.show({
+                        title: 'Coming Soon',
+                        message:
+                          'System Settings will be available in upcoming sprints',
+                        color: 'blue',
+                      });
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/settings'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                </>
+              )}
+
               <NavLink
                 href="#"
                 label="Profile"

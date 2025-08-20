@@ -4,3 +4,8 @@ export { RegisterPage } from './RegisterPage';
 export { ForgotPasswordPage } from './ForgotPasswordPage';
 export { DashboardPage } from './DashboardPage';
 export { ProfilePage } from './ProfilePage';
+
+// Admin pages
+export { AdminDashboardPage } from './admin/AdminDashboardPage';
+export { UserManagementPage } from './admin/UserManagementPage';
+export { SystemAnalyticsPage } from './admin/SystemAnalyticsPage';
