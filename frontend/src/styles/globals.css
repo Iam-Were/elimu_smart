@@ -15,41 +15,41 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  
+
   /* Primary Colors - Student Theme */
-  --primary: #f97316;                /* Orange 500 - Main brand color */
+  --primary: #f97316; /* Orange 500 - Main brand color */
   --primary-foreground: #ffffff;
-  --secondary: #fef3c7;              /* Orange 100 - Light background */
-  --secondary-foreground: #92400e;   /* Orange 800 - Dark text */
-  --muted: #fef9e7;                  /* Orange 50 - Subtle background */
-  --muted-foreground: #a16207;       /* Orange 700 - Muted text */
-  --accent: #fed7aa;                 /* Orange 200 - Accent elements */
-  --accent-foreground: #9a3412;      /* Orange 900 - Accent text */
-  
+  --secondary: #fef3c7; /* Orange 100 - Light background */
+  --secondary-foreground: #92400e; /* Orange 800 - Dark text */
+  --muted: #fef9e7; /* Orange 50 - Subtle background */
+  --muted-foreground: #a16207; /* Orange 700 - Muted text */
+  --accent: #fed7aa; /* Orange 200 - Accent elements */
+  --accent-foreground: #9a3412; /* Orange 900 - Accent text */
+
   /* System Colors */
-  --destructive: #dc2626;            /* Red 600 - Error states */
+  --destructive: #dc2626; /* Red 600 - Error states */
   --destructive-foreground: #ffffff;
-  --success: #059669;                /* Green 600 - Success states */
+  --success: #059669; /* Green 600 - Success states */
   --success-foreground: #ffffff;
-  --warning: #d97706;                /* Amber 600 - Warning states */
+  --warning: #d97706; /* Amber 600 - Warning states */
   --warning-foreground: #ffffff;
-  --info: #0ea5e9;                   /* Sky 500 - Info states */
+  --info: #0ea5e9; /* Sky 500 - Info states */
   --info-foreground: #ffffff;
-  
+
   /* Interactive Elements */
   --border: rgba(249, 115, 22, 0.2); /* Orange with opacity */
   --input: transparent;
-  --input-background: #fef9e7;       /* Light orange for inputs */
-  --switch-background: #fed7aa;      /* Orange 200 for switches */
-  --ring: #f97316;                   /* Focus ring color */
-  
+  --input-background: #fef9e7; /* Light orange for inputs */
+  --switch-background: #fed7aa; /* Orange 200 for switches */
+  --ring: #f97316; /* Focus ring color */
+
   /* Chart Colors */
-  --chart-1: #f97316;  /* Orange 500 */
-  --chart-2: #eab308;  /* Yellow 500 */
-  --chart-3: #f59e0b;  /* Amber 500 */
-  --chart-4: #d97706;  /* Amber 600 */
-  --chart-5: #ea580c;  /* Orange 600 */
-  
+  --chart-1: #f97316; /* Orange 500 */
+  --chart-2: #eab308; /* Yellow 500 */
+  --chart-3: #f59e0b; /* Amber 500 */
+  --chart-4: #d97706; /* Amber 600 */
+  --chart-5: #ea580c; /* Orange 600 */
+
   /* Sidebar Colors */
   --sidebar: #fef9e7;
   --sidebar-foreground: #92400e;
@@ -61,13 +61,13 @@
   --sidebar-ring: #f97316;
 
   /* Admin Theme - Purple/Violet */
-  --admin-primary: #a855f7;          /* Violet 500 */
+  --admin-primary: #a855f7; /* Violet 500 */
   --admin-primary-foreground: #ffffff;
-  --admin-secondary: #f3e8ff;        /* Violet 100 */
+  --admin-secondary: #f3e8ff; /* Violet 100 */
   --admin-secondary-foreground: #7c3aed; /* Violet 600 */
-  --admin-muted: #faf5ff;            /* Violet 50 */
+  --admin-muted: #faf5ff; /* Violet 50 */
   --admin-muted-foreground: #8b5cf6; /* Violet 500 */
-  --admin-accent: #ddd6fe;           /* Violet 200 */
+  --admin-accent: #ddd6fe; /* Violet 200 */
   --admin-accent-foreground: #6d28d9; /* Violet 700 */
   --admin-border: rgba(168, 85, 247, 0.2);
   --admin-sidebar: #faf5ff;
@@ -77,13 +77,13 @@
   --admin-sidebar-border: rgba(168, 85, 247, 0.2);
 
   /* Counselor Theme - Yellow */
-  --counselor-primary: #eab308;      /* Yellow 500 */
+  --counselor-primary: #eab308; /* Yellow 500 */
   --counselor-primary-foreground: #ffffff;
-  --counselor-secondary: #fef3c7;    /* Yellow 100 */
+  --counselor-secondary: #fef3c7; /* Yellow 100 */
   --counselor-secondary-foreground: #ca8a04; /* Yellow 600 */
-  --counselor-muted: #fefce8;        /* Yellow 50 */
+  --counselor-muted: #fefce8; /* Yellow 50 */
   --counselor-muted-foreground: #facc15; /* Yellow 400 */
-  --counselor-accent: #fde047;       /* Yellow 300 */
+  --counselor-accent: #fde047; /* Yellow 300 */
   --counselor-accent-foreground: #a16207; /* Yellow 700 */
   --counselor-border: rgba(234, 179, 8, 0.2);
   --counselor-sidebar: #fefce8;
@@ -99,16 +99,16 @@
   --font-weight-bold: 700;
 
   /* Spacing System - 8px Grid */
-  --space-1: 0.125rem;  /* 2px */
-  --space-2: 0.25rem;   /* 4px */
-  --space-3: 0.5rem;    /* 8px - Base unit */
-  --space-4: 0.75rem;   /* 12px */
-  --space-5: 1rem;      /* 16px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
+  --space-1: 0.125rem; /* 2px */
+  --space-2: 0.25rem; /* 4px */
+  --space-3: 0.5rem; /* 8px - Base unit */
+  --space-4: 0.75rem; /* 12px */
+  --space-5: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
 
   /* Animation Timings */
   --transition-fast: 150ms ease-out;
@@ -175,7 +175,9 @@ body {
   color: var(--foreground);
   font-size: var(--font-size);
   line-height: 1.6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
@@ -225,7 +227,7 @@ body {
 }
 
 .theme-transition {
-  transition: 
+  transition:
     background-color var(--transition-base),
     color var(--transition-base),
     border-color var(--transition-base);
@@ -237,8 +239,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .loading-spinner {
@@ -251,7 +258,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Focus Management */

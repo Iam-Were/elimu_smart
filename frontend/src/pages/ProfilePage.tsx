@@ -32,11 +32,11 @@ export const ProfilePage: React.FC = () => {
       email: user?.email || '',
     },
     validate: {
-      firstName: (value) => 
+      firstName: value =>
         value.length < 2 ? 'First name must have at least 2 characters' : null,
-      lastName: (value) => 
+      lastName: value =>
         value.length < 2 ? 'Last name must have at least 2 characters' : null,
-      email: (value) => 
+      email: value =>
         /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
     },
   });
@@ -46,7 +46,7 @@ export const ProfilePage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       notifications.show({
         title: 'Profile Updated',
         message: 'Your profile has been successfully updated',
@@ -146,11 +146,7 @@ export const ProfilePage: React.FC = () => {
                   <Text fw={600} size="lg">
                     {user.firstName} {user.lastName}
                   </Text>
-                  <Badge
-                    color={getThemeColor()}
-                    variant="light"
-                    size="md"
-                  >
+                  <Badge color={getThemeColor()} variant="light" size="md">
                     {getRoleDisplayName(user.role)}
                   </Badge>
                 </Stack>
@@ -159,13 +155,17 @@ export const ProfilePage: React.FC = () => {
 
                 <Stack gap="xs" w="100%">
                   <Group justify="space-between">
-                    <Text size="sm" c="dimmed">Member since:</Text>
+                    <Text size="sm" c="dimmed">
+                      Member since:
+                    </Text>
                     <Text size="sm" fw={500}>
                       {new Date(user.createdAt).toLocaleDateString()}
                     </Text>
                   </Group>
                   <Group justify="space-between">
-                    <Text size="sm" c="dimmed">Account status:</Text>
+                    <Text size="sm" c="dimmed">
+                      Account status:
+                    </Text>
                     <Badge
                       color={user.isActive ? 'green' : 'red'}
                       variant="light"
@@ -279,7 +279,7 @@ export const ProfilePage: React.FC = () => {
           <Stack gap="md">
             <Title order={3}>Security Settings</Title>
             <Divider />
-            
+
             <Group justify="space-between" align="center">
               <Stack gap="xs">
                 <Text fw={500}>Password</Text>
@@ -293,7 +293,8 @@ export const ProfilePage: React.FC = () => {
                 onClick={() => {
                   notifications.show({
                     title: 'Password Reset',
-                    message: 'Password reset functionality will be available in production',
+                    message:
+                      'Password reset functionality will be available in production',
                     color: 'blue',
                   });
                 }}
@@ -304,9 +305,9 @@ export const ProfilePage: React.FC = () => {
 
             <Alert color="blue" variant="light">
               <Text size="sm">
-                <strong>Demo Mode:</strong> Security features are limited in demo mode. 
-                In production, you'll be able to change passwords, enable two-factor authentication, 
-                and manage security settings.
+                <strong>Demo Mode:</strong> Security features are limited in
+                demo mode. In production, you'll be able to change passwords,
+                enable two-factor authentication, and manage security settings.
               </Text>
             </Alert>
           </Stack>

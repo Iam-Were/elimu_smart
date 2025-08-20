@@ -23,32 +23,38 @@ export const LandingPage: React.FC = () => {
     {
       icon: '🎯',
       title: 'Personalized Career Guidance',
-      description: 'Get tailored career recommendations based on your interests, skills, and academic performance.',
+      description:
+        'Get tailored career recommendations based on your interests, skills, and academic performance.',
     },
     {
       icon: '📊',
       title: 'Academic Progress Tracking',
-      description: 'Monitor your academic journey with detailed analytics and progress reports.',
+      description:
+        'Monitor your academic journey with detailed analytics and progress reports.',
     },
     {
       icon: '👥',
       title: 'Expert Counselor Support',
-      description: 'Connect with professional career counselors for personalized advice and mentorship.',
+      description:
+        'Connect with professional career counselors for personalized advice and mentorship.',
     },
     {
       icon: '📚',
       title: 'Learning Resources',
-      description: 'Access comprehensive study materials and career development resources.',
+      description:
+        'Access comprehensive study materials and career development resources.',
     },
     {
       icon: '🚀',
       title: 'Future Planning',
-      description: 'Create actionable plans for your academic and career goals with timeline tracking.',
+      description:
+        'Create actionable plans for your academic and career goals with timeline tracking.',
     },
     {
       icon: '🌐',
       title: 'University Matching',
-      description: 'Find the perfect university programs that align with your career aspirations.',
+      description:
+        'Find the perfect university programs that align with your career aspirations.',
     },
   ];
 
@@ -77,24 +83,22 @@ export const LandingPage: React.FC = () => {
     {
       name: 'Michael R.',
       role: 'University Graduate',
-      text: 'Started using Elimu Smart in high school. Now I\'m in my dream career thanks to their guidance!',
+      text: "Started using Elimu Smart in high school. Now I'm in my dream career thanks to their guidance!",
     },
   ];
 
   return (
     <div
       style={{
-        background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+        background:
+          'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
         minHeight: '100vh',
       }}
     >
       {/* Navigation Header */}
       <Container size="lg" py="md">
         <Group justify="space-between" align="center">
-          <Title
-            order={2}
-            style={{ color: 'white' }}
-          >
+          <Title order={2} style={{ color: 'white' }}>
             Elimu Smart
           </Title>
           <Group>
@@ -133,7 +137,7 @@ export const LandingPage: React.FC = () => {
             >
               🚀 Your Future Starts Here
             </Badge>
-            
+
             <Title
               order={1}
               size="3.5rem"
@@ -160,8 +164,9 @@ export const LandingPage: React.FC = () => {
                 lineHeight: 1.6,
               }}
             >
-              Empowering students with AI-driven career insights, personalized learning paths, 
-              and expert guidance to achieve their academic and professional dreams.
+              Empowering students with AI-driven career insights, personalized
+              learning paths, and expert guidance to achieve their academic and
+              professional dreams.
             </Text>
 
             <Group gap="md" mt="lg">
@@ -226,8 +231,8 @@ export const LandingPage: React.FC = () => {
                 Everything You Need to Succeed
               </Title>
               <Text size="lg" ta="center" c="dimmed" maw={600}>
-                Comprehensive tools and resources designed to guide your educational 
-                journey and career development.
+                Comprehensive tools and resources designed to guide your
+                educational journey and career development.
               </Text>
             </Stack>
 
@@ -293,8 +298,8 @@ export const LandingPage: React.FC = () => {
                     Why Choose Elimu Smart?
                   </Title>
                   <Text size="lg" c="dimmed">
-                    Join thousands of students who have transformed their futures 
-                    with our comprehensive career guidance platform.
+                    Join thousands of students who have transformed their
+                    futures with our comprehensive career guidance platform.
                   </Text>
                 </Stack>
 
@@ -361,7 +366,8 @@ export const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <div
         style={{
-          background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+          background:
+            'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
           paddingTop: '4rem',
           paddingBottom: '4rem',
         }}
@@ -385,8 +391,8 @@ export const LandingPage: React.FC = () => {
                   maxWidth: 600,
                 }}
               >
-                Join Elimu Smart today and take the first step towards 
-                achieving your academic and career goals.
+                Join Elimu Smart today and take the first step towards achieving
+                your academic and career goals.
               </Text>
             </Stack>
 

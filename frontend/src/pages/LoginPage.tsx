@@ -29,10 +29,9 @@ export const LoginPage: React.FC = () => {
       password: '',
     },
     validate: {
-      email: (value) => 
+      email: value =>
         /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
-      password: (value) => 
-        value.length < 1 ? 'Password is required' : null,
+      password: value => (value.length < 1 ? 'Password is required' : null),
     },
   });
 
@@ -85,7 +84,7 @@ export const LoginPage: React.FC = () => {
               <Anchor
                 size="sm"
                 onClick={() => navigate('/forgot-password')}
-                style={{ 
+                style={{
                   color: 'var(--primary)',
                   cursor: 'pointer',
                   textDecoration: 'none',
@@ -113,7 +112,7 @@ export const LoginPage: React.FC = () => {
             Don't have an account?{' '}
             <Anchor
               onClick={() => navigate('/register')}
-              style={{ 
+              style={{
                 color: 'var(--primary)',
                 cursor: 'pointer',
                 textDecoration: 'none',
@@ -139,16 +138,28 @@ export const LoginPage: React.FC = () => {
                 Try these demo accounts:
               </Text>
               <Group justify="space-between">
-                <Text size="sm" c="dimmed">Student:</Text>
-                <Text size="sm" ff="monospace">student@elimu.com / student</Text>
+                <Text size="sm" c="dimmed">
+                  Student:
+                </Text>
+                <Text size="sm" ff="monospace">
+                  student@elimu.com / student
+                </Text>
               </Group>
               <Group justify="space-between">
-                <Text size="sm" c="dimmed">Counselor:</Text>
-                <Text size="sm" ff="monospace">counselor@elimu.com / counselor</Text>
+                <Text size="sm" c="dimmed">
+                  Counselor:
+                </Text>
+                <Text size="sm" ff="monospace">
+                  counselor@elimu.com / counselor
+                </Text>
               </Group>
               <Group justify="space-between">
-                <Text size="sm" c="dimmed">Admin:</Text>
-                <Text size="sm" ff="monospace">admin@elimu.com / admin</Text>
+                <Text size="sm" c="dimmed">
+                  Admin:
+                </Text>
+                <Text size="sm" ff="monospace">
+                  admin@elimu.com / admin
+                </Text>
               </Group>
             </Stack>
           </Paper>
@@ -157,7 +168,7 @@ export const LoginPage: React.FC = () => {
             Want to explore first?{' '}
             <Anchor
               onClick={() => navigate('/')}
-              style={{ 
+              style={{
                 color: 'var(--primary)',
                 cursor: 'pointer',
                 textDecoration: 'none',

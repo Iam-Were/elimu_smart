@@ -18,11 +18,14 @@ import {
   PersonIcon,
   GearIcon,
   ExitIcon,
-  CompassIcon,
+  MagnifyingGlassIcon,
   TargetIcon,
-  BookOpenIcon,
+  BookmarkIcon,
   MoonIcon,
   SunIcon,
+  ChatBubbleIcon,
+  CalendarIcon,
+  BarChartIcon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -46,12 +49,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Automatically update theme when user role changes
   useEffect(() => {
     if (user?.role) {
-      const roleTheme: ThemeRole = user.role === 'admin' || user.role === 'super_admin' 
-        ? 'admin' 
-        : user.role === 'counselor' || user.role === 'career_counselor'
-        ? 'counselor'
-        : 'student';
-      
+      const roleTheme: ThemeRole =
+        user.role === 'admin' || user.role === 'super_admin'
+          ? 'admin'
+          : user.role === 'counselor' || user.role === 'career_counselor'
+            ? 'counselor'
+            : 'student';
+
       if (currentTheme !== roleTheme) {
         setTheme(roleTheme);
       }
@@ -116,16 +120,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group>
-            <Burger 
-              opened={opened} 
-              onClick={toggle} 
-              hiddenFrom="sm" 
-              size="sm" 
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              hiddenFrom="sm"
+              size="sm"
             />
-            <Title 
-              order={3}
-              style={{ color: 'var(--primary)' }}
-            >
+            <Title order={3} style={{ color: 'var(--primary)' }}>
               Elimu Smart
             </Title>
           </Group>
@@ -135,15 +136,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <Menu.Target>
                 <Button variant="subtle" style={{ padding: '0 8px' }}>
                   <Group gap="sm">
-                    <Avatar 
-                      size={32} 
+                    <Avatar
+                      size={32}
                       radius="xl"
                       color={currentTheme}
-                      style={{ 
+                      style={{
                         backgroundColor: getThemeColor(currentTheme),
                       }}
                     >
-                      {user?.firstName?.[0]}{user?.lastName?.[0]}
+                      {user?.firstName?.[0]}
+                      {user?.lastName?.[0]}
                     </Avatar>
                     <Stack gap={0} align="flex-start" style={{ minWidth: 0 }}>
                       <Text size="sm" fw={500} truncate>
@@ -159,11 +161,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
               <Menu.Dropdown>
                 <Menu.Label>Settings</Menu.Label>
-                
+
                 <Menu.Item>
                   <Group justify="space-between">
                     <Group gap="sm">
-                      {isDark ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+                      {isDark ? (
+                        <MoonIcon width={16} height={16} />
+                      ) : (
+                        <SunIcon width={16} height={16} />
+                      )}
                       <Text size="sm">Dark Mode</Text>
                     </Group>
                     <Switch
@@ -175,15 +181,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 </Menu.Item>
 
                 <Divider my="xs" />
-                
+
                 <Menu.Label>Account</Menu.Label>
-                <Menu.Item 
+                <Menu.Item
                   onClick={() => navigate('/profile')}
-                  leftSection={<PersonIcon size={16} />}
+                  leftSection={<PersonIcon width={16} height={16} />}
                 >
                   Profile Settings
                 </Menu.Item>
-                <Menu.Item onClick={handleLogout} color="red" leftSection={<ExitIcon size={16} />}>
+                <Menu.Item
+                  onClick={handleLogout}
+                  color="red"
+                  leftSection={<ExitIcon width={16} height={16} />}
+                >
                   Logout
                 </Menu.Item>
               </Menu.Dropdown>
@@ -198,20 +208,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Title order={4} c="dimmed">
               Navigation
             </Title>
-            
+
             <Stack gap="xs">
               <NavLink
                 href="#"
                 label="Dashboard"
                 leftSection={<DashboardIcon />}
                 active={location.pathname === '/dashboard'}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   navigate('/dashboard');
                 }}
                 style={{
                   borderRadius: 'var(--radius)',
-                  color: location.pathname === '/dashboard' ? 'var(--primary)' : undefined,
+                  color:
+                    location.pathname === '/dashboard'
+                      ? 'var(--primary)'
+                      : undefined,
                 }}
               />
 
@@ -220,15 +233,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Career Assessment"
-                    leftSection={<CompassIcon />}
+                    leftSection={<MagnifyingGlassIcon />}
                     active={location.pathname === '/assessment'}
-                    onClick={(e) => {
+                    onClick={e => {
                       e.preventDefault();
                       navigate('/assessment');
                     }}
                     style={{
                       borderRadius: 'var(--radius)',
-                      color: location.pathname === '/assessment' ? 'var(--primary)' : undefined,
+                      color:
+                        location.pathname === '/assessment'
+                          ? 'var(--primary)'
+                          : undefined,
                     }}
                   />
                   <NavLink
@@ -236,44 +252,126 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     label="Subject Mapper"
                     leftSection={<TargetIcon />}
                     active={location.pathname === '/subject-mapper'}
-                    onClick={(e) => {
+                    onClick={e => {
                       e.preventDefault();
                       navigate('/subject-mapper');
                     }}
                     style={{
                       borderRadius: 'var(--radius)',
-                      color: location.pathname === '/subject-mapper' ? 'var(--primary)' : undefined,
+                      color:
+                        location.pathname === '/subject-mapper'
+                          ? 'var(--primary)'
+                          : undefined,
                     }}
                   />
                   <NavLink
                     href="#"
                     label="Career Hub"
-                    leftSection={<BookOpenIcon />}
+                    leftSection={<BookmarkIcon />}
                     active={location.pathname === '/career-hub'}
-                    onClick={(e) => {
+                    onClick={e => {
                       e.preventDefault();
                       navigate('/career-hub');
                     }}
                     style={{
                       borderRadius: 'var(--radius)',
-                      color: location.pathname === '/career-hub' ? 'var(--primary)' : undefined,
+                      color:
+                        location.pathname === '/career-hub'
+                          ? 'var(--primary)'
+                          : undefined,
                     }}
                   />
                 </>
               )}
-              
+
+              {(user?.role === 'counselor' || user?.role === 'career_counselor') && (
+                <>
+                  <NavLink
+                    href="#"
+                    label="Students"
+                    leftSection={<PersonIcon />}
+                    active={location.pathname === '/counselor/students'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/counselor/students');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/counselor/students'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Q&A"
+                    leftSection={<ChatBubbleIcon />}
+                    active={location.pathname === '/counselor/questions'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/counselor/questions');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/counselor/questions'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Sessions"
+                    leftSection={<CalendarIcon />}
+                    active={location.pathname === '/counselor/sessions'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/counselor/sessions');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/counselor/sessions'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Analytics"
+                    leftSection={<BarChartIcon />}
+                    active={location.pathname === '/counselor/analytics'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/counselor/analytics');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/counselor/analytics'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                </>
+              )}
+
               <NavLink
                 href="#"
                 label="Profile"
                 leftSection={<PersonIcon />}
                 active={location.pathname === '/profile'}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   navigate('/profile');
                 }}
                 style={{
                   borderRadius: 'var(--radius)',
-                  color: location.pathname === '/profile' ? 'var(--primary)' : undefined,
+                  color:
+                    location.pathname === '/profile'
+                      ? 'var(--primary)'
+                      : undefined,
                 }}
               />
 
@@ -281,11 +379,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 href="#"
                 label="Settings"
                 leftSection={<GearIcon />}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   notifications.show({
                     title: 'Coming Soon',
-                    message: 'Settings page will be available in upcoming sprints',
+                    message:
+                      'Settings page will be available in upcoming sprints',
                     color: 'blue',
                   });
                 }}
@@ -300,9 +399,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Stack>
       </AppShell.Navbar>
 
-      <AppShell.Main className="theme-transition">
-        {children}
-      </AppShell.Main>
+      <AppShell.Main className="theme-transition">{children}</AppShell.Main>
     </AppShell>
   );
 };

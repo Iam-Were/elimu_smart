@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
-    
+
     // Update state with error info
     this.setState({
       error,
@@ -60,7 +60,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <Stack gap="lg" align="center">
             <Alert color="red" title="Something went wrong" variant="light">
               <Text size="sm">
-                We encountered an unexpected error. Please try refreshing the page.
+                We encountered an unexpected error. Please try refreshing the
+                page.
               </Text>
             </Alert>
 
@@ -68,9 +69,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <Title order={2} ta="center" c="dimmed">
                 Oops! Something went wrong
               </Title>
-              
+
               <Text ta="center" c="dimmed" size="sm" maw={400}>
-                We're sorry for the inconvenience. An unexpected error occurred 
+                We're sorry for the inconvenience. An unexpected error occurred
                 while rendering this page.
               </Text>
 
@@ -89,7 +90,11 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Text size="xs" fw={500} mb="xs">
                   Error Details (Development Only):
                 </Text>
-                <Text size="xs" ff="monospace" style={{ whiteSpace: 'pre-wrap' }}>
+                <Text
+                  size="xs"
+                  ff="monospace"
+                  style={{ whiteSpace: 'pre-wrap' }}
+                >
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack && (
                     <>

@@ -2,7 +2,7 @@
 
 ## 🎯 Copy This Entire Prompt to Claude AI
 
-```
+````
 I want you to create a complete web application using the Elimu Smart Design System. This is a production-ready design system with role-based theming, modern UI components, and comprehensive accessibility features.
 
 **PROJECT REQUIREMENTS:**
@@ -42,32 +42,37 @@ I want you to create a complete web application using the Elimu Smart Design Sys
 --counselor-secondary: #fef3c7; /* Yellow 100 */
 --counselor-muted: #fefce8;  /* Yellow 50 */
 --counselor-accent: #fde047; /* Yellow 300 */
-```
+````
 
 **Typography Scale (8px grid system):**
+
 - Base font size: 14px
 - Scale: 12px, 14px, 16px, 18px, 20px, 24px
 - Font weights: 400 (normal), 500 (medium), 600 (semibold)
 
 **Spacing System:**
+
 - Base unit: 8px
 - Scale: 2px, 4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px
 
 **3. CORE FEATURES TO IMPLEMENT:**
 
 **Authentication System:**
+
 - Modern landing page with hero section
 - Login/signup forms with validation
 - Role-based routing and theme switching
 - Smooth theme transitions (300ms ease-in-out)
 
 **Layout Components:**
+
 - Responsive app layout with sidebar navigation
 - Role-specific dashboard layouts
 - Mobile-friendly navigation with hamburger menu
 - Theme-aware component styling
 
 **UI Components:**
+
 - Buttons (primary, secondary, outline, ghost variants)
 - Cards with hover effects and proper spacing
 - Forms with validation and error states
@@ -76,6 +81,7 @@ I want you to create a complete web application using the Elimu Smart Design Sys
 - Modal dialogs and overlays
 
 **Accessibility Features:**
+
 - Keyboard navigation support
 - Screen reader compatibility
 - High contrast ratios (4.5:1 minimum)
@@ -85,6 +91,7 @@ I want you to create a complete web application using the Elimu Smart Design Sys
 **4. IMPLEMENTATION REQUIREMENTS:**
 
 **File Structure:**
+
 ```
 src/
 ├── components/
@@ -106,18 +113,21 @@ src/
 ```
 
 **Theme Implementation:**
+
 - CSS custom properties for dynamic theming
 - Role-based theme classes (.theme-admin, .theme-counselor)
 - Smooth theme switching with applyRoleTheme() function
 - Dark mode support for all themes
 
 **Component Patterns:**
+
 - Use CSS custom properties (var(--primary)) instead of hardcoded colors
 - Implement hover effects with translateY(-2px)
 - Use consistent border radius (var(--radius))
 - Apply proper spacing using the 8px grid system
 
 **Responsive Design:**
+
 - Mobile-first approach with proper breakpoints
 - Touch-friendly button sizing (44px minimum)
 - Responsive navigation and layout
@@ -126,6 +136,7 @@ src/
 **5. SPECIFIC COMPONENTS TO CREATE:**
 
 **Landing Page:**
+
 - Hero section with gradient background
 - Features grid with icons and descriptions
 - Benefits section with checkmarks
@@ -134,12 +145,14 @@ src/
 - Footer with links
 
 **Authentication:**
+
 - Login form with email/password
 - Signup form with role selection
 - Form validation and error handling
 - "Get Started" flow with smooth transitions
 
 **Dashboard Layout:**
+
 - Sidebar navigation with role-based menu items
 - Main content area with proper spacing
 - Header with user info and logout
@@ -148,18 +161,21 @@ src/
 **6. STYLING GUIDELINES:**
 
 **CSS Methodology:**
+
 - Use CSS custom properties for all colors
 - Implement utility classes for common patterns
 - Follow BEM-like naming for components
 - Use Tailwind classes for layout and spacing
 
 **Animation Standards:**
+
 - Keep animations under 300ms
 - Use ease-out timing for UI transitions
 - Respect prefers-reduced-motion
 - Add hover effects to interactive elements
 
 **Color Usage:**
+
 - Never hardcode colors - always use CSS variables
 - Ensure proper contrast ratios
 - Provide visual feedback for interactive states
@@ -168,6 +184,7 @@ src/
 **7. MANTINE INTEGRATION:**
 
 Configure Mantine theme with:
+
 - Custom color palettes for each role
 - CSS variable integration for theming
 - Component style overrides
@@ -203,6 +220,7 @@ Configure Mantine theme with:
 - Follow the established design patterns consistently
 
 Please create the complete application with all files, ensuring that the design system is properly implemented and the role-based theming works seamlessly. Focus on creating a polished, production-ready experience that can serve as a foundation for further development.
+
 ```
 
 ## 📋 Additional Instructions After Initial Creation
@@ -211,33 +229,42 @@ Once Claude creates the basic structure, provide these follow-up instructions:
 
 ### Step 2: Theme Refinement
 ```
+
 Now please:
+
 1. Ensure all components use CSS custom properties (var(--primary)) instead of hardcoded colors
 2. Add smooth hover effects to all interactive elements
 3. Implement the applyRoleTheme() function for dynamic theme switching
 4. Test theme transitions between student/counselor/admin roles
 5. Add loading states and error boundaries where needed
+
 ```
 
 ### Step 3: Component Polish
 ```
+
 Please enhance the components with:
+
 1. Proper TypeScript interfaces for all props
 2. Accessibility attributes (ARIA labels, semantic HTML)
 3. Responsive design with mobile-first approach
 4. Form validation with helpful error messages
 5. Smooth animations and micro-interactions
+
 ```
 
 ### Step 4: Production Readiness
 ```
+
 Finally, please:
+
 1. Add comprehensive error handling
 2. Implement proper loading states
 3. Ensure keyboard navigation works throughout
 4. Test and fix any responsive design issues
 5. Add proper meta tags and SEO considerations
 6. Create a production build configuration
+
 ```
 
 ## 🎨 Customization Options
@@ -246,32 +273,41 @@ After the base implementation, you can request specific customizations:
 
 ### Industry-Specific Adaptations
 ```
+
 Please adapt this design system for [industry]:
+
 - Update the color scheme to match [industry] standards
 - Modify the landing page content for [specific use case]
 - Add industry-specific icons and terminology
 - Customize the dashboard for [specific workflow]
+
 ```
 
 ### Feature Additions
 ```
+
 Please add these features:
+
 - User profile management with avatar upload
 - Settings panel with theme customization
 - Notification system with toast messages
 - Search functionality with filters
 - Data visualization with charts
 - File upload with drag-and-drop
+
 ```
 
 ### Brand Customization
 ```
+
 Please customize the brand elements:
+
 - Change the primary color to [color]
 - Update the logo and brand name to [name]
 - Modify the typography to use [font family]
 - Adjust the spacing system to [specifications]
 - Update the copy and messaging for [brand voice]
+
 ```
 
 ## 🚀 Success Metrics
@@ -296,3 +332,4 @@ If you encounter any issues during implementation:
 5. Validate responsive design on multiple devices
 
 This replication system has been tested and refined to produce consistent, high-quality results across different projects and use cases.
+```

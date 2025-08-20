@@ -24,7 +24,7 @@ export const ForgotPasswordPage: React.FC = () => {
       email: '',
     },
     validate: {
-      email: (value) => 
+      email: value =>
         /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
     },
   });
@@ -34,7 +34,7 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       setEmailSent(true);
       notifications.show({
         title: 'Reset Email Sent',
@@ -78,8 +78,9 @@ export const ForgotPasswordPage: React.FC = () => {
               Password reset link sent!
             </Text>
             <Text ta="center" size="sm" c="dimmed" maw={400}>
-              We've sent a password reset link to your email address. 
-              Please check your inbox and follow the instructions to reset your password.
+              We've sent a password reset link to your email address. Please
+              check your inbox and follow the instructions to reset your
+              password.
             </Text>
           </Stack>
 
@@ -129,8 +130,8 @@ export const ForgotPasswordPage: React.FC = () => {
         <Stack gap="md">
           <Alert color="blue" variant="light">
             <Text size="sm">
-              Enter the email address associated with your account and we'll send you 
-              a link to reset your password.
+              Enter the email address associated with your account and we'll
+              send you a link to reset your password.
             </Text>
           </Alert>
 
@@ -159,7 +160,7 @@ export const ForgotPasswordPage: React.FC = () => {
               Remember your password?{' '}
               <Anchor
                 onClick={() => navigate('/login')}
-                style={{ 
+                style={{
                   color: 'var(--primary)',
                   cursor: 'pointer',
                   textDecoration: 'none',
@@ -173,7 +174,7 @@ export const ForgotPasswordPage: React.FC = () => {
               Don't have an account?{' '}
               <Anchor
                 onClick={() => navigate('/register')}
-                style={{ 
+                style={{
                   color: 'var(--primary)',
                   cursor: 'pointer',
                   textDecoration: 'none',
@@ -199,8 +200,8 @@ export const ForgotPasswordPage: React.FC = () => {
                 Demo Mode Notice:
               </Text>
               <Text size="xs" c="dimmed">
-                In demo mode, no actual emails are sent. You can use the demo accounts 
-                to explore the platform features.
+                In demo mode, no actual emails are sent. You can use the demo
+                accounts to explore the platform features.
               </Text>
             </Stack>
           </Paper>

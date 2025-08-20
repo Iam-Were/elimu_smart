@@ -87,11 +87,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             <Text size="sm" c="dimmed">
               Dark Mode
             </Text>
-            <Switch
-              checked={isDark}
-              onChange={toggleDarkMode}
-              size="sm"
-            />
+            <Switch checked={isDark} onChange={toggleDarkMode} size="sm" />
           </Group>
         </Stack>
       </Container>

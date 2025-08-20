@@ -1,16 +1,19 @@
 # Sprint 6: Counselor Dashboard Enhanced (Weeks 11-12)
 
 ## 🎯 Sprint Goal
+
 Enhance the counselor experience with advanced features: group session management, comprehensive analytics, student intervention tools, and collaborative features that enable professional counselor workflow.
 
 ## 📋 User Stories
 
 ### Epic: Advanced Counselor Features
+
 **As a** career counselor  
 **I want** advanced tools for student management and analytics  
 **So that** I can provide data-driven guidance and improve student outcomes
 
 #### Story 6.1: Advanced Analytics Dashboard (13 points)
+
 ```
 As a counselor
 I want comprehensive analytics about my students and performance
@@ -27,6 +30,7 @@ Acceptance Criteria:
 ```
 
 #### Story 6.2: Group Session Management (8 points)
+
 ```
 As a counselor
 I want to manage group counseling sessions
@@ -42,6 +46,7 @@ Acceptance Criteria:
 ```
 
 #### Story 6.3: Student Intervention System (8 points)
+
 ```
 As a counselor
 I want automated alerts for students who need intervention
@@ -57,6 +62,7 @@ Acceptance Criteria:
 ```
 
 #### Story 6.4: Counselor Collaboration Tools (5 points)
+
 ```
 As a counselor
 I want to collaborate with other counselors
@@ -73,6 +79,7 @@ Acceptance Criteria:
 ## 🏗️ Technical Requirements
 
 ### Analytics Data Models
+
 ```typescript
 interface CounselorAnalytics {
   studentMetrics: {
@@ -94,7 +101,7 @@ interface CounselorAnalytics {
 
 interface StudentRiskAssessment {
   studentId: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: "low" | "medium" | "high" | "critical";
   factors: RiskFactor[];
   interventionHistory: Intervention[];
   recommendations: string[];
@@ -103,6 +110,7 @@ interface StudentRiskAssessment {
 ```
 
 ### Group Session Management
+
 ```typescript
 interface GroupSession {
   id: string;
@@ -112,7 +120,7 @@ interface GroupSession {
   participants: string[]; // Student IDs
   scheduledAt: Date;
   duration: number;
-  type: 'career-exploration' | 'study-skills' | 'college-prep';
+  type: "career-exploration" | "study-skills" | "college-prep";
   agenda: AgendaItem[];
   notes: string;
   outcomes: SessionOutcome[];
@@ -123,13 +131,14 @@ interface AgendaItem {
   id: string;
   title: string;
   duration: number;
-  type: 'discussion' | 'activity' | 'presentation';
+  type: "discussion" | "activity" | "presentation";
   materials: string[];
   objectives: string[];
 }
 ```
 
 ### Intervention System
+
 ```typescript
 interface InterventionPlan {
   id: string;
@@ -141,13 +150,14 @@ interface InterventionPlan {
   timeline: InterventionTimeline;
   stakeholders: string[]; // Parents, teachers, etc.
   monitoringSchedule: MonitoringPoint[];
-  status: 'active' | 'completed' | 'suspended';
+  status: "active" | "completed" | "suspended";
 }
 ```
 
 ## 🎨 Design Requirements
 
 ### Analytics Dashboard Layout
+
 ```
 ┌─────────────────────────────────────────┐
 │  Analytics Overview                     │
@@ -171,12 +181,14 @@ interface InterventionPlan {
 ```
 
 ### Group Session Interface
+
 - Calendar view for group session scheduling
 - Participant selection with student filters
 - Session template library with customization
 - Real-time attendance tracking during sessions
 
 ### Intervention Management
+
 - Risk assessment dashboard with color-coded alerts
 - Intervention plan builder with templates
 - Progress tracking with milestone visualization
@@ -185,9 +197,10 @@ interface InterventionPlan {
 ## 📊 Advanced Analytics Features
 
 ### Predictive Analytics
+
 ```typescript
 interface PredictiveModel {
-  type: 'dropout-risk' | 'career-readiness' | 'academic-success';
+  type: "dropout-risk" | "career-readiness" | "academic-success";
   predictions: StudentPrediction[];
   confidence: number;
   factors: PredictiveFactor[];
@@ -204,12 +217,14 @@ interface StudentPrediction {
 ```
 
 ### Performance Metrics
+
 - Student engagement scoring
 - Counselor effectiveness measurements
 - Intervention success tracking
 - Career placement outcomes
 
 ### Reporting System
+
 - Automated report generation
 - Custom report builder
 - Export to PDF, Excel, PowerPoint
@@ -218,18 +233,21 @@ interface StudentPrediction {
 ## 🧪 Testing Requirements
 
 ### Unit Tests
+
 - Risk assessment algorithm accuracy
 - Analytics calculation correctness
 - Group session scheduling logic
 - Intervention plan creation and tracking
 
 ### Integration Tests
+
 - End-to-end analytics pipeline
 - Group session workflow completion
 - Intervention system automated alerts
 - Collaboration feature communication
 
 ### Performance Tests
+
 - Large dataset analytics processing
 - Real-time alert system performance
 - Report generation speed
@@ -267,6 +285,7 @@ interface StudentPrediction {
 ## 🔄 Sprint Review Criteria
 
 ### Demo Requirements
+
 - Show comprehensive analytics dashboard with real data
 - Schedule and manage a group counseling session
 - Demonstrate intervention system with risk assessment
@@ -274,6 +293,7 @@ interface StudentPrediction {
 - Generate and export professional reports
 
 ### Stakeholder Questions
+
 1. Do the analytics provide actionable insights for counselors?
 2. How effective is the group session management system?
 3. Does the intervention system help prevent student issues?
@@ -283,12 +303,14 @@ interface StudentPrediction {
 ## 📈 Success Metrics
 
 ### Analytics Effectiveness
+
 - Report usage rate > 80%
 - Predictive accuracy > 75%
 - Intervention success rate > 65%
 - Analytics-driven decision making > 70%
 
 ### Operational Efficiency
+
 - Group session utilization > 40%
 - Risk identification improvement > 50%
 - Counselor collaboration engagement > 60%
@@ -297,12 +319,14 @@ interface StudentPrediction {
 ## 🎯 Professional Impact
 
 ### Data-Driven Counseling
+
 - **Evidence-Based Decisions**: Analytics support professional judgment
 - **Proactive Intervention**: Early identification of student needs
 - **Outcome Tracking**: Measurable counseling effectiveness
 - **Professional Growth**: Performance metrics for self-improvement
 
 ### Collaborative Practice
+
 - **Peer Learning**: Share successful strategies and interventions
 - **Case Consultation**: Get expert input on complex situations
 - **Resource Sharing**: Access to best practices and materials
@@ -311,6 +335,7 @@ interface StudentPrediction {
 ## 🧠 Advanced Counselor Capabilities
 
 ### Risk Assessment Algorithm
+
 ```typescript
 function calculateStudentRisk(student: StudentData): RiskAssessment {
   const factors = {
@@ -318,20 +343,21 @@ function calculateStudentRisk(student: StudentData): RiskAssessment {
     engagementLevel: student.activity.engagementScore,
     academicPerformance: student.grades.average,
     sessionAttendance: student.sessions.attendanceRate,
-    questionActivity: student.questions.frequency
+    questionActivity: student.questions.frequency,
   };
-  
+
   // Weighted risk calculation
   const riskScore = calculateWeightedRisk(factors);
   return {
     level: determineRiskLevel(riskScore),
     factors: identifyRiskFactors(factors),
-    recommendations: generateRecommendations(riskScore, factors)
+    recommendations: generateRecommendations(riskScore, factors),
   };
 }
 ```
 
 ### Intervention Effectiveness Tracking
+
 - Pre/post intervention outcome measurements
 - Student progress comparison analysis
 - Intervention strategy success rates
@@ -340,12 +366,14 @@ function calculateStudentRisk(student: StudentData): RiskAssessment {
 ## 🔮 Next Sprint Preparation
 
 ### Sprint 7 Preview
+
 - Admin dashboard and system management
 - Platform monitoring and analytics
 - User management and permissions
 - System configuration and settings
 
 ### Technical Considerations
+
 - Database performance optimization for analytics
 - Real-time data processing infrastructure
 - Advanced security for sensitive student data
@@ -354,12 +382,14 @@ function calculateStudentRisk(student: StudentData): RiskAssessment {
 ## 📝 Sprint Retrospective Focus
 
 ### Feature Effectiveness
+
 - Analytics dashboard usability and insights quality
 - Group session management workflow efficiency
 - Intervention system accuracy and timeliness
 - Collaboration tool adoption and effectiveness
 
 ### Technical Excellence
+
 - Complex data processing performance
 - Real-time system reliability
 - Mobile experience with advanced features

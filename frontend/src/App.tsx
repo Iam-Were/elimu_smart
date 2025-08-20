@@ -1,5 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { ThemeProvider } from './components/common/ThemeProvider';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingOverlay } from './components/common/LoadingOverlay';
@@ -14,6 +19,10 @@ import { ProfilePage } from './pages/ProfilePage';
 import { CareerAssessment } from './components/student/CareerAssessment';
 import { SubjectCareerMapper } from './components/student/SubjectCareerMapper';
 import { CareerGuidanceHub } from './components/student/CareerGuidanceHub';
+import { StudentsPage } from './pages/counselor/StudentsPage';
+import { QuestionsPage } from './pages/counselor/QuestionsPage';
+import { SessionsPage } from './pages/counselor/SessionsPage';
+import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -43,6 +52,10 @@ const AppContent: React.FC = () => {
         <Route path="/assessment" element={<CareerAssessment />} />
         <Route path="/subject-mapper" element={<SubjectCareerMapper />} />
         <Route path="/career-hub" element={<CareerGuidanceHub />} />
+        <Route path="/counselor/students" element={<StudentsPage />} />
+        <Route path="/counselor/questions" element={<QuestionsPage />} />
+        <Route path="/counselor/sessions" element={<SessionsPage />} />
+        <Route path="/counselor/analytics" element={<AnalyticsPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

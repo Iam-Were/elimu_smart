@@ -41,13 +41,13 @@ export const DemoModeSwitch: React.FC = () => {
     },
   ];
 
-  const handleDemoLogin = async (user: typeof demoUsers[0]) => {
+  const handleDemoLogin = async (user: (typeof demoUsers)[0]) => {
     try {
       await login({
         email: user.email,
         password: user.password,
       });
-      
+
       notifications.show({
         title: '🎭 Demo Mode Active',
         message: `Switched to ${user.name} (${user.role})`,
@@ -78,23 +78,20 @@ export const DemoModeSwitch: React.FC = () => {
           <Text fw={600} size="lg">
             Demo Mode
           </Text>
-          <Badge
-            color="blue"
-            variant="light"
-            size="sm"
-          >
+          <Badge color="blue" variant="light" size="sm">
             Development
           </Badge>
         </Group>
 
         <Text size="sm" c="dimmed">
-          Quickly switch between different user roles to explore the platform features.
+          Quickly switch between different user roles to explore the platform
+          features.
         </Text>
 
         <Divider />
 
         <Stack gap="sm">
-          {demoUsers.map((user) => (
+          {demoUsers.map(user => (
             <Button
               key={user.role}
               variant="light"
@@ -113,7 +110,8 @@ export const DemoModeSwitch: React.FC = () => {
                   {user.name}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}{' '}
+                  Dashboard
                 </Text>
               </Stack>
             </Button>

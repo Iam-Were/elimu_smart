@@ -44,7 +44,7 @@ export const useTheme = (): UseThemeReturn => {
   // Listen for system dark mode changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       // Only update if user hasn't manually set dark mode preference
       const savedDarkMode = localStorage.getItem('elimu-dark-mode');

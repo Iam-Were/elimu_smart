@@ -1,16 +1,19 @@
 # Sprint 4: Student Dashboard Enhanced (Weeks 7-8)
 
 ## 🎯 Sprint Goal
+
 Enhance the student experience with advanced features: Subject-to-Career Mapper, Career Guidance Hub, Ask Career Counselor, and rich interactive content that provides comprehensive career guidance.
 
 ## 📋 User Stories
 
 ### Epic: Advanced Student Features
+
 **As a** student user  
 **I want** access to comprehensive career guidance tools  
 **So that** I can make informed decisions about my academic and career path
 
 #### Story 4.1: Subject-to-Career Mapper (13 points)
+
 ```
 As a student
 I want to map my current subjects to potential careers
@@ -27,6 +30,7 @@ Acceptance Criteria:
 ```
 
 #### Story 4.2: Career Guidance Hub (8 points)
+
 ```
 As a student
 I want access to career resources and information
@@ -42,6 +46,7 @@ Acceptance Criteria:
 ```
 
 #### Story 4.3: Ask Career Counselor Feature (8 points)
+
 ```
 As a student
 I want to ask questions to career counselors
@@ -57,6 +62,7 @@ Acceptance Criteria:
 ```
 
 #### Story 4.4: Enhanced Dashboard Widgets (5 points)
+
 ```
 As a student
 I want more detailed insights on my dashboard
@@ -73,6 +79,7 @@ Acceptance Criteria:
 ## 🏗️ Technical Requirements
 
 ### Subject-to-Career Mapping
+
 ```typescript
 interface SubjectCombination {
   subjects: Subject[];
@@ -94,12 +101,13 @@ interface Career {
   prospects: {
     salaryRange: [number, number];
     jobGrowth: number;
-    demand: 'High' | 'Medium' | 'Low';
+    demand: "High" | "Medium" | "Low";
   };
 }
 ```
 
 ### Career Hub Data Structure
+
 ```typescript
 interface CareerSpotlight {
   id: string;
@@ -119,6 +127,7 @@ interface CareerSpotlight {
 ```
 
 ### Q&A System
+
 ```typescript
 interface Question {
   id: string;
@@ -129,13 +138,14 @@ interface Question {
   tags: string[];
   createdAt: Date;
   responses: Response[];
-  status: 'pending' | 'answered' | 'resolved';
+  status: "pending" | "answered" | "resolved";
 }
 ```
 
 ## 🎨 Design Requirements
 
 ### Subject-to-Career Mapper Interface
+
 ```
 ┌─────────────────────────────────────────┐
 │  Subject Selection                      │
@@ -154,6 +164,7 @@ interface Question {
 ```
 
 ### Career Hub Layout
+
 - Grid-based layout for career spotlights
 - Rich media integration (images, videos)
 - Interactive career pathway visualizations
@@ -161,6 +172,7 @@ interface Question {
 - Bookmark and favorites system
 
 ### Q&A Interface
+
 - Question submission form with rich text editor
 - Browse questions by category and tags
 - Real-time chat interface for live sessions
@@ -169,18 +181,21 @@ interface Question {
 ## 📊 Kenyan Education Integration
 
 ### KUCCPS Integration
+
 - Course requirement mapping
 - University program alignment
 - Cluster point calculations
 - Application deadline tracking
 
 ### Subject Combinations
+
 - Kenya Certificate of Secondary Education (KCSE) subjects
 - Career pathway requirements
 - Grade requirements for specific careers
 - Alternative pathway suggestions
 
 ### University Programs
+
 - Public and private university options
 - Course duration and requirements
 - Entry requirements and cut-off points
@@ -189,18 +204,21 @@ interface Question {
 ## 🧪 Testing Requirements
 
 ### Unit Tests
+
 - Subject-career mapping algorithms
 - Search and filtering functionality
 - Q&A submission and retrieval
 - Data visualization components
 
 ### Integration Tests
+
 - End-to-end career exploration flow
 - KUCCPS data integration
 - Real-time chat functionality
 - Notification system
 
 ### Performance Tests
+
 - Large dataset handling (careers, universities)
 - Search query performance
 - Image and media loading optimization
@@ -238,6 +256,7 @@ interface Question {
 ## 🔄 Sprint Review Criteria
 
 ### Demo Requirements
+
 - Map subjects to careers and show KUCCPS requirements
 - Browse career hub and view detailed career information
 - Submit a question and show counselor response system
@@ -245,6 +264,7 @@ interface Question {
 - Test mobile experience for all new features
 
 ### Stakeholder Questions
+
 1. Does the subject mapper provide valuable insights for students?
 2. Is the career information comprehensive and engaging?
 3. How effective is the Q&A system for student support?
@@ -254,12 +274,14 @@ interface Question {
 ## 📈 Success Metrics
 
 ### Feature Adoption
+
 - Subject mapper usage rate > 60%
 - Career hub engagement time > 5 minutes
 - Q&A submission rate > 15%
 - Dashboard return rate > 70%
 
 ### Educational Impact
+
 - Career exploration breadth (avg 8+ careers viewed)
 - Subject combination optimization usage > 40%
 - Question response satisfaction > 85%
@@ -268,12 +290,14 @@ interface Question {
 ## 🎯 Educational Value
 
 ### Career Exploration
+
 - **Comprehensive Information**: Detailed career profiles
 - **Real-World Context**: Salary data and job market trends
 - **Pathway Clarity**: Clear steps from school to career
 - **Local Relevance**: Kenya-specific requirements and opportunities
 
 ### Academic Planning
+
 - **Subject Optimization**: Best combinations for target careers
 - **University Planning**: Course and institution recommendations
 - **Timeline Planning**: Academic and career milestone tracking
@@ -282,12 +306,14 @@ interface Question {
 ## 🌍 Kenya-Specific Features
 
 ### KUCCPS Integration
+
 - Real-time course requirement updates
 - Cluster point calculations
 - University ranking and selection advice
 - Application process guidance
 
 ### Local Career Market
+
 - Kenya job market data and trends
 - Salary expectations in Kenyan context
 - Professional body requirements
@@ -296,12 +322,14 @@ interface Question {
 ## 🔮 Next Sprint Preparation
 
 ### Sprint 5 Preview
+
 - Counselor dashboard and tools
 - Student-counselor interaction features
 - Session management system
 - Analytics and reporting for counselors
 
 ### Technical Considerations
+
 - Database optimization for career data
 - Real-time communication infrastructure
 - Analytics data collection setup
@@ -310,12 +338,14 @@ interface Question {
 ## 📝 Sprint Retrospective Focus
 
 ### Feature Effectiveness
+
 - Subject mapper accuracy and usefulness
 - Career hub content quality and engagement
 - Q&A system usability and response quality
 - Dashboard enhancement impact
 
 ### Technical Excellence
+
 - Data integration success and challenges
 - Performance optimization results
 - Mobile development workflow efficiency

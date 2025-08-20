@@ -1,5 +1,8 @@
 import React from 'react';
-import { LoadingOverlay as MantineLoadingOverlay, Overlay } from '@mantine/core';
+import {
+  LoadingOverlay as MantineLoadingOverlay,
+  Overlay,
+} from '@mantine/core';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -24,7 +27,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       <MantineLoadingOverlay
         visible={visible}
         zIndex={zIndex + 1}
-        overlayProps={{ 
+        overlayProps={{
           radius: 'sm',
           blur: 2,
           backgroundOpacity: 0,

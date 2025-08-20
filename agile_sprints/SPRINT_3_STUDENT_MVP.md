@@ -1,16 +1,19 @@
 # Sprint 3: Student Dashboard MVP (Weeks 5-6)
 
 ## 🎯 Sprint Goal
+
 Create the core student dashboard experience with essential features: overview, career assessment, and basic navigation. Focus on MVP functionality that provides immediate value to students.
 
 ## 📋 User Stories
 
 ### Epic: Student Core Experience
+
 **As a** student user  
 **I want** to access my personalized dashboard  
 **So that** I can track my career guidance progress and take assessments
 
 #### Story 3.1: Student Dashboard Layout (8 points)
+
 ```
 As a student
 I want a clean, organized dashboard
@@ -26,6 +29,7 @@ Acceptance Criteria:
 ```
 
 #### Story 3.2: Career Assessment System (13 points)
+
 ```
 As a student
 I want to take career assessments
@@ -42,6 +46,7 @@ Acceptance Criteria:
 ```
 
 #### Story 3.3: Dashboard Statistics & Widgets (5 points)
+
 ```
 As a student
 I want to see my progress and achievements
@@ -56,6 +61,7 @@ Acceptance Criteria:
 ```
 
 #### Story 3.4: Profile Management (8 points)
+
 ```
 As a student
 I want to manage my profile information
@@ -73,18 +79,20 @@ Acceptance Criteria:
 ## 🏗️ Technical Requirements
 
 ### Component Architecture
+
 ```typescript
 // Core Dashboard Components
-StudentDashboard.tsx           // Main dashboard container
-DashboardStats.tsx            // Statistics overview
-CareerAssessment.tsx          // Assessment system
-AssessmentResults.tsx         // Results display
-ProfileOverview.tsx           // User profile widget
-RecentActivity.tsx            // Activity timeline
-WelcomeSection.tsx            // Personalized welcome
+StudentDashboard.tsx; // Main dashboard container
+DashboardStats.tsx; // Statistics overview
+CareerAssessment.tsx; // Assessment system
+AssessmentResults.tsx; // Results display
+ProfileOverview.tsx; // User profile widget
+RecentActivity.tsx; // Activity timeline
+WelcomeSection.tsx; // Personalized welcome
 ```
 
 ### Data Models
+
 ```typescript
 interface StudentProfile {
   id: string;
@@ -106,7 +114,7 @@ interface StudentProfile {
 
 interface AssessmentResult {
   id: string;
-  type: 'interests' | 'skills' | 'personality' | 'values';
+  type: "interests" | "skills" | "personality" | "values";
   completedAt: Date;
   score: Record<string, number>;
   recommendations: string[];
@@ -114,6 +122,7 @@ interface AssessmentResult {
 ```
 
 ### Assessment Logic
+
 - RIASEC personality model implementation
 - Career matching algorithm based on multiple factors
 - Progress tracking and persistence
@@ -122,12 +131,14 @@ interface AssessmentResult {
 ## 🎨 Design Requirements
 
 ### Orange Theme Implementation
+
 - Primary color: #f97316 (Orange 500)
 - Secondary: #fef3c7 (Orange 100)
 - Accent: #fed7aa (Orange 200)
 - Consistent theme application across all components
 
 ### Dashboard Layout
+
 ```
 ┌─────────────┬─────────────────────────────┐
 │  Sidebar    │         Header              │
@@ -143,6 +154,7 @@ interface AssessmentResult {
 ```
 
 ### Mobile-First Design
+
 - Collapsible sidebar for mobile
 - Touch-friendly buttons and forms
 - Optimized assessment interface for mobile
@@ -151,6 +163,7 @@ interface AssessmentResult {
 ## 📊 Assessment System Design
 
 ### Interest Assessment (Holland's RIASEC)
+
 - **Realistic**: Hands-on, practical activities
 - **Investigative**: Research, analysis, problem-solving
 - **Artistic**: Creative, expressive activities
@@ -159,18 +172,20 @@ interface AssessmentResult {
 - **Conventional**: Organization, data, detail work
 
 ### Skills Assessment Categories
+
 - **Academic Skills**: Math, Science, Languages
 - **Technical Skills**: Computer, Engineering, Design
 - **Social Skills**: Communication, Leadership, Teamwork
 - **Creative Skills**: Art, Music, Writing
 
 ### Career Matching Algorithm
+
 ```typescript
 function calculateCareerMatch(
   interests: RiasecScore,
   skills: SkillsScore,
   values: ValuesScore,
-  academic: AcademicInfo
+  academic: AcademicInfo,
 ): CareerMatch[] {
   // Weight factors: Interests (40%), Skills (30%), Values (20%), Academic (10%)
   // Return sorted list of career matches with percentages
@@ -180,18 +195,21 @@ function calculateCareerMatch(
 ## 🧪 Testing Requirements
 
 ### Unit Tests
+
 - Assessment scoring algorithms
 - Career matching calculations
 - Progress tracking functionality
 - Theme application correctness
 
 ### Integration Tests
+
 - Dashboard data loading and display
 - Assessment flow completion
 - Profile updates and persistence
 - Mobile navigation functionality
 
 ### User Acceptance Tests
+
 - Complete assessment journey
 - Dashboard navigation and usability
 - Profile management workflow
@@ -229,6 +247,7 @@ function calculateCareerMatch(
 ## 🔄 Sprint Review Criteria
 
 ### Demo Requirements
+
 - Complete student login and dashboard tour
 - Take one full assessment and show results
 - Demonstrate career matching and recommendations
@@ -236,6 +255,7 @@ function calculateCareerMatch(
 - Test mobile dashboard experience
 
 ### Stakeholder Questions
+
 1. Are the assessments engaging and educational?
 2. Do the career recommendations feel relevant and helpful?
 3. Is the dashboard information hierarchy clear?
@@ -245,12 +265,14 @@ function calculateCareerMatch(
 ## 📈 Success Metrics
 
 ### User Engagement
+
 - Assessment completion rate > 70%
 - Dashboard return visit rate > 60%
 - Profile completion rate > 80%
 - Mobile usage rate > 40%
 
 ### Technical Performance
+
 - Dashboard load time < 2 seconds
 - Assessment response time < 500ms
 - Mobile performance score > 90
@@ -259,12 +281,14 @@ function calculateCareerMatch(
 ## 🎯 Student Value Proposition
 
 ### Primary Benefits
+
 - **Self-Discovery**: Understand interests, skills, and values
 - **Career Guidance**: Get personalized career recommendations
 - **Progress Tracking**: See development over time
 - **Mobile Access**: Learn and assess anywhere, anytime
 
 ### Key Features
+
 - Interactive career assessments
 - Personalized dashboard with progress tracking
 - Career matching algorithm
@@ -274,12 +298,14 @@ function calculateCareerMatch(
 ## 🔮 Next Sprint Preparation
 
 ### Sprint 4 Preview
+
 - Enhanced student features (Subject-to-Career Mapper)
 - Career Guidance Hub with resources
 - Advanced dashboard widgets
 - Notification system
 
 ### Technical Debt
+
 - Assessment algorithm refinement
 - Performance optimization
 - Advanced analytics integration
@@ -288,12 +314,14 @@ function calculateCareerMatch(
 ## 📝 Sprint Retrospective Focus
 
 ### Student Experience Evaluation
+
 - Assessment engagement and completion rates
 - Dashboard usability and navigation
 - Mobile experience effectiveness
 - Career recommendation accuracy
 
 ### Development Process
+
 - Component architecture decisions
 - Testing strategy effectiveness
 - Mobile development workflow

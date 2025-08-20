@@ -14,9 +14,9 @@ import {
   SimpleGrid,
 } from '@mantine/core';
 import {
-  CompassIcon,
+  MagnifyingGlassIcon,
   TargetIcon,
-  BookOpenIcon,
+  BookmarkIcon,
   PersonIcon,
   StarIcon,
   CheckCircledIcon,
@@ -24,6 +24,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
+import { CounselorDashboard } from '../components/counselor/CounselorDashboard';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -37,18 +38,53 @@ export const DashboardPage: React.FC = () => {
     careerMatches: 12,
     profileCompletion: 75,
     recentActivity: [
-      { id: 1, action: 'Completed Interest Assessment', time: '2 hours ago', type: 'assessment' },
-      { id: 2, action: 'Updated academic information', time: '1 day ago', type: 'profile' },
-      { id: 3, action: 'Viewed Career Recommendations', time: '3 days ago', type: 'career' },
+      {
+        id: 1,
+        action: 'Completed Interest Assessment',
+        time: '2 hours ago',
+        type: 'assessment',
+      },
+      {
+        id: 2,
+        action: 'Updated academic information',
+        time: '1 day ago',
+        type: 'profile',
+      },
+      {
+        id: 3,
+        action: 'Viewed Career Recommendations',
+        time: '3 days ago',
+        type: 'career',
+      },
     ],
     upcomingEvents: [
-      { id: 1, title: 'Career Fair Registration Opens', date: 'Tomorrow', type: 'deadline' },
-      { id: 2, title: 'Skills Assessment Reminder', date: 'In 3 days', type: 'assessment' },
+      {
+        id: 1,
+        title: 'Career Fair Registration Opens',
+        date: 'Tomorrow',
+        type: 'deadline',
+      },
+      {
+        id: 2,
+        title: 'Skills Assessment Reminder',
+        date: 'In 3 days',
+        type: 'assessment',
+      },
     ],
     achievements: [
-      { id: 1, title: 'Assessment Pioneer', description: 'Completed your first assessment', unlocked: true },
-      { id: 2, title: 'Profile Master', description: 'Complete your profile 100%', unlocked: false },
-    ]
+      {
+        id: 1,
+        title: 'Assessment Pioneer',
+        description: 'Completed your first assessment',
+        unlocked: true,
+      },
+      {
+        id: 2,
+        title: 'Profile Master',
+        description: 'Complete your profile 100%',
+        unlocked: false,
+      },
+    ],
   };
 
   const getRoleDisplayName = (role: string) => {
@@ -67,7 +103,7 @@ export const DashboardPage: React.FC = () => {
     let greeting = 'Good morning';
     if (time >= 12 && time < 18) greeting = 'Good afternoon';
     else if (time >= 18) greeting = 'Good evening';
-    
+
     return `${greeting}, ${user?.firstName}!`;
   };
 
@@ -83,6 +119,10 @@ export const DashboardPage: React.FC = () => {
   };
 
   // Show different dashboard based on user role
+  if (user?.role === 'counselor' || user?.role === 'career_counselor') {
+    return <CounselorDashboard />;
+  }
+  
   if (user?.role === 'student') {
     return (
       <Container size="xl" py="md">
@@ -98,9 +138,9 @@ export const DashboardPage: React.FC = () => {
                   Ready to explore your career journey?
                 </Text>
               </Stack>
-              <Badge 
-                size="lg" 
-                variant="light" 
+              <Badge
+                size="lg"
+                variant="light"
                 color={getThemeColor()}
                 style={{
                   backgroundColor: 'var(--secondary)',
@@ -114,10 +154,10 @@ export const DashboardPage: React.FC = () => {
 
           {/* Quick Stats Overview */}
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -129,24 +169,45 @@ export const DashboardPage: React.FC = () => {
                 <RingProgress
                   size={60}
                   thickness={6}
-                  sections={[{ value: (studentStats.assessmentsCompleted / studentStats.totalAssessments) * 100, color: 'var(--primary)' }]}
+                  sections={[
+                    {
+                      value:
+                        (studentStats.assessmentsCompleted /
+                          studentStats.totalAssessments) *
+                        100,
+                      color: 'var(--primary)',
+                    },
+                  ]}
                   label={
-                    <Text ta="center" fw={700} size="xs" style={{ color: 'var(--primary)' }}>
-                      {Math.round((studentStats.assessmentsCompleted / studentStats.totalAssessments) * 100)}%
+                    <Text
+                      ta="center"
+                      fw={700}
+                      size="xs"
+                      style={{ color: 'var(--primary)' }}
+                    >
+                      {Math.round(
+                        (studentStats.assessmentsCompleted /
+                          studentStats.totalAssessments) *
+                          100
+                      )}
+                      %
                     </Text>
                   }
                 />
-                <Text fw={500} size="sm" ta="center">Assessments</Text>
+                <Text fw={500} size="sm" ta="center">
+                  Assessments
+                </Text>
                 <Text size="xs" c="dimmed" ta="center">
-                  {studentStats.assessmentsCompleted}/{studentStats.totalAssessments} completed
+                  {studentStats.assessmentsCompleted}/
+                  {studentStats.totalAssessments} completed
                 </Text>
               </Stack>
             </Card>
 
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -155,24 +216,26 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs" align="center">
-                <Title 
-                  order={2} 
+                <Title
+                  order={2}
                   size="2rem"
                   style={{ color: 'var(--primary)' }}
                 >
                   {studentStats.careerMatches}
                 </Title>
-                <Text fw={500} size="sm" ta="center">Career Matches</Text>
+                <Text fw={500} size="sm" ta="center">
+                  Career Matches
+                </Text>
                 <Text size="xs" c="dimmed" ta="center">
                   Personalized for you
                 </Text>
               </Stack>
             </Card>
 
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -184,24 +247,36 @@ export const DashboardPage: React.FC = () => {
                 <RingProgress
                   size={60}
                   thickness={6}
-                  sections={[{ value: studentStats.profileCompletion, color: 'var(--primary)' }]}
+                  sections={[
+                    {
+                      value: studentStats.profileCompletion,
+                      color: 'var(--primary)',
+                    },
+                  ]}
                   label={
-                    <Text ta="center" fw={700} size="xs" style={{ color: 'var(--primary)' }}>
+                    <Text
+                      ta="center"
+                      fw={700}
+                      size="xs"
+                      style={{ color: 'var(--primary)' }}
+                    >
                       {studentStats.profileCompletion}%
                     </Text>
                   }
                 />
-                <Text fw={500} size="sm" ta="center">Profile</Text>
+                <Text fw={500} size="sm" ta="center">
+                  Profile
+                </Text>
                 <Text size="xs" c="dimmed" ta="center">
                   Almost complete!
                 </Text>
               </Stack>
             </Card>
 
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -210,16 +285,20 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs" align="center">
-                <div style={{ 
-                  color: 'var(--primary)',
-                  fontSize: '2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <TargetIcon size={32} />
+                <div
+                  style={{
+                    color: 'var(--primary)',
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <TargetIcon width={32} height={32} />
                 </div>
-                <Text fw={500} size="sm" ta="center">Next Goal</Text>
+                <Text fw={500} size="sm" ta="center">
+                  Next Goal
+                </Text>
                 <Text size="xs" c="dimmed" ta="center">
                   Complete Skills Assessment
                 </Text>
@@ -232,9 +311,9 @@ export const DashboardPage: React.FC = () => {
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="lg">
                 {/* Quick Actions */}
-                <Card 
-                  shadow="sm" 
-                  padding="lg" 
+                <Card
+                  shadow="sm"
+                  padding="lg"
                   radius="md"
                   style={{
                     backgroundColor: 'var(--card)',
@@ -245,10 +324,12 @@ export const DashboardPage: React.FC = () => {
                   <Stack gap="md">
                     <Title order={3}>Quick Actions</Title>
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                      <Button 
+                      <Button
                         variant="light"
                         size="md"
-                        leftSection={<CompassIcon size={18} />}
+                        leftSection={
+                          <MagnifyingGlassIcon width={18} height={18} />
+                        }
                         onClick={() => navigate('/assessment')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -258,10 +339,10 @@ export const DashboardPage: React.FC = () => {
                       >
                         Take Career Assessment
                       </Button>
-                      <Button 
+                      <Button
                         variant="light"
                         size="md"
-                        leftSection={<TargetIcon size={18} />}
+                        leftSection={<TargetIcon width={18} height={18} />}
                         onClick={() => navigate('/subject-mapper')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -271,10 +352,10 @@ export const DashboardPage: React.FC = () => {
                       >
                         Subject-Career Mapper
                       </Button>
-                      <Button 
+                      <Button
                         variant="light"
                         size="md"
-                        leftSection={<PersonIcon size={18} />}
+                        leftSection={<PersonIcon width={18} height={18} />}
                         onClick={() => navigate('/profile')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -284,10 +365,10 @@ export const DashboardPage: React.FC = () => {
                       >
                         Complete Profile
                       </Button>
-                      <Button 
+                      <Button
                         variant="light"
                         size="md"
-                        leftSection={<BookOpenIcon size={18} />}
+                        leftSection={<BookmarkIcon width={18} height={18} />}
                         onClick={() => navigate('/career-hub')}
                         style={{
                           backgroundColor: 'var(--secondary)',
@@ -302,9 +383,9 @@ export const DashboardPage: React.FC = () => {
                 </Card>
 
                 {/* Recent Activity */}
-                <Card 
-                  shadow="sm" 
-                  padding="lg" 
+                <Card
+                  shadow="sm"
+                  padding="lg"
                   radius="md"
                   style={{
                     backgroundColor: 'var(--card)',
@@ -315,15 +396,22 @@ export const DashboardPage: React.FC = () => {
                   <Stack gap="md">
                     <Title order={3}>Recent Activity</Title>
                     <Stack gap="sm">
-                      {studentStats.recentActivity.map((activity) => (
+                      {studentStats.recentActivity.map(activity => (
                         <Group key={activity.id} gap="md">
                           <div style={{ color: 'var(--primary)' }}>
-                            {activity.type === 'assessment' ? <CompassIcon size={16} /> : 
-                             activity.type === 'profile' ? <PersonIcon size={16} /> : <TargetIcon size={16} />}
+                            {activity.type === 'assessment' ? (
+                              <MagnifyingGlassIcon width={16} height={16} />
+                            ) : activity.type === 'profile' ? (
+                              <PersonIcon width={16} height={16} />
+                            ) : (
+                              <TargetIcon width={16} height={16} />
+                            )}
                           </div>
                           <Stack gap={2} style={{ flex: 1 }}>
                             <Text size="sm">{activity.action}</Text>
-                            <Text size="xs" c="dimmed">{activity.time}</Text>
+                            <Text size="xs" c="dimmed">
+                              {activity.time}
+                            </Text>
                           </Stack>
                         </Group>
                       ))}
@@ -336,9 +424,9 @@ export const DashboardPage: React.FC = () => {
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Stack gap="lg">
                 {/* Upcoming Events */}
-                <Card 
-                  shadow="sm" 
-                  padding="lg" 
+                <Card
+                  shadow="sm"
+                  padding="lg"
                   radius="md"
                   style={{
                     backgroundColor: 'var(--card)',
@@ -349,21 +437,25 @@ export const DashboardPage: React.FC = () => {
                   <Stack gap="md">
                     <Title order={4}>Upcoming</Title>
                     <Stack gap="sm">
-                      {studentStats.upcomingEvents.map((event) => (
-                        <Alert 
+                      {studentStats.upcomingEvents.map(event => (
+                        <Alert
                           key={event.id}
-                          variant="light" 
+                          variant="light"
                           color={event.type === 'deadline' ? 'orange' : 'blue'}
                           styles={{
                             root: {
                               backgroundColor: 'var(--muted)',
                               borderColor: 'var(--border)',
-                            }
+                            },
                           }}
                         >
                           <Stack gap={2}>
-                            <Text size="sm" fw={500}>{event.title}</Text>
-                            <Text size="xs" c="dimmed">{event.date}</Text>
+                            <Text size="sm" fw={500}>
+                              {event.title}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {event.date}
+                            </Text>
                           </Stack>
                         </Alert>
                       ))}
@@ -372,9 +464,9 @@ export const DashboardPage: React.FC = () => {
                 </Card>
 
                 {/* Achievements */}
-                <Card 
-                  shadow="sm" 
-                  padding="lg" 
+                <Card
+                  shadow="sm"
+                  padding="lg"
                   radius="md"
                   style={{
                     backgroundColor: 'var(--card)',
@@ -385,26 +477,31 @@ export const DashboardPage: React.FC = () => {
                   <Stack gap="md">
                     <Title order={4}>Achievements</Title>
                     <Stack gap="sm">
-                      {studentStats.achievements.map((achievement) => (
+                      {studentStats.achievements.map(achievement => (
                         <Group key={achievement.id} gap="sm">
-                          <div style={{ 
-                            color: achievement.unlocked ? 'var(--success)' : 'var(--muted-foreground)',
-                            fontSize: '18px',
-                          }}>
-                            {achievement.unlocked ? <StarIcon size={18} /> : <CheckCircledIcon size={18} />}
+                          <div
+                            style={{
+                              color: achievement.unlocked
+                                ? 'var(--success)'
+                                : 'var(--muted-foreground)',
+                              fontSize: '18px',
+                            }}
+                          >
+                            {achievement.unlocked ? (
+                              <StarIcon width={18} height={18} />
+                            ) : (
+                              <CheckCircledIcon width={18} height={18} />
+                            )}
                           </div>
                           <Stack gap={2} style={{ flex: 1 }}>
-                            <Text 
-                              size="sm" 
+                            <Text
+                              size="sm"
                               fw={500}
                               c={achievement.unlocked ? undefined : 'dimmed'}
                             >
                               {achievement.title}
                             </Text>
-                            <Text 
-                              size="xs" 
-                              c="dimmed"
-                            >
+                            <Text size="xs" c="dimmed">
                               {achievement.description}
                             </Text>
                           </Stack>
@@ -434,9 +531,9 @@ export const DashboardPage: React.FC = () => {
             <Text size="lg" c="dimmed">
               Welcome to your Elimu Smart dashboard
             </Text>
-            <Badge 
-              size="lg" 
-              variant="light" 
+            <Badge
+              size="lg"
+              variant="light"
               color={getThemeColor()}
               style={{
                 backgroundColor: 'var(--secondary)',
@@ -449,23 +546,24 @@ export const DashboardPage: React.FC = () => {
         </Stack>
 
         {/* Role-specific content coming in future sprints */}
-        <Alert 
-          color={getThemeColor()} 
-          title={`${getRoleDisplayName(user?.role || '')} Dashboard Coming Soon!`} 
+        <Alert
+          color={getThemeColor()}
+          title={`${getRoleDisplayName(user?.role || '')} Dashboard Coming Soon!`}
           variant="light"
         >
           <Text size="sm">
-            Your personalized {user?.role} dashboard will be available in upcoming sprints.
+            Your personalized {user?.role} dashboard will be available in
+            upcoming sprints.
           </Text>
         </Alert>
 
         {/* Development Status */}
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -474,11 +572,10 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs">
-                <Text fw={500} size="lg">Current Sprint</Text>
-                <Title 
-                  order={2} 
-                  style={{ color: 'var(--primary)' }}
-                >
+                <Text fw={500} size="lg">
+                  Current Sprint
+                </Text>
+                <Title order={2} style={{ color: 'var(--primary)' }}>
                   Sprint 3
                 </Title>
                 <Text size="sm" c="dimmed">
@@ -489,10 +586,10 @@ export const DashboardPage: React.FC = () => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -501,11 +598,10 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs">
-                <Text fw={500} size="lg">Theme</Text>
-                <Title 
-                  order={2} 
-                  style={{ color: 'var(--primary)' }}
-                >
+                <Text fw={500} size="lg">
+                  Theme
+                </Text>
+                <Title order={2} style={{ color: 'var(--primary)' }}>
                   {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}
                 </Title>
                 <Text size="sm" c="dimmed">
@@ -516,10 +612,10 @@ export const DashboardPage: React.FC = () => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card 
-              shadow="sm" 
-              padding="lg" 
-              radius="md" 
+            <Card
+              shadow="sm"
+              padding="lg"
+              radius="md"
               className="hover-lift theme-transition"
               style={{
                 backgroundColor: 'var(--card)',
@@ -528,11 +624,10 @@ export const DashboardPage: React.FC = () => {
               }}
             >
               <Stack gap="xs">
-                <Text fw={500} size="lg">User Role</Text>
-                <Title 
-                  order={2} 
-                  style={{ color: 'var(--primary)' }}
-                >
+                <Text fw={500} size="lg">
+                  User Role
+                </Text>
+                <Title order={2} style={{ color: 'var(--primary)' }}>
                   {user?.role && getRoleDisplayName(user.role)}
                 </Title>
                 <Text size="sm" c="dimmed">

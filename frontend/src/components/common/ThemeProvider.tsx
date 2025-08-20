@@ -5,7 +5,6 @@ import { getMantineProviderProps } from '../../theme/mantineTheme';
 import { useTheme } from '../../hooks/useTheme';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
-
 interface ThemeProviderProps {
   children: ReactNode;
 }
@@ -21,7 +20,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={themeHook}>
-      <MantineProvider 
+      <MantineProvider
         theme={mantineTheme}
         defaultColorScheme={colorScheme}
         forceColorScheme={colorScheme}

@@ -16,12 +16,12 @@ import {
   ScrollArea,
 } from '@mantine/core';
 import {
-  BookOpenIcon,
+  ReaderIcon,
   TargetIcon,
   CheckIcon,
   CrossCircledIcon,
   StarIcon,
-  TrendingUpIcon,
+  BarChartIcon,
   InfoCircledIcon,
 } from '@radix-ui/react-icons';
 import { notifications } from '@mantine/notifications';
@@ -86,74 +86,90 @@ const careerDatabase: Career[] = [
   {
     id: 'medicine',
     title: 'Medical Doctor',
-    description: 'Diagnose and treat illnesses, injuries, and other health conditions.',
+    description:
+      'Diagnose and treat illnesses, injuries, and other health conditions.',
     matchPercentage: 95,
     requirements: {
       subjects: ['biology', 'chemistry', 'physics', 'mathematics'],
-      minGrades: { biology: 'A-', chemistry: 'A-', physics: 'B+', mathematics: 'B+' }
+      minGrades: {
+        biology: 'A-',
+        chemistry: 'A-',
+        physics: 'B+',
+        mathematics: 'B+',
+      },
     },
     prospects: {
       salaryRange: [150000, 800000],
       jobGrowth: 15,
-      demand: 'High'
+      demand: 'High',
     },
     universities: ['University of Nairobi', 'Moi University', 'JKUAT', 'KU'],
     kuccpsCluster: 'Cluster 1',
-    pathways: ['Medical School → Internship → Specialization → Practice']
+    pathways: ['Medical School → Internship → Specialization → Practice'],
   },
   {
     id: 'engineering',
     title: 'Engineering',
-    description: 'Design, build, and maintain structures, machines, and systems.',
+    description:
+      'Design, build, and maintain structures, machines, and systems.',
     matchPercentage: 88,
     requirements: {
       subjects: ['mathematics', 'physics', 'chemistry'],
-      minGrades: { mathematics: 'A-', physics: 'B+', chemistry: 'B+' }
+      minGrades: { mathematics: 'A-', physics: 'B+', chemistry: 'B+' },
     },
     prospects: {
       salaryRange: [80000, 300000],
       jobGrowth: 12,
-      demand: 'High'
+      demand: 'High',
     },
     universities: ['University of Nairobi', 'JKUAT', 'Moi University', 'TU-K'],
     kuccpsCluster: 'Cluster 2',
-    pathways: ['Engineering Degree → Professional Training → Licensure → Practice']
+    pathways: [
+      'Engineering Degree → Professional Training → Licensure → Practice',
+    ],
   },
   {
     id: 'computer_science',
     title: 'Computer Science & IT',
-    description: 'Develop software, manage systems, and solve computational problems.',
+    description:
+      'Develop software, manage systems, and solve computational problems.',
     matchPercentage: 92,
     requirements: {
       subjects: ['mathematics', 'physics', 'computer'],
-      minGrades: { mathematics: 'B+', physics: 'B', computer: 'A-' }
+      minGrades: { mathematics: 'B+', physics: 'B', computer: 'A-' },
     },
     prospects: {
       salaryRange: [60000, 400000],
       jobGrowth: 25,
-      demand: 'High'
+      demand: 'High',
     },
-    universities: ['University of Nairobi', 'JKUAT', 'Strathmore', 'KCA University'],
+    universities: [
+      'University of Nairobi',
+      'JKUAT',
+      'Strathmore',
+      'KCA University',
+    ],
     kuccpsCluster: 'Cluster 2',
-    pathways: ['CS Degree → Internship → Junior Developer → Senior → Lead']
+    pathways: ['CS Degree → Internship → Junior Developer → Senior → Lead'],
   },
   {
     id: 'business',
     title: 'Business & Management',
-    description: 'Lead organizations, manage resources, and drive business growth.',
+    description:
+      'Lead organizations, manage resources, and drive business growth.',
     matchPercentage: 75,
     requirements: {
       subjects: ['mathematics', 'business', 'english'],
-      minGrades: { mathematics: 'B', business: 'B+', english: 'B+' }
+      minGrades: { mathematics: 'B', business: 'B+', english: 'B+' },
     },
     prospects: {
       salaryRange: [50000, 500000],
       jobGrowth: 8,
-      demand: 'Medium'
+      demand: 'Medium',
     },
     universities: ['University of Nairobi', 'Strathmore', 'USIU', 'KU'],
     kuccpsCluster: 'Cluster 3',
-    pathways: ['Business Degree → Entry Level → Management → Executive']
+    pathways: ['Business Degree → Entry Level → Management → Executive'],
   },
   {
     id: 'education',
@@ -162,21 +178,31 @@ const careerDatabase: Career[] = [
     matchPercentage: 82,
     requirements: {
       subjects: ['english', 'kiswahili', 'mathematics'],
-      minGrades: { english: 'B+', kiswahili: 'B', mathematics: 'B' }
+      minGrades: { english: 'B+', kiswahili: 'B', mathematics: 'B' },
     },
     prospects: {
       salaryRange: [35000, 150000],
       jobGrowth: 5,
-      demand: 'Medium'
+      demand: 'Medium',
     },
-    universities: ['Kenyatta University', 'Moi University', 'Egerton University'],
+    universities: [
+      'Kenyatta University',
+      'Moi University',
+      'Egerton University',
+    ],
     kuccpsCluster: 'Cluster 4',
-    pathways: ['Education Degree → Teaching Practice → Teacher Registration → Career Growth']
-  }
+    pathways: [
+      'Education Degree → Teaching Practice → Teacher Registration → Career Growth',
+    ],
+  },
 ];
 
 export const SubjectCareerMapper: React.FC = () => {
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['english', 'kiswahili', 'mathematics']); // Core subjects pre-selected
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([
+    'english',
+    'kiswahili',
+    'mathematics',
+  ]); // Core subjects pre-selected
   const [activeTab, setActiveTab] = useState<string | null>('subjects');
 
   const toggleSubject = (subjectId: string) => {
@@ -190,26 +216,33 @@ export const SubjectCareerMapper: React.FC = () => {
       return;
     }
 
-    setSelectedSubjects(prev => 
-      prev.includes(subjectId) 
+    setSelectedSubjects(prev =>
+      prev.includes(subjectId)
         ? prev.filter(id => id !== subjectId)
         : [...prev, subjectId]
     );
   };
 
   const getMatchingCareers = () => {
-    return careerDatabase.map(career => {
-      const requiredSubjects = career.requirements.subjects;
-      const matchingSubjects = requiredSubjects.filter(req => selectedSubjects.includes(req));
-      const matchPercentage = (matchingSubjects.length / requiredSubjects.length) * 100;
-      
-      return {
-        ...career,
-        matchPercentage: Math.round(matchPercentage),
-        matchingSubjects,
-        missingSubjects: requiredSubjects.filter(req => !selectedSubjects.includes(req))
-      };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+    return careerDatabase
+      .map(career => {
+        const requiredSubjects = career.requirements.subjects;
+        const matchingSubjects = requiredSubjects.filter(req =>
+          selectedSubjects.includes(req)
+        );
+        const matchPercentage =
+          (matchingSubjects.length / requiredSubjects.length) * 100;
+
+        return {
+          ...career,
+          matchPercentage: Math.round(matchPercentage),
+          matchingSubjects,
+          missingSubjects: requiredSubjects.filter(
+            req => !selectedSubjects.includes(req)
+          ),
+        };
+      })
+      .sort((a, b) => b.matchPercentage - a.matchPercentage);
   };
 
   const getSubjectsByCategory = () => {
@@ -225,10 +258,14 @@ export const SubjectCareerMapper: React.FC = () => {
 
   const getDemandColor = (demand: string) => {
     switch (demand) {
-      case 'High': return 'green';
-      case 'Medium': return 'yellow';
-      case 'Low': return 'red';
-      default: return 'gray';
+      case 'High':
+        return 'green';
+      case 'Medium':
+        return 'yellow';
+      case 'Low':
+        return 'red';
+      default:
+        return 'gray';
     }
   };
 
@@ -244,7 +281,9 @@ export const SubjectCareerMapper: React.FC = () => {
       <Stack gap="lg">
         {/* Header */}
         <Stack gap="sm">
-          <Title order={1} size="2rem">Subject-to-Career Mapper</Title>
+          <Title order={1} size="2rem">
+            Subject-to-Career Mapper
+          </Title>
           <Text size="lg" c="dimmed">
             Discover career paths based on your KCSE subject combination
           </Text>
@@ -252,11 +291,18 @@ export const SubjectCareerMapper: React.FC = () => {
 
         <Tabs value={activeTab} onChange={setActiveTab}>
           <Tabs.List>
-            <Tabs.Tab value="subjects" leftSection={<BookOpenIcon size={16} />}>
+            <Tabs.Tab
+              value="subjects"
+              leftSection={<ReaderIcon width={16} height={16} />}
+            >
               Select Subjects
             </Tabs.Tab>
-            <Tabs.Tab value="careers" leftSection={<TargetIcon size={16} />}>
-              Career Matches ({matchingCareers.filter(c => c.matchPercentage > 0).length})
+            <Tabs.Tab
+              value="careers"
+              leftSection={<TargetIcon width={16} height={16} />}
+            >
+              Career Matches (
+              {matchingCareers.filter(c => c.matchPercentage > 0).length})
             </Tabs.Tab>
           </Tabs.List>
 
@@ -265,12 +311,16 @@ export const SubjectCareerMapper: React.FC = () => {
               {/* Current Selection Summary */}
               <Alert color="blue" variant="light">
                 <Group gap="xs">
-                  <Text fw={500}>Selected Subjects ({selectedSubjects.length}):</Text>
+                  <Text fw={500}>
+                    Selected Subjects ({selectedSubjects.length}):
+                  </Text>
                   {selectedSubjects.map(subjectId => {
-                    const subject = availableSubjects.find(s => s.id === subjectId);
+                    const subject = availableSubjects.find(
+                      s => s.id === subjectId
+                    );
                     return (
-                      <Badge 
-                        key={subjectId} 
+                      <Badge
+                        key={subjectId}
                         color={subject?.required ? 'orange' : 'blue'}
                         variant="light"
                       >
@@ -283,41 +333,67 @@ export const SubjectCareerMapper: React.FC = () => {
 
               {/* Subject Categories */}
               <Stack gap="md">
-                {Object.entries(subjectCategories).map(([categoryName, subjects]) => (
-                  <Card key={categoryName} shadow="sm" padding="lg" radius="md">
-                    <Stack gap="md">
-                      <Title order={4} style={{ color: 'var(--primary)' }}>
-                        {categoryName.charAt(0).toUpperCase() + categoryName.slice(1)} Subjects
-                        {categoryName === 'core' && <Badge size="sm" color="orange" ml="xs">Mandatory</Badge>}
-                      </Title>
-                      
-                      <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="sm">
-                        {subjects.map(subject => (
-                          <Button
-                            key={subject.id}
-                            variant={selectedSubjects.includes(subject.id) ? "filled" : "light"}
-                            color={subject.required ? "orange" : "blue"}
-                            size="sm"
-                            onClick={() => toggleSubject(subject.id)}
-                            style={{
-                              backgroundColor: selectedSubjects.includes(subject.id) 
-                                ? (subject.required ? 'var(--primary)' : 'var(--primary)')
-                                : 'var(--secondary)',
-                              color: selectedSubjects.includes(subject.id) 
-                                ? 'var(--primary-foreground)' 
-                                : 'var(--secondary-foreground)',
-                              cursor: subject.required ? 'not-allowed' : 'pointer',
-                              opacity: subject.required ? 0.8 : 1,
-                            }}
-                            disabled={subject.required}
-                          >
-                            {subject.name}
-                          </Button>
-                        ))}
-                      </SimpleGrid>
-                    </Stack>
-                  </Card>
-                ))}
+                {Object.entries(subjectCategories).map(
+                  ([categoryName, subjects]) => (
+                    <Card
+                      key={categoryName}
+                      shadow="sm"
+                      padding="lg"
+                      radius="md"
+                    >
+                      <Stack gap="md">
+                        <Title order={4} style={{ color: 'var(--primary)' }}>
+                          {categoryName.charAt(0).toUpperCase() +
+                            categoryName.slice(1)}{' '}
+                          Subjects
+                          {categoryName === 'core' && (
+                            <Badge size="sm" color="orange" ml="xs">
+                              Mandatory
+                            </Badge>
+                          )}
+                        </Title>
+
+                        <SimpleGrid
+                          cols={{ base: 2, sm: 3, md: 4 }}
+                          spacing="sm"
+                        >
+                          {subjects.map(subject => (
+                            <Button
+                              key={subject.id}
+                              variant={
+                                selectedSubjects.includes(subject.id)
+                                  ? 'filled'
+                                  : 'light'
+                              }
+                              color={subject.required ? 'orange' : 'blue'}
+                              size="sm"
+                              onClick={() => toggleSubject(subject.id)}
+                              style={{
+                                backgroundColor: selectedSubjects.includes(
+                                  subject.id
+                                )
+                                  ? subject.required
+                                    ? 'var(--primary)'
+                                    : 'var(--primary)'
+                                  : 'var(--secondary)',
+                                color: selectedSubjects.includes(subject.id)
+                                  ? 'var(--primary-foreground)'
+                                  : 'var(--secondary-foreground)',
+                                cursor: subject.required
+                                  ? 'not-allowed'
+                                  : 'pointer',
+                                opacity: subject.required ? 0.8 : 1,
+                              }}
+                              disabled={subject.required}
+                            >
+                              {subject.name}
+                            </Button>
+                          ))}
+                        </SimpleGrid>
+                      </Stack>
+                    </Card>
+                  )
+                )}
               </Stack>
             </Stack>
           </Tabs.Panel>
@@ -329,17 +405,18 @@ export const SubjectCareerMapper: React.FC = () => {
                   Career Matches for Your Subject Combination
                 </Text>
                 <Badge size="lg" color="blue" variant="light">
-                  {matchingCareers.filter(c => c.matchPercentage > 50).length} Strong Matches
+                  {matchingCareers.filter(c => c.matchPercentage > 50).length}{' '}
+                  Strong Matches
                 </Badge>
               </Group>
 
               <ScrollArea style={{ height: 600 }}>
                 <Stack gap="md">
                   {matchingCareers.map(career => (
-                    <Card 
-                      key={career.id} 
-                      shadow="sm" 
-                      padding="lg" 
+                    <Card
+                      key={career.id}
+                      shadow="sm"
+                      padding="lg"
                       radius="md"
                       style={{
                         opacity: career.matchPercentage < 25 ? 0.6 : 1,
@@ -350,12 +427,21 @@ export const SubjectCareerMapper: React.FC = () => {
                         <Group justify="space-between" align="flex-start">
                           <Stack gap="xs">
                             <Group gap="sm">
-                              <Title order={3} style={{ color: 'var(--primary)' }}>
+                              <Title
+                                order={3}
+                                style={{ color: 'var(--primary)' }}
+                              >
                                 {career.title}
                               </Title>
-                              <Badge 
-                                size="lg" 
-                                color={career.matchPercentage >= 80 ? 'green' : career.matchPercentage >= 60 ? 'yellow' : 'red'}
+                              <Badge
+                                size="lg"
+                                color={
+                                  career.matchPercentage >= 80
+                                    ? 'green'
+                                    : career.matchPercentage >= 60
+                                      ? 'yellow'
+                                      : 'red'
+                                }
                                 variant="light"
                               >
                                 {career.matchPercentage}% Match
@@ -365,28 +451,49 @@ export const SubjectCareerMapper: React.FC = () => {
                           </Stack>
                         </Group>
 
-                        <Progress 
-                          value={career.matchPercentage} 
-                          color={career.matchPercentage >= 80 ? 'green' : career.matchPercentage >= 60 ? 'yellow' : 'red'}
+                        <Progress
+                          value={career.matchPercentage}
+                          color={
+                            career.matchPercentage >= 80
+                              ? 'green'
+                              : career.matchPercentage >= 60
+                                ? 'yellow'
+                                : 'red'
+                          }
                           size="md"
                         />
 
                         {/* Requirements */}
                         <Stack gap="sm">
-                          <Text fw={500} size="sm">Subject Requirements:</Text>
+                          <Text fw={500} size="sm">
+                            Subject Requirements:
+                          </Text>
                           <Group gap="xs">
                             {career.requirements.subjects.map(subjectId => {
-                              const subject = availableSubjects.find(s => s.id === subjectId);
-                              const isSelected = selectedSubjects.includes(subjectId);
-                              const grade = career.requirements.minGrades[subjectId];
-                              
+                              const subject = availableSubjects.find(
+                                s => s.id === subjectId
+                              );
+                              const isSelected =
+                                selectedSubjects.includes(subjectId);
+                              const grade =
+                                career.requirements.minGrades[subjectId];
+
                               return (
-                                <Badge 
-                                  key={subjectId} 
+                                <Badge
+                                  key={subjectId}
                                   color={isSelected ? 'green' : 'red'}
                                   variant="light"
                                   size="sm"
-                                  leftSection={isSelected ? <CheckIcon size={12} /> : <CrossCircledIcon size={12} />}
+                                  leftSection={
+                                    isSelected ? (
+                                      <CheckIcon width={12} height={12} />
+                                    ) : (
+                                      <CrossCircledIcon
+                                        width={12}
+                                        height={12}
+                                      />
+                                    )
+                                  }
                                 >
                                   {subject?.name} ({grade})
                                 </Badge>
@@ -400,26 +507,45 @@ export const SubjectCareerMapper: React.FC = () => {
                         {/* Career Details */}
                         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
                           <Stack gap="xs">
-                            <Text fw={500} size="sm">Salary Range</Text>
+                            <Text fw={500} size="sm">
+                              Salary Range
+                            </Text>
                             <Text size="sm" style={{ color: 'var(--primary)' }}>
                               {formatSalary(career.prospects.salaryRange)}
                             </Text>
                           </Stack>
-                          
+
                           <Stack gap="xs">
-                            <Text fw={500} size="sm">Job Market</Text>
+                            <Text fw={500} size="sm">
+                              Job Market
+                            </Text>
                             <Group gap="xs">
-                              <Badge color={getDemandColor(career.prospects.demand)} size="sm" leftSection={<StarIcon size={12} />}>
+                              <Badge
+                                color={getDemandColor(career.prospects.demand)}
+                                size="sm"
+                                leftSection={
+                                  <StarIcon width={12} height={12} />
+                                }
+                              >
                                 {career.prospects.demand} Demand
                               </Badge>
-                              <Badge color="blue" variant="light" size="sm" leftSection={<TrendingUpIcon size={12} />}>
+                              <Badge
+                                color="blue"
+                                variant="light"
+                                size="sm"
+                                leftSection={
+                                  <BarChartIcon width={12} height={12} />
+                                }
+                              >
                                 +{career.prospects.jobGrowth}% growth
                               </Badge>
                             </Group>
                           </Stack>
 
                           <Stack gap="xs">
-                            <Text fw={500} size="sm">KUCCPS Cluster</Text>
+                            <Text fw={500} size="sm">
+                              KUCCPS Cluster
+                            </Text>
                             <Badge color="blue" variant="light" size="sm">
                               {career.kuccpsCluster}
                             </Badge>
@@ -428,10 +554,17 @@ export const SubjectCareerMapper: React.FC = () => {
 
                         {/* Universities */}
                         <Stack gap="xs">
-                          <Text fw={500} size="sm">Universities Offering This Program:</Text>
+                          <Text fw={500} size="sm">
+                            Universities Offering This Program:
+                          </Text>
                           <Group gap="xs">
                             {career.universities.slice(0, 4).map(university => (
-                              <Badge key={university} color="gray" variant="light" size="sm">
+                              <Badge
+                                key={university}
+                                color="gray"
+                                variant="light"
+                                size="sm"
+                              >
                                 {university}
                               </Badge>
                             ))}
@@ -444,13 +577,21 @@ export const SubjectCareerMapper: React.FC = () => {
                         </Stack>
 
                         {career.matchPercentage < 50 && (
-                          <Alert color="orange" variant="light" icon={<InfoCircledIcon />}>
+                          <Alert
+                            color="orange"
+                            variant="light"
+                            icon={<InfoCircledIcon />}
+                          >
                             <Text size="sm">
                               <strong>Missing subjects:</strong> Consider adding{' '}
-                              {career.missingSubjects?.map(subjectId => {
-                                const subject = availableSubjects.find(s => s.id === subjectId);
-                                return subject?.name;
-                              }).join(', ')}{' '}
+                              {career.missingSubjects
+                                ?.map(subjectId => {
+                                  const subject = availableSubjects.find(
+                                    s => s.id === subjectId
+                                  );
+                                  return subject?.name;
+                                })
+                                .join(', ')}{' '}
                               to improve your match for this career.
                             </Text>
                           </Alert>

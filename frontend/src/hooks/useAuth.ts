@@ -6,9 +6,12 @@ const mockAuthService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
     // Simulate API delay - reduced for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Mock validation
-    if (credentials.email === 'admin@elimu.com' && credentials.password === 'admin') {
+    if (
+      credentials.email === 'admin@elimu.com' &&
+      credentials.password === 'admin'
+    ) {
       return {
         id: '1',
         email: credentials.email,
@@ -19,7 +22,10 @@ const mockAuthService = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-    } else if (credentials.email === 'counselor@elimu.com' && credentials.password === 'counselor') {
+    } else if (
+      credentials.email === 'counselor@elimu.com' &&
+      credentials.password === 'counselor'
+    ) {
       return {
         id: '2',
         email: credentials.email,
@@ -30,7 +36,10 @@ const mockAuthService = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-    } else if (credentials.email === 'student@elimu.com' && credentials.password === 'student') {
+    } else if (
+      credentials.email === 'student@elimu.com' &&
+      credentials.password === 'student'
+    ) {
       return {
         id: '3',
         email: credentials.email,
@@ -42,14 +51,14 @@ const mockAuthService = {
         updatedAt: new Date().toISOString(),
       };
     }
-    
+
     throw new Error('Invalid email or password');
   },
 
   register: async (data: RegisterData): Promise<User> => {
     // Simulate API delay - reduced for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Mock user creation
     return {
       id: Date.now().toString(),
@@ -105,7 +114,8 @@ export const useAuth = () => {
           user: null,
           isAuthenticated: false,
           isLoading: false,
-          error: error instanceof Error ? error.message : 'Authentication failed',
+          error:
+            error instanceof Error ? error.message : 'Authentication failed',
         });
       }
     };
@@ -115,24 +125,25 @@ export const useAuth = () => {
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const user = await mockAuthService.login(credentials);
-      
+
       // Store auth data
       localStorage.setItem('elimu-auth-token', 'mock-token');
       localStorage.setItem('elimu-user', JSON.stringify(user));
-      
+
       setAuthState({
         user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
-      
+
       return user;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Login failed';
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
@@ -144,24 +155,25 @@ export const useAuth = () => {
 
   const register = useCallback(async (data: RegisterData) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const user = await mockAuthService.register(data);
-      
+
       // Store auth data
       localStorage.setItem('elimu-auth-token', 'mock-token');
       localStorage.setItem('elimu-user', JSON.stringify(user));
-      
+
       setAuthState({
         user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
-      
+
       return user;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Registration failed';
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
@@ -173,14 +185,14 @@ export const useAuth = () => {
 
   const logout = useCallback(async () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       await mockAuthService.logout();
-      
+
       // Clear auth data
       localStorage.removeItem('elimu-auth-token');
       localStorage.removeItem('elimu-user');
-      
+
       setAuthState({
         user: null,
         isAuthenticated: false,

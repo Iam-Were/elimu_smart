@@ -36,7 +36,7 @@ const requirements = [
 function getStrength(password: string): number {
   let multiplier = password.length > 5 ? 0 : 1;
 
-  requirements.forEach((requirement) => {
+  requirements.forEach(requirement => {
     if (!requirement.re.test(password)) {
       multiplier += 1;
     }
@@ -76,22 +76,24 @@ export const RegisterPage: React.FC = () => {
       role: 'student',
     },
     validate: {
-      firstName: (value) => 
+      firstName: value =>
         value.length < 2 ? 'First name must have at least 2 characters' : null,
-      lastName: (value) => 
+      lastName: value =>
         value.length < 2 ? 'Last name must have at least 2 characters' : null,
-      email: (value) => 
+      email: value =>
         /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
-      password: (value) => {
+      password: value => {
         if (value.length < 8) return 'Password must be at least 8 characters';
-        if (!/[A-Z]/.test(value)) return 'Password must include uppercase letter';
-        if (!/[a-z]/.test(value)) return 'Password must include lowercase letter';
+        if (!/[A-Z]/.test(value))
+          return 'Password must include uppercase letter';
+        if (!/[a-z]/.test(value))
+          return 'Password must include lowercase letter';
         if (!/[0-9]/.test(value)) return 'Password must include a number';
-        if (!/[$&+,:;=?@#|'<>.^*()%!-]/.test(value)) return 'Password must include special character';
+        if (!/[$&+,:;=?@#|'<>.^*()%!-]/.test(value))
+          return 'Password must include special character';
         return null;
       },
-      role: (value) => 
-        !value ? 'Please select a role' : null,
+      role: value => (!value ? 'Please select a role' : null),
     },
   });
 
@@ -115,10 +117,10 @@ export const RegisterPage: React.FC = () => {
   const strength = getStrength(password);
   const color = strength === 100 ? 'teal' : strength > 50 ? 'yellow' : 'red';
   const checks = requirements.map((requirement, index) => (
-    <PasswordRequirement 
-      key={index} 
-      label={requirement.label} 
-      meets={requirement.re.test(password)} 
+    <PasswordRequirement
+      key={index}
+      label={requirement.label}
+      meets={requirement.re.test(password)}
     />
   ));
 
@@ -175,7 +177,7 @@ export const RegisterPage: React.FC = () => {
               placeholder="Create a strong password"
               required
               value={password}
-              onChange={(event) => {
+              onChange={event => {
                 setPassword(event.currentTarget.value);
                 form.setFieldValue('password', event.currentTarget.value);
               }}
@@ -189,7 +191,13 @@ export const RegisterPage: React.FC = () => {
                     Password strength
                   </Text>
                   <Text size="sm" c={color} fw={500}>
-                    {strength < 30 ? 'Weak' : strength < 70 ? 'Fair' : strength < 100 ? 'Good' : 'Strong'}
+                    {strength < 30
+                      ? 'Weak'
+                      : strength < 70
+                        ? 'Fair'
+                        : strength < 100
+                          ? 'Good'
+                          : 'Strong'}
                   </Text>
                 </Group>
                 <Progress color={color} value={strength} size="sm" />
@@ -226,7 +234,7 @@ export const RegisterPage: React.FC = () => {
             Already have an account?{' '}
             <Anchor
               onClick={() => navigate('/login')}
-              style={{ 
+              style={{
                 color: 'var(--primary)',
                 cursor: 'pointer',
                 textDecoration: 'none',
@@ -238,9 +246,13 @@ export const RegisterPage: React.FC = () => {
 
           <Text ta="center" size="xs" c="dimmed" mt="md">
             By creating an account, you agree to our{' '}
-            <Anchor href="#" size="xs">Terms of Service</Anchor>
-            {' '}and{' '}
-            <Anchor href="#" size="xs">Privacy Policy</Anchor>
+            <Anchor href="#" size="xs">
+              Terms of Service
+            </Anchor>{' '}
+            and{' '}
+            <Anchor href="#" size="xs">
+              Privacy Policy
+            </Anchor>
           </Text>
         </Stack>
       </form>

@@ -11,7 +11,12 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'student' | 'counselor' | 'career_counselor' | 'admin' | 'super_admin';
+export type UserRole =
+  | 'student'
+  | 'counselor'
+  | 'career_counselor'
+  | 'admin'
+  | 'super_admin';
 
 // Theme Types
 export type ThemeRole = 'student' | 'counselor' | 'admin';
@@ -93,7 +98,7 @@ export interface FormField {
   type: 'text' | 'email' | 'password' | 'number' | 'select' | 'textarea';
   required?: boolean;
   placeholder?: string;
-  options?: { value: string; label: string; }[];
+  options?: { value: string; label: string }[];
   validation?: {
     min?: number;
     max?: number;

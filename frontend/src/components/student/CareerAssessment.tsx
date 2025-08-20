@@ -40,42 +40,42 @@ const assessmentQuestions: AssessmentQuestion[] = [
     type: 'interests',
     category: 'Realistic',
     question: 'I enjoy working with my hands to build or repair things',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'i2',
     type: 'interests',
     category: 'Investigative',
     question: 'I like solving complex problems and conducting research',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'i3',
     type: 'interests',
     category: 'Artistic',
     question: 'I enjoy creative activities like art, music, or writing',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'i4',
     type: 'interests',
     category: 'Social',
     question: 'I like helping and teaching other people',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'i5',
     type: 'interests',
     category: 'Enterprising',
     question: 'I enjoy leading teams and making business decisions',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'i6',
     type: 'interests',
     category: 'Conventional',
     question: 'I prefer organized, systematic work with clear procedures',
-    scale: 'agreement'
+    scale: 'agreement',
   },
 
   // Skills Assessment
@@ -84,28 +84,28 @@ const assessmentQuestions: AssessmentQuestion[] = [
     type: 'skills',
     category: 'Academic',
     question: 'How would you rate your mathematical skills?',
-    scale: 'rating'
+    scale: 'rating',
   },
   {
     id: 's2',
     type: 'skills',
     category: 'Technical',
     question: 'How comfortable are you with computer technology?',
-    scale: 'rating'
+    scale: 'rating',
   },
   {
     id: 's3',
     type: 'skills',
     category: 'Social',
     question: 'How would you rate your communication skills?',
-    scale: 'rating'
+    scale: 'rating',
   },
   {
     id: 's4',
     type: 'skills',
     category: 'Creative',
     question: 'How would you rate your creative problem-solving abilities?',
-    scale: 'rating'
+    scale: 'rating',
   },
 
   // Personality Assessment (RIASEC)
@@ -114,14 +114,14 @@ const assessmentQuestions: AssessmentQuestion[] = [
     type: 'personality',
     category: 'Work Style',
     question: 'I prefer working independently rather than in teams',
-    scale: 'agreement'
+    scale: 'agreement',
   },
   {
     id: 'p2',
     type: 'personality',
     category: 'Work Environment',
     question: 'I thrive in fast-paced, dynamic environments',
-    scale: 'agreement'
+    scale: 'agreement',
   },
 
   // Values Assessment
@@ -130,14 +130,14 @@ const assessmentQuestions: AssessmentQuestion[] = [
     type: 'values',
     category: 'Work Values',
     question: 'How important is job security to you?',
-    scale: 'rating'
+    scale: 'rating',
   },
   {
     id: 'v2',
     type: 'values',
     category: 'Work Values',
     question: 'How important is helping others through your work?',
-    scale: 'rating'
+    scale: 'rating',
   },
 ];
 
@@ -153,7 +153,8 @@ export const CareerAssessment: React.FC = () => {
   const [currentResponse, setCurrentResponse] = useState<number | null>(null);
 
   const currentQuestion = assessmentQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / assessmentQuestions.length) * 100;
+  const progress =
+    ((currentQuestionIndex + 1) / assessmentQuestions.length) * 100;
 
   const handleResponse = (value: number) => {
     setCurrentResponse(value);
@@ -175,7 +176,10 @@ export const CareerAssessment: React.FC = () => {
       value: currentResponse,
     };
 
-    setResponses(prev => [...prev.filter(r => r.questionId !== currentQuestion.id), newResponse]);
+    setResponses(prev => [
+      ...prev.filter(r => r.questionId !== currentQuestion.id),
+      newResponse,
+    ]);
 
     // Move to next question or complete
     if (currentQuestionIndex < assessmentQuestions.length - 1) {
@@ -195,7 +199,9 @@ export const CareerAssessment: React.FC = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
       // Load previous response if it exists
-      const prevResponse = responses.find(r => r.questionId === assessmentQuestions[currentQuestionIndex - 1].id);
+      const prevResponse = responses.find(
+        r => r.questionId === assessmentQuestions[currentQuestionIndex - 1].id
+      );
       setCurrentResponse(prevResponse?.value || null);
     }
   };
@@ -204,7 +210,10 @@ export const CareerAssessment: React.FC = () => {
     switch (currentQuestion.scale) {
       case 'agreement':
         return (
-          <Radio.Group value={currentResponse?.toString() || ''} onChange={(value) => handleResponse(parseInt(value))}>
+          <Radio.Group
+            value={currentResponse?.toString() || ''}
+            onChange={value => handleResponse(parseInt(value))}
+          >
             <Stack gap="sm" mt="md">
               <Radio value="1" label="Strongly Disagree" />
               <Radio value="2" label="Disagree" />
@@ -245,9 +254,11 @@ export const CareerAssessment: React.FC = () => {
 
   const calculateResults = () => {
     const categoryScores: Record<string, number[]> = {};
-    
+
     responses.forEach(response => {
-      const question = assessmentQuestions.find(q => q.id === response.questionId);
+      const question = assessmentQuestions.find(
+        q => q.id === response.questionId
+      );
       if (question) {
         if (!categoryScores[question.category]) {
           categoryScores[question.category] = [];
@@ -256,11 +267,13 @@ export const CareerAssessment: React.FC = () => {
       }
     });
 
-    const averages = Object.entries(categoryScores).map(([category, scores]) => ({
-      category,
-      average: scores.reduce((sum, score) => sum + score, 0) / scores.length,
-      count: scores.length,
-    })).sort((a, b) => b.average - a.average);
+    const averages = Object.entries(categoryScores)
+      .map(([category, scores]) => ({
+        category,
+        average: scores.reduce((sum, score) => sum + score, 0) / scores.length,
+        count: scores.length,
+      }))
+      .sort((a, b) => b.average - a.average);
 
     return averages;
   };
@@ -273,12 +286,19 @@ export const CareerAssessment: React.FC = () => {
         <Card shadow="sm" padding="xl" radius="md">
           <Stack gap="lg">
             <Group justify="center">
-              <Badge size="xl" color="green" variant="light" leftSection={<CheckCircledIcon />}>
-                Assessment Complete! 
+              <Badge
+                size="xl"
+                color="green"
+                variant="light"
+                leftSection={<CheckCircledIcon />}
+              >
+                Assessment Complete!
               </Badge>
             </Group>
 
-            <Title order={2} ta="center">Your Career Assessment Results</Title>
+            <Title order={2} ta="center">
+              Your Career Assessment Results
+            </Title>
 
             <Text c="dimmed" ta="center">
               Based on your responses, here are your strongest areas:
@@ -286,16 +306,24 @@ export const CareerAssessment: React.FC = () => {
 
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
               {results.slice(0, 6).map((result, index) => (
-                <Card key={result.category} shadow="xs" padding="md" radius="sm" withBorder>
+                <Card
+                  key={result.category}
+                  shadow="xs"
+                  padding="md"
+                  radius="sm"
+                  withBorder
+                >
                   <Stack gap="xs">
                     <Group justify="space-between">
-                      <Text fw={500} size="sm">{result.category}</Text>
+                      <Text fw={500} size="sm">
+                        {result.category}
+                      </Text>
                       <Badge size="sm" color="orange" variant="light">
                         #{index + 1}
                       </Badge>
                     </Group>
-                    <Progress 
-                      value={(result.average / 5) * 100} 
+                    <Progress
+                      value={(result.average / 5) * 100}
                       color="orange"
                       size="sm"
                     />
@@ -311,17 +339,24 @@ export const CareerAssessment: React.FC = () => {
               <Stack gap="xs">
                 <Text fw={500}>What's Next?</Text>
                 <Text size="sm">
-                  Your results suggest careers in: <strong>{results.slice(0, 3).map(r => r.category).join(', ')}</strong>
+                  Your results suggest careers in:{' '}
+                  <strong>
+                    {results
+                      .slice(0, 3)
+                      .map(r => r.category)
+                      .join(', ')}
+                  </strong>
                 </Text>
                 <Text size="sm">
-                  Visit your dashboard to see personalized career recommendations based on these results.
+                  Visit your dashboard to see personalized career
+                  recommendations based on these results.
                 </Text>
               </Stack>
             </Alert>
 
             <Group justify="center">
-              <Button 
-                size="md" 
+              <Button
+                size="md"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
@@ -356,14 +391,16 @@ export const CareerAssessment: React.FC = () => {
               <Stack gap="xs">
                 <Title order={2}>Career Assessment</Title>
                 <Text c="dimmed">
-                  Question {currentQuestionIndex + 1} of {assessmentQuestions.length}
+                  Question {currentQuestionIndex + 1} of{' '}
+                  {assessmentQuestions.length}
                 </Text>
               </Stack>
               <Badge size="lg" color="orange" variant="light">
-                {currentQuestion.type.charAt(0).toUpperCase() + currentQuestion.type.slice(1)}
+                {currentQuestion.type.charAt(0).toUpperCase() +
+                  currentQuestion.type.slice(1)}
               </Badge>
             </Group>
-            
+
             <Progress value={progress} color="orange" size="md" />
           </Stack>
 
@@ -374,7 +411,7 @@ export const CareerAssessment: React.FC = () => {
             <Badge size="md" color="gray" variant="light">
               {currentQuestion.category}
             </Badge>
-            
+
             <Title order={3} fw={400}>
               {currentQuestion.question}
             </Title>
@@ -406,9 +443,17 @@ export const CareerAssessment: React.FC = () => {
               }}
               onClick={handleNext}
               disabled={currentResponse === null}
-              rightSection={currentQuestionIndex === assessmentQuestions.length - 1 ? <CheckCircledIcon /> : <ArrowRightIcon />}
+              rightSection={
+                currentQuestionIndex === assessmentQuestions.length - 1 ? (
+                  <CheckCircledIcon />
+                ) : (
+                  <ArrowRightIcon />
+                )
+              }
             >
-              {currentQuestionIndex === assessmentQuestions.length - 1 ? 'Complete' : 'Next'}
+              {currentQuestionIndex === assessmentQuestions.length - 1
+                ? 'Complete'
+                : 'Next'}
             </Button>
           </Group>
         </Stack>
