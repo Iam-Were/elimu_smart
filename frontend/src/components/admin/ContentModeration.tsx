@@ -16,7 +16,6 @@ import {
   Modal,
   ActionIcon,
   Tooltip,
-  Progress,
   SimpleGrid,
 } from '@mantine/core';
 import {
@@ -28,8 +27,6 @@ import {
   ChatBubbleIcon,
   PersonIcon,
   ClockIcon,
-  TrashIcon,
-  Pencil1Icon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';

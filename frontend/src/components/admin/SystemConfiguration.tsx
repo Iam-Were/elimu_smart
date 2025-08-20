@@ -15,7 +15,6 @@ import {
   Alert,
   Tabs,
   Badge,
-  Progress,
   SimpleGrid,
   Divider,
 } from '@mantine/core';
@@ -28,7 +27,6 @@ import {
   UploadIcon,
   LockClosedIcon,
   GlobeIcon,
-  EnvelopeClosedIcon,
   BellIcon,
 } from '@radix-ui/react-icons';
 import { notifications } from '@mantine/notifications';

@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import {
   Container,
   Title,
-  Card,
   Text,
+  Card,
   Group,
   Stack,
   Button,
@@ -13,7 +13,6 @@ import {
   Table,
   ActionIcon,
   Modal,
-  Tabs,
   MultiSelect,
   Checkbox,
   ScrollArea,
@@ -23,6 +22,7 @@ import {
   Textarea,
   Switch,
   Alert,
+  Tabs,
 } from '@mantine/core';
 import {
   MagnifyingGlassIcon,
@@ -30,10 +30,10 @@ import {
   DownloadIcon,
   UploadIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
   Pencil1Icon,
   EyeOpenIcon,
   PersonIcon,
+  ClockIcon,
   Cross1Icon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';

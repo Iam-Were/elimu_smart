@@ -17,12 +17,11 @@ import {
 import {
   ReloadIcon,
   DownloadIcon,
-  UploadIcon,
   CheckCircledIcon,
   ExclamationTriangleIcon,
   ClockIcon,
   TrashIcon,
-  DatabaseIcon,
+  GearIcon,
 } from '@radix-ui/react-icons';
 import { notifications } from '@mantine/notifications';
 
@@ -90,7 +89,7 @@ export const MaintenanceTools: React.FC = () => {
         <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md">
           <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <Stack gap="xs" align="center">
-              <DatabaseIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
+              <GearIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
               <Text size="xs" c="dimmed" ta="center">Database Size</Text>
               <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
                 2.4 GB
@@ -210,7 +209,7 @@ export const MaintenanceTools: React.FC = () => {
                   Optimize database performance and clean up unused data
                 </Text>
                 <Button
-                  leftSection={<DatabaseIcon width={16} height={16} />}
+                  leftSection={<GearIcon width={16} height={16} />}
                   variant="light"
                   onClick={runMaintenance}
                   loading={cleanupInProgress}

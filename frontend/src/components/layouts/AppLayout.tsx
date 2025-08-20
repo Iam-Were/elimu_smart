@@ -27,8 +27,6 @@ import {
   CalendarIcon,
   BarChartIcon,
   ActivityLogIcon,
-  ShieldIcon,
-  DatabaseIcon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -450,7 +448,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Security Monitoring"
-                    leftSection={<ShieldIcon />}
+                    leftSection={<GearIcon />}
                     active={location.pathname === '/admin/security-monitoring'}
                     onClick={e => {
                       e.preventDefault();
@@ -467,7 +465,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Maintenance Tools"
-                    leftSection={<DatabaseIcon />}
+                    leftSection={<GearIcon />}
                     active={location.pathname === '/admin/maintenance-tools'}
                     onClick={e => {
                       e.preventDefault();

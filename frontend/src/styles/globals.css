@@ -1,8 +1,6 @@
 /* ELIMU SMART DESIGN SYSTEM - COMPLETE THEME CONFIGURATION */
 /* Copy this entire file to your new project's /styles/globals.css */
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   /* Base Configuration */
   --font-size: 14px;
@@ -16,15 +14,15 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary Colors - Student Theme */
-  --primary: #f97316; /* Orange 500 - Main brand color */
+  /* Primary Colors - Student Theme - FIGMA EXACT COLORS */
+  --primary: #ff6b35; /* Figma exact orange - Updated from #f97316 */
   --primary-foreground: #ffffff;
-  --secondary: #fef3c7; /* Orange 100 - Light background */
-  --secondary-foreground: #92400e; /* Orange 800 - Dark text */
-  --muted: #fef9e7; /* Orange 50 - Subtle background */
-  --muted-foreground: #a16207; /* Orange 700 - Muted text */
-  --accent: #fed7aa; /* Orange 200 - Accent elements */
-  --accent-foreground: #9a3412; /* Orange 900 - Accent text */
+  --secondary: #ff8a65; /* Lighter variant for hover */
+  --secondary-foreground: #e65100; /* Darker variant for active */
+  --muted: #fff7ed; /* Very light orange */
+  --muted-foreground: #ea580c; /* Orange 600 for muted text */
+  --accent: #ffedd5; /* Light orange accent */
+  --accent-foreground: #c2410c; /* Dark orange for accent text */
 
   /* System Colors */
   --destructive: #dc2626; /* Red 600 - Error states */
@@ -37,28 +35,28 @@
   --info-foreground: #ffffff;
 
   /* Interactive Elements */
-  --border: rgba(249, 115, 22, 0.2); /* Orange with opacity */
+  --border: rgba(255, 107, 53, 0.2); /* Figma orange with opacity */
   --input: transparent;
-  --input-background: #fef9e7; /* Light orange for inputs */
-  --switch-background: #fed7aa; /* Orange 200 for switches */
-  --ring: #f97316; /* Focus ring color */
+  --input-background: #fff7ed; /* Very light orange for inputs */
+  --switch-background: #ffedd5; /* Light orange for switches */
+  --ring: #ff6b35; /* Focus ring color - Figma exact */
 
   /* Chart Colors */
-  --chart-1: #f97316; /* Orange 500 */
+  --chart-1: #ff6b35; /* Figma exact orange */
   --chart-2: #eab308; /* Yellow 500 */
   --chart-3: #f59e0b; /* Amber 500 */
   --chart-4: #d97706; /* Amber 600 */
   --chart-5: #ea580c; /* Orange 600 */
 
   /* Sidebar Colors */
-  --sidebar: #fef9e7;
-  --sidebar-foreground: #92400e;
-  --sidebar-primary: #f97316;
+  --sidebar: #fff7ed; /* Very light orange */
+  --sidebar-foreground: #e65100; /* Darker orange for text */
+  --sidebar-primary: #ff6b35; /* Figma exact orange */
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fed7aa;
-  --sidebar-accent-foreground: #9a3412;
-  --sidebar-border: rgba(249, 115, 22, 0.2);
-  --sidebar-ring: #f97316;
+  --sidebar-accent: #ffedd5; /* Light orange accent */
+  --sidebar-accent-foreground: #c2410c; /* Dark orange for accent text */
+  --sidebar-border: rgba(255, 107, 53, 0.2); /* Figma orange border */
+  --sidebar-ring: #ff6b35; /* Figma exact orange */
 
   /* Admin Theme - Purple/Violet */
   --admin-primary: #a855f7; /* Violet 500 */
@@ -124,27 +122,27 @@
   --card-foreground: #fafafa;
   --popover: #262626;
   --popover-foreground: #fafafa;
-  --primary: #f97316;
+  --primary: #ff6b35; /* Figma exact orange */
   --primary-foreground: #ffffff;
   --secondary: #404040;
-  --secondary-foreground: #fbbf24;
+  --secondary-foreground: #ff8a65; /* Lighter orange variant */
   --muted: #404040;
   --muted-foreground: #a3a3a3;
   --accent: #525252;
-  --accent-foreground: #fbbf24;
+  --accent-foreground: #ff8a65; /* Lighter orange for accent */
   --destructive: #dc2626;
   --destructive-foreground: #fafafa;
-  --border: rgba(249, 115, 22, 0.3);
+  --border: rgba(255, 107, 53, 0.3); /* Figma orange with opacity */
   --input: #404040;
   --input-background: #404040;
-  --ring: #f97316;
+  --ring: #ff6b35; /* Figma exact orange */
   --sidebar: #262626;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #f97316;
+  --sidebar-primary: #ff6b35; /* Figma exact orange */
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #404040;
-  --sidebar-accent-foreground: #fbbf24;
-  --sidebar-border: rgba(249, 115, 22, 0.3);
+  --sidebar-accent-foreground: #ff8a65; /* Lighter orange */
+  --sidebar-border: rgba(255, 107, 53, 0.3); /* Figma orange border */
 
   /* Dark mode admin theme */
   --admin-primary: #a855f7;
@@ -287,6 +285,186 @@ body {
   border: 0;
 }
 
+/* LinkedIn-Inspired Design Patterns - Sprint 9 */
+.card-linkedin {
+  background: var(--background);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card-linkedin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.card-linkedin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.card-linkedin:hover::before {
+  opacity: 1;
+}
+
+/* Professional Button Hierarchy */
+.btn-primary-linkedin {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-primary-linkedin:hover {
+  background: #e65100;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.btn-secondary-linkedin {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-secondary-linkedin:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: translateY(-1px);
+}
+
+.btn-ghost-linkedin {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid transparent;
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-ghost-linkedin:hover {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+/* Professional Navigation */
+.sidebar-item-linkedin {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: var(--sidebar-foreground);
+  position: relative;
+  cursor: pointer;
+}
+
+.sidebar-item-linkedin:hover {
+  background: var(--sidebar-accent);
+  color: var(--primary);
+}
+
+.sidebar-item-linkedin.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: var(--font-weight-medium);
+}
+
+.sidebar-item-linkedin.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-foreground);
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* Component Spacing - 8px Grid System */
+.dashboard-card {
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--background);
+  border: 1px solid #f0f0f0;
+}
+
+.card-header {
+  margin-bottom: 16px;
+}
+
+.card-content {
+  margin-bottom: 20px;
+}
+
+/* Button Size Variants */
+.btn-sm {
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  min-height: 32px;
+}
+
+.btn-md {
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  min-height: 40px;
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 1rem;
+  min-height: 48px;
+}
+
 /* Accessibility - Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -295,5 +473,14 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .card-linkedin,
+  .btn-primary-linkedin,
+  .btn-secondary-linkedin,
+  .btn-ghost-linkedin,
+  .sidebar-item-linkedin {
+    transition: none !important;
+    transform: none !important;
   }
 }

@@ -11,12 +11,10 @@ import {
   Select,
   Badge,
   Alert,
-  Tabs,
   Table,
   Pagination,
   Modal,
   SimpleGrid,
-  Progress,
   ActionIcon,
   Tooltip,
 } from '@mantine/core';
@@ -24,14 +22,11 @@ import {
   MagnifyingGlassIcon,
   EyeOpenIcon,
   DownloadIcon,
-  CalendarIcon,
   PersonIcon,
   LockClosedIcon,
   ExclamationTriangleIcon,
-  CheckCircledIcon,
   ActivityLogIcon,
-  TrashIcon,
-  Pencil1Icon,
+  CheckCircledIcon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -170,7 +165,6 @@ export const AuditLog: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [filterOutcome, setFilterOutcome] = useState<string | null>(null);
   const [filterSeverity, setFilterSeverity] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string | null>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState('last-7-days');
   const itemsPerPage = 10;
@@ -231,7 +225,7 @@ export const AuditLog: React.FC = () => {
       case 'user_management':
         return <PersonIcon width={16} height={16} />;
       case 'content':
-        return <Pencil1Icon width={16} height={16} />;
+        return <ActivityLogIcon width={16} height={16} />;
       case 'system':
         return <ActivityLogIcon width={16} height={16} />;
       case 'security':
@@ -557,7 +551,7 @@ export const AuditLog: React.FC = () => {
                       </Badge>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm" family="monospace">{log.ipAddress}</Text>
+                      <Text size="sm" style={{fontFamily: 'monospace'}}>{log.ipAddress}</Text>
                     </Table.Td>
                     <Table.Td>
                       <Tooltip label="View Details">
@@ -614,7 +608,7 @@ export const AuditLog: React.FC = () => {
                 </Stack>
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>Session ID</Text>
-                  <Text size="sm" family="monospace">{selectedLog.sessionId}</Text>
+                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.sessionId}</Text>
                 </Stack>
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>User</Text>
@@ -638,11 +632,11 @@ export const AuditLog: React.FC = () => {
                 </Stack>
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>Resource ID</Text>
-                  <Text size="sm" family="monospace">{selectedLog.resourceId || 'N/A'}</Text>
+                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.resourceId || 'N/A'}</Text>
                 </Stack>
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>IP Address</Text>
-                  <Text size="sm" family="monospace">{selectedLog.ipAddress}</Text>
+                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.ipAddress}</Text>
                 </Stack>
                 <Stack gap="xs">
                   <Text size="sm" fw={500}>User Agent</Text>

@@ -425,7 +425,7 @@ export const SecurityMonitoring: React.FC = () => {
                               size="sm"
                               variant="subtle"
                               color="green"
-                              onClick={() => resolveAlert(alert.id)}
+                              onClick={() => resolveAlert()}
                             >
                               <CheckCircledIcon width={14} height={14} />
                             </ActionIcon>
