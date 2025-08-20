@@ -24,6 +24,13 @@ import { QuestionsPage } from './pages/counselor/QuestionsPage';
 import { SessionsPage } from './pages/counselor/SessionsPage';
 import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
 import { GroupSessionsPage } from './pages/counselor/GroupSessionsPage';
+import { UserManagementPage } from './pages/admin/UserManagementPage';
+import { SystemAnalyticsPage } from './pages/admin/SystemAnalyticsPage';
+import { ContentModerationPage } from './pages/admin/ContentModerationPage';
+import { SystemConfigurationPage } from './pages/admin/SystemConfigurationPage';
+import { AuditLogPage } from './pages/admin/AuditLogPage';
+import { SecurityMonitoringPage } from './pages/admin/SecurityMonitoringPage';
+import { MaintenanceToolsPage } from './pages/admin/MaintenanceToolsPage';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -58,6 +65,13 @@ const AppContent: React.FC = () => {
         <Route path="/counselor/sessions" element={<SessionsPage />} />
         <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
         <Route path="/counselor/analytics" element={<AnalyticsPage />} />
+        <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/admin/analytics" element={<SystemAnalyticsPage />} />
+        <Route path="/admin/content-moderation" element={<ContentModerationPage />} />
+        <Route path="/admin/system-configuration" element={<SystemConfigurationPage />} />
+        <Route path="/admin/audit-log" element={<AuditLogPage />} />
+        <Route path="/admin/security-monitoring" element={<SecurityMonitoringPage />} />
+        <Route path="/admin/maintenance-tools" element={<MaintenanceToolsPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

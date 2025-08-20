@@ -26,6 +26,9 @@ import {
   ChatBubbleIcon,
   CalendarIcon,
   BarChartIcon,
+  ActivityLogIcon,
+  ShieldIcon,
+  DatabaseIcon,
 } from '@radix-ui/react-icons';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -412,22 +415,85 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   />
                   <NavLink
                     href="#"
-                    label="System Settings"
-                    leftSection={<GearIcon />}
-                    active={location.pathname === '/admin/settings'}
+                    label="Content Moderation"
+                    leftSection={<ActivityLogIcon />}
+                    active={location.pathname === '/admin/content-moderation'}
                     onClick={e => {
                       e.preventDefault();
-                      notifications.show({
-                        title: 'Coming Soon',
-                        message:
-                          'System Settings will be available in upcoming sprints',
-                        color: 'blue',
-                      });
+                      navigate('/admin/content-moderation');
                     }}
                     style={{
                       borderRadius: 'var(--radius)',
                       color:
-                        location.pathname === '/admin/settings'
+                        location.pathname === '/admin/content-moderation'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="System Configuration"
+                    leftSection={<GearIcon />}
+                    active={location.pathname === '/admin/system-configuration'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/system-configuration');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/system-configuration'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Security Monitoring"
+                    leftSection={<ShieldIcon />}
+                    active={location.pathname === '/admin/security-monitoring'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/security-monitoring');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/security-monitoring'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Maintenance Tools"
+                    leftSection={<DatabaseIcon />}
+                    active={location.pathname === '/admin/maintenance-tools'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/maintenance-tools');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/maintenance-tools'
+                          ? 'var(--primary)'
+                          : undefined,
+                    }}
+                  />
+                  <NavLink
+                    href="#"
+                    label="Audit Log"
+                    leftSection={<ActivityLogIcon />}
+                    active={location.pathname === '/admin/audit-log'}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate('/admin/audit-log');
+                    }}
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      color:
+                        location.pathname === '/admin/audit-log'
                           ? 'var(--primary)'
                           : undefined,
                     }}

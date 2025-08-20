@@ -413,7 +413,7 @@ export const AdminDashboard: React.FC = () => {
               >
                 <Stack gap="md">
                   <Title order={3}>Quick Actions</Title>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
                     <Button
                       variant="light"
                       size="md"
@@ -431,40 +431,79 @@ export const AdminDashboard: React.FC = () => {
                       variant="light"
                       size="md"
                       leftSection={<BarChartIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/monitoring')}
+                      onClick={() => navigate('/admin/analytics')}
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
                       }}
                     >
-                      System Monitoring
+                      Analytics
                     </Button>
                     <Button
                       variant="light"
                       size="md"
                       leftSection={<ActivityLogIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/content')}
+                      onClick={() => navigate('/admin/content-moderation')}
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
                       }}
                     >
-                      Content Management
+                      Content Moderation
                     </Button>
                     <Button
                       variant="light"
                       size="md"
                       leftSection={<GearIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/settings')}
+                      onClick={() => navigate('/admin/system-configuration')}
                       style={{
                         backgroundColor: 'var(--secondary)',
                         color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
                       }}
                     >
-                      System Settings
+                      System Configuration
+                    </Button>
+                    <Button
+                      variant="light"
+                      size="md"
+                      leftSection={<ActivityLogIcon width={18} height={18} />}
+                      onClick={() => navigate('/admin/audit-log')}
+                      style={{
+                        backgroundColor: 'var(--secondary)',
+                        color: 'var(--secondary-foreground)',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
+                      Audit Log
+                    </Button>
+                    <Button
+                      variant="light"
+                      size="md"
+                      leftSection={<ExclamationTriangleIcon width={18} height={18} />}
+                      onClick={() => navigate('/admin/security-monitoring')}
+                      style={{
+                        backgroundColor: 'var(--secondary)',
+                        color: 'var(--secondary-foreground)',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
+                      Security Monitoring
+                    </Button>
+                    <Button
+                      variant="light"
+                      size="md"
+                      leftSection={<GearIcon width={18} height={18} />}
+                      onClick={() => navigate('/admin/maintenance-tools')}
+                      style={{
+                        backgroundColor: 'var(--secondary)',
+                        color: 'var(--secondary-foreground)',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
+                      Maintenance Tools
                     </Button>
                   </SimpleGrid>
                 </Stack>
