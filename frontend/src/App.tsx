@@ -16,6 +16,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { FormDemoPage } from './pages/FormDemoPage';
 import { CareerAssessment } from './components/student/CareerAssessment';
 import { SubjectCareerMapper } from './components/student/SubjectCareerMapper';
 import { CareerGuidanceHub } from './components/student/CareerGuidanceHub';
@@ -24,6 +25,7 @@ import { QuestionsPage } from './pages/counselor/QuestionsPage';
 import { SessionsPage } from './pages/counselor/SessionsPage';
 import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
 import { GroupSessionsPage } from './pages/counselor/GroupSessionsPage';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { SystemAnalyticsPage } from './pages/admin/SystemAnalyticsPage';
 import { ContentModerationPage } from './pages/admin/ContentModerationPage';
@@ -57,6 +59,7 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/form-demo" element={<FormDemoPage />} />
         <Route path="/assessment" element={<CareerAssessment />} />
         <Route path="/subject-mapper" element={<SubjectCareerMapper />} />
         <Route path="/career-hub" element={<CareerGuidanceHub />} />
@@ -65,6 +68,7 @@ const AppContent: React.FC = () => {
         <Route path="/counselor/sessions" element={<SessionsPage />} />
         <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
         <Route path="/counselor/analytics" element={<AnalyticsPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/analytics" element={<SystemAnalyticsPage />} />
         <Route path="/admin/content-moderation" element={<ContentModerationPage />} />

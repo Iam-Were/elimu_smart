@@ -34,6 +34,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { DemoModeSwitch } from '../common/DemoModeSwitch';
+import { GlobalSearch, useGlobalSearchShortcut } from '../common/GlobalSearch';
+import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
 import type { ThemeRole } from '../../types';
 
 interface AppLayoutProps {
@@ -42,10 +44,15 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [opened, { toggle }] = useDisclosure();
+  const [searchOpened, { toggle: toggleSearch }] = useDisclosure();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const { currentTheme, setTheme, isDark, toggleDarkMode } = useThemeContext();
+  const breadcrumbs = useBreadcrumbs();
+
+  // Add global search shortcut
+  useGlobalSearchShortcut(toggleSearch);
 
   // Automatically update theme when user role changes
   useEffect(() => {
@@ -132,7 +139,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </Title>
           </Group>
 
-          <Group>
+          <Group gap="md">
+            <GlobalSearch className="flex-1 max-w-md" />
+            
             <Menu shadow="md" width={280} position="bottom-end">
               <Menu.Target>
                 <Button variant="subtle" style={{ padding: '0 8px' }}>
@@ -203,6 +212,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Group>
       </AppShell.Header>
 
+      {/* Smart Breadcrumbs */}
+      <SmartBreadcrumbs items={breadcrumbs} />
+
       <AppShell.Navbar p="md" className="theme-transition">
         <Stack gap="lg" h="100%">
           <Stack gap="sm">
@@ -213,7 +225,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Stack gap="xs">
               <NavLink
                 href="#"
-                label="Dashboard"
+                label={user?.role === 'admin' || user?.role === 'super_admin' ? "Personal Overview" : "Dashboard"}
                 leftSection={<DashboardIcon className="sidebar-icon" />}
                 active={location.pathname === '/dashboard'}
                 onClick={e => {
@@ -316,8 +328,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <>
                   <NavLink
                     href="#"
-                    label="Admin Dashboard"
-                    leftSection={<DashboardIcon />}
+                    label="System Administration"
+                    leftSection={<GearIcon />}
                     active={location.pathname === '/admin/dashboard'}
                     onClick={e => {
                       e.preventDefault();
@@ -433,6 +445,17 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
               <NavLink
                 href="#"
+                label="Form Demo"
+                leftSection={<GearIcon className="sidebar-icon" />}
+                onClick={e => {
+                  e.preventDefault();
+                  navigate('/form-demo');
+                }}
+                style={{ borderRadius: 'var(--radius)' }}
+              />
+
+              <NavLink
+                href="#"
                 label="Settings"
                 leftSection={<GearIcon className="sidebar-icon" />}
                 onClick={e => {
@@ -456,6 +479,36 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </AppShell.Navbar>
 
       <AppShell.Main className="theme-transition">{children}</AppShell.Main>
+      
+      {/* Global Search Modal */}
+      {searchOpened && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1000,
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: '10vh',
+          }}
+          onClick={toggleSearch}
+        >
+          <div
+            style={{
+              width: '90%',
+              maxWidth: '600px',
+              height: 'fit-content',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GlobalSearch className="w-full" />
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 };

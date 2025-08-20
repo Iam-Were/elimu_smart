@@ -25,11 +25,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { CounselorDashboard } from '../components/counselor/CounselorDashboard';
+import { DashboardAnalytics, MetricCard } from '../components/common/InteractiveCharts';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
   const navigate = useNavigate();
+  const [timeRange, setTimeRange] = React.useState('30d');
 
   // Mock data for student dashboard - will be replaced with real data
   const studentStats = {
@@ -518,7 +520,47 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  // Default dashboard for other roles (admin/counselor)
+  // Admin and Super Admin dashboard with advanced analytics
+  if (user?.role === 'admin' || user?.role === 'super_admin') {
+    return (
+      <Container size="xl" py="md">
+        <Stack gap="lg">
+          {/* Welcome Section */}
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Title order={1} size="2rem">
+                  {getWelcomeMessage()}
+                </Title>
+                <Text size="lg" c="dimmed">
+                  Personal Overview & Advanced Analytics
+                </Text>
+              </Stack>
+              <Badge
+                size="lg"
+                variant="light"
+                color={getThemeColor()}
+                style={{
+                  backgroundColor: 'var(--secondary)',
+                  color: 'var(--secondary-foreground)',
+                }}
+              >
+                {user?.role && getRoleDisplayName(user.role)}
+              </Badge>
+            </Group>
+          </Stack>
+
+          {/* Admin Analytics Dashboard */}
+          <DashboardAnalytics
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
+        </Stack>
+      </Container>
+    );
+  }
+
+  // Default dashboard for other roles
   return (
     <Container size="lg" py="xl">
       <Stack gap="xl">
@@ -545,96 +587,33 @@ export const DashboardPage: React.FC = () => {
           </Group>
         </Stack>
 
-        {/* Role-specific content coming in future sprints */}
-        <Alert
-          color={getThemeColor()}
-          title={`${getRoleDisplayName(user?.role || '')} Dashboard Coming Soon!`}
-          variant="light"
-        >
-          <Text size="sm">
-            Your personalized {user?.role} dashboard will be available in
-            upcoming sprints.
-          </Text>
-        </Alert>
-
         {/* Development Status */}
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs">
-                <Text fw={500} size="lg">
-                  Current Sprint
-                </Text>
-                <Title order={2} style={{ color: 'var(--primary)' }}>
-                  Sprint 3
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Student Dashboard MVP
-                </Text>
-              </Stack>
-            </Card>
+            <MetricCard
+              title="Current Sprint"
+              value="Sprint 11"
+              subtitle="Advanced UX Patterns"
+              color="var(--primary)"
+            />
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs">
-                <Text fw={500} size="lg">
-                  Theme
-                </Text>
-                <Title order={2} style={{ color: 'var(--primary)' }}>
-                  {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Role-based theming
-                </Text>
-              </Stack>
-            </Card>
+            <MetricCard
+              title="Theme"
+              value={currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}
+              subtitle="Role-based theming"
+              color="var(--primary)"
+            />
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs">
-                <Text fw={500} size="lg">
-                  User Role
-                </Text>
-                <Title order={2} style={{ color: 'var(--primary)' }}>
-                  {user?.role && getRoleDisplayName(user.role)}
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Your account type
-                </Text>
-              </Stack>
-            </Card>
+            <MetricCard
+              title="User Role"
+              value={user?.role ? getRoleDisplayName(user.role) : 'N/A'}
+              subtitle="Your account type"
+              color="var(--primary)"
+            />
           </Grid.Col>
         </Grid>
       </Stack>
