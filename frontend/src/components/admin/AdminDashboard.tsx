@@ -190,7 +190,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Key System Metrics */}
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
           <Card
-            className="card-linkedin dashboard-card"
+            className="card-linkedin dashboard-card progressive-reveal"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
@@ -221,14 +221,10 @@ export const AdminDashboard: React.FC = () => {
           </Card>
 
           <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            className="hover-lift theme-transition"
+            className="card-linkedin dashboard-card progressive-reveal"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
             }}
           >
             <Stack gap="xs" align="center">
@@ -264,14 +260,10 @@ export const AdminDashboard: React.FC = () => {
           </Card>
 
           <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            className="hover-lift theme-transition"
+            className="card-linkedin dashboard-card progressive-reveal"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
             }}
           >
             <Stack gap="xs" align="center">
@@ -299,14 +291,10 @@ export const AdminDashboard: React.FC = () => {
           </Card>
 
           <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            className="hover-lift theme-transition"
+            className="card-linkedin dashboard-card progressive-reveal"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
             }}
           >
             <Stack gap="xs" align="center">
@@ -342,7 +330,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* System Health Overview */}
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-          <Card padding="md" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <Stack gap="xs">
               <Group justify="space-between">
                 <Text size="sm" fw={500}>CPU Usage</Text>
@@ -350,12 +338,13 @@ export const AdminDashboard: React.FC = () => {
               </Group>
               <Progress 
                 value={systemMetrics.system.cpuUsage} 
-                color={systemMetrics.system.cpuUsage > 80 ? 'red' : systemMetrics.system.cpuUsage > 60 ? 'yellow' : 'green'} 
+                color={systemMetrics.system.cpuUsage > 80 ? 'red' : systemMetrics.system.cpuUsage > 60 ? 'yellow' : 'green'}
+                className="progress-bar-animate"
               />
             </Stack>
           </Card>
 
-          <Card padding="md" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <Stack gap="xs">
               <Group justify="space-between">
                 <Text size="sm" fw={500}>Memory Usage</Text>
@@ -363,12 +352,13 @@ export const AdminDashboard: React.FC = () => {
               </Group>
               <Progress 
                 value={systemMetrics.system.memoryUsage} 
-                color={systemMetrics.system.memoryUsage > 80 ? 'red' : systemMetrics.system.memoryUsage > 60 ? 'yellow' : 'green'} 
+                color={systemMetrics.system.memoryUsage > 80 ? 'red' : systemMetrics.system.memoryUsage > 60 ? 'yellow' : 'green'}
+                className="progress-bar-animate"
               />
             </Stack>
           </Card>
 
-          <Card padding="md" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <Stack gap="xs">
               <Group justify="space-between">
                 <Text size="sm" fw={500}>Disk Usage</Text>
@@ -376,12 +366,13 @@ export const AdminDashboard: React.FC = () => {
               </Group>
               <Progress 
                 value={systemMetrics.system.diskUsage} 
-                color={systemMetrics.system.diskUsage > 80 ? 'red' : systemMetrics.system.diskUsage > 60 ? 'yellow' : 'green'} 
+                color={systemMetrics.system.diskUsage > 80 ? 'red' : systemMetrics.system.diskUsage > 60 ? 'yellow' : 'green'}
+                className="progress-bar-animate"
               />
             </Stack>
           </Card>
 
-          <Card padding="md" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <Stack gap="xs" align="center">
               <GlobeIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
               <Text size="sm" fw={500}>Active Connections</Text>
