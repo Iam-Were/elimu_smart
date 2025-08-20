@@ -14,15 +14,15 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary Colors - Student Theme - FIGMA EXACT COLORS */
-  --primary: #ff6b35; /* Figma exact orange - Updated from #f97316 */
+  /* Primary Colors - Student Theme - LINKEDIN-INSPIRED FIGMA EXACT COLORS */
+  --primary: #ff6b35; /* Figma exact orange - LinkedIn professional style */
   --primary-foreground: #ffffff;
-  --secondary: #ff8a65; /* Lighter variant for hover */
-  --secondary-foreground: #e65100; /* Darker variant for active */
-  --muted: #fff7ed; /* Very light orange */
-  --muted-foreground: #ea580c; /* Orange 600 for muted text */
-  --accent: #ffedd5; /* Light orange accent */
-  --accent-foreground: #c2410c; /* Dark orange for accent text */
+  --secondary: #fff4f0; /* Very light orange for subtle backgrounds */
+  --secondary-foreground: #ff6b35; /* Primary orange for secondary actions */
+  --muted: #fafafa; /* LinkedIn-style neutral background */
+  --muted-foreground: #666666; /* Professional gray text */
+  --accent: #ff6b35; /* Primary orange for accents */
+  --accent-foreground: #ffffff; /* White text on orange */
 
   /* System Colors */
   --destructive: #dc2626; /* Red 600 - Error states */
@@ -34,12 +34,12 @@
   --info: #0ea5e9; /* Sky 500 - Info states */
   --info-foreground: #ffffff;
 
-  /* Interactive Elements */
-  --border: rgba(255, 107, 53, 0.2); /* Figma orange with opacity */
+  /* Interactive Elements - LinkedIn Professional Style */
+  --border: #e0e0e0; /* LinkedIn-style neutral borders */
   --input: transparent;
-  --input-background: #fff7ed; /* Very light orange for inputs */
-  --switch-background: #ffedd5; /* Light orange for switches */
-  --ring: #ff6b35; /* Focus ring color - Figma exact */
+  --input-background: #ffffff; /* Clean white input backgrounds */
+  --switch-background: #f3f2f0; /* Subtle neutral toggle backgrounds */
+  --ring: #ff6b35; /* Focus ring color - Figma exact orange */
 
   /* Chart Colors */
   --chart-1: #ff6b35; /* Figma exact orange */
@@ -48,15 +48,15 @@
   --chart-4: #d97706; /* Amber 600 */
   --chart-5: #ea580c; /* Orange 600 */
 
-  /* Sidebar Colors */
-  --sidebar: #fff7ed; /* Very light orange */
-  --sidebar-foreground: #e65100; /* Darker orange for text */
-  --sidebar-primary: #ff6b35; /* Figma exact orange */
+  /* Sidebar Colors - LinkedIn Professional Navigation */
+  --sidebar: #ffffff; /* Clean white sidebar background */
+  --sidebar-foreground: #333333; /* Professional dark gray text */
+  --sidebar-primary: #ff6b35; /* Figma exact orange for active items */
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ffedd5; /* Light orange accent */
-  --sidebar-accent-foreground: #c2410c; /* Dark orange for accent text */
-  --sidebar-border: rgba(255, 107, 53, 0.2); /* Figma orange border */
-  --sidebar-ring: #ff6b35; /* Figma exact orange */
+  --sidebar-accent: #f8f9fa; /* Subtle hover background */
+  --sidebar-accent-foreground: #ff6b35; /* Orange text on hover */
+  --sidebar-border: #e0e0e0; /* Clean neutral borders */
+  --sidebar-ring: #ff6b35; /* Figma exact orange for focus */
 
   /* Admin Theme - Purple/Violet */
   --admin-primary: #a855f7; /* Violet 500 */

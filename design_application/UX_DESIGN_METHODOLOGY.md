@@ -183,3 +183,4 @@ large: 1440px+
 - **Educational Context**: Alignment with Kenyan curriculum standards
 
 This methodology ensures that every design decision contributes to an effective, inclusive, and culturally appropriate career guidance platform for Kenyan students.
+

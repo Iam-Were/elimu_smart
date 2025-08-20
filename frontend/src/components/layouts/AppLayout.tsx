@@ -214,19 +214,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Dashboard"
-                leftSection={<DashboardIcon />}
+                leftSection={<DashboardIcon className="sidebar-icon" />}
                 active={location.pathname === '/dashboard'}
                 onClick={e => {
                   e.preventDefault();
                   navigate('/dashboard');
                 }}
-                style={{
-                  borderRadius: 'var(--radius)',
-                  color:
-                    location.pathname === '/dashboard'
-                      ? 'var(--primary)'
-                      : undefined,
-                }}
+                className={`sidebar-item-linkedin ${location.pathname === '/dashboard' ? 'active' : ''}`}
               />
 
               {user?.role === 'student' && (
@@ -234,53 +228,35 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Career Assessment"
-                    leftSection={<MagnifyingGlassIcon />}
+                    leftSection={<MagnifyingGlassIcon className="sidebar-icon" />}
                     active={location.pathname === '/assessment'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/assessment');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/assessment'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/assessment' ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Subject Mapper"
-                    leftSection={<TargetIcon />}
+                    leftSection={<TargetIcon className="sidebar-icon" />}
                     active={location.pathname === '/subject-mapper'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/subject-mapper');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/subject-mapper'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/subject-mapper' ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Career Hub"
-                    leftSection={<BookmarkIcon />}
+                    leftSection={<BookmarkIcon className="sidebar-icon" />}
                     active={location.pathname === '/career-hub'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/career-hub');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/career-hub'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/career-hub' ? 'active' : ''}`}
                   />
                 </>
               )}
@@ -290,70 +266,48 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <NavLink
                     href="#"
                     label="Students"
-                    leftSection={<PersonIcon />}
+                    leftSection={<PersonIcon className="sidebar-icon" />}
                     active={location.pathname === '/counselor/students'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/counselor/students');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/counselor/students'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/counselor/students' ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Q&A"
-                    leftSection={<ChatBubbleIcon />}
+                    leftSection={<ChatBubbleIcon className="sidebar-icon" />}
                     active={location.pathname === '/counselor/questions'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/counselor/questions');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/counselor/questions'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/counselor/questions' ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Sessions"
-                    leftSection={<CalendarIcon />}
+                    leftSection={<CalendarIcon className="sidebar-icon" />}
                     active={location.pathname === '/counselor/sessions'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/counselor/sessions');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/counselor/sessions'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/counselor/sessions'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Analytics"
-                    leftSection={<BarChartIcon />}
+                    leftSection={<BarChartIcon className="sidebar-icon" />}
                     active={location.pathname === '/counselor/analytics'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/counselor/analytics');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/counselor/analytics'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/counselor/analytics'
+                          ? 'active' : ''}`}
                   />
                 </>
               )}
@@ -369,132 +323,92 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       e.preventDefault();
                       navigate('/admin/dashboard');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/dashboard'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/dashboard'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="User Management"
-                    leftSection={<PersonIcon />}
+                    leftSection={<PersonIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/users'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/users');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/users'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/users'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="System Analytics"
-                    leftSection={<BarChartIcon />}
+                    leftSection={<BarChartIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/analytics'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/analytics');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/analytics'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/analytics'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Content Moderation"
-                    leftSection={<ActivityLogIcon />}
+                    leftSection={<ActivityLogIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/content-moderation'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/content-moderation');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/content-moderation'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/content-moderation'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="System Configuration"
-                    leftSection={<GearIcon />}
+                    leftSection={<GearIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/system-configuration'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/system-configuration');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/system-configuration'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/system-configuration'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Security Monitoring"
-                    leftSection={<GearIcon />}
+                    leftSection={<GearIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/security-monitoring'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/security-monitoring');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/security-monitoring'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/security-monitoring'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Maintenance Tools"
-                    leftSection={<GearIcon />}
+                    leftSection={<GearIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/maintenance-tools'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/maintenance-tools');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/maintenance-tools'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/maintenance-tools'
+                          ? 'active' : ''}`}
                   />
                   <NavLink
                     href="#"
                     label="Audit Log"
-                    leftSection={<ActivityLogIcon />}
+                    leftSection={<ActivityLogIcon className="sidebar-icon" />}
                     active={location.pathname === '/admin/audit-log'}
                     onClick={e => {
                       e.preventDefault();
                       navigate('/admin/audit-log');
                     }}
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      color:
-                        location.pathname === '/admin/audit-log'
-                          ? 'var(--primary)'
-                          : undefined,
-                    }}
+                    className={`sidebar-item-linkedin ${location.pathname === '/admin/audit-log'
+                          ? 'active' : ''}`}
                   />
                 </>
               )}
@@ -502,7 +416,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Profile"
-                leftSection={<PersonIcon />}
+                leftSection={<PersonIcon className="sidebar-icon" />}
                 active={location.pathname === '/profile'}
                 onClick={e => {
                   e.preventDefault();
@@ -520,7 +434,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <NavLink
                 href="#"
                 label="Settings"
-                leftSection={<GearIcon />}
+                leftSection={<GearIcon className="sidebar-icon" />}
                 onClick={e => {
                   e.preventDefault();
                   notifications.show({

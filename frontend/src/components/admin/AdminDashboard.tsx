@@ -190,14 +190,10 @@ export const AdminDashboard: React.FC = () => {
         {/* Key System Metrics */}
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
           <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            className="hover-lift theme-transition"
+            className="card-linkedin dashboard-card"
             style={{
               backgroundColor: 'var(--card)',
               borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
             }}
           >
             <Stack gap="xs" align="center">
@@ -415,53 +411,45 @@ export const AdminDashboard: React.FC = () => {
                   <Title order={3}>Quick Actions</Title>
                   <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
                     <Button
-                      variant="light"
-                      size="md"
+                      className="btn-secondary-linkedin btn-md"
                       leftSection={<PersonIcon width={18} height={18} />}
                       onClick={() => navigate('/admin/users')}
                       style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
+                        width: '100%',
                       }}
                     >
                       Manage Users
                     </Button>
                     <Button
-                      variant="light"
-                      size="md"
+                      className="btn-secondary-linkedin btn-md"
                       leftSection={<BarChartIcon width={18} height={18} />}
                       onClick={() => navigate('/admin/analytics')}
                       style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
+                        width: '100%',
                       }}
                     >
                       Analytics
                     </Button>
                     <Button
-                      variant="light"
-                      size="md"
+                      className="btn-secondary-linkedin btn-md"
                       leftSection={<ActivityLogIcon width={18} height={18} />}
                       onClick={() => navigate('/admin/content-moderation')}
                       style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
+                        width: '100%',
                       }}
                     >
                       Content Moderation
                     </Button>
                     <Button
-                      variant="light"
-                      size="md"
+                      className="btn-secondary-linkedin btn-md"
                       leftSection={<GearIcon width={18} height={18} />}
                       onClick={() => navigate('/admin/system-configuration')}
                       style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
                         justifyContent: 'flex-start',
+                        width: '100%',
                       }}
                     >
                       System Configuration

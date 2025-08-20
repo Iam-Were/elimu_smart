@@ -43,20 +43,20 @@ export const mantineTheme = createTheme({
     xl: '1rem', // 16px
   },
 
-  // Color palette with role-based theming
+  // Color palette with role-based theming - FIGMA EXACT COLORS
   colors: {
-    // Student theme colors (Orange)
+    // Student theme colors (Orange) - LinkedIn Professional Style
     primary: [
-      '#fef9e7', // 50
-      '#fed7aa', // 100
-      '#fdba74', // 200
-      '#fb923c', // 300
-      '#f97316', // 400 - Primary
-      '#ea580c', // 500
-      '#dc2626', // 600
-      '#b91c1c', // 700
-      '#991b1b', // 800
-      '#7f1d1d', // 900
+      '#fff4f0', // 50 - Very light orange
+      '#ffe9e0', // 100 - Light orange
+      '#ffd6c4', // 200 - Lighter orange
+      '#ffb899', // 300 - Light-medium orange
+      '#ff6b35', // 400 - Primary Figma exact orange
+      '#e65100', // 500 - Darker orange
+      '#d84315', // 600 - Dark orange
+      '#bf360c', // 700 - Very dark orange
+      '#a6360c', // 800 - Deeper orange
+      '#8d2e0b', // 900 - Deepest orange
     ],
 
     // Admin theme colors (Purple/Violet)
