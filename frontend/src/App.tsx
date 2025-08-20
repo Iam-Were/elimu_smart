@@ -23,6 +23,7 @@ import { StudentsPage } from './pages/counselor/StudentsPage';
 import { QuestionsPage } from './pages/counselor/QuestionsPage';
 import { SessionsPage } from './pages/counselor/SessionsPage';
 import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
+import { GroupSessionsPage } from './pages/counselor/GroupSessionsPage';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -55,6 +56,7 @@ const AppContent: React.FC = () => {
         <Route path="/counselor/students" element={<StudentsPage />} />
         <Route path="/counselor/questions" element={<QuestionsPage />} />
         <Route path="/counselor/sessions" element={<SessionsPage />} />
+        <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
         <Route path="/counselor/analytics" element={<AnalyticsPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
