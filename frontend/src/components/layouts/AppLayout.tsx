@@ -1,15 +1,7 @@
 import React, { type ReactNode, useEffect } from 'react';
 import {
   AppShell,
-  Burger,
-  Group,
   Title,
-  Button,
-  Avatar,
-  Menu,
-  Text,
-  Switch,
-  Divider,
   Stack,
   NavLink,
 } from '@mantine/core';
@@ -17,12 +9,9 @@ import {
   DashboardIcon,
   PersonIcon,
   GearIcon,
-  ExitIcon,
   MagnifyingGlassIcon,
   TargetIcon,
   BookmarkIcon,
-  MoonIcon,
-  SunIcon,
   ChatBubbleIcon,
   CalendarIcon,
   BarChartIcon,
@@ -34,7 +23,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { DemoModeSwitch } from '../common/DemoModeSwitch';
-import { GlobalSearch, useGlobalSearchShortcut } from '../common/GlobalSearch';
+import { IntelligentHeader } from '../common/IntelligentHeader';
 import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
 import type { ThemeRole } from '../../types';
 
@@ -44,15 +33,11 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [opened, { toggle }] = useDisclosure();
-  const [searchOpened, { toggle: toggleSearch }] = useDisclosure();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
-  const { currentTheme, setTheme, isDark, toggleDarkMode } = useThemeContext();
+  const { user } = useAuth();
+  const { currentTheme, setTheme } = useThemeContext();
   const breadcrumbs = useBreadcrumbs();
-
-  // Add global search shortcut
-  useGlobalSearchShortcut(toggleSearch);
 
   // Automatically update theme when user role changes
   useEffect(() => {
@@ -70,53 +55,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     }
   }, [user?.role, currentTheme, setTheme]);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      notifications.show({
-        title: 'Logged out',
-        message: 'You have been successfully logged out',
-        color: 'blue',
-      });
-    } catch {
-      notifications.show({
-        title: 'Logout failed',
-        message: 'Failed to log out. Please try again.',
-        color: 'red',
-      });
-    }
-  };
 
-  const getThemeColor = (theme: ThemeRole) => {
-    switch (theme) {
-      case 'admin':
-        return '#a855f7';
-      case 'counselor':
-        return '#eab308';
-      default:
-        return '#f97316';
-    }
-  };
 
-  const getUserDisplayName = () => {
-    if (!user) return 'User';
-    return `${user.firstName} ${user.lastName}`;
-  };
 
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case 'super_admin':
-        return 'Super Admin';
-      case 'career_counselor':
-        return 'Career Counselor';
-      default:
-        return role.charAt(0).toUpperCase() + role.slice(1);
-    }
-  };
 
   return (
     <AppShell
-      header={{ height: 70 }}
+      header={{ height: 64 }}
       navbar={{
         width: 300,
         breakpoint: 'sm',
@@ -125,92 +70,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       padding="md"
       className="theme-transition"
     >
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
-            />
-            <Title order={3} style={{ color: 'var(--primary)' }}>
-              Elimu Smart
-            </Title>
-          </Group>
-
-          <Group gap="md">
-            <GlobalSearch className="flex-1 max-w-md" />
-            
-            <Menu shadow="md" width={280} position="bottom-end">
-              <Menu.Target>
-                <Button variant="subtle" style={{ padding: '0 8px' }}>
-                  <Group gap="sm">
-                    <Avatar
-                      size={32}
-                      radius="xl"
-                      color={currentTheme}
-                      style={{
-                        backgroundColor: getThemeColor(currentTheme),
-                      }}
-                    >
-                      {user?.firstName?.[0]}
-                      {user?.lastName?.[0]}
-                    </Avatar>
-                    <Stack gap={0} align="flex-start" style={{ minWidth: 0 }}>
-                      <Text size="sm" fw={500} truncate>
-                        {getUserDisplayName()}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {user?.role && getRoleDisplayName(user.role)}
-                      </Text>
-                    </Stack>
-                  </Group>
-                </Button>
-              </Menu.Target>
-
-              <Menu.Dropdown>
-                <Menu.Label>Settings</Menu.Label>
-
-                <Menu.Item>
-                  <Group justify="space-between">
-                    <Group gap="sm">
-                      {isDark ? (
-                        <MoonIcon width={16} height={16} />
-                      ) : (
-                        <SunIcon width={16} height={16} />
-                      )}
-                      <Text size="sm">Dark Mode</Text>
-                    </Group>
-                    <Switch
-                      checked={isDark}
-                      onChange={toggleDarkMode}
-                      size="sm"
-                    />
-                  </Group>
-                </Menu.Item>
-
-                <Divider my="xs" />
-
-                <Menu.Label>Account</Menu.Label>
-                <Menu.Item
-                  onClick={() => navigate('/profile')}
-                  leftSection={<PersonIcon width={16} height={16} />}
-                >
-                  Profile Settings
-                </Menu.Item>
-                <Menu.Item
-                  onClick={handleLogout}
-                  color="red"
-                  leftSection={<ExitIcon width={16} height={16} />}
-                >
-                  Logout
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          </Group>
-        </Group>
-      </AppShell.Header>
+      <IntelligentHeader
+        notificationCount={3}
+        messageCount={1}
+        onToggleSidebar={toggle}
+      />
 
       {/* Smart Breadcrumbs */}
       <SmartBreadcrumbs items={breadcrumbs} />
@@ -480,35 +344,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       <AppShell.Main className="theme-transition">{children}</AppShell.Main>
       
-      {/* Global Search Modal */}
-      {searchOpened && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: '10vh',
-          }}
-          onClick={toggleSearch}
-        >
-          <div
-            style={{
-              width: '90%',
-              maxWidth: '600px',
-              height: 'fit-content',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <GlobalSearch className="w-full" />
-          </div>
-        </div>
-      )}
     </AppShell>
   );
 };

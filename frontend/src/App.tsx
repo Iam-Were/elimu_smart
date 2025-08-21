@@ -17,6 +17,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { FormDemoPage } from './pages/FormDemoPage';
+import { AccountSettingsPage } from './pages/AccountSettingsPage';
 import { CareerAssessment } from './components/student/CareerAssessment';
 import { SubjectCareerMapper } from './components/student/SubjectCareerMapper';
 import { CareerGuidanceHub } from './components/student/CareerGuidanceHub';
@@ -60,6 +61,7 @@ const AppContent: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/form-demo" element={<FormDemoPage />} />
+        <Route path="/settings/*" element={<AccountSettingsPage />} />
         <Route path="/assessment" element={<CareerAssessment />} />
         <Route path="/subject-mapper" element={<SubjectCareerMapper />} />
         <Route path="/career-hub" element={<CareerGuidanceHub />} />
