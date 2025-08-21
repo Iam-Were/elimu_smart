@@ -114,53 +114,87 @@
   --transition-slow: 500ms ease-out;
 }
 
-/* Dark Mode Theme */
+/* Dark Mode Theme - Enhanced Contrast */
 .dark {
-  --background: #1a1a1a;
-  --foreground: #fafafa;
-  --card: #262626;
-  --card-foreground: #fafafa;
-  --popover: #262626;
-  --popover-foreground: #fafafa;
-  --primary: #ff6b35; /* Figma exact orange */
+  --background: #0f0f0f; /* Darker background for better contrast */
+  --foreground: #ffffff; /* Pure white text for maximum contrast */
+  --card: #1a1a1a; /* Darker cards */
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #ff7849; /* Slightly brighter orange for dark mode */
   --primary-foreground: #ffffff;
-  --secondary: #404040;
-  --secondary-foreground: #ff8a65; /* Lighter orange variant */
-  --muted: #404040;
-  --muted-foreground: #a3a3a3;
-  --accent: #525252;
-  --accent-foreground: #ff8a65; /* Lighter orange for accent */
-  --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: rgba(255, 107, 53, 0.3); /* Figma orange with opacity */
-  --input: #404040;
-  --input-background: #404040;
-  --ring: #ff6b35; /* Figma exact orange */
-  --sidebar: #262626;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #ff6b35; /* Figma exact orange */
+  --secondary: #2a2a2a; /* Darker secondary */
+  --secondary-foreground: #ffab91; /* Higher contrast orange */
+  --muted: #262626; /* Better contrast for muted backgrounds */
+  --muted-foreground: #d4d4d4; /* Much lighter gray for better readability */
+  --accent: #333333;
+  --accent-foreground: #ffab91; 
+  --destructive: #ef4444; /* Brighter red for visibility */
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.15); /* Light border for dark mode */
+  --input: #2a2a2a;
+  --input-background: #2a2a2a;
+  --ring: #ff7849;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ff7849;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #404040;
-  --sidebar-accent-foreground: #ff8a65; /* Lighter orange */
-  --sidebar-border: rgba(255, 107, 53, 0.3); /* Figma orange border */
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #ffab91;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
 
-  /* Dark mode admin theme */
-  --admin-primary: #a855f7;
-  --admin-secondary: #3730a3;
-  --admin-muted: #312e81;
-  --admin-accent: #4c1d95;
-  --admin-border: rgba(168, 85, 247, 0.3);
-  --admin-sidebar: #312e81;
-  --admin-sidebar-foreground: #c4b5fd;
+  /* Dark mode admin theme - Enhanced Contrast */
+  --admin-primary: #c084fc; /* Brighter purple for visibility */
+  --admin-secondary: #4c1d95;
+  --admin-muted: #2e1065;
+  --admin-accent: #581c87;
+  --admin-border: rgba(192, 132, 252, 0.3);
+  --admin-sidebar: #2e1065;
+  --admin-sidebar-foreground: #e9d5ff;
 
-  /* Dark mode counselor theme */
-  --counselor-primary: #eab308;
-  --counselor-secondary: #713f12;
+  /* Dark mode counselor theme - Enhanced Contrast */
+  --counselor-primary: #fbbf24; /* Brighter yellow for visibility */
+  --counselor-secondary: #92400e;
   --counselor-muted: #451a03;
-  --counselor-accent: #92400e;
-  --counselor-border: rgba(234, 179, 8, 0.3);
+  --counselor-accent: #b45309;
+  --counselor-border: rgba(251, 191, 36, 0.3);
   --counselor-sidebar: #451a03;
   --counselor-sidebar-foreground: #fef3c7;
+  
+  /* Enhanced Dark Mode Specific Styles */
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d4;
+  --text-muted: #a3a3a3;
+  --surface-elevated: #2a2a2a;
+  --surface-high: #333333;
+}
+
+/* Dark mode card fixes */
+.dark .mantine-Card-root {
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+.dark .mantine-Paper-root {
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+/* Dark mode welcome and content areas */
+.dark .mantine-Container-root {
+  background-color: transparent !important;
+}
+
+.dark .mantine-Stack-root {
+  background-color: transparent !important;
+}
+
+/* Ensure all cards use theme variables in dark mode */
+.dark [data-card="true"] {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
 }
 
 /* Base Layer - Global Styles */
