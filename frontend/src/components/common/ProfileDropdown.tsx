@@ -10,6 +10,7 @@ import {
   Paper,
   ActionIcon,
   Switch,
+  Button,
 } from '@mantine/core';
 import {
   PersonIcon,
@@ -25,6 +26,7 @@ import {
   SunIcon,
 } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
@@ -52,10 +54,62 @@ interface DropdownSection {
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) => {
   const [opened, setOpened] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const { currentTheme, isDark, toggleDarkMode } = useThemeContext();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Demo users for quick switching
+  const demoUsers = [
+    {
+      email: 'student@elimu.com',
+      password: 'student',
+      role: 'student',
+      name: 'Student',
+      color: 'orange',
+      icon: '🎓',
+    },
+    {
+      email: 'counselor@elimu.com',
+      password: 'counselor',
+      role: 'counselor',
+      name: 'Counselor',
+      color: 'yellow',
+      icon: '👨‍🏫',
+    },
+    {
+      email: 'admin@elimu.com',
+      password: 'admin',
+      role: 'admin',
+      name: 'Admin',
+      color: 'violet',
+      icon: '👨‍💼',
+    },
+  ];
+
+  const handleDemoLogin = async (demoUser: typeof demoUsers[0]) => {
+    try {
+      await login({
+        email: demoUser.email,
+        password: demoUser.password,
+      });
+
+      notifications.show({
+        title: '🎭 Demo Mode Active',
+        message: `Switched to ${demoUser.name} (${demoUser.role})`,
+        color: demoUser.color,
+      });
+      
+      setOpened(false);
+      navigate('/dashboard');
+    } catch {
+      notifications.show({
+        title: 'Demo Login Failed',
+        message: 'Could not switch to demo user',
+        color: 'red',
+      });
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -182,13 +236,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
     {
       title: 'Development',
       items: [
-        {
-          id: 'demo-mode',
-          label: 'Demo Mode',
-          description: 'Switch between user roles for testing',
-          icon: PersonIcon,
-          onClick: () => handleNavigation('/form-demo'),
-        },
       ],
     },
   ];
@@ -494,7 +541,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
                 />
               </Group>
               
-              {/* Quick Demo Switch */}
+              {/* Demo User Switching */}
               <Text
                 size="xs"
                 fw={600}
@@ -506,101 +553,70 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
                   marginTop: '12px',
                 }}
               >
-                Quick Demo Switch
+                Demo User Switch
               </Text>
-              <Group gap="xs">
-                <UnstyledButton
-                  onClick={() => handleNavigation('/dashboard?demo=student')}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    backgroundColor: 'var(--secondary)',
-                    color: 'var(--secondary-foreground)',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                >
-                  Student
-                </UnstyledButton>
-                <UnstyledButton
-                  onClick={() => handleNavigation('/dashboard?demo=counselor')}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    backgroundColor: 'var(--muted)',
-                    color: 'var(--muted-foreground)',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                >
-                  Counselor
-                </UnstyledButton>
-                <UnstyledButton
-                  onClick={() => handleNavigation('/dashboard?demo=admin')}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    backgroundColor: 'var(--muted)',
-                    color: 'var(--muted-foreground)',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                >
-                  Admin
-                </UnstyledButton>
-              </Group>
-            </div>
-
-            {/* Sign Out Section */}
-            <Divider my="xs" />
-            <UnstyledButton
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-                color: 'var(--destructive)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--destructive-foreground)';
-                e.currentTarget.style.color = 'var(--destructive)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = 'var(--destructive)';
-              }}
-            >
-              <ExitIcon width={16} height={16} />
-              <Stack gap={1} style={{ flex: 1, textAlign: 'left' }}>
-                <Text size="sm" fw={500}>
-                  Sign Out
-                </Text>
-                <Text size="xs" c="dimmed">
-                  Sign out of your account
-                </Text>
+              <Stack gap="xs">
+                {demoUsers.map(demoUser => (
+                  <Button
+                    key={demoUser.role}
+                    variant="light"
+                    color={demoUser.color}
+                    size="xs"
+                    fullWidth
+                    leftSection={demoUser.icon}
+                    onClick={() => handleDemoLogin(demoUser)}
+                    style={{
+                      justifyContent: 'flex-start',
+                      height: 'auto',
+                      padding: '8px 12px',
+                    }}
+                  >
+                    <Text fw={500} size="xs">
+                      Switch to {demoUser.name}
+                    </Text>
+                  </Button>
+                ))}
               </Stack>
-            </UnstyledButton>
+
+              {/* Sign Out Section */}
+              <Divider my="xs" />
+              <UnstyledButton
+                onClick={handleLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease',
+                  color: 'var(--destructive)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--destructive-foreground)';
+                  e.currentTarget.style.color = 'var(--destructive)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--destructive)';
+                }}
+              >
+                <ExitIcon width={16} height={16} />
+                <Stack gap={1} style={{ flex: 1, textAlign: 'left' }}>
+                  <Text size="sm" fw={500}>
+                    Sign Out
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    Sign out of your account
+                  </Text>
+                </Stack>
+              </UnstyledButton>
+            </div>
           </div>
         </Paper>
       )}
 
-      <style>{`
-        @keyframes dropdownSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `}</style>
     </div>
   );
 };

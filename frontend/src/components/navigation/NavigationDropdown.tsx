@@ -4,7 +4,9 @@ import {
   Paper,
   Stack,
   Text,
+  Group,
 } from '@mantine/core';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 
 interface NavigationItem {
@@ -21,6 +23,7 @@ interface NavigationDropdownProps {
   items: NavigationItem[];
   userRole?: string;
   className?: string;
+  icon?: React.ComponentType<{ width?: number; height?: number }>;
 }
 
 export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
@@ -28,6 +31,7 @@ export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
   items,
   userRole,
   className = '',
+  icon: Icon,
 }) => {
   const [opened, setOpened] = useState(false);
   const navigate = useNavigate();
@@ -78,20 +82,19 @@ export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
         onClick={() => setOpened(!opened)}
         style={{
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.5rem 0.75rem',
+          padding: '4px 8px',
           borderRadius: '4px',
           cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          backgroundColor: opened ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-          fontSize: '14px',
-          fontWeight: 600,
-          color: 'var(--foreground)',
+          transition: 'background-color 0.2s ease',
+          backgroundColor: opened ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+          minWidth: '60px',
+          position: 'relative',
         }}
         onMouseEnter={(e) => {
           if (!opened) {
-            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
           }
         }}
         onMouseLeave={(e) => {
@@ -100,20 +103,23 @@ export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
           }
         }}
       >
-        {label}
-        <svg
-          width={12}
-          height={12}
-          style={{
+        <Group gap="xs" style={{ alignItems: 'center' }}>
+          {Icon && (
+            <div style={{ color: 'var(--foreground)' }}>
+              <Icon width={20} height={20} />
+            </div>
+          )}
+          <div style={{ 
             transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
-            marginLeft: '2px',
-          }}
-          fill="currentColor"
-          viewBox="0 0 12 12"
-        >
-          <path d="M6 8.5L2 4.5h8L6 8.5z" />
-        </svg>
+            color: 'var(--foreground)',
+          }}>
+            <ChevronDownIcon width={12} height={12} />
+          </div>
+        </Group>
+        <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--foreground)', marginTop: '2px' }}>
+          {label}
+        </span>
       </UnstyledButton>
 
       {opened && (

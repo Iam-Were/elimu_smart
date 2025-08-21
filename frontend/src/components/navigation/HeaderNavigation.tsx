@@ -11,6 +11,8 @@ import {
   CalendarIcon,
   GearIcon,
   ActivityLogIcon,
+  ReaderIcon,
+  BackpackIcon,
 } from '@radix-ui/react-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -139,19 +141,20 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
     <UnstyledButton
       onClick={onClick}
       style={{
-        padding: '0.5rem 0.75rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '4px 8px',
         borderRadius: '4px',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
+        transition: 'background-color 0.2s ease',
         backgroundColor: active ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-        fontSize: '14px',
-        fontWeight: 600,
-        color: active ? 'var(--primary)' : 'var(--foreground)',
+        minWidth: '60px',
         borderBottom: active ? '2px solid var(--primary)' : '2px solid transparent',
       }}
       onMouseEnter={(e) => {
         if (!active) {
-          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
         }
       }}
       onMouseLeave={(e) => {
@@ -160,10 +163,14 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
         }
       }}
     >
-      <Group gap="xs" style={{ alignItems: 'center' }}>
-        {Icon && <Icon width={16} height={16} />}
+      {Icon && (
+        <div style={{ color: active ? 'var(--primary)' : 'var(--foreground)' }}>
+          <Icon width={20} height={20} />
+        </div>
+      )}
+      <span style={{ fontSize: '12px', fontWeight: 400, color: active ? 'var(--primary)' : 'var(--foreground)', marginTop: '2px' }}>
         {label}
-      </Group>
+      </span>
     </UnstyledButton>
   );
 
@@ -184,6 +191,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
           label="Learning"
           items={learningItems}
           userRole={user.role}
+          icon={ReaderIcon}
         />
       )}
 
@@ -231,17 +239,10 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
           label="Work"
           items={workItems}
           userRole={user.role}
+          icon={BackpackIcon}
         />
       )}
 
-      {/* Messages - always visible */}
-      <NavigationButton
-        label="Messaging"
-        path="/messages"
-        active={isActive('/messages')}
-        onClick={() => handleNavigation('/messages')}
-        icon={ChatBubbleIcon}
-      />
     </Group>
   );
 };

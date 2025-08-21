@@ -48,7 +48,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         style={{
           paddingTop: '24px',
           paddingBottom: '40px',
-          minHeight: 'calc(100vh - 52px)',
+          minHeight: 'calc(100vh - 64px)',
           backgroundColor: 'var(--muted)',
         }}
       >

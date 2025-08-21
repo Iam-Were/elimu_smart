@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Group,
-  ActionIcon,
   TextInput,
   Badge,
   Title,
@@ -65,7 +64,7 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
         style={{
           display: 'flex',
           alignItems: 'center',
-          height: '52px',
+          height: '64px',
           backgroundColor: 'var(--card)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
@@ -87,8 +86,8 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
             padding: '0 24px',
           }}
         >
-          {/* Left Section - Logo, Brand and Navigation */}
-          <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          {/* Left Section - Logo, Search, and Navigation */}
+          <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {onToggleSidebar && (
             <Burger
               onClick={onToggleSidebar}
@@ -130,6 +129,51 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
                 Elimu Smart
               </Title>
             </Group>
+
+            {/* Global Search - Moved after logo */}
+            {showSearch && (
+              <div
+                className="header-search"
+                style={{
+                  maxWidth: '280px',
+                  width: '280px',
+                }}
+              >
+                <div className="global-search" style={{ position: 'relative', width: '100%' }}>
+                  <TextInput
+                    placeholder={searchPlaceholder}
+                    leftSection={<MagnifyingGlassIcon width={16} height={16} />}
+                    onFocus={() => {
+                      setSearchFocused(true);
+                      toggleSearch();
+                    }}
+                    onBlur={() => setSearchFocused(false)}
+                    style={{
+                      width: '100%',
+                    }}
+                    styles={{
+                      input: {
+                        borderRadius: '4px',
+                        backgroundColor: 'var(--muted)',
+                        border: '1px solid transparent',
+                        transition: 'all 0.2s ease',
+                        paddingLeft: '2.5rem',
+                        fontSize: '14px',
+                        height: '36px',
+                        '&::placeholder': {
+                          color: 'var(--muted-foreground)',
+                        },
+                        '&:focus': {
+                          borderColor: 'var(--primary)',
+                          backgroundColor: 'var(--background)',
+                          boxShadow: 'inset 0 0 0 1px var(--primary)',
+                        },
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             
             {/* Navigation */}
             {showNavigation && (
@@ -137,145 +181,142 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
             )}
           </div>
 
-          {/* Center Section - Global Search */}
-          {showSearch && (
-            <div
-              className="header-center"
+          {/* Right Section - Actions and Profile */}
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Quick Navigation for smaller screens */}
+          {!isHomePage && (
+            <div 
+              className="linkedin-nav-item"
+              onClick={() => navigate('/dashboard')}
               style={{
-                flex: 1,
-                maxWidth: '400px',
-                margin: '0 2rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                transition: 'background-color 0.2s ease',
+                minWidth: '60px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
-              <div className="global-search" style={{ position: 'relative', width: '100%' }}>
-                <TextInput
-                  placeholder={searchPlaceholder}
-                  leftSection={<MagnifyingGlassIcon width={16} height={16} />}
-                  onFocus={() => {
-                    setSearchFocused(true);
-                    toggleSearch();
-                  }}
-                  onBlur={() => setSearchFocused(false)}
-                  style={{
-                    width: '100%',
-                  }}
-                  styles={{
-                    input: {
-                      borderRadius: '4px',
-                      backgroundColor: 'var(--muted)',
-                      border: '1px solid transparent',
-                      transition: 'all 0.2s ease',
-                      paddingLeft: '2.5rem',
-                      fontSize: '14px',
-                      height: '36px',
-                      '&::placeholder': {
-                        color: 'var(--muted-foreground)',
-                      },
-                      '&:focus': {
-                        borderColor: 'var(--primary)',
-                        backgroundColor: 'var(--background)',
-                        boxShadow: 'inset 0 0 0 1px var(--primary)',
-                      },
-                    },
-                  }}
-                />
-              </div>
+              <HomeIcon width={20} height={20} style={{ color: 'var(--foreground)' }} />
+              <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--foreground)', marginTop: '2px' }}>
+                Home
+              </span>
             </div>
           )}
 
-          {/* Right Section - Actions and Profile */}
-          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {/* Quick Navigation for smaller screens */}
-          {!isHomePage && (
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              onClick={() => navigate('/dashboard')}
-              style={{
-                borderRadius: '8px',
-                transition: 'background-color 0.2s ease',
-              }}
-              aria-label="Go to Dashboard"
-            >
-              <HomeIcon width={20} height={20} />
-            </ActionIcon>
-          )}
-
           {/* Notifications */}
-          <ActionIcon
-            variant="subtle"
-            size="lg"
+          <div 
+            className="linkedin-nav-item"
             onClick={handleNotificationClick}
             style={{
-              position: 'relative',
-              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
               transition: 'background-color 0.2s ease',
+              minWidth: '60px',
+              position: 'relative',
             }}
-            aria-label={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ''}`}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
-            <BellIcon width={20} height={20} />
-            {notificationCount > 0 && (
-              <Badge
-                size="xs"
-                variant="filled"
-                color="red"
-                style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  minWidth: '18px',
-                  height: '18px',
-                  borderRadius: '9px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none',
-                }}
-              >
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </Badge>
-            )}
-          </ActionIcon>
+            <div style={{ position: 'relative' }}>
+              <BellIcon width={20} height={20} style={{ color: 'var(--foreground)' }} />
+              {notificationCount > 0 && (
+                <Badge
+                  size="xs"
+                  variant="filled"
+                  color="red"
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    minWidth: '16px',
+                    height: '16px',
+                    borderRadius: '8px',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </Badge>
+              )}
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--foreground)', marginTop: '2px' }}>
+              Notifications
+            </span>
+          </div>
 
-          {/* Messages */}
-          <ActionIcon
-            variant="subtle"
-            size="lg"
+          {/* Messages - Single instance only */}
+          <div 
+            className="linkedin-nav-item"
             onClick={handleMessageClick}
             style={{
-              position: 'relative',
-              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
               transition: 'background-color 0.2s ease',
+              minWidth: '60px',
+              position: 'relative',
             }}
-            aria-label={`Messages ${messageCount > 0 ? `(${messageCount})` : ''}`}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
-            <ChatBubbleIcon width={20} height={20} />
-            {messageCount > 0 && (
-              <Badge
-                size="xs"
-                variant="filled"
-                color="blue"
-                style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  minWidth: '18px',
-                  height: '18px',
-                  borderRadius: '9px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none',
-                }}
-              >
-                {messageCount > 99 ? '99+' : messageCount}
-              </Badge>
-            )}
-          </ActionIcon>
+            <div style={{ position: 'relative' }}>
+              <ChatBubbleIcon width={20} height={20} style={{ color: 'var(--foreground)' }} />
+              {messageCount > 0 && (
+                <Badge
+                  size="xs"
+                  variant="filled"
+                  color="blue"
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    minWidth: '16px',
+                    height: '16px',
+                    borderRadius: '8px',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {messageCount > 99 ? '99+' : messageCount}
+                </Badge>
+              )}
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--foreground)', marginTop: '2px' }}>
+              Messaging
+            </span>
+          </div>
 
             {/* Profile Dropdown */}
             {user && <ProfileDropdown />}
