@@ -1,36 +1,63 @@
-// Icon utilities for consistent Lucide React usage
+// Sprint 15: Enhanced Icon utilities with Intelligence System Integration
 import type { LucideIcon } from 'lucide-react';
+import { iconSizes as intelligentIconSizes, type IconSize, getRoleIconClass } from './iconIntelligence';
 
-// Icon size classes for consistent styling
-export const iconSizes = {
-  sm: 'h-4 w-4',      // 16px - Small icons
-  base: 'h-5 w-5',    // 20px - Default icons  
-  lg: 'h-6 w-6',      // 24px - Large icons
-  xl: 'h-8 w-8',      // 32px - XL icons
-} as const;
+// Re-export enhanced icon sizes from intelligence system
+export const iconSizes = intelligentIconSizes;
+export type { IconSize };
 
-export type IconSize = keyof typeof iconSizes;
-
-// Icon wrapper component for consistent usage
+// Enhanced Icon wrapper component with Universal Component DNA
 interface IconProps {
   icon: LucideIcon;
   size?: IconSize;
   className?: string;
   style?: React.CSSProperties;
+  animate?: boolean;
+  ariaLabel?: string;
+  ariaHidden?: boolean;
+  onClick?: () => void;
+  role?: 'student' | 'admin' | 'counselor';
 }
 
 export const Icon: React.FC<IconProps> = ({ 
   icon: IconComponent, 
   size = 'base', 
   className = '', 
-  style 
+  style,
+  animate = true,
+  ariaLabel,
+  ariaHidden = false,
+  onClick,
+  role
 }) => {
-  return (
+  const roleClass = getRoleIconClass(role);
+  const animationClass = animate ? 'transition-all duration-150 hover:scale-105' : '';
+  const interactiveClass = onClick ? 'cursor-pointer focus-enhanced' : '';
+  
+  const IconElement = (
     <IconComponent 
-      className={`${iconSizes[size]} ${className}`}
+      className={`${iconSizes[size]} ${roleClass} ${animationClass} ${interactiveClass} ${className}`}
       style={style}
+      aria-label={ariaHidden ? undefined : ariaLabel}
+      aria-hidden={ariaHidden}
+      role={ariaHidden ? 'presentation' : 'img'}
     />
   );
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className="focus-enhanced p-1 rounded"
+        aria-label={ariaLabel}
+        type="button"
+      >
+        {IconElement}
+      </button>
+    );
+  }
+
+  return IconElement;
 };
 
 // Common icon mappings from Radix to Lucide
