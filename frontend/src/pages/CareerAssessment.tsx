@@ -149,8 +149,8 @@ const CareerAssessmentPage: React.FC = () => {
           {/* Question Section */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-                <question.categoryIcon className="h-6 w-6 text-orange-600" />
+              <div className="h-12 w-12 gradient-primary rounded-full flex items-center justify-center shadow-gradient-primary">
+                <question.categoryIcon className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -216,7 +216,7 @@ const CareerAssessmentPage: React.FC = () => {
             <button
               onClick={handleNext}
               disabled={!selectedAnswer}
-              className="inline-flex items-center px-6 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200"
+              className="inline-flex items-center px-6 py-2 rounded-lg gradient-primary text-white font-medium hover:shadow-gradient-primary hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200"
             >
               {currentQuestion === totalQuestions ? (
                 <>

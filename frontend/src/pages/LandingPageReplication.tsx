@@ -115,9 +115,10 @@ const LandingPage: React.FC = () => {
               </button>
               <button 
                 onClick={() => navigate('/register')}
-                className="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                className="inline-flex items-center px-6 py-3 rounded-lg gradient-primary text-white font-medium hover:shadow-gradient-primary hover:-translate-y-1 transition-all duration-300 transform animate-pulse"
               >
                 Get Started
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
             
@@ -125,15 +126,19 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with Enhanced Gradient */}
       <section className="relative overflow-hidden">
-        <div className="bg-gradient-to-br from-orange-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="gradient-hero-primary dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative">
+          <div className="absolute inset-0 bg-white/10 dark:bg-gray-900/50"></div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
             <div className="text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              <div className="mb-6 inline-flex items-center px-4 py-2 rounded-full gradient-secondary text-white text-sm font-medium shadow-lg">
+                🚀 Kenya's #1 Career Guidance Platform
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
                 Discover Your Perfect
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">
-                  {' '}Career Path
+                <span className="text-gradient-primary block mt-2">
+                  Career Path
                 </span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
@@ -143,10 +148,10 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <button 
                   onClick={() => navigate('/register')}
-                  className="w-full sm:w-auto inline-flex items-center px-8 py-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                  className="w-full sm:w-auto inline-flex items-center px-8 py-4 rounded-lg gradient-primary text-white font-medium text-lg hover:shadow-gradient-primary hover:-translate-y-1 transition-all duration-300 group"
                 >
                   Start Your Journey
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button 
                   onClick={() => navigate('/demo')}
@@ -193,10 +198,10 @@ const LandingPage: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 hover:shadow-gradient-primary hover:-translate-y-2 transition-all duration-300 group gradient-card-subtle">
                 <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-lg ${feature.color}`}>
-                    <feature.icon className="h-6 w-6" />
+                  <div className="p-3 rounded-lg gradient-primary shadow-gradient-primary group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">

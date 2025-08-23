@@ -13,7 +13,8 @@ import {
   Search,
   FileText,
   Check,
-  X
+  X,
+  TrendingUp
 } from 'lucide-react';
 // import { useAuth } from '../hooks/useAuth'; // Removed unused import
 import { useNavigate } from 'react-router-dom';
@@ -71,20 +72,22 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ className = '' }) => {
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${className}`}>
       
-      {/* Page Header with Breadcrumbs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Page Header with Enhanced Gradient Background */}
+      <div className="gradient-hero-primary dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div>
               <nav className="flex mb-2" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                  <li>Dashboard</li>
+                <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li className="flex items-center">
+                    <span>Dashboard</span>
+                  </li>
                 </ol>
               </nav>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-3xl font-bold text-gradient-primary dark:text-gray-100 mb-2">
                 Welcome back, {mockUserData.name}! 👋
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">
+              <p className="text-gray-700 dark:text-gray-300 text-lg">
                 Track your career discovery progress and next steps
               </p>
             </div>
@@ -98,7 +101,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ className = '' }) => {
               </button>
               <button 
                 onClick={() => navigate('/assessment')}
-                className="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                className="inline-flex items-center px-4 py-2 rounded-lg gradient-primary text-white font-medium hover:shadow-gradient-primary hover:-translate-y-0.5 transition-all duration-200"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Take Assessment
@@ -115,24 +118,29 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ className = '' }) => {
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Progress Overview Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            {/* Enhanced Progress Overview Card with Gradient */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-gradient-primary border border-orange-200 dark:border-gray-700 p-6 gradient-card-subtle">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Your Progress
-                </h2>
-                <button className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 gradient-primary rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Your Progress
+                  </h2>
+                </div>
+                <button className="inline-flex items-center text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition-colors">
                   <ExternalLink className="h-4 w-4" />
                 </button>
               </div>
               
               {/* Progress Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="text-center">
-                  <div className="h-16 w-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Target className="h-8 w-8 text-orange-600" />
+                <div className="text-center group">
+                  <div className="h-16 w-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 shadow-gradient-primary group-hover:scale-110 transition-transform duration-300">
+                    <Target className="h-8 w-8 text-white" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <div className="text-2xl font-bold text-gradient-primary dark:text-gray-100">
                     {mockUserData.assessmentProgress}%
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Assessment Complete</div>
