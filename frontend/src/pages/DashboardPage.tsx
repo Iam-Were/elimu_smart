@@ -3,28 +3,23 @@ import {
   Container,
   Title,
   Text,
-  Card,
   Grid,
   Stack,
   Badge,
   Group,
-  Button,
-  Alert,
-  RingProgress,
-  SimpleGrid,
 } from '@mantine/core';
 // Sprint 15: Enhanced Icon System with Intelligence
 import { 
   UniversalIcon, 
   StatCardIcon, 
-  QuickActionButton,
-  ICON_INTELLIGENCE_SYSTEM
+  QuickActionButton
 } from '../utils/iconIntelligence';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { CounselorDashboard } from '../components/counselor/CounselorDashboard';
 import { DashboardAnalytics, MetricCard } from '../components/common/InteractiveCharts';
+import Dashboard from './Dashboard'; // Import the new Dashboard component
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -125,6 +120,11 @@ export const DashboardPage: React.FC = () => {
   }
   
   if (user?.role === 'student') {
+    return <Dashboard />;
+  }
+  
+  // Legacy implementation disabled
+  if (false) {
     return (
       <div className="container-enhanced py-6">
         <Stack gap="lg">

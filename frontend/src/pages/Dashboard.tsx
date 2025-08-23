@@ -1,0 +1,328 @@
+import React from 'react';
+import { 
+  Target, 
+  BookOpen, 
+  MessageCircle, 
+  Settings,
+  Plus,
+  ExternalLink,
+  ArrowRight,
+  GraduationCap,
+  Code,
+  Calendar,
+  Search,
+  FileText,
+  Check,
+  X
+} from 'lucide-react';
+// import { useAuth } from '../hooks/useAuth'; // Removed unused import
+import { useNavigate } from 'react-router-dom';
+
+interface DashboardPageProps {
+  className?: string;
+}
+
+// Mock user data - replace with real data from context/API
+const mockUserData = {
+  name: 'Alex Mwangi',
+  profileCompletion: 85,
+  assessmentProgress: 75,
+  careersExplored: 12,
+  counselorSessions: 3
+};
+
+// Mock applications data
+const mockApplications = [
+  {
+    id: 1,
+    title: 'University of Nairobi - Computer Science',
+    description: 'Applied 2 days ago',
+    status: 'pending',
+    icon: GraduationCap
+  },
+  {
+    id: 2, 
+    title: 'KCA University - Software Engineering',
+    description: 'Applied 1 week ago', 
+    status: 'accepted',
+    icon: Code
+  }
+];
+
+// Mock upcoming events
+const mockEvents = [
+  {
+    id: 1,
+    title: 'Career Fair - Tech Careers',
+    time: 'Tomorrow, 2:00 PM',
+    type: 'event'
+  },
+  {
+    id: 2,
+    title: 'Counselor Session',
+    time: 'Friday, 10:00 AM',
+    type: 'session'
+  }
+];
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ className = '' }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${className}`}>
+      
+      {/* Page Header with Breadcrumbs */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <nav className="flex mb-2" aria-label="Breadcrumb">
+                <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                  <li>Dashboard</li>
+                </ol>
+              </nav>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Welcome back, {mockUserData.name}! 👋
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                Track your career discovery progress and next steps
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => navigate('/settings')}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </button>
+              <button 
+                onClick={() => navigate('/assessment')}
+                className="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Take Assessment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard Content Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Progress Overview Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Your Progress
+                </h2>
+                <button className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              </div>
+              
+              {/* Progress Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Target className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {mockUserData.assessmentProgress}%
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Assessment Complete</div>
+                </div>
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <BookOpen className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {mockUserData.careersExplored}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Careers Explored</div>
+                </div>
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <MessageCircle className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {mockUserData.counselorSessions}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Counselor Sessions</div>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Overall Progress</span>
+                  <span className="text-orange-600 font-medium">{mockUserData.profileCompletion}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${mockUserData.profileCompletion}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Recent Applications */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Recent Applications
+                </h2>
+                <button className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-orange-600 transition-colors duration-200">
+                  View All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {mockApplications.map((application) => (
+                  <div key={application.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center space-x-4">
+                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                        application.status === 'accepted' 
+                          ? 'bg-green-100 dark:bg-green-900/30' 
+                          : 'bg-blue-100 dark:bg-blue-900/30'
+                      }`}>
+                        <application.icon className={`h-5 w-5 ${
+                          application.status === 'accepted' ? 'text-green-600' : 'text-blue-600'
+                        }`} />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                          {application.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {application.description}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      application.status === 'accepted' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                    }`}>
+                      {application.status === 'accepted' ? 'Accepted' : 'Pending'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+          </div>
+          
+          {/* Sidebar */}
+          <div className="space-y-6">
+            
+            {/* Quick Actions */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Quick Actions
+              </h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => navigate('/assessment')}
+                  className="w-full flex items-center justify-start px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                >
+                  <Target className="mr-3 h-4 w-4" />
+                  Continue Assessment
+                </button>
+                <button 
+                  onClick={() => navigate('/counselor-sessions')}
+                  className="w-full flex items-center justify-start px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                >
+                  <Calendar className="mr-3 h-4 w-4" />
+                  Book Counselor Session
+                </button>
+                <button 
+                  onClick={() => navigate('/career-hub')}
+                  className="w-full flex items-center justify-start px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                >
+                  <Search className="mr-3 h-4 w-4" />
+                  Explore Careers
+                </button>
+                <button 
+                  onClick={() => navigate('/kuccps-tracker')}
+                  className="w-full flex items-center justify-start px-3 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                >
+                  <FileText className="mr-3 h-4 w-4" />
+                  Track KUCCPS Status
+                </button>
+              </div>
+            </div>
+            
+            {/* Upcoming Events */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Upcoming Events
+              </h3>
+              <div className="space-y-4">
+                {mockEvents.map((event) => (
+                  <div key={event.id} className="flex items-start space-x-3">
+                    <div className={`h-2 w-2 rounded-full mt-2 ${
+                      event.type === 'event' ? 'bg-orange-500' : 'bg-blue-500'
+                    }`}></div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                        {event.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {event.time}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Profile Completion */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Profile Completion
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Progress</span>
+                  <span className="text-sm font-medium text-orange-600">{mockUserData.profileCompletion}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${mockUserData.profileCompletion}%` }}
+                  ></div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-gray-600 dark:text-gray-400">Basic info completed</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-gray-600 dark:text-gray-400">Assessment in progress</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <X className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-400">Documents not uploaded</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  );
+};
+
+export default DashboardPage;
