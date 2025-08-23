@@ -1,6 +1,9 @@
 /* ELIMU SMART DESIGN SYSTEM - COMPLETE THEME CONFIGURATION */
 /* Copy this entire file to your new project's /styles/globals.css */
 
+/* Tailwind CSS Directives - Added in Sprint 13 */
+@import 'tailwindcss';
+
 :root {
   /* Base Configuration */
   --font-size: 14px;
@@ -809,5 +812,246 @@ body {
   .btn-primary-linkedin:hover,
   .btn-secondary-linkedin:hover {
     transform: none !important;
+  }
+}
+
+/* SPRINT 13: Tailwind-Mantine Integration Utilities */
+@layer utilities {
+  /* Focus states matching Mantine design */
+  .mantine-focus {
+    @apply focus:outline-none;
+  }
+  
+  .mantine-focus:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  
+  /* Role-based color utilities */
+  .text-role-primary {
+    color: var(--primary);
+  }
+  
+  .bg-role-primary {
+    background-color: var(--primary);
+  }
+  
+  .border-role-primary {
+    border-color: var(--primary);
+  }
+  
+  /* LinkedIn-style professional components */
+  .card-professional {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .card-professional:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    transform: translateY(-4px);
+  }
+  
+  .card-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: var(--primary);
+  }
+  
+  .card-professional:hover::before {
+    opacity: 1;
+  }
+  
+  /* Button variants matching Mantine theme */
+  .btn-professional-primary {
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-primary:hover {
+    background: var(--primary);
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  }
+  
+  .btn-professional-secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-secondary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .btn-professional-ghost {
+    background: transparent;
+    color: var(--foreground);
+    border: 1px solid transparent;
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-ghost:hover {
+    background: var(--secondary);
+    color: var(--primary);
+  }
+  
+  /* Sidebar navigation matching current design */
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: var(--sidebar-foreground);
+  }
+  
+  .sidebar-nav-item:hover {
+    background: var(--sidebar-accent);
+    color: var(--primary);
+  }
+  
+  .sidebar-nav-item.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+  }
+  
+  .sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: white;
+  }
+  
+  /* Icon sizing standards */
+  .icon-sm { height: 16px; width: 16px; }
+  .icon-base { height: 20px; width: 20px; }
+  .icon-lg { height: 24px; width: 24px; }
+  .icon-xl { height: 32px; width: 32px; }
+}
+
+/* Component-specific Tailwind enhancements */
+@layer components {
+  /* Dashboard card matching current design */
+  .dashboard-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .dashboard-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Form elements matching Mantine style */
+  .form-input-professional {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: white;
+    color: #24292f;
+    font-size: 0.875rem;
+  }
+  
+  .form-input-professional:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+  }
+  
+  /* Loading states */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+  
+  /* Success/Error states */
+  .state-success {
+    background: var(--success-50, #f0fdf4);
+    border-color: var(--success-500, #059669);
+    color: var(--success-600, #16a34a);
+  }
+  
+  .state-error {
+    background: var(--error-50, #fef2f2);
+    border-color: var(--error-500, #dc2626);
+    color: var(--error-600, #b91c1c);
+  }
+  
+  .state-warning {
+    background: var(--warning-50, #fffbeb);
+    border-color: var(--warning-500, #d97706);
+    color: var(--warning-600, #ca8a04);
+  }
+}
+
+/* Dark mode compatibility */
+.dark {
+  .card-professional {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .btn-professional-ghost {
+    color: #d1d5db;
+  }
+  
+  .btn-professional-ghost:hover {
+    background: #374151;
+    color: var(--primary);
+  }
+  
+  .sidebar-nav-item {
+    color: #d1d5db;
+  }
+  
+  .sidebar-nav-item:hover {
+    background: #374151;
+  }
+  
+  .form-input-professional {
+    background: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
   }
 }
