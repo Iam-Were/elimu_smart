@@ -1,0 +1,177 @@
+# Elimu Smart Platform Mind Map
+
+Legend (color semantics via emoji prefixes; customize with CSS classes later if desired):
+
+- 🟧 Student Journey & AI Career Intelligence
+- 🟨 Counselor Journey
+- 🟪 Institutional Admin Journey
+- 🟣 Super User / Platform Executive
+- 🟦 Architecture Layers (Frontend / Backend)
+- 🟩 Automation & Optimization
+- 🟫 Cross-Admin Intelligence Flow
+- 🟨📊 Success Metrics & ROI (Gold/Performance)
+- 🟥 Security & Compliance
+- 🌀 Data & Intelligence (Analytics, Models, Dashboards)
+- 🧩 Future Evolution (Roadmap)
+
+> Note: Mermaid mindmap per-node coloring requires external CSS classes (e.g., using `:::className`). Emojis are used for immediate visual color encoding without custom theme injection. You can later add site-wide CSS to target text that starts with these emojis or add Mermaid classes.
+
+```mermaid
+%%{init: { 'theme': 'neutral' }}%%
+mindmap
+  Elimu Smart Platform
+    🟧 Core Journeys
+      🟧 Student Journey
+        Onboarding
+        Assessments
+          RIASEC Assessment
+          Skills Assessment
+          Subject->Career Mapper
+        AI Career Intelligence
+          Career Path Suggestions
+          Skill Gap Insights
+          Subject Alignment
+        Dashboard Experience
+          Interactive Previews
+          Progress Tracking
+          Thematic Header Nav
+      🟨 Counselor Journey
+        Student Monitoring
+        Intervention Tools
+        Communication Hub
+        Analytics & Reports
+      🟪 Institutional Admin Journey
+        Phase 1 Onboarding
+        Daily Operations (5-10m)
+        Weekly Management (30-45m)
+        Monthly Review (1-2h)
+        Quarterly Planning (Multi-day)
+        Compliance Automation
+      🟣 Super User (Platform Exec)
+        Morning Review (15-20m)
+        BI Deep Dive (30-45m)
+        Strategic Planning
+        Platform Health Monitoring
+        Revenue Intelligence
+    🟦 Architecture Layers
+      Frontend (Header-Only Nav)
+        Thematic Roles
+          Student (Orange)
+          Counselor (Yellow)
+          Institutional Admin (Violet)
+          Super User (Deep Purple + Gold)
+        Component System (ShadCN + Tailwind)
+          Token Reduction 75%
+          Reusable Primitives
+          Accessible Patterns
+      Backend Services
+        Journey Services
+          Institutional Journey Service
+          Super User Workflow Service
+          Cross-Admin Data Flow
+        Automation Services
+          Workflow Orchestrator
+          Smart Notifications
+          Analytics Engine
+        Compliance & Security
+          Audit Trail Service
+          Compliance Monitoring
+          Security Validation
+    🌀 Data & Intelligence
+      Data Sources
+        KUCCPS Integration
+        Assessment Data
+        Usage Telemetry
+        Revenue Metrics
+      Analytics Models
+        Performance Benchmarks
+        Intervention Predictions
+        Optimization Recommendations
+      BI Dashboards
+        Admin Success Metrics
+        Revenue & Churn
+        Engagement & Adoption
+    🟫 Cross-Admin Intelligence Flow
+      Data Contribution (Institutional)
+        Engagement Metrics
+        Feature Adoption
+        Satisfaction Scores
+        Compliance Status
+      Aggregation & Analysis
+        Cross-Tenant Benchmarks
+        Best Practice Extraction
+        At-Risk Detection
+      Strategic Output (Super User)
+        Intervention Triggers
+        Upsell Opportunities
+        Optimization Guidance
+      Feedback Loop (Back to Institutions)
+        Benchmark Comparisons
+        Best Practice Sharing
+        Personalized Recommendations
+    🟩 Automation & Optimization
+      Smart Workflow Automation
+        Task Prioritization
+        Time Efficiency Tracking
+        Journey Progress Analytics
+      Notification System
+        Context-Aware Alerts
+        Compliance Violations
+        Performance Anomalies
+      Recommendation Engine
+        Resource Allocation
+        Feature Adoption Boosters
+        Intervention Playbooks
+    🟥 Security & Compliance
+      Regulatory Coverage
+        FERPA
+        GDPR
+        State Requirements
+      Controls & Validation
+        Role-Based Access
+        Data Isolation Checks
+        MFA & Session Security
+      Monitoring
+        Audit Trails
+        Incident Detection
+        Regulatory Change Alerts
+    🟨📊 Success Metrics & ROI
+      Institutional Metrics
+        Daily Usage >90%
+        Time Reduction >50%
+        Compliance 100%
+      Business Metrics
+        Revenue Growth >20%
+        Churn Reduction >15%
+        Uptime 99.9%+
+      Optimization Metrics
+        Analytics Accuracy >85%
+        Intervention Success >90%
+        Efficiency ROI >200%
+    🧩 Future Evolution (Sprint 25+)
+      Advanced Analytics Platform
+      Mobile-First Admin Experience
+      Quarterly/Annual Automation
+      Enhanced Security Protocols
+      Performance Scaling
+```
+
+## Custom Coloring (Optional Next Step)
+To replace emoji with true colored nodes:
+1. Add CSS classes in your site/app (example):
+```css
+.mindmap-node text:has(tspan:contains('🟧')) { fill: #ff6b35; }
+```
+2. Or refactor nodes with Mermaid classes (experimental):
+```
+Student Journey:::student
+```
+Then supply CSS:
+```css
+.student > rect, .student > circle { fill:#ff6b35 !important; stroke:#cc4f1d; }
+```
+Adjust per category.
+
+## Maintenance
+- Update this mind map when adding new services, journeys, or analytics models.
+- Keep category color semantics consistent across documentation.
