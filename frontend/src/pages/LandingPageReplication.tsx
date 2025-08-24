@@ -15,40 +15,6 @@ import DarkModeToggle from '../components/ui/DarkModeToggle';
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const features = [
-    {
-      icon: Target,
-      title: 'Personalized Career Assessment',
-      description: 'Discover your strengths and interests with our comprehensive assessment tool designed for Kenyan students.',
-      color: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600'
-    },
-    {
-      icon: BookOpen,
-      title: 'Subject-to-Career Mapping',
-      description: 'See how your current subjects align with various career paths and university requirements.',
-      color: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Expert Counselor Support',
-      description: 'Connect with certified career counselors who understand the Kenyan education system.',
-      color: 'bg-green-100 dark:bg-green-900/20 text-green-600'
-    },
-    {
-      icon: BarChart3,
-      title: 'Career Market Insights',
-      description: 'Get real-time data on job market trends and salary expectations in Kenya.',
-      color: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600'
-    }
-  ];
-
-  const stats = [
-    { number: '10,000+', label: 'Students Guided' },
-    { number: '500+', label: 'Career Paths' },
-    { number: '50+', label: 'University Partners' },
-    { number: '98%', label: 'Success Rate' }
-  ];
-
   const testimonials = [
     {
       name: 'Grace Wanjiku',
@@ -126,146 +92,538 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section with Enhanced Gradient */}
+      {/* Hero Section - Enhanced Orange-to-Red Gradient */}
       <section className="relative overflow-hidden">
-        <div className="gradient-hero-primary dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative">
-          <div className="absolute inset-0 bg-white/10 dark:bg-gray-900/50"></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
-            <div className="text-center">
-              <div className="mb-6 inline-flex items-center px-4 py-2 rounded-full gradient-secondary text-white text-sm font-medium shadow-lg">
-                🚀 Kenya's #1 Career Guidance Platform
+        {/* Background Gradient - Matching Design Reference */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-red-500 to-pink-500"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Hero Content */}
+            <div className="text-white">
+              <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <span>🏆</span>
+                <span>#1 Career Guidance Platform in Kenya</span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
-                Discover Your Perfect
-                <span className="text-gradient-primary block mt-2">
-                  Career Path
-                </span>
+              
+              <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+                Your Journey to{' '}
+                <span className="block bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent">
+                  Career Success
+                </span>{' '}
+                Starts Here
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-                Empowering Kenyan students with AI-powered career guidance, personalized assessments, 
-                and expert counselor support to make informed educational and career choices.
+              
+              <p className="text-lg text-white/90 mb-8 max-w-lg">
+                Discover your perfect career path with AI-powered guidance tailored 
+                for Kenyan students. From KCSE subject mapping to university 
+                scholarships - we've got you covered.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button 
                   onClick={() => navigate('/register')}
-                  className="w-full sm:w-auto inline-flex items-center px-8 py-4 rounded-lg gradient-primary text-white font-medium text-lg hover:shadow-gradient-primary hover:-translate-y-1 transition-all duration-300 group"
+                  className="inline-flex items-center px-8 py-4 rounded-lg bg-white text-orange-600 font-semibold text-lg hover:bg-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
                 >
-                  Start Your Journey
+                  Start Your Career Journey
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button 
                   onClick={() => navigate('/demo')}
-                  className="w-full sm:w-auto inline-flex items-center px-8 py-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium text-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                  className="inline-flex items-center px-8 py-4 rounded-lg border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 group"
                 >
+                  <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
                   Watch Demo
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-orange-600 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 dark:text-gray-400">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Everything You Need for Career Success
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Our comprehensive platform provides all the tools and support you need 
-              to make informed career decisions.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 hover:shadow-gradient-primary hover:-translate-y-2 transition-all duration-300 group gradient-card-subtle">
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 rounded-lg gradient-primary shadow-gradient-primary group-hover:scale-110 transition-transform duration-300">
-                    <feature.icon className="h-6 w-6 text-white" />
+              
+              {/* Success Indicators */}
+              <div className="flex items-center space-x-8">
+                <div className="flex items-center">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white flex items-center justify-center text-xs">S1</div>
+                    <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white flex items-center justify-center text-xs">S2</div>
+                    <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white flex items-center justify-center text-xs">S3</div>
+                    <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white flex items-center justify-center text-xs">S4</div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {feature.description}
-                    </p>
+                  <div className="ml-3 text-sm">
+                    <div className="font-semibold">15,000+ students guided</div>
+                    <div className="text-white/70">⭐⭐⭐⭐⭐ 4.9/5 rating</div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+            
+            {/* Hero Visual */}
+            <div className="relative">
+              <div className="relative z-10">
+                {/* Main Hero Card */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <Target className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white">Career Assessment</h3>
+                        <p className="text-sm text-white/70">Discover your strengths</p>
+                      </div>
+                    </div>
+                    
+                    {/* Progress Indicator */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-white/70">Assessment Progress</span>
+                        <span className="text-white font-medium">85%</span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2">
+                        <div className="bg-white h-2 rounded-full w-4/5"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Sample Results */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-white">Top Career Matches:</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-3 bg-white/20 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-4 w-4 bg-white/20 rounded"></div>
+                            <span className="text-sm font-medium text-white">Software Engineering</span>
+                          </div>
+                          <span className="text-sm font-bold text-white">95%</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-4 w-4 bg-white/20 rounded"></div>
+                            <span className="text-sm font-medium text-white">Data Science</span>
+                          </div>
+                          <span className="text-sm font-bold text-white">88%</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-4 w-4 bg-white/20 rounded"></div>
+                            <span className="text-sm font-medium text-white">UX Design</span>
+                          </div>
+                          <span className="text-sm font-bold text-white">82%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Floating Success Card */}
+                <div className="absolute -bottom-4 -left-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-semibold">89% Success Rate</span>
+                  </div>
+                  <div className="text-xs opacity-90">Students find their ideal career</div>
+                </div>
+                
+                {/* Floating Careers Card */}
+                <div className="absolute -top-4 -right-4 bg-white text-gray-900 px-4 py-3 rounded-lg shadow-lg">
+                  <div className="flex items-center space-x-2">
+                    <GraduationCap className="h-5 w-5 text-orange-600" />
+                    <span className="text-sm font-semibold">500+ Careers</span>
+                  </div>
+                  <div className="text-xs text-gray-600">Mapped to KCSE subjects</div>
+                </div>
+              </div>
+              
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl transform rotate-2 scale-105 -z-10"></div>
+            </div>
+            
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
+      {/* Enhanced Stats Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Simple Steps to Your Future
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Trusted by Thousands of Students
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Get started with your career journey in just three easy steps.
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Our comprehensive platform provides all the tools and guidance 
+              you need to make informed career decisions.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="h-16 w-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-orange-600">1</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Stats Card 1 - Students Guided */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                    <Target className="h-8 w-8 text-white" />
+                  </div>
+                  {/* Circular Progress Ring */}
+                  <svg className="absolute -inset-1 w-18 h-18 transform -rotate-90" viewBox="0 0 72 72">
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-gray-200 dark:stroke-gray-700"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-orange-500"
+                      strokeWidth="4"
+                      strokeDasharray="201"
+                      strokeDashoffset="21"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">15,000+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Students Guided</div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Take Assessment
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Complete our comprehensive career assessment to understand your interests and strengths.
-              </p>
             </div>
             
-            <div className="text-center">
-              <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-blue-600">2</span>
+            {/* Stats Card 2 - Success Rate */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+                    <BarChart3 className="h-8 w-8 text-white" />
+                  </div>
+                  <svg className="absolute -inset-1 w-18 h-18 transform -rotate-90" viewBox="0 0 72 72">
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-gray-200 dark:stroke-gray-700"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-green-500"
+                      strokeWidth="4"
+                      strokeDasharray="201"
+                      strokeDashoffset="23"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">89%</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Success Rate</div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Explore Options
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Discover personalized career recommendations based on your assessment results.
-              </p>
             </div>
             
-            <div className="text-center">
-              <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600">3</span>
+            {/* Stats Card 3 - Career Paths */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                    <BookOpen className="h-8 w-8 text-white" />
+                  </div>
+                  <svg className="absolute -inset-1 w-18 h-18 transform -rotate-90" viewBox="0 0 72 72">
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-gray-200 dark:stroke-gray-700"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-blue-500"
+                      strokeWidth="4"
+                      strokeDasharray="201"
+                      strokeDashoffset="0"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">500+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Career Paths</div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Get Guidance
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Connect with expert counselors for personalized guidance and support.
-              </p>
             </div>
+            
+            {/* Stats Card 4 - Universities */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                    <GraduationCap className="h-8 w-8 text-white" />
+                  </div>
+                  <svg className="absolute -inset-1 w-18 h-18 transform -rotate-90" viewBox="0 0 72 72">
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-gray-200 dark:stroke-gray-700"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="32"
+                      fill="none"
+                      className="stroke-purple-500"
+                      strokeWidth="4"
+                      strokeDasharray="201"
+                      strokeDashoffset="31"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">50+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Universities</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Enhanced Modern Design */}
+      <section id="features" className="py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <Star className="h-4 w-4" />
+              <span>Core Features</span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              Everything You Need for
+              <span className="block bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                Career Success
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Our comprehensive platform provides students with AI-powered assessments, 
+              expert guidance, and real-time market insights.
+            </p>
+          </div>
+          
+          {/* Features Grid - Enhanced 3-Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* Feature 1 - Career Assessment */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                  <Target className="h-7 w-7 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">AI Career Assessment</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Advanced psychometric testing powered by AI to identify your natural talents, 
+                  interests, and personality traits for optimal career matching.
+                </p>
+                <div className="flex items-center text-orange-600 dark:text-orange-400 font-medium cursor-pointer">
+                  <span>Take Assessment</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Feature 2 - Subject Mapping */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <BookOpen className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Subject to Career Mapping</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Discover how your current subjects and grades translate into specific career 
+                  opportunities and university course requirements.
+                </p>
+                <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium cursor-pointer">
+                  <span>Explore Mapping</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Feature 3 - Expert Counseling */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <MessageCircle className="h-7 w-7 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Expert Counseling</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Connect with certified career counselors who provide personalized guidance 
+                  and support throughout your career discovery journey.
+                </p>
+                <div className="flex items-center text-green-600 dark:text-green-400 font-medium cursor-pointer">
+                  <span>Book Session</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Feature 4 - University Tracking */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <GraduationCap className="h-7 w-7 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">KUCCPS Integration</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Real-time tracking of university placements, course availability, and 
+                  admission requirements directly from KUCCPS database.
+                </p>
+                <div className="flex items-center text-purple-600 dark:text-purple-400 font-medium cursor-pointer">
+                  <span>Track Placement</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Feature 5 - Skills Development */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                  <BarChart3 className="h-7 w-7 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Skills for Future</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Access curated learning resources and skill development programs aligned 
+                  with future job market demands and industry trends.
+                </p>
+                <div className="flex items-center text-yellow-600 dark:text-yellow-400 font-medium cursor-pointer">
+                  <span>Build Skills</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Feature 6 - Career Spotlights */}
+            <div className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="h-14 w-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                  <Shield className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Career Spotlights</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  In-depth profiles of emerging careers, salary expectations, growth prospects, 
+                  and success stories from industry professionals.
+                </p>
+                <div className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer">
+                  <span>Browse Careers</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section - Enhanced 4-Step Process */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 01.553-.894L9 2l6 3 6-3v15l-6 3-6-3z" />
+              </svg>
+              <span>Simple Process</span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              Your Journey to
+              <span className="block bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                Career Clarity
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Follow our proven 4-step process to discover your ideal career path 
+              and create an actionable plan for success.
+            </p>
+          </div>
+          
+          {/* Process Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Step 1 */}
+            <div className="relative text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Sign Up & Assess</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Create your profile and complete our comprehensive AI-powered career assessment
+                </p>
+              </div>
+              {/* Connector Line */}
+              <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-orange-200 dark:bg-orange-800"></div>
+            </div>
+            
+            {/* Step 2 */}
+            <div className="relative text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Get Matched</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Receive personalized career recommendations based on your assessment results
+                </p>
+              </div>
+              <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-orange-200 dark:bg-orange-800"></div>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="relative text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Explore & Plan</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Dive deep into career options and create your personalized education plan
+                </p>
+              </div>
+              <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-orange-200 dark:bg-orange-800"></div>
+            </div>
+            
+            {/* Step 4 */}
+            <div className="text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">4</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Take Action</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Execute your plan with ongoing support from expert counselors
+                </p>
+              </div>
+            </div>
+            
           </div>
         </div>
       </section>

@@ -3,8 +3,6 @@ import {
   Target, 
   BookOpen, 
   MessageCircle, 
-  Settings,
-  Plus,
   ExternalLink,
   ArrowRight,
   GraduationCap,
@@ -72,46 +70,76 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ className = '' }) => {
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${className}`}>
       
-      {/* Page Header with Enhanced Gradient Background */}
-      <div className="gradient-hero-primary dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
+      {/* Enhanced Blue Hero Section matching design reference */}
+      <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            {/* Left Content */}
             <div>
-              <nav className="flex mb-2" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li className="flex items-center">
-                    <span>Dashboard</span>
-                  </li>
-                </ol>
-              </nav>
-              <h1 className="text-3xl font-bold text-gradient-primary dark:text-gray-100 mb-2">
-                Welcome back, {mockUserData.name}! 👋
+              <h1 className="text-4xl font-bold mb-4">
+                Discover Your Perfect Career Path
               </h1>
-              <p className="text-gray-700 dark:text-gray-300 text-lg">
-                Track your career discovery progress and next steps
+              <p className="text-blue-100 mb-6 text-lg leading-relaxed">
+                Use our comprehensive suite of AI-driven tools to explore careers, 
+                understand your strengths, and plan your educational journey with 
+                confidence.
               </p>
+              
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="text-3xl font-bold">70K+</div>
+                  <div className="text-blue-200 text-sm">Career Options</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold">15K+</div>
+                  <div className="text-blue-200 text-sm">Students Guided</div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={() => navigate('/settings')}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </button>
-              <button 
-                onClick={() => navigate('/assessment')}
-                className="inline-flex items-center px-4 py-2 rounded-lg gradient-primary text-white font-medium hover:shadow-gradient-primary hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Take Assessment
-              </button>
+            
+            {/* Right Image Area */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="w-80 h-48 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Target className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-white">Career Assessment</div>
+                    <div className="text-blue-200 text-sm">Discover your strengths</div>
+                  </div>
+                </div>
+                
+                {/* Progress indicator */}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-blue-200">Assessment Progress</span>
+                    <span className="text-white font-medium">{mockUserData.assessmentProgress}%</span>
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2">
+                    <div 
+                      className="bg-white h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${mockUserData.assessmentProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                {/* Action Button */}
+                <button 
+                  onClick={() => navigate('/assessment')}
+                  className="w-full mt-4 bg-white text-blue-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Continue Assessment →
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Dashboard Content Grid */}
+      {/* Personal Dashboard Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           

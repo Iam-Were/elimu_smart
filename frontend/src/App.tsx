@@ -10,7 +10,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingOverlay } from './components/common/LoadingOverlay';
 import { AppLayout } from './components/layouts/AppLayout';
 import { useAuth } from './hooks/useAuth';
-import { LandingPage } from './pages/LandingPage';
+import LandingPage from './pages/LandingPageReplication';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
@@ -20,6 +20,9 @@ import { FormDemoPage } from './pages/FormDemoPage';
 import { CareerAssessment } from './components/student/CareerAssessment';
 import { SubjectCareerMapper } from './components/student/SubjectCareerMapper';
 import { CareerGuidanceHub } from './components/student/CareerGuidanceHub';
+import StudentGuidance from './pages/StudentGuidance';
+import AdminPortal from './pages/admin/AdminPortal';
+import CounselorToolkit from './pages/counselor/CounselorToolkit';
 import { StudentsPage } from './pages/counselor/StudentsPage';
 import { QuestionsPage } from './pages/counselor/QuestionsPage';
 import { SessionsPage } from './pages/counselor/SessionsPage';
@@ -63,6 +66,9 @@ const AppContent: React.FC = () => {
         <Route path="/assessment" element={<CareerAssessment />} />
         <Route path="/subject-mapper" element={<SubjectCareerMapper />} />
         <Route path="/career-hub" element={<CareerGuidanceHub />} />
+        <Route path="/guidance" element={<StudentGuidance />} />
+        <Route path="/admin/portal" element={<AdminPortal />} />
+        <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
         <Route path="/counselor/students" element={<StudentsPage />} />
         <Route path="/counselor/questions" element={<QuestionsPage />} />
         <Route path="/counselor/sessions" element={<SessionsPage />} />

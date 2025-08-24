@@ -12,9 +12,19 @@
       "Bash(npm run build:*)",
       "Bash(rm:*)",
       "Bash(git add:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Read(/c:\\Users\\c\\Pictures/**)",
+      "Read(/c:\\Users\\c\\Pictures/**)",
+      "Read(/c:\\Users\\c\\Downloads/**)",
+      "Read(/c:\\Users\\c\\Downloads/**)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run:*)",
+      "Bash(timeout 10s npm run dev)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\c\\Documents\\GitHub\\elimu_smart"
+    ]
   }
 }
