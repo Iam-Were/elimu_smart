@@ -16,12 +16,13 @@ import {
   BookmarkIcon,
 } from '@radix-ui/react-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import type { BreadcrumbItem } from '../../hooks/useBreadcrumbs';
 
-interface BreadcrumbItem {
-  id: string;
-  label: string;
-  path: string;
-  icon?: React.ReactNode;
+// Re-export the type for backward compatibility
+export type { BreadcrumbItem };
+
+interface SmartBreadcrumbsProps {
+  items: BreadcrumbItem[];
   actions?: BreadcrumbAction[];
   metadata?: {
     lastVisited?: Date;
@@ -278,53 +279,6 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
   );
 };
 
-// Hook to generate breadcrumbs from current route
-export const useBreadcrumbs = () => {
-  const location = useLocation();
-  
-  const generateBreadcrumbs = (): BreadcrumbItem[] => {
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs: BreadcrumbItem[] = [
-      {
-        id: 'home',
-        label: 'Dashboard',
-        path: '/dashboard',
-        icon: <HomeIcon width={14} height={14} />,
-        metadata: {
-          isBookmarked: true,
-          frequency: 50,
-          lastVisited: new Date(),
-        },
-      },
-    ];
-
-    let currentPath = '';
-    pathSegments.forEach((segment) => {
-      currentPath += `/${segment}`;
-      
-      // Generate human-readable labels from path segments
-      const label = segment
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-
-      breadcrumbs.push({
-        id: currentPath,
-        label,
-        path: currentPath,
-        metadata: {
-          frequency: Math.floor(Math.random() * 20) + 1,
-          lastVisited: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-          isBookmarked: Math.random() > 0.7,
-        },
-      });
-    });
-
-    return breadcrumbs;
-  };
-
-  return generateBreadcrumbs();
-};
 
 // Context menu breadcrumb component for complex navigation
 export const ContextBreadcrumbs: React.FC<{

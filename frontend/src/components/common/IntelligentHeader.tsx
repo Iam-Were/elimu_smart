@@ -15,7 +15,8 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { ProfileDropdown } from './ProfileDropdown';
-import { GlobalSearch, useGlobalSearchShortcut } from './GlobalSearch';
+import { GlobalSearch } from './GlobalSearch';
+import { useGlobalSearchShortcut } from '../../hooks/useGlobalSearchShortcut';
 import { HeaderNavigation } from '../navigation/HeaderNavigation';
 import { useDisclosure } from '@mantine/hooks';
 
@@ -26,6 +27,7 @@ interface IntelligentHeaderProps {
   messageCount?: number;
   onToggleSidebar?: () => void;
   showNavigation?: boolean;
+  onSearchOpen?: () => void;
 }
 
 export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
@@ -35,6 +37,7 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
   messageCount = 0,
   onToggleSidebar,
   showNavigation = true,
+  onSearchOpen,
 }) => {
   const [, setSearchFocused] = useState(false);
   const [searchOpened, { toggle: toggleSearch }] = useDisclosure();
@@ -43,7 +46,8 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
   const location = useLocation();
 
   // Add global search shortcut
-  useGlobalSearchShortcut(toggleSearch);
+  const handleSearchToggle = onSearchOpen || toggleSearch;
+  useGlobalSearchShortcut(handleSearchToggle);
 
   const handleNotificationClick = () => {
     // Navigate to notifications page or open notifications panel
@@ -145,7 +149,7 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
                     leftSection={<MagnifyingGlassIcon width={16} height={16} />}
                     onFocus={() => {
                       setSearchFocused(true);
-                      toggleSearch();
+                      handleSearchToggle();
                     }}
                     onBlur={() => setSearchFocused(false)}
                     style={{
@@ -341,7 +345,7 @@ export const IntelligentHeader: React.FC<IntelligentHeaderProps> = ({
             backdropFilter: 'blur(8px)',
             animation: 'fadeIn 0.3s ease-out',
           }}
-          onClick={toggleSearch}
+          onClick={handleSearchToggle}
         >
           <div
             style={{

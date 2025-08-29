@@ -8,15 +8,9 @@ import {
   Badge,
   Group,
 } from '@mantine/core';
-// Sprint 15: Enhanced Icon System with Intelligence
-import { 
-  UniversalIcon, 
-  StatCardIcon, 
-  QuickActionButton
-} from '../utils/iconIntelligence';
+// Removed unused icon imports after cleaning up dead code
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
-import { useNavigate } from 'react-router-dom';
 import { CounselorDashboard } from '../components/counselor/CounselorDashboard';
 import { DashboardAnalytics, MetricCard } from '../components/common/InteractiveCharts';
 import Dashboard from './Dashboard'; // Import the new Dashboard component
@@ -24,11 +18,10 @@ import Dashboard from './Dashboard'; // Import the new Dashboard component
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
-  const navigate = useNavigate();
   const [timeRange, setTimeRange] = React.useState('30d');
 
-  // Mock data for student dashboard - will be replaced with real data
-  const studentStats = {
+  // Mock data removed after cleaning up dead code - keep for potential future admin dashboard
+  const _studentStats = {
     assessmentsCompleted: 2,
     totalAssessments: 4,
     careerMatches: 12,
@@ -123,235 +116,6 @@ export const DashboardPage: React.FC = () => {
     return <Dashboard />;
   }
   
-  // Legacy implementation disabled
-  if (false) {
-    return (
-      <div className="container-enhanced py-6">
-        <Stack gap="lg">
-          {/* Enhanced Welcome Section with Gradient */}
-          <div className="welcome-banner-enhanced">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center relative z-10">
-              <div className="lg:col-span-2">
-                <Stack gap="xs">
-                  <Title order={1} size="2rem" style={{ color: 'inherit' }}>
-                    {getWelcomeMessage()} 👋
-                  </Title>
-                  <Text size="lg" style={{ color: 'inherit', opacity: 0.9 }}>
-                    Continue your journey to finding the perfect career path
-                  </Text>
-                  <Group gap="sm" mt="sm">
-                    <Badge
-                      size="md"
-                      variant="light"
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        color: 'inherit',
-                        border: '1px solid rgba(255, 255, 255, 0.3)'
-                      }}
-                    >
-                      Form Four Student
-                    </Badge>
-                    <Badge
-                      size="md"
-                      variant="light"
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        color: 'inherit',
-                        border: '1px solid rgba(255, 255, 255, 0.3)'
-                      }}
-                    >
-                      Profile {studentStats.profileCompletion}% Complete
-                    </Badge>
-                  </Group>
-                </Stack>
-              </div>
-              <div className="flex justify-center lg:justify-end">
-                <div 
-                  className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30"
-                  style={{ backdropFilter: 'blur(10px)' }}
-                >
-                  <UniversalIcon
-                    category="PROGRESS_INDICATORS"
-                    type="completion"
-                    size="2xl"
-                    showContainer={false}
-                    animate={true}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Stats Grid with Icon Intelligence */}
-          <div className="stats-grid-enhanced">
-            <StatCardIcon
-              category="PROGRESS_INDICATORS"
-              type="assessments"
-              value={`${Math.round((studentStats.assessmentsCompleted / studentStats.totalAssessments) * 100)}%`}
-              label="Assessments"
-              description={`${studentStats.assessmentsCompleted}/${studentStats.totalAssessments} completed`}
-              trend="up"
-              onClick={() => navigate('/assessment')}
-            />
-
-            <StatCardIcon
-              category="LEARNING_GOALS"
-              type="careerMatches"
-              value={studentStats.careerMatches}
-              label="Career Matches"
-              description="Personalized for your interests"
-              trend="up"
-              onClick={() => navigate('/career-hub')}
-            />
-
-            <StatCardIcon
-              category="PROGRESS_INDICATORS"
-              type="completion"
-              value={`${studentStats.profileCompletion}%`}
-              label="Profile Complete"
-              description="Almost there! Keep going"
-              trend={studentStats.profileCompletion > 75 ? 'up' : 'neutral'}
-              onClick={() => navigate('/profile')}
-            />
-
-            <StatCardIcon
-              category="LEARNING_GOALS"
-              type="currentTarget"
-              value="3"
-              label="Goals Set"
-              description="Complete Skills Assessment"
-              trend="neutral"
-              onClick={() => navigate('/goals')}
-            />
-          </div>
-
-          {/* Main Content Grid */}
-          <Grid>
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Stack gap="lg">
-                {/* Enhanced Quick Actions with Icon Intelligence */}
-                <div className="dashboard-card-enhanced">
-                  <Stack gap="md">
-                    <Title order={3}>Quick Actions</Title>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <QuickActionButton
-                        action="assessment"
-                        onClick={() => navigate('/assessment')}
-                      />
-                      <QuickActionButton
-                        action="subjectMapper"
-                        onClick={() => navigate('/subject-mapper')}
-                      />
-                      <QuickActionButton
-                        action="profile"
-                        onClick={() => navigate('/profile')}
-                      />
-                      <QuickActionButton
-                        action="careerHub"
-                        onClick={() => navigate('/career-hub')}
-                      />
-                    </div>
-                  </Stack>
-                </div>
-
-                {/* Enhanced Recent Activity */}
-                <div className="dashboard-card-enhanced">
-                  <Stack gap="md">
-                    <Title order={3}>Recent Activity</Title>
-                    <Stack gap="sm">
-                      {studentStats.recentActivity.map(activity => (
-                        <Group key={activity.id} gap="md" className="micro-lift p-2 rounded hover:bg-secondary/50">
-                          <UniversalIcon
-                            category="PROGRESS_INDICATORS"
-                            type={activity.type === 'assessment' ? 'assessments' : activity.type === 'profile' ? 'completion' : 'achievements'}
-                            size="sm"
-                            showContainer={true}
-                            animate={true}
-                          />
-                          <Stack gap={2} style={{ flex: 1 }}>
-                            <Text size="sm" fw={500}>{activity.action}</Text>
-                            <Text size="xs" c="dimmed">
-                              {activity.time}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </div>
-              </Stack>
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, md: 4 }}>
-              <Stack gap="lg">
-                {/* Enhanced Upcoming Events */}
-                <div className="dashboard-card-enhanced">
-                  <Stack gap="md">
-                    <Title order={4}>Upcoming Events</Title>
-                    <Stack gap="sm">
-                      {studentStats.upcomingEvents.map(event => (
-                        <div key={event.id} className="micro-lift p-3 rounded border border-border">
-                          <Group gap="sm">
-                            <UniversalIcon
-                              category="LEARNING_GOALS"
-                              type="planning"
-                              size="sm"
-                              showContainer={false}
-                              animate={true}
-                            />
-                            <Stack gap={2} style={{ flex: 1 }}>
-                              <Text size="sm" fw={500}>
-                                {event.title}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {event.date}
-                              </Text>
-                            </Stack>
-                          </Group>
-                        </div>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </div>
-
-                {/* Enhanced Achievements */}
-                <div className="dashboard-card-enhanced">
-                  <Stack gap="md">
-                    <Title order={4}>Achievements</Title>
-                    <Stack gap="sm">
-                      {studentStats.achievements.map(achievement => (
-                        <Group key={achievement.id} gap="sm" className={`micro-lift p-2 rounded ${achievement.unlocked ? 'bg-success/10' : 'bg-muted/50'}`}>
-                          <UniversalIcon
-                            category="PROGRESS_INDICATORS"
-                            type="achievements"
-                            size="sm"
-                            showContainer={false}
-                            animate={achievement.unlocked}
-                          />
-                          <Stack gap={2} style={{ flex: 1 }}>
-                            <Text
-                              size="sm"
-                              fw={500}
-                              c={achievement.unlocked ? 'success' : 'dimmed'}
-                            >
-                              {achievement.title}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {achievement.description}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </div>
-              </Stack>
-            </Grid.Col>
-          </Grid>
-        </Stack>
-      </div>
-    );
-  }
 
   // Admin and Super Admin dashboard with advanced analytics
   if (user?.role === 'admin' || user?.role === 'super_admin') {

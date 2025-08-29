@@ -34,8 +34,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { DemoModeSwitch } from '../common/DemoModeSwitch';
-import { GlobalSearch, useGlobalSearchShortcut } from '../common/GlobalSearch';
-import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { GlobalSearch } from '../common/GlobalSearch';
+import { useGlobalSearchShortcut } from '../../hooks/useGlobalSearchShortcut';
+import { SmartBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { useBreadcrumbs } from '../../hooks/useBreadcrumbs';
 import type { ThemeRole } from '../../types';
 
 interface AppLayoutProps {

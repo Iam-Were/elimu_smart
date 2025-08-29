@@ -237,7 +237,7 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
       await bulkActionModal.action.action(selectedItems);
       setSelectedRows(new Set());
       setBulkActionModal({ isOpen: false, isProcessing: false });
-    } catch (error) {
+    } catch {
       setBulkActionModal(prev => ({ ...prev, isProcessing: false }));
     }
   };

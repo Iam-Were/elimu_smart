@@ -13,7 +13,6 @@ import {
   Badge,
   Divider,
   FileInput,
-  Dropzone,
   rem,
   Progress,
 } from '@mantine/core';
@@ -25,10 +24,10 @@ import {
   GearIcon,
   TrashIcon,
   CameraIcon,
-  UploadIcon,
   DownloadIcon,
 } from '@radix-ui/react-icons';
 import { useAuth } from '../hooks/useAuth';
+// import type { User } from '../types'; // Unused after refactoring
 import { ProfileSettings } from '../components/settings/ProfileSettings';
 import { SecuritySettings } from '../components/settings/SecuritySettings';
 import { NotificationSettings } from '../components/settings/NotificationSettings';
@@ -48,7 +47,7 @@ export const AccountSettingsPage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
 
   const settingsTabs: SettingsTab[] = [
     {
@@ -135,7 +134,7 @@ export const AccountSettingsPage: React.FC = () => {
                 <Avatar
                   size={120}
                   src={profileImage}
-                  alt={user?.name}
+                  alt={user ? `${user.firstName} ${user.lastName}` : 'User'}
                   style={{
                     border: '4px solid var(--mantine-color-orange-6)',
                     boxShadow: 'var(--mantine-shadow-sm)',
@@ -168,7 +167,7 @@ export const AccountSettingsPage: React.FC = () => {
               <Stack gap="xs">
                 <div>
                   <Title order={1} size="h2" mb="xs">
-                    {user?.name || 'Your Name'}
+                    {user ? `${user.firstName} ${user.lastName}` : 'Your Name'}
                   </Title>
                   <Text c="dimmed" size="lg">
                     {user?.email || 'your.email@example.com'}
@@ -182,7 +181,7 @@ export const AccountSettingsPage: React.FC = () => {
                     size="lg"
                     leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--mantine-color-orange-6)' }} />}
                   >
-                    {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1) || 'Student'}
+                    {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student'}
                   </Badge>
                   <Text size="sm" c="dimmed">
                     Member since {new Date().getFullYear()}

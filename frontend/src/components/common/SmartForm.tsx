@@ -107,7 +107,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
           await onSave(formData);
           setAutoSaveStatus('saved');
           setTimeout(() => setAutoSaveStatus('idle'), 2000);
-        } catch (error) {
+        } catch {
           setAutoSaveStatus('error');
           setTimeout(() => setAutoSaveStatus('idle'), 3000);
         }
@@ -128,12 +128,13 @@ export const SmartForm: React.FC<SmartFormProps> = ({
             return rule.message;
           }
           break;
-        case 'email':
+        case 'email': {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (value && !emailRegex.test(value)) {
             return rule.message;
           }
           break;
+        }
         case 'minLength':
           if (value && value.length < rule.value) {
             return rule.message;

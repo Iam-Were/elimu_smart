@@ -53,7 +53,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error) {
+    } catch {
       setSaveStatus('error');
     } finally {
       setIsLoading(false);

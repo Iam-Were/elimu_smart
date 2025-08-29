@@ -8,7 +8,8 @@ import {
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
-import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { SmartBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { useBreadcrumbs } from '../../hooks/useBreadcrumbs';
 import { IntelligentHeader } from './IntelligentHeader';
 import { GlobalSearch } from '../common/GlobalSearch';
 import type { ThemeRole } from '../../types';

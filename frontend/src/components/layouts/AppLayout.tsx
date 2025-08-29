@@ -5,7 +5,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { IntelligentHeader } from '../common/IntelligentHeader';
 import { LinkedInLayout } from './LinkedInLayout';
-import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { SmartBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { useBreadcrumbs } from '../../hooks/useBreadcrumbs';
 import { GlobalSearch } from '../common/GlobalSearch';
 import type { ThemeRole } from '../../types';
 

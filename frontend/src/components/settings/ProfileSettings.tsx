@@ -83,7 +83,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUnsavedChang
       setSaveStatus('success');
       
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } catch (error) {
+    } catch {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 5000);
     } finally {

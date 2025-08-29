@@ -1,5 +1,4 @@
 // Sprint 15: Icon Intelligence System - Universal Component DNA Integration
-// @ts-nocheck
 import React from 'react';
 import {
   // Progress & Achievement Icons
