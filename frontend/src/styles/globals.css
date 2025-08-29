@@ -1,6 +1,9 @@
 /* ELIMU SMART DESIGN SYSTEM - COMPLETE THEME CONFIGURATION */
 /* Copy this entire file to your new project's /styles/globals.css */
 
+/* Tailwind CSS Directives - Added in Sprint 13 */
+@import 'tailwindcss';
+
 :root {
   /* Base Configuration */
   --font-size: 14px;
@@ -108,10 +111,42 @@
   --space-12: 3rem; /* 48px */
   --space-16: 4rem; /* 64px */
 
-  /* Animation Timings */
-  --transition-fast: 150ms ease-out;
-  --transition-base: 300ms ease-out;
-  --transition-slow: 500ms ease-out;
+  /* Animation Timings - Sprint 15 Enhanced */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-extra-slow: 500ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Sprint 15: Icon System Integration */
+  --icon-size-xs: 14px;
+  --icon-size-sm: 16px;
+  --icon-size-base: 20px;
+  --icon-size-lg: 24px;
+  --icon-size-xl: 32px;
+  --icon-size-2xl: 40px;
+  --icon-size-3xl: 48px;
+
+  /* Sprint 15: Enhanced Spacing System for Dashboard */
+  --space-0-5: 0.125rem; /* 2px - Micro spacing */
+  --space-1-5: 0.375rem; /* 6px - Small gaps */
+  --space-2-5: 0.625rem; /* 10px - Medium gaps */
+  --space-14: 3.5rem;    /* 56px - Large sections */
+  --space-18: 4.5rem;    /* 72px - Major sections */
+  --space-20: 5rem;      /* 80px - Page sections */
+
+  /* Sprint 15: Shadow Elevation System */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+
+  /* Sprint 15: Container System */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
 }
 
 /* Dark Mode Theme - Enhanced Contrast */
@@ -844,4 +879,816 @@ body {
   .btn-secondary-linkedin:hover {
     transform: none !important;
   }
+}
+
+/* SPRINT 13: Tailwind-Mantine Integration Utilities */
+@layer utilities {
+  /* Focus states matching Mantine design */
+  .mantine-focus {
+    @apply focus:outline-none;
+  }
+  
+  .mantine-focus:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  
+  /* Role-based color utilities */
+  .text-role-primary {
+    color: var(--primary);
+  }
+  
+  .bg-role-primary {
+    background-color: var(--primary);
+  }
+  
+  .border-role-primary {
+    border-color: var(--primary);
+  }
+  
+  /* LinkedIn-style professional components */
+  .card-professional {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .card-professional:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    transform: translateY(-4px);
+  }
+  
+  .card-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: var(--primary);
+  }
+  
+  .card-professional:hover::before {
+    opacity: 1;
+  }
+  
+  /* Button variants matching Mantine theme */
+  .btn-professional-primary {
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-primary:hover {
+    background: var(--primary);
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  }
+  
+  .btn-professional-secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-secondary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .btn-professional-ghost {
+    background: transparent;
+    color: var(--foreground);
+    border: 1px solid transparent;
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-professional-ghost:hover {
+    background: var(--secondary);
+    color: var(--primary);
+  }
+  
+  /* Sidebar navigation matching current design */
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: var(--sidebar-foreground);
+  }
+  
+  .sidebar-nav-item:hover {
+    background: var(--sidebar-accent);
+    color: var(--primary);
+  }
+  
+  .sidebar-nav-item.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+  }
+  
+  .sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: white;
+  }
+  
+  /* Icon sizing standards */
+  .icon-sm { height: 16px; width: 16px; }
+  .icon-base { height: 20px; width: 20px; }
+  .icon-lg { height: 24px; width: 24px; }
+  .icon-xl { height: 32px; width: 32px; }
+}
+
+/* Component-specific Tailwind enhancements */
+@layer components {
+  /* Dashboard card matching current design */
+  .dashboard-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .dashboard-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Form elements matching Mantine style */
+  .form-input-professional {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: white;
+    color: #24292f;
+    font-size: 0.875rem;
+  }
+  
+  .form-input-professional:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+  }
+  
+  /* Loading states */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+  
+  /* Success/Error states */
+  .state-success {
+    background: var(--success-50, #f0fdf4);
+    border-color: var(--success-500, #059669);
+    color: var(--success-600, #16a34a);
+  }
+  
+  .state-error {
+    background: var(--error-50, #fef2f2);
+    border-color: var(--error-500, #dc2626);
+    color: var(--error-600, #b91c1c);
+  }
+  
+  .state-warning {
+    background: var(--warning-50, #fffbeb);
+    border-color: var(--warning-500, #d97706);
+    color: var(--warning-600, #ca8a04);
+  }
+}
+
+/* Dark mode compatibility */
+.dark {
+  .card-professional {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .btn-professional-ghost {
+    color: #d1d5db;
+  }
+  
+  .btn-professional-ghost:hover {
+    background: #374151;
+    color: var(--primary);
+  }
+  
+  .sidebar-nav-item {
+    color: #d1d5db;
+  }
+  
+  .sidebar-nav-item:hover {
+    background: #374151;
+  }
+  
+  .form-input-professional {
+    background: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .header-world-class {
+    background: var(--background);
+    border-bottom-color: var(--border);
+  }
+}
+
+/* SPRINT 14: World-Class Intelligent Header Styles */
+@layer components {
+  /* Premium Header with Glass Morphism - Elimu Smart DNA */
+  .header-world-class {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.05),
+      0 20px 25px rgba(0, 0, 0, 0.02);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all var(--transition-base);
+  }
+  
+  /* Brand Title Enhancement */
+  .brand-title {
+    background: linear-gradient(135deg, var(--primary), #e65100);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  /* Icon Group Containers */
+  .header-icon-group {
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  
+  .header-icon-group:hover {
+    background: var(--secondary);
+    transform: translateY(-1px);
+  }
+  
+  .header-icon-group::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+  }
+  
+  .header-icon-group:hover::after {
+    width: 80%;
+  }
+  
+  /* Professional Action Icons */
+  .icon-action-professional {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .icon-action-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg, 
+      transparent, 
+      rgba(255, 107, 53, 0.1), 
+      transparent
+    );
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .icon-action-professional:hover::before {
+    left: 100%;
+  }
+  
+  .icon-action-professional:hover {
+    background: var(--secondary);
+    color: var(--primary);
+    transform: translateY(-1px) scale(1.05);
+  }
+  
+  /* Notification Icon with Badge */
+  .notification-icon {
+    position: relative;
+  }
+  
+  .notification-badge {
+    animation: notification-pulse 2s infinite;
+  }
+  
+  @keyframes notification-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
+  
+  /* Professional Profile Button - Elimu Smart DNA */
+  .profile-button-professional {
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    transition: all var(--transition-base);
+    min-height: 48px;
+  }
+  
+  .profile-button-professional:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+  }
+  
+  /* Command Palette and Dropdown Enhancements */
+  .command-palette-dropdown,
+  .notification-center,
+  .profile-dropdown {
+    background: var(--popover);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 
+      0 20px 25px rgba(0, 0, 0, 0.1),
+      0 10px 10px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+  
+  /* Notification Items */
+  .notification-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+  }
+  
+  .notification-item:hover {
+    background: var(--secondary);
+    border-color: var(--border);
+    transform: translateY(-1px);
+  }
+  
+  /* Center Groups Container */
+  .header-center-groups {
+    position: relative;
+  }
+  
+  .header-center-groups::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 40px;
+    background: var(--muted);
+    border-radius: var(--radius);
+    z-index: -1;
+    opacity: 0.3;
+  }
+  
+  /* Responsive Header Behavior */
+  @media (max-width: 1200px) {
+    .header-center-groups {
+      gap: 1rem;
+    }
+    
+    .header-icon-group {
+      padding: 4px 6px;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .header-center-groups {
+      display: none;
+    }
+    
+    .header-world-class .brand-title {
+      font-size: 1.25rem;
+    }
+  }
+  
+  /* Premium Animations */
+  .header-world-class * {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Focus States for Accessibility - Elimu Smart DNA */
+  .icon-action-professional:focus-visible,
+  .profile-button-professional:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    background: var(--secondary);
+  }
+  
+  /* Hover Effects for Better UX - Elimu Smart DNA */
+  @media (hover: hover) {
+    .header-icon-group:hover {
+      background: var(--secondary);
+    }
+    
+    .icon-action-professional:hover {
+      background: var(--secondary);
+    }
+  }
+  
+  /* Touch Optimizations */
+  @media (max-width: 768px) {
+    .icon-action-professional,
+    .profile-button-professional {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    .header-icon-group {
+      padding: 8px;
+    }
+    
+    /* Mobile Header Enhancements - Elimu Smart DNA */
+    .header-mobile {
+      background: var(--background);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  /* Ultra-wide display optimization */
+  @media (min-width: 1400px) {
+    .header-center-groups {
+      gap: 2.5rem;
+    }
+    
+    .header-icon-group {
+      padding: 8px 12px;
+    }
+  }
+  
+  /* High DPI display optimization */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .header-world-class {
+      border-bottom-width: 0.5px;
+    }
+    
+    .icon-action-professional::before {
+      background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 107, 53, 0.08), 
+        transparent
+      );
+    }
+  }
+  
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .header-world-class *,
+    .icon-action-professional,
+    .profile-button-professional,
+    .header-icon-group {
+      animation: none !important;
+      transition: none !important;
+    }
+    
+    .header-icon-group:hover {
+      transform: none !important;
+    }
+    
+    .icon-action-professional:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* SPRINT 15: Dashboard Icon Intelligence & Enhanced Components */
+@layer components {
+  /* Universal Component DNA Pattern - Enhanced Dashboard Cards */
+  .dashboard-card-enhanced {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dashboard-card-enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+  
+  /* Intelligent Stat Cards with Icon Integration */
+  .stat-card-enhanced {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .stat-card-enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+  }
+  
+  /* Icon Container with Semantic Styling */
+  .icon-container-enhanced {
+    width: var(--icon-size-3xl);
+    height: var(--icon-size-3xl);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    transition: all var(--transition-fast);
+    margin-bottom: var(--space-4);
+  }
+  
+  .icon-container-enhanced:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Progress Icons with Status Colors */
+  .icon-progress-success {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  }
+  
+  .icon-progress-warning {
+    background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+  }
+  
+  .icon-progress-info {
+    background: linear-gradient(135deg, var(--info) 0%, #0ea5e9 100%);
+  }
+  
+  /* Enhanced Welcome Banner with Gradient System */
+  .welcome-banner-enhanced {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    color: var(--primary-foreground);
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .welcome-banner-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+  }
+  
+  /* Responsive Grid System - Exact 1-2-4 Progression */
+  .stats-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: var(--space-6);
+  }
+  
+  @media (min-width: 640px) {
+    .stats-grid-enhanced {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .stats-grid-enhanced {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  /* Progressive Information Disclosure */
+  .progressive-info {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all var(--transition-base);
+    max-height: 0;
+    overflow: hidden;
+  }
+  
+  .dashboard-card-enhanced:hover .progressive-info {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 200px;
+  }
+  
+  /* Quick Action Buttons with Enhanced Styling */
+  .quick-action-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--space-3) var(--space-4);
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
+    text-decoration: none;
+    min-height: 48px;
+    gap: var(--space-3);
+  }
+  
+  .quick-action-button:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* Icon Sizing Utilities */
+  .icon-xs { width: var(--icon-size-xs); height: var(--icon-size-xs); }
+  .icon-sm { width: var(--icon-size-sm); height: var(--icon-size-sm); }
+  .icon-base { width: var(--icon-size-base); height: var(--icon-size-base); }
+  .icon-lg { width: var(--icon-size-lg); height: var(--icon-size-lg); }
+  .icon-xl { width: var(--icon-size-xl); height: var(--icon-size-xl); }
+  .icon-2xl { width: var(--icon-size-2xl); height: var(--icon-size-2xl); }
+  .icon-3xl { width: var(--icon-size-3xl); height: var(--icon-size-3xl); }
+  
+  /* Container System with Exact Specifications */
+  .container-enhanced {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container-enhanced {
+      padding: 0 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-enhanced {
+      padding: 0 2rem;
+    }
+  }
+  
+  /* Loading States with Layout Stability */
+  .skeleton-enhanced {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      var(--secondary) 50%,
+      var(--muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: var(--radius);
+  }
+  
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* Micro-interactions with Exact Timing */
+  .micro-lift {
+    transition: transform var(--transition-fast);
+  }
+  
+  .micro-lift:hover {
+    transform: translateY(-0.5px);
+  }
+  
+  .micro-scale {
+    transition: transform var(--transition-fast);
+  }
+  
+  .micro-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Accessibility Focus Enhancement */
+  .focus-enhanced:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+  }
+  
+  /* Role-based Icon Theming */
+  .icon-role-primary {
+    color: var(--primary);
+  }
+  
+  .icon-role-success {
+    color: var(--success);
+  }
+  
+  .icon-role-warning {
+    color: var(--warning);
+  }
+  
+  .icon-role-info {
+    color: var(--info);
+  }
+  
+  /* Additional Sprint 15 Utility Classes */
+  .border-border {
+    border-color: var(--border);
+  }
+  
+  .hover\:bg-secondary\/50:hover {
+    background-color: rgba(255, 243, 199, 0.5); /* secondary with 50% opacity */
+  }
+  
+  .bg-success\/10 {
+    background-color: rgba(5, 150, 105, 0.1); /* success with 10% opacity */
+  }
+  
+  .bg-muted\/50 {
+    background-color: rgba(254, 249, 231, 0.5); /* muted with 50% opacity */
+  }
+  
+  .text-success {
+    color: var(--success);
+  }
+  
+  .rounded {
+    border-radius: var(--radius);
+  }
+  
+  .p-2 { padding: var(--space-2); }
+  .p-3 { padding: var(--space-3); }
+  .py-6 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
+  
+  .gap-3 { gap: var(--space-3); }
+  .gap-8 { gap: var(--space-8); }
+  
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .justify-end { justify-content: flex-end; }
+  .flex { display: flex; }
+  .relative { position: relative; }
+  .z-10 { z-index: 10; }
 }

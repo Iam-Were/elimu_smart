@@ -105,7 +105,17 @@ const mockSuggestions: SearchSuggestion[] = [
   { id: '5', text: 'business administration', type: 'suggestion', category: 'Suggestions' },
 ];
 
-export const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
+interface GlobalSearchProps {
+  className?: string;
+  onClose?: () => void;
+  placeholder?: string;
+}
+
+export const GlobalSearch: React.FC<GlobalSearchProps> = ({ 
+  className, 
+  onClose, 
+  placeholder = "Search everything..." 
+}) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -172,6 +182,7 @@ export const GlobalSearch: React.FC<{ className?: string }> = ({ className }) =>
       case 'Escape':
         setIsOpen(false);
         inputRef.current?.blur();
+        onClose?.();
         break;
     }
   };
@@ -188,6 +199,7 @@ export const GlobalSearch: React.FC<{ className?: string }> = ({ className }) =>
         navigate(result.url);
         setIsOpen(false);
         setQuery('');
+        onClose?.();
       }
     }
   };
@@ -223,6 +235,8 @@ export const GlobalSearch: React.FC<{ className?: string }> = ({ className }) =>
     setQuery('');
     setResults([]);
     setSelectedIndex(-1);
+    setIsOpen(false);
+    onClose?.();
   };
 
   // Group suggestions by category
@@ -237,7 +251,7 @@ export const GlobalSearch: React.FC<{ className?: string }> = ({ className }) =>
     <div className={`global-search ${className || ''}`} style={{ position: 'relative' }}>
       <TextInput
         ref={inputRef}
-        placeholder="Search careers, resources, counselors..."
+        placeholder={placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setIsOpen(true)}

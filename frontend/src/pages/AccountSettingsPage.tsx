@@ -8,6 +8,14 @@ import {
   Button,
   Paper,
   Grid,
+  Avatar,
+  ActionIcon,
+  Badge,
+  Divider,
+  FileInput,
+  Dropzone,
+  rem,
+  Progress,
 } from '@mantine/core';
 import {
   PersonIcon,
@@ -16,7 +24,11 @@ import {
   EyeOpenIcon,
   GearIcon,
   TrashIcon,
+  CameraIcon,
+  UploadIcon,
+  DownloadIcon,
 } from '@radix-ui/react-icons';
+import { useAuth } from '../hooks/useAuth';
 import { ProfileSettings } from '../components/settings/ProfileSettings';
 import { SecuritySettings } from '../components/settings/SecuritySettings';
 import { NotificationSettings } from '../components/settings/NotificationSettings';
@@ -33,8 +45,10 @@ interface SettingsTab {
 }
 
 export const AccountSettingsPage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
 
   const settingsTabs: SettingsTab[] = [
     {
@@ -95,20 +109,113 @@ export const AccountSettingsPage: React.FC = () => {
     setHasUnsavedChanges(false);
   };
 
+  const handleProfileImageUpload = (file: File | null) => {
+    if (file) {
+      // Create preview URL for the selected image
+      const previewUrl = URL.createObjectURL(file);
+      setProfileImage(previewUrl);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleExportData = async () => {
+    // TODO: Implement data export functionality
+    console.log('Exporting user data...');
+  };
+
   return (
     <Container size="xl" py="xl">
       <Stack gap="xl">
-        {/* Header */}
-        <div>
-          <Title order={1} size="h2" mb="xs">
-            Account Settings
-          </Title>
-          <Text c="dimmed" size="lg">
-            Manage your account settings, privacy, and preferences.
-          </Text>
-        </div>
+        {/* Enhanced Header with Profile Preview */}
+        <Paper p="xl" withBorder>
+          <Group justify="space-between" align="flex-start">
+            <Group align="flex-start" gap="xl">
+              {/* Enhanced Profile Picture Section */}
+              <div style={{ position: 'relative' }}>
+                <Avatar
+                  size={120}
+                  src={profileImage}
+                  alt={user?.name}
+                  style={{
+                    border: '4px solid var(--mantine-color-orange-6)',
+                    boxShadow: 'var(--mantine-shadow-sm)',
+                  }}
+                />
+                <FileInput
+                  accept="image/*"
+                  onChange={handleProfileImageUpload}
+                  style={{ display: 'none' }}
+                  id="profile-image-upload"
+                />
+                <ActionIcon
+                  component="label"
+                  htmlFor="profile-image-upload"
+                  size="md"
+                  variant="filled"
+                  color="orange"
+                  style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 4,
+                    cursor: 'pointer',
+                    border: '2px solid white',
+                  }}
+                >
+                  <CameraIcon width={16} height={16} />
+                </ActionIcon>
+              </div>
 
-        {/* Settings Layout */}
+              <Stack gap="xs">
+                <div>
+                  <Title order={1} size="h2" mb="xs">
+                    {user?.name || 'Your Name'}
+                  </Title>
+                  <Text c="dimmed" size="lg">
+                    {user?.email || 'your.email@example.com'}
+                  </Text>
+                </div>
+
+                <Group gap="md" mt="sm">
+                  <Badge 
+                    variant="light" 
+                    color="orange" 
+                    size="lg"
+                    leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--mantine-color-orange-6)' }} />}
+                  >
+                    {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1) || 'Student'}
+                  </Badge>
+                  <Text size="sm" c="dimmed">
+                    Member since {new Date().getFullYear()}
+                  </Text>
+                </Group>
+
+                {/* Profile Completion Indicator */}
+                <div style={{ marginTop: rem(16), minWidth: rem(300) }}>
+                  <Group justify="space-between" mb="xs">
+                    <Text size="sm" fw={500}>Profile Completion</Text>
+                    <Text size="sm" c="dimmed">85%</Text>
+                  </Group>
+                  <Progress value={85} color="orange" size="sm" />
+                  <Text size="xs" c="dimmed" mt={4}>
+                    Complete your profile to unlock all features
+                  </Text>
+                </div>
+              </Stack>
+            </Group>
+
+            <Group gap="md">
+              <Button
+                variant="default"
+                leftSection={<DownloadIcon width={16} height={16} />}
+                onClick={handleExportData}
+              >
+                Export Data
+              </Button>
+            </Group>
+          </Group>
+        </Paper>
+
+        {/* Enhanced Settings Layout */}
         <Grid gutter="xl" className="settings-layout">
           {/* Sidebar Navigation */}
           <Grid.Col span={{ base: 12, md: 3 }}>
@@ -130,24 +237,23 @@ export const AccountSettingsPage: React.FC = () => {
                     <Button
                       key={tab.id}
                       variant={isActive ? 'filled' : 'subtle'}
+                      color={isActive ? 'orange' : 'gray'}
                       leftSection={<Icon width={16} height={16} />}
                       onClick={() => handleTabChange(tab.id)}
+                      justify="flex-start"
                       style={{
-                        justifyContent: 'flex-start',
                         height: 'auto',
-                        padding: '0.75rem',
-                      }}
-                      styles={{
-                        inner: {
-                          justifyContent: 'flex-start',
-                        },
-                        label: {
-                          fontSize: '0.875rem',
-                          fontWeight: isActive ? 600 : 500,
-                        },
+                        padding: rem(12),
                       }}
                     >
-                      {tab.label}
+                      <div style={{ textAlign: 'left' }}>
+                        <Text fw={isActive ? 600 : 500} size="sm">
+                          {tab.label}
+                        </Text>
+                        <Text size="xs" c={isActive ? 'white' : 'dimmed'} mt={2}>
+                          {tab.description}
+                        </Text>
+                      </div>
                     </Button>
                   );
                 })}
@@ -174,30 +280,35 @@ export const AccountSettingsPage: React.FC = () => {
                   </Text>
                 </div>
 
+                <Divider />
+
                 {/* Active Component */}
                 {ActiveComponent && (
-                  <ActiveComponent onUnsavedChanges={setHasUnsavedChanges} />
+                  <ActiveComponent 
+                    onUnsavedChanges={setHasUnsavedChanges} 
+                    user={user}
+                    profileImage={profileImage}
+                  />
                 )}
               </Stack>
             </Paper>
           </Grid.Col>
         </Grid>
 
-        {/* Unsaved Changes Warning */}
+        {/* Enhanced Unsaved Changes Warning */}
         {hasUnsavedChanges && (
           <Paper
             p="md"
             style={{
               position: 'fixed',
-              bottom: '2rem',
+              bottom: rem(32),
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 1000,
-              backgroundColor: 'var(--warning)',
-              borderColor: 'var(--warning)',
-              borderWidth: '2px',
-              maxWidth: '500px',
+              backgroundColor: 'var(--mantine-color-orange-6)',
+              maxWidth: rem(500),
               width: '90%',
+              boxShadow: 'var(--mantine-shadow-lg)',
             }}
           >
             <Group justify="space-between" align="center">
@@ -205,7 +316,7 @@ export const AccountSettingsPage: React.FC = () => {
                 <Text fw={600} c="white">
                   Unsaved Changes
                 </Text>
-                <Text size="sm" c="white" opacity={0.9}>
+                <Text size="sm" c="white" style={{ opacity: 0.9 }}>
                   You have unsaved changes that will be lost if you navigate away.
                 </Text>
               </div>

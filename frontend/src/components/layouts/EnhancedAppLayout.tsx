@@ -1,22 +1,28 @@
 import React, { type ReactNode, useEffect } from 'react';
-import { AppShell, Burger, Title, useComputedColorScheme } from '@mantine/core';
+import {
+  AppShell,
+  Burger,
+  Title,
+  useComputedColorScheme,
+} from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
-import { IntelligentHeader } from '../common/IntelligentHeader';
-import { LinkedInLayout } from './LinkedInLayout';
 import { SmartBreadcrumbs, useBreadcrumbs } from '../common/SmartBreadcrumbs';
+import { IntelligentHeader } from './IntelligentHeader';
 import { GlobalSearch } from '../common/GlobalSearch';
 import type { ThemeRole } from '../../types';
 
 // Import Lucide icons for mobile header
-import { Search } from 'lucide-react';
+import {
+  Search,
+} from 'lucide-react';
 
-interface AppLayoutProps {
+interface EnhancedAppLayoutProps {
   children: ReactNode;
 }
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+export const EnhancedAppLayout: React.FC<EnhancedAppLayoutProps> = ({ children }) => {
   const [opened, { toggle }] = useDisclosure();
   const [searchOpened, { toggle: toggleSearch }] = useDisclosure();
   const { user } = useAuth();
@@ -52,12 +58,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Enhanced Header for Desktop, Fallback for Mobile */}
       <AppShell.Header>
         {!isMobile ? (
-          <IntelligentHeader 
-            onSearchOpen={toggleSearch}
-            notificationCount={3}
-            messageCount={1}
-            showNavigation={true}
-          />
+          <IntelligentHeader onSearchOpen={toggleSearch} />
         ) : (
           // Mobile Header Fallback
           <div className="header-mobile" style={{ height: '100%', padding: '0 1rem' }}>
@@ -74,7 +75,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   size="sm"
                   aria-label="Toggle navigation"
                 />
-                <Title order={3} style={{ color: 'var(--mantine-color-orange-6)' }}>
+                <Title order={3} style={{ color: 'var(--primary)' }}>
                   Elimu Smart
                 </Title>
               </div>
@@ -109,9 +110,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <AppShell.Main className="theme-transition">
-        <LinkedInLayout>
-          {children}
-        </LinkedInLayout>
+        {children}
       </AppShell.Main>
       
       {/* Enhanced Global Search Modal */}

@@ -3,29 +3,23 @@ import {
   Container,
   Title,
   Text,
-  Card,
   Grid,
   Stack,
   Badge,
   Group,
-  Button,
-  Alert,
-  RingProgress,
-  SimpleGrid,
 } from '@mantine/core';
-import {
-  MagnifyingGlassIcon,
-  TargetIcon,
-  BookmarkIcon,
-  PersonIcon,
-  StarIcon,
-  CheckCircledIcon,
-} from '@radix-ui/react-icons';
+// Sprint 15: Enhanced Icon System with Intelligence
+import { 
+  UniversalIcon, 
+  StatCardIcon, 
+  QuickActionButton
+} from '../utils/iconIntelligence';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { CounselorDashboard } from '../components/counselor/CounselorDashboard';
 import { DashboardAnalytics, MetricCard } from '../components/common/InteractiveCharts';
+import Dashboard from './Dashboard'; // Import the new Dashboard component
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -126,291 +120,156 @@ export const DashboardPage: React.FC = () => {
   }
   
   if (user?.role === 'student') {
+    return <Dashboard />;
+  }
+  
+  // Legacy implementation disabled
+  if (false) {
     return (
-      <Container size="xl" py="md">
+      <div className="container-enhanced py-6">
         <Stack gap="lg">
-          {/* Welcome Section */}
-          <Stack gap="sm">
-            <Group justify="space-between" align="flex-start">
-              <Stack gap="xs">
-                <Title order={1} size="2rem">
-                  {getWelcomeMessage()}
-                </Title>
-                <Text size="lg" c="dimmed">
-                  Ready to explore your career journey?
-                </Text>
-              </Stack>
-              <Badge
-                size="lg"
-                variant="light"
-                color={getThemeColor()}
-                style={{
-                  backgroundColor: 'var(--secondary)',
-                  color: 'var(--secondary-foreground)',
-                }}
-              >
-                {user?.role && getRoleDisplayName(user.role)}
-              </Badge>
-            </Group>
-          </Stack>
-
-          {/* Quick Stats Overview */}
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs" align="center">
-                <RingProgress
-                  size={60}
-                  thickness={6}
-                  sections={[
-                    {
-                      value:
-                        (studentStats.assessmentsCompleted /
-                          studentStats.totalAssessments) *
-                        100,
-                      color: 'var(--primary)',
-                    },
-                  ]}
-                  label={
-                    <Text
-                      ta="center"
-                      fw={700}
-                      size="xs"
-                      style={{ color: 'var(--primary)' }}
+          {/* Enhanced Welcome Section with Gradient */}
+          <div className="welcome-banner-enhanced">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center relative z-10">
+              <div className="lg:col-span-2">
+                <Stack gap="xs">
+                  <Title order={1} size="2rem" style={{ color: 'inherit' }}>
+                    {getWelcomeMessage()} 👋
+                  </Title>
+                  <Text size="lg" style={{ color: 'inherit', opacity: 0.9 }}>
+                    Continue your journey to finding the perfect career path
+                  </Text>
+                  <Group gap="sm" mt="sm">
+                    <Badge
+                      size="md"
+                      variant="light"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'inherit',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
                     >
-                      {Math.round(
-                        (studentStats.assessmentsCompleted /
-                          studentStats.totalAssessments) *
-                          100
-                      )}
-                      %
-                    </Text>
-                  }
-                />
-                <Text fw={500} size="sm" ta="center">
-                  Assessments
-                </Text>
-                <Text size="xs" c="dimmed" ta="center">
-                  {studentStats.assessmentsCompleted}/
-                  {studentStats.totalAssessments} completed
-                </Text>
-              </Stack>
-            </Card>
-
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs" align="center">
-                <Title
-                  order={2}
-                  size="2rem"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  {studentStats.careerMatches}
-                </Title>
-                <Text fw={500} size="sm" ta="center">
-                  Career Matches
-                </Text>
-                <Text size="xs" c="dimmed" ta="center">
-                  Personalized for you
-                </Text>
-              </Stack>
-            </Card>
-
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs" align="center">
-                <RingProgress
-                  size={60}
-                  thickness={6}
-                  sections={[
-                    {
-                      value: studentStats.profileCompletion,
-                      color: 'var(--primary)',
-                    },
-                  ]}
-                  label={
-                    <Text
-                      ta="center"
-                      fw={700}
-                      size="xs"
-                      style={{ color: 'var(--primary)' }}
+                      Form Four Student
+                    </Badge>
+                    <Badge
+                      size="md"
+                      variant="light"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'inherit',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
                     >
-                      {studentStats.profileCompletion}%
-                    </Text>
-                  }
-                />
-                <Text fw={500} size="sm" ta="center">
-                  Profile
-                </Text>
-                <Text size="xs" c="dimmed" ta="center">
-                  Almost complete!
-                </Text>
-              </Stack>
-            </Card>
-
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="xs" align="center">
-                <div
-                  style={{
-                    color: 'var(--primary)',
-                    fontSize: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                      Profile {studentStats.profileCompletion}% Complete
+                    </Badge>
+                  </Group>
+                </Stack>
+              </div>
+              <div className="flex justify-center lg:justify-end">
+                <div 
+                  className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30"
+                  style={{ backdropFilter: 'blur(10px)' }}
                 >
-                  <TargetIcon width={32} height={32} />
+                  <UniversalIcon
+                    category="PROGRESS_INDICATORS"
+                    type="completion"
+                    size="2xl"
+                    showContainer={false}
+                    animate={true}
+                  />
                 </div>
-                <Text fw={500} size="sm" ta="center">
-                  Next Goal
-                </Text>
-                <Text size="xs" c="dimmed" ta="center">
-                  Complete Skills Assessment
-                </Text>
-              </Stack>
-            </Card>
-          </SimpleGrid>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Stats Grid with Icon Intelligence */}
+          <div className="stats-grid-enhanced">
+            <StatCardIcon
+              category="PROGRESS_INDICATORS"
+              type="assessments"
+              value={`${Math.round((studentStats.assessmentsCompleted / studentStats.totalAssessments) * 100)}%`}
+              label="Assessments"
+              description={`${studentStats.assessmentsCompleted}/${studentStats.totalAssessments} completed`}
+              trend="up"
+              onClick={() => navigate('/assessment')}
+            />
+
+            <StatCardIcon
+              category="LEARNING_GOALS"
+              type="careerMatches"
+              value={studentStats.careerMatches}
+              label="Career Matches"
+              description="Personalized for your interests"
+              trend="up"
+              onClick={() => navigate('/career-hub')}
+            />
+
+            <StatCardIcon
+              category="PROGRESS_INDICATORS"
+              type="completion"
+              value={`${studentStats.profileCompletion}%`}
+              label="Profile Complete"
+              description="Almost there! Keep going"
+              trend={studentStats.profileCompletion > 75 ? 'up' : 'neutral'}
+              onClick={() => navigate('/profile')}
+            />
+
+            <StatCardIcon
+              category="LEARNING_GOALS"
+              type="currentTarget"
+              value="3"
+              label="Goals Set"
+              description="Complete Skills Assessment"
+              trend="neutral"
+              onClick={() => navigate('/goals')}
+            />
+          </div>
 
           {/* Main Content Grid */}
           <Grid>
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="lg">
-                {/* Quick Actions */}
-                <Card
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  style={{
-                    backgroundColor: 'var(--card)',
-                    borderColor: 'var(--border)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
+                {/* Enhanced Quick Actions with Icon Intelligence */}
+                <div className="dashboard-card-enhanced">
                   <Stack gap="md">
                     <Title order={3}>Quick Actions</Title>
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                      <Button
-                        variant="light"
-                        size="md"
-                        leftSection={
-                          <MagnifyingGlassIcon width={18} height={18} />
-                        }
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <QuickActionButton
+                        action="assessment"
                         onClick={() => navigate('/assessment')}
-                        style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--secondary-foreground)',
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        Take Career Assessment
-                      </Button>
-                      <Button
-                        variant="light"
-                        size="md"
-                        leftSection={<TargetIcon width={18} height={18} />}
+                      />
+                      <QuickActionButton
+                        action="subjectMapper"
                         onClick={() => navigate('/subject-mapper')}
-                        style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--secondary-foreground)',
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        Subject-Career Mapper
-                      </Button>
-                      <Button
-                        variant="light"
-                        size="md"
-                        leftSection={<PersonIcon width={18} height={18} />}
+                      />
+                      <QuickActionButton
+                        action="profile"
                         onClick={() => navigate('/profile')}
-                        style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--secondary-foreground)',
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        Complete Profile
-                      </Button>
-                      <Button
-                        variant="light"
-                        size="md"
-                        leftSection={<BookmarkIcon width={18} height={18} />}
+                      />
+                      <QuickActionButton
+                        action="careerHub"
                         onClick={() => navigate('/career-hub')}
-                        style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--secondary-foreground)',
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        Career Hub
-                      </Button>
-                    </SimpleGrid>
+                      />
+                    </div>
                   </Stack>
-                </Card>
+                </div>
 
-                {/* Recent Activity */}
-                <Card
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  style={{
-                    backgroundColor: 'var(--card)',
-                    borderColor: 'var(--border)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
+                {/* Enhanced Recent Activity */}
+                <div className="dashboard-card-enhanced">
                   <Stack gap="md">
                     <Title order={3}>Recent Activity</Title>
                     <Stack gap="sm">
                       {studentStats.recentActivity.map(activity => (
-                        <Group key={activity.id} gap="md">
-                          <div style={{ color: 'var(--primary)' }}>
-                            {activity.type === 'assessment' ? (
-                              <MagnifyingGlassIcon width={16} height={16} />
-                            ) : activity.type === 'profile' ? (
-                              <PersonIcon width={16} height={16} />
-                            ) : (
-                              <TargetIcon width={16} height={16} />
-                            )}
-                          </div>
+                        <Group key={activity.id} gap="md" className="micro-lift p-2 rounded hover:bg-secondary/50">
+                          <UniversalIcon
+                            category="PROGRESS_INDICATORS"
+                            type={activity.type === 'assessment' ? 'assessments' : activity.type === 'profile' ? 'completion' : 'achievements'}
+                            size="sm"
+                            showContainer={true}
+                            animate={true}
+                          />
                           <Stack gap={2} style={{ flex: 1 }}>
-                            <Text size="sm">{activity.action}</Text>
+                            <Text size="sm" fw={500}>{activity.action}</Text>
                             <Text size="xs" c="dimmed">
                               {activity.time}
                             </Text>
@@ -419,87 +278,61 @@ export const DashboardPage: React.FC = () => {
                       ))}
                     </Stack>
                   </Stack>
-                </Card>
+                </div>
               </Stack>
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Stack gap="lg">
-                {/* Upcoming Events */}
-                <Card
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  style={{
-                    backgroundColor: 'var(--card)',
-                    borderColor: 'var(--border)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
+                {/* Enhanced Upcoming Events */}
+                <div className="dashboard-card-enhanced">
                   <Stack gap="md">
-                    <Title order={4}>Upcoming</Title>
+                    <Title order={4}>Upcoming Events</Title>
                     <Stack gap="sm">
                       {studentStats.upcomingEvents.map(event => (
-                        <Alert
-                          key={event.id}
-                          variant="light"
-                          color={event.type === 'deadline' ? 'orange' : 'blue'}
-                          styles={{
-                            root: {
-                              backgroundColor: 'var(--muted)',
-                              borderColor: 'var(--border)',
-                            },
-                          }}
-                        >
-                          <Stack gap={2}>
-                            <Text size="sm" fw={500}>
-                              {event.title}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {event.date}
-                            </Text>
-                          </Stack>
-                        </Alert>
+                        <div key={event.id} className="micro-lift p-3 rounded border border-border">
+                          <Group gap="sm">
+                            <UniversalIcon
+                              category="LEARNING_GOALS"
+                              type="planning"
+                              size="sm"
+                              showContainer={false}
+                              animate={true}
+                            />
+                            <Stack gap={2} style={{ flex: 1 }}>
+                              <Text size="sm" fw={500}>
+                                {event.title}
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                {event.date}
+                              </Text>
+                            </Stack>
+                          </Group>
+                        </div>
                       ))}
                     </Stack>
                   </Stack>
-                </Card>
+                </div>
 
-                {/* Achievements */}
-                <Card
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  style={{
-                    backgroundColor: 'var(--card)',
-                    borderColor: 'var(--border)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
+                {/* Enhanced Achievements */}
+                <div className="dashboard-card-enhanced">
                   <Stack gap="md">
                     <Title order={4}>Achievements</Title>
                     <Stack gap="sm">
                       {studentStats.achievements.map(achievement => (
-                        <Group key={achievement.id} gap="sm">
-                          <div
-                            style={{
-                              color: achievement.unlocked
-                                ? 'var(--success)'
-                                : 'var(--muted-foreground)',
-                              fontSize: '18px',
-                            }}
-                          >
-                            {achievement.unlocked ? (
-                              <StarIcon width={18} height={18} />
-                            ) : (
-                              <CheckCircledIcon width={18} height={18} />
-                            )}
-                          </div>
+                        <Group key={achievement.id} gap="sm" className={`micro-lift p-2 rounded ${achievement.unlocked ? 'bg-success/10' : 'bg-muted/50'}`}>
+                          <UniversalIcon
+                            category="PROGRESS_INDICATORS"
+                            type="achievements"
+                            size="sm"
+                            showContainer={false}
+                            animate={achievement.unlocked}
+                          />
                           <Stack gap={2} style={{ flex: 1 }}>
                             <Text
                               size="sm"
                               fw={500}
-                              c={achievement.unlocked ? undefined : 'dimmed'}
+                              c={achievement.unlocked ? 'success' : 'dimmed'}
                             >
                               {achievement.title}
                             </Text>
@@ -511,12 +344,12 @@ export const DashboardPage: React.FC = () => {
                       ))}
                     </Stack>
                   </Stack>
-                </Card>
+                </div>
               </Stack>
             </Grid.Col>
           </Grid>
         </Stack>
-      </Container>
+      </div>
     );
   }
 

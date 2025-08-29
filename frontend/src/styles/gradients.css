@@ -1,0 +1,272 @@
+/* Sprint 17: Advanced Gradient System Implementation */
+/* Based on design_ux_final EXACT specifications */
+
+@layer utilities {
+  /* PRIMARY GRADIENT SYSTEM - EXACT IMPLEMENTATIONS */
+  
+  /* Student/Primary Gradient - MOST IMPORTANT */
+  .gradient-primary {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    /* Creates depth from vibrant orange to darker orange */
+    /* 135° angle creates natural light source feel */
+    /* Used for: Primary buttons, CTAs, hero sections */
+  }
+  
+  /* Secondary Gradient - Supporting Actions */
+  .gradient-secondary {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    /* Light yellow to amber */
+    /* Used for: Secondary buttons, highlights */
+  }
+  
+  /* Success Gradient - Positive Actions */
+  .gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    /* Emerald green gradient */
+    /* Used for: Success notifications, completed states */
+  }
+  
+  /* Warning Gradient - Attention Required */
+  .gradient-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    /* Amber to orange gradient */
+    /* Used for: Warning states, important notices */
+  }
+  
+  /* Info Gradient - Informational Content */
+  .gradient-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    /* Blue gradient */
+    /* Used for: Information panels, help sections */
+  }
+  
+  /* Admin Gradient - Authority & Premium */
+  .gradient-admin {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    /* Rich purple to deeper purple */
+    /* Conveys professionalism and premium features */
+    /* Used for: Admin buttons, dashboard headers, premium features */
+  }
+
+  /* Counselor Gradient - Warmth & Support */
+  .gradient-counselor {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+    /* Golden yellow to amber */
+    /* Warm and approachable for guidance context */
+    /* Used for: Counselor tools, support sections, guidance CTAs */
+  }
+  
+  /* BACKGROUND GRADIENT VARIANTS */
+  
+  /* Hero Section Gradients */
+  .gradient-hero-primary {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 50%, #f97316 100%);
+    /* Cream to light peach to orange - for hero backgrounds */
+  }
+  
+  .gradient-hero-admin {
+    background: linear-gradient(135deg, #f3e8ff 0%, #ddd6fe 50%, #a855f7 100%);
+    /* Light lavender to purple - for admin hero backgrounds */
+  }
+  
+  .gradient-hero-counselor {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 50%, #eab308 100%);
+    /* Light yellow to golden - for counselor hero backgrounds */
+  }
+  
+  /* Card Gradients - Subtle backgrounds */
+  .gradient-card-subtle {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.05) 0%, rgba(249, 115, 22, 0.02) 100%);
+    /* Very subtle orange tint for cards */
+  }
+  
+  .gradient-card-admin {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%);
+    /* Very subtle purple tint for admin cards */
+  }
+  
+  .gradient-card-counselor {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(234, 179, 8, 0.02) 100%);
+    /* Very subtle yellow tint for counselor cards */
+  }
+  
+  /* OVERLAY GRADIENTS */
+  
+  /* Text overlays for hero sections */
+  .gradient-overlay-dark {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+    /* Dark overlay for text readability */
+  }
+  
+  .gradient-overlay-primary {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(234, 88, 12, 0.6) 100%);
+    /* Orange overlay with transparency */
+  }
+  
+  /* ANIMATED GRADIENTS */
+  
+  .gradient-animated {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #f97316 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  .gradient-pulse {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    animation: gradient-pulse 2s ease-in-out infinite;
+  }
+  
+  /* BORDER GRADIENTS */
+  
+  .gradient-border {
+    position: relative;
+    background: white;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+  }
+  
+  /* TEXT GRADIENTS */
+  
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-admin {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-counselor {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* HOVER GRADIENT EFFECTS */
+  
+  .gradient-hover-primary {
+    background: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .gradient-hover-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    transition: left 0.3s ease;
+    z-index: -1;
+  }
+  
+  .gradient-hover-primary:hover::before {
+    left: 0;
+  }
+  
+  .gradient-hover-primary:hover {
+    color: white;
+  }
+  
+  /* SHADOW GRADIENTS */
+  
+  .shadow-gradient-primary {
+    box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4), 0 10px 10px -5px rgba(249, 115, 22, 0.04);
+  }
+  
+  .shadow-gradient-admin {
+    box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.4), 0 10px 10px -5px rgba(168, 85, 247, 0.04);
+  }
+  
+  .shadow-gradient-counselor {
+    box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.4), 0 10px 10px -5px rgba(234, 179, 8, 0.04);
+  }
+}
+
+/* GRADIENT ANIMATIONS */
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* RESPONSIVE GRADIENT ADJUSTMENTS */
+
+@media (max-width: 768px) {
+  .gradient-primary,
+  .gradient-admin,
+  .gradient-counselor {
+    /* Slightly more contrast on mobile */
+    filter: contrast(1.1);
+  }
+}
+
+/* HIGH CONTRAST MODE FALLBACKS */
+
+@media (prefers-contrast: high) {
+  .gradient-primary {
+    background: #f97316;
+  }
+  
+  .gradient-admin {
+    background: #a855f7;
+  }
+  
+  .gradient-counselor {
+    background: #eab308;
+  }
+  
+  .gradient-animated,
+  .gradient-pulse {
+    animation: none;
+  }
+}
+
+/* REDUCED MOTION PREFERENCES */
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-animated,
+  .gradient-pulse,
+  .gradient-hover-primary {
+    animation: none;
+    transition: none;
+  }
+  
+  .gradient-hover-primary::before {
+    transition: none;
+  }
+}

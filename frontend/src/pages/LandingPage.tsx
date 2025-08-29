@@ -71,19 +71,22 @@ export const LandingPage: React.FC = () => {
 
   const testimonials = [
     {
-      name: 'Sarah M.',
-      role: 'High School Student',
-      text: 'Elimu Smart helped me discover my passion for computer science and guided me to the perfect university program!',
+      name: 'Grace Wanjiku',
+      role: 'Form 4 Student, Nairobi',
+      text: 'Elimu Smart helped me discover my passion for data science. The assessment was incredibly accurate and the counselor guidance was invaluable.',
+      rating: 5
     },
     {
-      name: 'Dr. James K.',
-      role: 'Career Counselor',
-      text: 'This platform revolutionizes how we support students. The analytics and tools are incredibly comprehensive.',
+      name: 'James Kiprotich',
+      role: 'University Freshman, Eldoret',
+      text: 'The subject-to-career mapping feature opened my eyes to opportunities I never knew existed. Now I\'m confidently pursuing engineering.',
+      rating: 5
     },
     {
-      name: 'Michael R.',
-      role: 'University Graduate',
-      text: "Started using Elimu Smart in high school. Now I'm in my dream career thanks to their guidance!",
+      name: 'Grace Muthoni',
+      role: 'Parent, Kisumu',
+      text: 'As a parent, seeing my daughter gain career clarity through Elimu Smart has been amazing. The platform is comprehensive and user-friendly.',
+      rating: 5
     },
   ];
 
@@ -91,7 +94,7 @@ export const LandingPage: React.FC = () => {
     <div
       style={{
         background:
-          'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+          'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)',
         minHeight: '100vh',
       }}
     >
@@ -133,9 +136,11 @@ export const LandingPage: React.FC = () => {
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 color: 'white',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
               }}
             >
-              🚀 Your Future Starts Here
+              🏆 #1 Career Guidance Platform in Kenya
             </Badge>
 
             <Title
@@ -148,11 +153,17 @@ export const LandingPage: React.FC = () => {
                 lineHeight: 1.2,
               }}
             >
-              Smart Career Guidance for
+              Your Journey to{' '}
               <br />
-              <span style={{ color: 'var(--accent-foreground)' }}>
-                Tomorrow's Leaders
-              </span>
+              <span style={{ 
+                background: 'linear-gradient(45deg, #fbbf24, #ffffff)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Career Success
+              </span>{' '}
+              Starts Here
             </Title>
 
             <Text
@@ -164,9 +175,9 @@ export const LandingPage: React.FC = () => {
                 lineHeight: 1.6,
               }}
             >
-              Empowering students with AI-driven career insights, personalized
-              learning paths, and expert guidance to achieve their academic and
-              professional dreams.
+              Discover your perfect career path with AI-powered guidance tailored 
+              for Kenyan students. From KCSE subject mapping to university 
+              scholarships - we've got you covered.
             </Text>
 
             <Group gap="md" mt="lg">
@@ -200,20 +211,88 @@ export const LandingPage: React.FC = () => {
               </Button>
             </Group>
 
-            <Group gap="lg" mt="xl">
-              <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                ⭐ Trusted by 10,000+ students
-              </Text>
-              <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                🎓 500+ university partners
-              </Text>
-              <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                👨‍🏫 200+ expert counselors
-              </Text>
+            {/* Success Indicators with enhanced styling */}
+            <Group gap="lg" mt="xl" justify="center">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '-2px' }}>
+                  {[1,2,3,4].map(i => (
+                    <div key={i} style={{
+                      width: '24px', 
+                      height: '24px', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      border: '2px solid white',
+                      borderRadius: '50%',
+                      marginLeft: i > 1 ? '-8px' : '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '10px',
+                      color: 'white'
+                    }}>
+                      S{i}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <Text size="sm" style={{ color: 'white', fontWeight: 600 }}>
+                    15,000+ students guided
+                  </Text>
+                  <Text size="xs" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    ⭐⭐⭐⭐⭐ 4.9/5 rating
+                  </Text>
+                </div>
+              </div>
             </Group>
           </Stack>
         </Center>
       </Container>
+
+      {/* Stats Section */}
+      <div
+        style={{
+          backgroundColor: 'rgba(249, 115, 22, 0.05)',
+          paddingTop: '3rem',
+          paddingBottom: '3rem',
+        }}
+      >
+        <Container size="lg">
+          <Stack align="center" gap="xl">
+            <Title order={2} ta="center" style={{ color: 'var(--foreground)' }}>
+              Trusted by Thousands of Students
+            </Title>
+            <Grid gutter="xl">
+              {[
+                { number: '15,000+', label: 'Students Guided', icon: '🎯' },
+                { number: '89%', label: 'Success Rate', icon: '📈' },
+                { number: '500+', label: 'Career Paths', icon: '📚' },
+                { number: '50+', label: 'Universities', icon: '🎓' }
+              ].map((stat, index) => (
+                <Grid.Col key={index} span={{ base: 6, sm: 3 }}>
+                  <Stack align="center" gap="xs">
+                    <ThemeIcon
+                      size={60}
+                      radius="xl"
+                      style={{
+                        background: 'linear-gradient(135deg, #f97316, #ea580c)',
+                        color: 'white',
+                        fontSize: '1.5rem'
+                      }}
+                    >
+                      {stat.icon}
+                    </ThemeIcon>
+                    <Title order={2} size="2rem" style={{ color: '#f97316', margin: 0 }}>
+                      {stat.number}
+                    </Title>
+                    <Text size="sm" c="dimmed" ta="center">
+                      {stat.label}
+                    </Text>
+                  </Stack>
+                </Grid.Col>
+              ))}
+            </Grid>
+          </Stack>
+        </Container>
+      </div>
 
       {/* Features Section */}
       <div
@@ -227,12 +306,31 @@ export const LandingPage: React.FC = () => {
         <Container size="lg">
           <Stack gap="xl" align="center">
             <Stack gap="sm" align="center">
+              <Badge
+                size="md"
+                variant="light"
+                style={{
+                  backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                  color: '#f97316',
+                  marginBottom: '8px'
+                }}
+              >
+                ⭐ Core Features
+              </Badge>
               <Title order={2} size="2.5rem" ta="center">
-                Everything You Need to Succeed
+                Everything You Need for{' '}
+                <span style={{
+                  background: 'linear-gradient(135deg, #f97316, #dc2626)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}>
+                  Career Success
+                </span>
               </Title>
               <Text size="lg" ta="center" c="dimmed" maw={600}>
-                Comprehensive tools and resources designed to guide your
-                educational journey and career development.
+                Our comprehensive platform provides students with AI-powered assessments, 
+                expert guidance, and real-time market insights.
               </Text>
             </Stack>
 
@@ -242,22 +340,36 @@ export const LandingPage: React.FC = () => {
                   <Card
                     shadow="sm"
                     padding="lg"
-                    radius="md"
+                    radius="xl"
                     h="100%"
-                    className="hover-lift theme-transition"
                     style={{
                       backgroundColor: 'var(--card)',
                       borderColor: 'var(--border)',
                       border: '1px solid var(--border)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'var(--mantine-shadow-sm)';
                     }}
                   >
                     <Stack gap="md" h="100%">
                       <ThemeIcon
-                        size="xl"
-                        radius="md"
+                        size={56}
+                        radius="xl"
                         style={{
-                          backgroundColor: 'var(--secondary)',
-                          color: 'var(--secondary-foreground)',
+                          background: index % 6 === 0 ? 'linear-gradient(135deg, #f97316, #ea580c)' :
+                                     index % 6 === 1 ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' :
+                                     index % 6 === 2 ? 'linear-gradient(135deg, #10b981, #059669)' :
+                                     index % 6 === 3 ? 'linear-gradient(135deg, #a855f7, #7c3aed)' :
+                                     index % 6 === 4 ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                                                       'linear-gradient(135deg, #ec4899, #db2777)',
+                          color: 'white',
                           fontSize: '1.5rem',
                         }}
                       >
@@ -267,9 +379,15 @@ export const LandingPage: React.FC = () => {
                         <Title order={4} size="1.2rem">
                           {feature.title}
                         </Title>
-                        <Text size="sm" c="dimmed" style={{ flex: 1 }}>
+                        <Text size="sm" c="dimmed" style={{ flex: 1, lineHeight: 1.5 }}>
                           {feature.description}
                         </Text>
+                        <Group gap="xs" style={{ marginTop: 'auto' }}>
+                          <Text size="sm" fw={500} style={{ color: '#f97316' }}>
+                            Learn More
+                          </Text>
+                          <span style={{ color: '#f97316' }}>→</span>
+                        </Group>
                       </Stack>
                     </Stack>
                   </Card>
@@ -334,25 +452,51 @@ export const LandingPage: React.FC = () => {
                   <Card
                     key={index}
                     shadow="sm"
-                    padding="lg"
-                    radius="md"
+                    padding="xl"
+                    radius="xl"
                     style={{
                       backgroundColor: 'var(--card)',
                       borderColor: 'var(--border)',
                       border: '1px solid var(--border)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'var(--mantine-shadow-sm)';
                     }}
                   >
-                    <Stack gap="sm">
-                      <Text size="sm" style={{ fontStyle: 'italic' }}>
+                    <Stack gap="md">
+                      <Group gap="xs">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>⭐</span>
+                        ))}
+                      </Group>
+                      <Text size="md" style={{ fontStyle: 'italic', lineHeight: 1.6, color: 'var(--foreground)' }}>
                         "{testimonial.text}"
                       </Text>
-                      <Group justify="space-between">
-                        <Text fw={600} size="sm">
-                          {testimonial.name}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {testimonial.role}
-                        </Text>
+                      <Group justify="space-between" align="center">
+                        <div>
+                          <Text fw={600} size="sm" style={{ color: 'var(--foreground)' }}>
+                            {testimonial.name}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {testimonial.role}
+                          </Text>
+                        </div>
+                        <ThemeIcon
+                          size={32}
+                          radius="xl"
+                          style={{
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            color: '#f97316'
+                          }}
+                        >
+                          👤
+                        </ThemeIcon>
                       </Group>
                     </Stack>
                   </Card>
@@ -367,7 +511,7 @@ export const LandingPage: React.FC = () => {
       <div
         style={{
           background:
-            'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+            'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)',
           paddingTop: '4rem',
           paddingBottom: '4rem',
         }}
@@ -377,22 +521,25 @@ export const LandingPage: React.FC = () => {
             <Stack gap="sm" align="center">
               <Title
                 order={2}
-                size="2.5rem"
+                size="3rem"
                 ta="center"
-                style={{ color: 'white' }}
+                style={{ color: 'white', lineHeight: 1.2 }}
               >
-                Ready to Shape Your Future?
+                Ready to Discover Your
+                <br />
+                Perfect Career Path?
               </Title>
               <Text
-                size="lg"
+                size="xl"
                 ta="center"
                 style={{
                   color: 'rgba(255, 255, 255, 0.9)',
                   maxWidth: 600,
+                  lineHeight: 1.6
                 }}
               >
-                Join Elimu Smart today and take the first step towards achieving
-                your academic and career goals.
+                Join thousands of Kenyan students who have found clarity and direction 
+                through our AI-powered career guidance platform.
               </Text>
             </Stack>
 
@@ -401,29 +548,43 @@ export const LandingPage: React.FC = () => {
                 size="xl"
                 variant="white"
                 style={{
-                  color: 'var(--primary)',
+                  color: '#f97316',
                   backgroundColor: 'white',
                   fontWeight: 600,
                   fontSize: '1.1rem',
                   padding: '16px 32px',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.2)';
                 }}
                 onClick={() => navigate('/register')}
               >
-                Get Started Free
+                Start Your Journey Today →
               </Button>
               <Button
                 size="xl"
                 variant="outline"
                 style={{
                   color: 'white',
-                  borderColor: 'white',
+                  borderColor: 'rgba(255,255,255,0.6)',
                   fontWeight: 600,
                   fontSize: '1.1rem',
                   padding: '16px 32px',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(255,255,255,0.1)'
                 }}
                 onClick={() => navigate('/login')}
               >
-                Try Demo
+                📞 Talk to Expert
               </Button>
             </Group>
 
