@@ -1878,4 +1878,1910 @@ function generateScholarshipAlertHTML(firstName, scholarshipName, deadline, amou
   `;
 }
 
-console.log('☁️ Elimu Smart Cloud Functions loaded successfully');
+// ==========================================
+// RIASEC CAREER ASSESSMENT API
+// Complete backend API for web and mobile apps
+// ==========================================
+
+// RIASEC Assessment Data Models and Functions
+const RIASEC_TYPES = {
+  R: {
+    name: 'Realistic',
+    description: 'Doers - practical, hands-on work',
+    kenyaCareers: [
+      'Mechanical Engineer', 'Agricultural Extension Officer', 'Building & Construction Technician',
+      'Automotive Mechanic', 'Surveyor', 'Electrician', 'Plumber', 'Pilot', 'Veterinarian'
+    ],
+    kuccpsPathways: ['Engineering Courses', 'Agriculture & Veterinary Sciences', 'Built Environment', 'Technical & Vocational Training']
+  },
+  I: {
+    name: 'Investigative',
+    description: 'Thinkers - research, analysis, problem-solving',
+    kenyaCareers: [
+      'Medical Doctor', 'Research Scientist', 'Data Analyst', 'Software Developer',
+      'Pharmacist', 'Laboratory Technologist', 'Actuary', 'Economist', 'Psychologist'
+    ],
+    kuccpsPathways: ['Medicine & Health Sciences', 'Pure & Applied Sciences', 'Information Technology', 'Social Sciences']
+  },
+  A: {
+    name: 'Artistic',
+    description: 'Creators - creativity, art, innovation',
+    kenyaCareers: [
+      'Graphic Designer', 'Journalist', 'Architect', 'Fashion Designer',
+      'Musician', 'Film Producer', 'Interior Designer', 'Advertising Creative', 'Art Teacher'
+    ],
+    kuccpsPathways: ['Creative Arts & Design', 'Communication & Media', 'Architecture & Planning', 'Education (Arts)']
+  },
+  S: {
+    name: 'Social',
+    description: 'Helpers - working with people, teaching, helping',
+    kenyaCareers: [
+      'Teacher', 'Nurse', 'Social Worker', 'Counseling Psychologist', 'Human Resource Manager',
+      'Community Development Officer', 'Public Health Officer', 'Lawyer', 'Customer Service Manager'
+    ],
+    kuccpsPathways: ['Education', 'Health Sciences', 'Social Sciences', 'Law', 'Public Administration']
+  },
+  E: {
+    name: 'Enterprising',
+    description: 'Persuaders - leadership, business, persuasion',
+    kenyaCareers: [
+      'Business Manager', 'Sales Representative', 'Entrepreneur', 'Politician', 'Marketing Manager',
+      'Bank Manager', 'Real Estate Agent', 'Project Manager', 'Investment Banker'
+    ],
+    kuccpsPathways: ['Business & Management', 'Commerce', 'Economics', 'Public Administration', 'Communication']
+  },
+  C: {
+    name: 'Conventional',
+    description: 'Organizers - structure, detail, procedures',
+    kenyaCareers: [
+      'Accountant', 'Banker', 'Secretary', 'Auditor', 'Administrative Assistant',
+      'Insurance Underwriter', 'Tax Consultant', 'Records Manager', 'Financial Analyst'
+    ],
+    kuccpsPathways: ['Accounting & Finance', 'Business Administration', 'Economics', 'Public Administration', 'Information Management']
+  }
+};
+
+// Start RIASEC Assessment
+Parse.Cloud.define('startRiasecAssessment', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    // Create new assessment record
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessment = new RiasecAssessment();
+    
+    assessment.set('user', user);
+    assessment.set('status', 'in_progress');
+    assessment.set('startedAt', new Date());
+    assessment.set('version', 'IIP_RIASEC_Markers');
+    assessment.set('totalQuestions', 96);
+    assessment.set('responses', {});
+    assessment.set('currentQuestion', 0);
+    
+    await assessment.save(null, { useMasterKey: true });
+    
+    // Log assessment start activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'riasec_assessment_started',
+      data: {
+        assessmentId: assessment.id,
+        version: 'IIP_RIASEC_Markers',
+        totalQuestions: 96
+      }
+    }, { useMasterKey: true });
+
+    return {
+      assessmentId: assessment.id,
+      status: 'started',
+      totalQuestions: 96,
+      currentQuestion: 0
+    };
+  } catch (error) {
+    console.error('Start RIASEC assessment error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to start RIASEC assessment');
+  }
+});
+
+// Save RIASEC Question Response
+Parse.Cloud.define('saveRiasecResponse', async (request) => {
+  const { assessmentId, questionId, response, questionData } = request.params;
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    // Get assessment
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessmentQuery = new Parse.Query(RiasecAssessment);
+    const assessment = await assessmentQuery.get(assessmentId, { useMasterKey: true });
+    
+    if (assessment.get('user').id !== user.id) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Assessment not found');
+    }
+    
+    // Update responses
+    const responses = assessment.get('responses') || {};
+    responses[questionId] = {
+      response: response,
+      timestamp: new Date().toISOString(),
+      riasecType: questionData.riasecType,
+      category: questionData.category
+    };
+    
+    assessment.set('responses', responses);
+    assessment.set('currentQuestion', questionData.questionNumber);
+    assessment.set('lastUpdated', new Date());
+    
+    await assessment.save(null, { useMasterKey: true });
+    
+    // Log individual response
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'riasec_question_answered',
+      data: {
+        assessmentId: assessmentId,
+        questionId: questionId,
+        response: response,
+        riasecType: questionData.riasecType,
+        questionNumber: questionData.questionNumber
+      }
+    }, { useMasterKey: true });
+
+    return {
+      success: true,
+      currentQuestion: questionData.questionNumber,
+      totalResponses: Object.keys(responses).length
+    };
+  } catch (error) {
+    console.error('Save RIASEC response error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to save RIASEC response');
+  }
+});
+
+// Complete RIASEC Assessment and Calculate Results
+Parse.Cloud.define('completeRiasecAssessment', async (request) => {
+  const { assessmentId } = request.params;
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    // Get assessment
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessmentQuery = new Parse.Query(RiasecAssessment);
+    const assessment = await assessmentQuery.get(assessmentId, { useMasterKey: true });
+    
+    if (assessment.get('user').id !== user.id) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Assessment not found');
+    }
+    
+    const responses = assessment.get('responses') || {};
+    
+    // Calculate RIASEC scores
+    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    const questionCounts = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    
+    Object.values(responses).forEach(responseData => {
+      const type = responseData.riasecType;
+      scores[type] += responseData.response;
+      questionCounts[type]++;
+    });
+    
+    // Normalize scores to 0-100 scale
+    Object.keys(scores).forEach(type => {
+      if (questionCounts[type] > 0) {
+        scores[type] = Math.round((scores[type] / (questionCounts[type] * 4)) * 100);
+      }
+    });
+    
+    // Calculate Holland Code (top 3 types)
+    const sortedTypes = Object.entries(scores)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([type]) => type);
+    
+    const hollandCode = sortedTypes.join('');
+    const primaryType = sortedTypes[0];
+    
+    // Generate career matches
+    const careerMatches = generateCareerMatches(scores, primaryType);
+    
+    // Generate development recommendations
+    const developmentAreas = generateDevelopmentAreas(scores);
+    
+    // Update assessment with results
+    const results = {
+      scores: scores,
+      hollandCode: hollandCode,
+      primaryType: primaryType,
+      careerMatches: careerMatches,
+      developmentAreas: developmentAreas,
+      completedAt: new Date().toISOString(),
+      version: 'IIP_RIASEC_Markers_2024'
+    };
+    
+    assessment.set('results', results);
+    assessment.set('status', 'completed');
+    assessment.set('completedAt', new Date());
+    assessment.set('hollandCode', hollandCode);
+    assessment.set('primaryType', primaryType);
+    
+    await assessment.save(null, { useMasterKey: true });
+    
+    // Update student progress
+    const StudentProgress = Parse.Object.extend('StudentProgress');
+    const progressQuery = new Parse.Query(StudentProgress);
+    progressQuery.equalTo('user', user);
+    const progress = await progressQuery.first({ useMasterKey: true });
+    
+    if (progress) {
+      const currentAssessments = progress.get('assessmentsCompleted') || 0;
+      progress.set('assessmentsCompleted', currentAssessments + 1);
+      progress.set('lastRiasecResults', results);
+      progress.set('hollandCode', hollandCode);
+      await progress.save(null, { useMasterKey: true });
+    }
+    
+    // Log completion
+    const duration = new Date() - assessment.get('startedAt');
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'riasec_assessment_completed',
+      data: {
+        assessmentId: assessmentId,
+        hollandCode: hollandCode,
+        primaryType: primaryType,
+        scores: scores,
+        duration: duration,
+        careerMatchesCount: careerMatches.length
+      }
+    }, { useMasterKey: true });
+    
+    // Trigger career readiness recalculation
+    Parse.Cloud.run('updateCareerReadinessScore', { userId: user.id }, { useMasterKey: true });
+    
+    // Send completion email
+    try {
+      await Parse.Cloud.run('sendAssessmentCompletionEmail', {
+        email: user.get('email'),
+        firstName: user.get('firstName'),
+        assessmentName: 'RIASEC Career Assessment',
+        results: results
+      }, { useMasterKey: true });
+    } catch (emailError) {
+      console.warn('Failed to send assessment completion email:', emailError);
+    }
+
+    return {
+      success: true,
+      results: results,
+      assessmentId: assessmentId
+    };
+  } catch (error) {
+    console.error('Complete RIASEC assessment error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to complete RIASEC assessment');
+  }
+});
+
+// Get RIASEC Assessment Results
+Parse.Cloud.define('getRiasecResults', async (request) => {
+  const { assessmentId } = request.params;
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessmentQuery = new Parse.Query(RiasecAssessment);
+    
+    if (assessmentId) {
+      // Get specific assessment
+      const assessment = await assessmentQuery.get(assessmentId, { useMasterKey: true });
+      if (assessment.get('user').id !== user.id) {
+        throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Assessment not found');
+      }
+      return {
+        assessment: {
+          id: assessment.id,
+          status: assessment.get('status'),
+          results: assessment.get('results'),
+          hollandCode: assessment.get('hollandCode'),
+          completedAt: assessment.get('completedAt'),
+          startedAt: assessment.get('startedAt')
+        }
+      };
+    } else {
+      // Get user's latest assessment
+      assessmentQuery.equalTo('user', user);
+      assessmentQuery.descending('createdAt');
+      assessmentQuery.limit(1);
+      
+      const assessment = await assessmentQuery.first({ useMasterKey: true });
+      if (!assessment) {
+        return { assessment: null };
+      }
+      
+      return {
+        assessment: {
+          id: assessment.id,
+          status: assessment.get('status'),
+          results: assessment.get('results'),
+          hollandCode: assessment.get('hollandCode'),
+          completedAt: assessment.get('completedAt'),
+          startedAt: assessment.get('startedAt')
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Get RIASEC results error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get RIASEC results');
+  }
+});
+
+// Get User's RIASEC Assessment History
+Parse.Cloud.define('getRiasecHistory', async (request) => {
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const query = new Parse.Query(RiasecAssessment);
+    query.equalTo('user', user);
+    query.descending('createdAt');
+    query.limit(10); // Last 10 assessments
+    
+    const assessments = await query.find({ useMasterKey: true });
+    
+    return {
+      assessments: assessments.map(assessment => ({
+        id: assessment.id,
+        status: assessment.get('status'),
+        hollandCode: assessment.get('hollandCode'),
+        primaryType: assessment.get('primaryType'),
+        completedAt: assessment.get('completedAt'),
+        startedAt: assessment.get('startedAt'),
+        scores: assessment.get('results')?.scores || null
+      }))
+    };
+  } catch (error) {
+    console.error('Get RIASEC history error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get RIASEC history');
+  }
+});
+
+// Resume In-Progress Assessment
+Parse.Cloud.define('resumeRiasecAssessment', async (request) => {
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const query = new Parse.Query(RiasecAssessment);
+    query.equalTo('user', user);
+    query.equalTo('status', 'in_progress');
+    query.descending('createdAt');
+    
+    const assessment = await query.first({ useMasterKey: true });
+    
+    if (!assessment) {
+      return { assessment: null };
+    }
+    
+    const responses = assessment.get('responses') || {};
+    return {
+      assessment: {
+        id: assessment.id,
+        currentQuestion: assessment.get('currentQuestion') || 0,
+        totalQuestions: assessment.get('totalQuestions') || 96,
+        responses: Object.keys(responses),
+        startedAt: assessment.get('startedAt')
+      }
+    };
+  } catch (error) {
+    console.error('Resume RIASEC assessment error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to resume RIASEC assessment');
+  }
+});
+
+// Helper Functions for RIASEC API
+function generateCareerMatches(scores, primaryType) {
+  const matches = [];
+  const primaryCareers = RIASEC_TYPES[primaryType]?.kenyaCareers || [];
+  
+  // Add primary type careers
+  primaryCareers.slice(0, 5).forEach((career, index) => {
+    matches.push({
+      career: career,
+      compatibility: 85 + Math.random() * 15,
+      kuccpsPathway: RIASEC_TYPES[primaryType].kuccpsPathways[0],
+      reasonsForMatch: [
+        `Strong ${RIASEC_TYPES[primaryType].name} personality fit`,
+        'High demand in Kenya job market',
+        'Good KUCCPS pathway availability'
+      ],
+      rank: index + 1
+    });
+  });
+  
+  // Add secondary type careers
+  const secondaryType = Object.entries(scores)
+    .sort(([,a], [,b]) => b - a)[1][0];
+  
+  const secondaryCareers = RIASEC_TYPES[secondaryType]?.kenyaCareers || [];
+  secondaryCareers.slice(0, 3).forEach((career, index) => {
+    matches.push({
+      career: career,
+      compatibility: 70 + Math.random() * 15,
+      kuccpsPathway: RIASEC_TYPES[secondaryType].kuccpsPathways[0],
+      reasonsForMatch: [
+        `Good ${RIASEC_TYPES[secondaryType].name} secondary fit`,
+        'Growing field in Kenya',
+        'Multiple pathways available'
+      ],
+      rank: matches.length + 1
+    });
+  });
+  
+  return matches.sort((a, b) => b.compatibility - a.compatibility);
+}
+
+function generateDevelopmentAreas(scores) {
+  const lowestScores = Object.entries(scores)
+    .sort(([,a], [,b]) => a - b)
+    .slice(0, 2);
+
+  return lowestScores.map(([type]) => 
+    `Develop ${RIASEC_TYPES[type].name.toLowerCase()} skills to become more well-rounded`
+  );
+}
+
+// Get RIASEC Career Information
+Parse.Cloud.define('getRiasecCareerInfo', async (request) => {
+  const { hollandCode, careerName } = request.params;
+  
+  try {
+    if (hollandCode) {
+      const types = hollandCode.split('').map(code => ({
+        code: code,
+        ...RIASEC_TYPES[code]
+      }));
+      
+      return { types: types };
+    }
+    
+    if (careerName) {
+      // Find which RIASEC type contains this career
+      for (const [code, type] of Object.entries(RIASEC_TYPES)) {
+        if (type.kenyaCareers.some(career => 
+          career.toLowerCase().includes(careerName.toLowerCase())
+        )) {
+          return {
+            career: careerName,
+            riasecType: { code: code, ...type },
+            relatedCareers: type.kenyaCareers,
+            pathways: type.kuccpsPathways
+          };
+        }
+      }
+    }
+    
+    return { types: Object.entries(RIASEC_TYPES).map(([code, type]) => ({
+      code: code,
+      ...type
+    })) };
+  } catch (error) {
+    console.error('Get RIASEC career info error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get RIASEC career information');
+  }
+});
+
+// ==========================================
+// SUBJECT-TO-CAREER MAPPER API
+// Maps KCSE subjects to compatible careers
+// ==========================================
+
+// Kenya Subject-Career Mapping Data
+const SUBJECT_CAREER_MAPPINGS = {
+  'Math_Physics_Chemistry': {
+    careers: [
+      { name: 'Mechanical Engineering', minCluster: 70, employmentRate: 0.82, avgSalary: 95000 },
+      { name: 'Civil Engineering', minCluster: 65, employmentRate: 0.78, avgSalary: 85000 },
+      { name: 'Chemical Engineering', minCluster: 75, employmentRate: 0.75, avgSalary: 105000 },
+      { name: 'Architecture', minCluster: 60, employmentRate: 0.70, avgSalary: 90000 }
+    ],
+    kuccpsCode: 'ENG',
+    alternativePathways: ['Diploma to Degree', 'Certificate to Diploma']
+  },
+  'Math_Physics_Biology': {
+    careers: [
+      { name: 'Biomedical Engineering', minCluster: 72, employmentRate: 0.80, avgSalary: 100000 },
+      { name: 'Environmental Science', minCluster: 58, employmentRate: 0.75, avgSalary: 75000 },
+      { name: 'Medical Physics', minCluster: 78, employmentRate: 0.85, avgSalary: 120000 }
+    ],
+    kuccpsCode: 'SCI',
+    alternativePathways: ['Science Bridging Courses']
+  },
+  'Biology_Chemistry_Physics': {
+    careers: [
+      { name: 'Medicine', minCluster: 84, employmentRate: 0.95, avgSalary: 180000 },
+      { name: 'Pharmacy', minCluster: 75, employmentRate: 0.88, avgSalary: 95000 },
+      { name: 'Nursing', minCluster: 50, employmentRate: 0.90, avgSalary: 65000 },
+      { name: 'Clinical Medicine', minCluster: 65, employmentRate: 0.92, avgSalary: 85000 }
+    ],
+    kuccpsCode: 'MED',
+    alternativePathways: ['Diploma Clinical Medicine', 'Certificate Nursing']
+  },
+  'Math_Business_Economics': {
+    careers: [
+      { name: 'Business Administration', minCluster: 50, employmentRate: 0.70, avgSalary: 70000 },
+      { name: 'Economics', minCluster: 55, employmentRate: 0.65, avgSalary: 80000 },
+      { name: 'Finance', minCluster: 60, employmentRate: 0.75, avgSalary: 90000 },
+      { name: 'Accounting', minCluster: 55, employmentRate: 0.80, avgSalary: 75000 }
+    ],
+    kuccpsCode: 'BUS',
+    alternativePathways: ['Diploma in Business', 'ACCA Certification']
+  }
+};
+
+// Grade to points conversion
+function gradeToPoints(grade) {
+  const gradeMap = {
+    'A': 12, 'A-': 11, 'B+': 10, 'B': 9, 'B-': 8,
+    'C+': 7, 'C': 6, 'C-': 5, 'D+': 4, 'D': 3, 'D-': 2, 'E': 1
+  };
+  return gradeMap[grade?.toUpperCase()] || 0;
+}
+
+// Calculate KCSE cluster points
+function calculateClusterPoints(grades) {
+  const points = Object.values(grades)
+    .map(grade => gradeToPoints(grade))
+    .sort((a, b) => b - a)
+    .slice(0, 7);
+  
+  return Math.min(points.reduce((sum, point) => sum + point, 0), 84);
+}
+
+// Subject-to-Career Analysis
+Parse.Cloud.define('analyzeSubjectCareerFit', async (request) => {
+  const { subjects, grades } = request.params;
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+  
+  try {
+    const subjectKey = subjects.sort().join('_');
+    const mapping = SUBJECT_CAREER_MAPPINGS[subjectKey];
+    
+    if (!mapping) {
+      return {
+        careers: [],
+        message: 'No direct career mappings found for this subject combination. Consider exploring interdisciplinary careers.'
+      };
+    }
+    
+    const clusterPoints = calculateClusterPoints(grades);
+    
+    const careerAnalysis = mapping.careers.map(career => {
+      const eligible = clusterPoints >= career.minCluster;
+      const competitiveness = Math.min((clusterPoints / career.minCluster) * 100, 150);
+      
+      return {
+        career: career.name,
+        eligible,
+        clusterPointsRequired: career.minCluster,
+        studentClusterPoints: clusterPoints,
+        gap: Math.max(0, career.minCluster - clusterPoints),
+        competitiveness: Math.round(competitiveness),
+        employmentRate: career.employmentRate,
+        averageSalary: career.avgSalary,
+        kuccpsCode: mapping.kuccpsCode
+      };
+    });
+    
+    // Log activity
+    const ActivityLog = Parse.Object.extend('ActivityLog');
+    const activity = new ActivityLog();
+    activity.set('user', user);
+    activity.set('action', 'subject_career_analysis');
+    activity.set('details', { subjects, clusterPoints });
+    await activity.save(null, { useMasterKey: true });
+    
+    return {
+      clusterPoints,
+      careers: careerAnalysis.sort((a, b) => b.competitiveness - a.competitiveness),
+      alternativePathways: mapping.alternativePathways,
+      recommendations: generateSubjectRecommendations(careerAnalysis, clusterPoints)
+    };
+    
+  } catch (error) {
+    console.error('Subject career analysis error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to analyze subject-career fit');
+  }
+});
+
+function generateSubjectRecommendations(careers, clusterPoints) {
+  const recommendations = [];
+  
+  const eligibleCareers = careers.filter(c => c.eligible);
+  const almostEligible = careers.filter(c => !c.eligible && c.gap <= 10);
+  
+  if (eligibleCareers.length > 0) {
+    recommendations.push({
+      type: 'eligible',
+      message: `Great! You qualify for ${eligibleCareers.length} career paths with your current performance.`
+    });
+  }
+  
+  if (almostEligible.length > 0) {
+    recommendations.push({
+      type: 'improvement',
+      message: `You're close to qualifying for ${almostEligible.length} additional careers. Focus on improving your grades in key subjects.`
+    });
+  }
+  
+  return recommendations;
+}
+
+// ==========================================
+// SKILLS ASSESSMENT API
+// Multi-dimensional skill evaluation system
+// ==========================================
+
+const SKILL_FRAMEWORK = {
+  'Critical Thinking': {
+    questions: [1, 5, 9, 13, 17, 21],
+    weight: 1.2,
+    description: 'Ability to analyze, evaluate, and synthesize information'
+  },
+  'Communication': {
+    questions: [2, 6, 10, 14, 18, 22],
+    weight: 1.1,
+    description: 'Effective written and verbal communication skills'
+  },
+  'Leadership': {
+    questions: [3, 7, 11, 15, 19, 23],
+    weight: 1.0,
+    description: 'Ability to guide, motivate, and influence others'
+  },
+  'Technical Skills': {
+    questions: [4, 8, 12, 16, 20, 24],
+    weight: 1.0,
+    description: 'Proficiency with tools, technology, and technical processes'
+  },
+  'Creativity': {
+    questions: [25, 26, 27, 28, 29, 30],
+    weight: 0.9,
+    description: 'Innovation and creative problem-solving abilities'
+  },
+  'Teamwork': {
+    questions: [31, 32, 33, 34, 35, 36],
+    weight: 1.0,
+    description: 'Collaboration and interpersonal effectiveness'
+  }
+};
+
+// Start Skills Assessment
+Parse.Cloud.define('startSkillsAssessment', async (request) => {
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+  
+  try {
+    const SkillsAssessment = Parse.Object.extend('SkillsAssessment');
+    const assessment = new SkillsAssessment();
+    
+    assessment.set('user', user);
+    assessment.set('status', 'in_progress');
+    assessment.set('startedAt', new Date());
+    assessment.set('responses', {});
+    assessment.set('currentQuestion', 0);
+    assessment.set('totalQuestions', 36);
+    
+    await assessment.save(null, { useMasterKey: true });
+    
+    return {
+      id: assessment.id,
+      totalQuestions: 36,
+      skillCategories: Object.keys(SKILL_FRAMEWORK)
+    };
+    
+  } catch (error) {
+    console.error('Start skills assessment error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to start skills assessment');
+  }
+});
+
+// Calculate Skill Profile
+Parse.Cloud.define('calculateSkillProfile', async (request) => {
+  const { assessmentId } = request.params;
+  const { user } = request;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+  
+  try {
+    const assessment = await new Parse.Query('SkillsAssessment').get(assessmentId, { useMasterKey: true });
+    const responses = assessment.get('responses');
+    
+    const skillScores = {};
+    
+    Object.keys(SKILL_FRAMEWORK).forEach(skillCategory => {
+      const questions = SKILL_FRAMEWORK[skillCategory].questions;
+      const weight = SKILL_FRAMEWORK[skillCategory].weight;
+      
+      let totalScore = 0;
+      let responseCount = 0;
+      
+      questions.forEach(questionId => {
+        if (responses[questionId] !== undefined) {
+          totalScore += responses[questionId];
+          responseCount++;
+        }
+      });
+      
+      const averageScore = responseCount > 0 ? totalScore / responseCount : 0;
+      const weightedScore = averageScore * weight;
+      const normalizedScore = Math.round((weightedScore / 5) * 100);
+      
+      skillScores[skillCategory] = {
+        score: averageScore,
+        normalizedScore,
+        level: categorizeSkillLevel(averageScore),
+        confidence: responseCount / questions.length,
+        description: SKILL_FRAMEWORK[skillCategory].description
+      };
+    });
+    
+    // Identify top skills and development areas
+    const sortedSkills = Object.entries(skillScores).sort(([,a], [,b]) => b.normalizedScore - a.normalizedScore);
+    const topSkills = sortedSkills.slice(0, 3).map(([skill, data]) => ({ skill, ...data }));
+    const developmentAreas = sortedSkills.slice(-2).map(([skill, data]) => ({ skill, ...data }));
+    
+    // Update assessment
+    assessment.set('status', 'completed');
+    assessment.set('completedAt', new Date());
+    assessment.set('skillProfile', skillScores);
+    assessment.set('topSkills', topSkills);
+    assessment.set('developmentAreas', developmentAreas);
+    await assessment.save(null, { useMasterKey: true });
+    
+    return {
+      skillProfile: skillScores,
+      topSkills,
+      developmentAreas,
+      overallReadiness: calculateOverallReadiness(skillScores)
+    };
+    
+  } catch (error) {
+    console.error('Calculate skill profile error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to calculate skill profile');
+  }
+});
+
+function categorizeSkillLevel(score) {
+  if (score >= 4.5) return 'Expert';
+  if (score >= 3.5) return 'Advanced';
+  if (score >= 2.5) return 'Intermediate';
+  if (score >= 1.5) return 'Beginner';
+  return 'Novice';
+}
+
+function calculateOverallReadiness(skillScores) {
+  const scores = Object.values(skillScores).map(skill => skill.normalizedScore);
+  const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  
+  return {
+    score: Math.round(average),
+    level: average >= 80 ? 'Excellent' : average >= 60 ? 'Good' : average >= 40 ? 'Fair' : 'Needs Development',
+    recommendations: generateSkillRecommendations(skillScores)
+  };
+}
+
+function generateSkillRecommendations(skillScores) {
+  const recommendations = [];
+  
+  Object.entries(skillScores).forEach(([skill, data]) => {
+    if (data.normalizedScore < 60) {
+      recommendations.push({
+        skill,
+        type: 'improvement',
+        message: `Focus on developing ${skill.toLowerCase()} through targeted practice and learning opportunities.`
+      });
+    } else if (data.normalizedScore >= 80) {
+      recommendations.push({
+        skill,
+        type: 'leverage',
+        message: `Leverage your strong ${skill.toLowerCase()} skills in career opportunities and leadership roles.`
+      });
+    }
+  });
+  
+  return recommendations;
+}
+
+// ================================================================================================
+// UNIVERSITY COURSE FINDER API - Find Compatible University Programs
+// ================================================================================================
+
+const KENYA_UNIVERSITIES_DATABASE = [
+  // Public Universities
+  {
+    id: 'uon',
+    name: 'University of Nairobi',
+    type: 'public',
+    location: 'Nairobi',
+    kuccpsCode: '01',
+    programs: [
+      {
+        id: 'medicine',
+        name: 'Bachelor of Medicine and Bachelor of Surgery (MBChB)',
+        kuccpsCode: '01101',
+        cutoffPoints: 78,
+        duration: '6 years',
+        subjects: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
+        careerOutcomes: ['Medical Doctor', 'Surgeon', 'Specialist Doctor'],
+        averageSalary: 450000,
+        employmentRate: 0.95,
+        annualFees: 45000,
+        scholarships: ['HELB', 'Government Scholarship', 'Merit Scholarships']
+      },
+      {
+        id: 'engineering',
+        name: 'Bachelor of Engineering (Civil Engineering)',
+        kuccpsCode: '01102',
+        cutoffPoints: 72,
+        duration: '4 years',
+        subjects: ['Mathematics', 'Physics', 'Chemistry', 'English'],
+        careerOutcomes: ['Civil Engineer', 'Project Manager', 'Construction Manager'],
+        averageSalary: 350000,
+        employmentRate: 0.88,
+        annualFees: 42000,
+        scholarships: ['HELB', 'Engineering Scholarship']
+      },
+      {
+        id: 'business',
+        name: 'Bachelor of Commerce',
+        kuccpsCode: '01103',
+        cutoffPoints: 65,
+        duration: '4 years',
+        subjects: ['Mathematics', 'English', 'Business Studies', 'Economics'],
+        careerOutcomes: ['Business Analyst', 'Financial Manager', 'Marketing Manager'],
+        averageSalary: 280000,
+        employmentRate: 0.82,
+        annualFees: 38000,
+        scholarships: ['HELB', 'Business Leaders Scholarship']
+      }
+    ]
+  },
+  {
+    id: 'jkuat',
+    name: 'Jomo Kenyatta University of Agriculture and Technology',
+    type: 'public',
+    location: 'Juja',
+    kuccpsCode: '02',
+    programs: [
+      {
+        id: 'computer-science',
+        name: 'Bachelor of Science in Computer Science',
+        kuccpsCode: '02201',
+        cutoffPoints: 68,
+        duration: '4 years',
+        subjects: ['Mathematics', 'Physics', 'English', 'Computer Studies'],
+        careerOutcomes: ['Software Developer', 'IT Consultant', 'Systems Analyst'],
+        averageSalary: 320000,
+        employmentRate: 0.90,
+        annualFees: 40000,
+        scholarships: ['HELB', 'Tech Innovation Fund']
+      },
+      {
+        id: 'agriculture',
+        name: 'Bachelor of Science in Agriculture',
+        kuccpsCode: '02202',
+        cutoffPoints: 60,
+        duration: '4 years',
+        subjects: ['Mathematics', 'Chemistry', 'Biology', 'Geography', 'English'],
+        careerOutcomes: ['Agricultural Officer', 'Farm Manager', 'Agricultural Consultant'],
+        averageSalary: 250000,
+        employmentRate: 0.75,
+        annualFees: 35000,
+        scholarships: ['HELB', 'Agricultural Development Fund']
+      }
+    ]
+  },
+  {
+    id: 'moi',
+    name: 'Moi University',
+    type: 'public',
+    location: 'Eldoret',
+    kuccpsCode: '03',
+    programs: [
+      {
+        id: 'education',
+        name: 'Bachelor of Education (Science)',
+        kuccpsCode: '03301',
+        cutoffPoints: 58,
+        duration: '4 years',
+        subjects: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
+        careerOutcomes: ['Secondary School Teacher', 'Educational Administrator', 'Curriculum Developer'],
+        averageSalary: 220000,
+        employmentRate: 0.85,
+        annualFees: 32000,
+        scholarships: ['HELB', 'Teachers Service Commission Bursary']
+      }
+    ]
+  },
+  // Private Universities
+  {
+    id: 'strathmore',
+    name: 'Strathmore University',
+    type: 'private',
+    location: 'Nairobi',
+    kuccpsCode: '04',
+    programs: [
+      {
+        id: 'business-admin',
+        name: 'Bachelor of Business Administration',
+        kuccpsCode: '04401',
+        cutoffPoints: 70,
+        duration: '4 years',
+        subjects: ['Mathematics', 'English', 'Business Studies', 'Economics'],
+        careerOutcomes: ['Business Manager', 'Consultant', 'Entrepreneur'],
+        averageSalary: 400000,
+        employmentRate: 0.92,
+        annualFees: 180000,
+        scholarships: ['Merit Scholarship', 'Need-based Bursary']
+      }
+    ]
+  }
+];
+
+// University Course Finder Cloud Function
+Parse.Cloud.define('findUniversityCourses', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const { 
+    studentProfile, 
+    academicPreferences, 
+    financialConstraints, 
+    locationPreferences 
+  } = request.params;
+
+  console.log('🎓 Processing University Course Finder request:', {
+    studentProfile: studentProfile ? 'provided' : 'missing',
+    academicPreferences: academicPreferences ? 'provided' : 'missing',
+    financialConstraints: financialConstraints ? 'provided' : 'missing',
+    locationPreferences: locationPreferences ? 'provided' : 'missing'
+  });
+
+  try {
+    // Calculate student's cluster points based on grades
+    const clusterPoints = calculateClusterPoints(studentProfile.grades);
+    
+    // Find matching programs
+    const matchingPrograms = [];
+    
+    for (const university of KENYA_UNIVERSITIES_DATABASE) {
+      // Apply location filter if specified
+      if (locationPreferences && locationPreferences.length > 0) {
+        if (!locationPreferences.includes(university.location)) {
+          continue;
+        }
+      }
+      
+      for (const program of university.programs) {
+        // Check academic eligibility
+        const eligible = clusterPoints >= program.cutoffPoints;
+        const pointsGap = program.cutoffPoints - clusterPoints;
+        
+        // Check subject requirements
+        const hasRequiredSubjects = checkSubjectRequirements(
+          studentProfile.subjects, 
+          program.subjects
+        );
+        
+        // Check financial constraints
+        const financiallyViable = !financialConstraints || 
+          program.annualFees <= (financialConstraints.maxAnnualFees || 200000);
+        
+        // Calculate match score (0-100)
+        const matchScore = calculateUniversityMatchScore({
+          clusterPoints,
+          program,
+          studentProfile,
+          academicPreferences,
+          hasRequiredSubjects,
+          financiallyViable
+        });
+        
+        // Add to results if meets minimum criteria
+        if (matchScore >= 30) {
+          matchingPrograms.push({
+            universityId: university.id,
+            universityName: university.name,
+            universityType: university.type,
+            location: university.location,
+            kuccpsCode: university.kuccpsCode,
+            program: {
+              ...program,
+              eligible,
+              pointsGap: Math.max(0, pointsGap),
+              matchScore,
+              hasRequiredSubjects,
+              financiallyViable,
+              affordabilityLevel: getAffordabilityLevel(program.annualFees, financialConstraints),
+              careerOutlook: getCareerOutlook(program),
+              recommendationReason: getRecommendationReason({
+                matchScore,
+                eligible,
+                hasRequiredSubjects,
+                financiallyViable,
+                academicPreferences
+              })
+            }
+          });
+        }
+      }
+    }
+    
+    // Sort by match score (highest first)
+    matchingPrograms.sort((a, b) => b.program.matchScore - a.program.matchScore);
+    
+    // Generate personalized recommendations
+    const recommendations = generateUniversityRecommendations({
+      matchingPrograms,
+      studentProfile,
+      clusterPoints,
+      academicPreferences,
+      financialConstraints
+    });
+    
+    // Log activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'university_finder',
+      details: {
+        clusterPoints,
+        programsFound: matchingPrograms.length,
+        preferences: {
+          academic: !!academicPreferences,
+          financial: !!financialConstraints,
+          location: !!locationPreferences
+        }
+      }
+    });
+    
+    return {
+      success: true,
+      clusterPoints,
+      matchingPrograms: matchingPrograms.slice(0, 15), // Top 15 matches
+      recommendations,
+      summary: {
+        totalMatches: matchingPrograms.length,
+        eligiblePrograms: matchingPrograms.filter(p => p.program.eligible).length,
+        averageMatchScore: matchingPrograms.reduce((sum, p) => sum + p.program.matchScore, 0) / matchingPrograms.length
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ University Course Finder error:', error);
+    throw new Error(`Failed to find university courses: ${error.message}`);
+  }
+});
+
+// Helper function to check subject requirements
+function checkSubjectRequirements(studentSubjects, requiredSubjects) {
+  const studentSubjectSet = new Set(studentSubjects.map(s => s.toLowerCase()));
+  return requiredSubjects.every(req => 
+    studentSubjectSet.has(req.toLowerCase()) ||
+    // Allow some flexibility for common subject variations
+    (req.toLowerCase() === 'mathematics' && studentSubjectSet.has('math')) ||
+    (req.toLowerCase() === 'math' && studentSubjectSet.has('mathematics'))
+  );
+}
+
+// Helper function to calculate university match score
+function calculateUniversityMatchScore({
+  clusterPoints,
+  program,
+  studentProfile,
+  academicPreferences,
+  hasRequiredSubjects,
+  financiallyViable
+}) {
+  let score = 0;
+  
+  // Academic eligibility (40% of score)
+  if (clusterPoints >= program.cutoffPoints) {
+    score += 40;
+  } else {
+    const deficit = program.cutoffPoints - clusterPoints;
+    score += Math.max(0, 40 - (deficit * 2)); // Reduce score based on points gap
+  }
+  
+  // Subject requirements (25% of score)
+  if (hasRequiredSubjects) {
+    score += 25;
+  }
+  
+  // Financial viability (20% of score)
+  if (financiallyViable) {
+    score += 20;
+  } else {
+    score += 10; // Partial credit if not completely affordable
+  }
+  
+  // Career interest alignment (15% of score)
+  if (academicPreferences && academicPreferences.careerInterests) {
+    const interestMatch = program.careerOutcomes.some(outcome => 
+      academicPreferences.careerInterests.some(interest =>
+        outcome.toLowerCase().includes(interest.toLowerCase()) ||
+        interest.toLowerCase().includes(outcome.toLowerCase())
+      )
+    );
+    if (interestMatch) {
+      score += 15;
+    } else {
+      score += 5; // Minimal credit for career diversity
+    }
+  } else {
+    score += 10; // Default score if no preferences specified
+  }
+  
+  return Math.round(score);
+}
+
+// Helper function to determine affordability level
+function getAffordabilityLevel(annualFees, financialConstraints) {
+  if (!financialConstraints) return 'unknown';
+  
+  const maxBudget = financialConstraints.maxAnnualFees || 50000;
+  
+  if (annualFees <= maxBudget * 0.5) return 'very_affordable';
+  if (annualFees <= maxBudget * 0.8) return 'affordable';
+  if (annualFees <= maxBudget) return 'manageable';
+  if (annualFees <= maxBudget * 1.5) return 'stretch';
+  return 'expensive';
+}
+
+// Helper function to get career outlook information
+function getCareerOutlook(program) {
+  return {
+    employmentRate: program.employmentRate,
+    averageSalary: program.averageSalary,
+    careerGrowth: program.employmentRate > 0.85 ? 'high' : 
+                  program.employmentRate > 0.75 ? 'medium' : 'moderate',
+    industryDemand: program.averageSalary > 300000 ? 'high' : 
+                    program.averageSalary > 200000 ? 'medium' : 'stable'
+  };
+}
+
+// Helper function to generate recommendation reasons
+function getRecommendationReason({
+  matchScore,
+  eligible,
+  hasRequiredSubjects,
+  financiallyViable,
+  academicPreferences
+}) {
+  if (matchScore >= 80) {
+    return 'Excellent match - you meet all requirements and this aligns well with your interests';
+  } else if (matchScore >= 65) {
+    return eligible ? 
+      'Strong match - you qualify and this program offers good career prospects' :
+      'Good potential match - consider improving grades to meet cutoff points';
+  } else if (matchScore >= 50) {
+    if (!hasRequiredSubjects) {
+      return 'Subject requirements not met - consider alternative programs or subject combinations';
+    } else if (!eligible) {
+      return 'Points gap exists - focus on improving performance to reach cutoff';
+    } else if (!financiallyViable) {
+      return 'Strong academic match but may need financial planning or scholarship options';
+    } else {
+      return 'Moderate match - consider as backup option while exploring other alternatives';
+    }
+  } else {
+    return 'Limited match - explore programs that better align with your current profile';
+  }
+}
+
+// Helper function to generate personalized recommendations
+function generateUniversityRecommendations({
+  matchingPrograms,
+  studentProfile,
+  clusterPoints,
+  academicPreferences,
+  financialConstraints
+}) {
+  const recommendations = [];
+  
+  // Analysis of matches
+  const eligiblePrograms = matchingPrograms.filter(p => p.program.eligible);
+  const highMatchPrograms = matchingPrograms.filter(p => p.program.matchScore >= 70);
+  
+  if (eligiblePrograms.length === 0) {
+    recommendations.push({
+      type: 'academic_improvement',
+      title: 'Focus on Grade Improvement',
+      message: `Your current cluster points (${clusterPoints}) need improvement. Target the highest cutoff you can reach and consider foundation or diploma programs as pathways.`,
+      priority: 'high'
+    });
+  } else if (eligiblePrograms.length < 3) {
+    recommendations.push({
+      type: 'expand_options',
+      title: 'Broaden Your Search',
+      message: `You have ${eligiblePrograms.length} eligible program(s). Consider expanding your location preferences or exploring similar programs at other universities.`,
+      priority: 'medium'
+    });
+  }
+  
+  if (highMatchPrograms.length > 0) {
+    recommendations.push({
+      type: 'top_choices',
+      title: 'Strong Program Matches Found',
+      message: `${highMatchPrograms.length} program(s) are excellent matches for your profile. Focus your KUCCPS application on these options.`,
+      priority: 'high'
+    });
+  }
+  
+  // Financial recommendations
+  const expensivePrograms = matchingPrograms.filter(p => p.program.affordabilityLevel === 'expensive' || p.program.affordabilityLevel === 'stretch');
+  if (expensivePrograms.length > 0 && financialConstraints) {
+    recommendations.push({
+      type: 'financial_planning',
+      title: 'Explore Scholarship Options',
+      message: `${expensivePrograms.length} program(s) may require additional funding. Research scholarships, bursaries, and HELB options early.`,
+      priority: 'medium'
+    });
+  }
+  
+  // Career guidance
+  if (academicPreferences && academicPreferences.careerInterests) {
+    const careerAlignedPrograms = matchingPrograms.filter(p => p.program.matchScore >= 60);
+    if (careerAlignedPrograms.length > 5) {
+      recommendations.push({
+        type: 'career_focus',
+        title: 'Multiple Career Path Options',
+        message: `You have several programs aligned with your interests. Consider visiting university open days or talking to professionals in these fields.`,
+        priority: 'low'
+      });
+    }
+  }
+  
+  return recommendations;
+}
+
+// ================================================================================================
+// CAREER EXPLORATION API - Comprehensive Career Information & Guidance
+// ================================================================================================
+
+const KENYA_CAREERS_DATABASE = [
+  // Healthcare & Medical
+  {
+    id: 'medical-doctor',
+    title: 'Medical Doctor',
+    category: 'Healthcare & Medical',
+    averageSalary: 450000,
+    salaryRange: { min: 200000, max: 800000 },
+    educationLevel: 'University Degree',
+    educationPath: 'Bachelor of Medicine & Surgery (6 years) + Internship (1 year)',
+    keySubjects: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
+    minimumGrades: { overall: 'A-', math: 'B+', sciences: 'A-' },
+    workEnvironment: 'Hospitals, Clinics, Private Practice',
+    jobOutlook: 'excellent',
+    industryGrowth: 'high',
+    employmentRate: 0.95,
+    description: 'Diagnose and treat illnesses, injuries, and diseases. Provide medical care and health advice to patients.',
+    dailyTasks: [
+      'Examine patients and diagnose illnesses',
+      'Prescribe medications and treatments',
+      'Perform medical procedures',
+      'Maintain patient records',
+      'Consult with specialists'
+    ],
+    skills: ['Medical knowledge', 'Problem-solving', 'Communication', 'Empathy', 'Decision-making'],
+    personalityTraits: ['Compassionate', 'Detail-oriented', 'Resilient', 'Ethical'],
+    careerProgression: 'Medical Officer → Senior Medical Officer → Consultant → Specialist',
+    challenges: ['Long hours', 'High responsibility', 'Emotional stress', 'Continuous learning required'],
+    rewards: ['Save lives', 'High income potential', 'Respect in society', 'Job security'],
+    relatedCareers: ['Nurse', 'Pharmacist', 'Medical Researcher', 'Surgeon'],
+    kenyaSpecific: {
+      majorEmployers: ['Ministry of Health', 'Private Hospitals', 'NGOs', 'Private Practice'],
+      licensingBody: 'Kenya Medical Practitioners and Dentists Council (KMPDC)',
+      universities: ['University of Nairobi', 'Moi University', 'JKUAT'],
+      internshipProgram: 'Mandatory 1-year internship in government hospitals'
+    }
+  },
+  {
+    id: 'software-engineer',
+    title: 'Software Engineer',
+    category: 'Technology & IT',
+    averageSalary: 320000,
+    salaryRange: { min: 120000, max: 600000 },
+    educationLevel: 'University Degree',
+    educationPath: 'Bachelor of Science in Computer Science/IT (4 years)',
+    keySubjects: ['Mathematics', 'Physics', 'Computer Studies', 'English'],
+    minimumGrades: { overall: 'B', math: 'B+', physics: 'B' },
+    workEnvironment: 'Tech companies, Offices, Remote work',
+    jobOutlook: 'excellent',
+    industryGrowth: 'very_high',
+    employmentRate: 0.90,
+    description: 'Design, develop, and maintain software applications and systems. Solve complex technical problems through code.',
+    dailyTasks: [
+      'Write and test code',
+      'Debug software issues',
+      'Collaborate with team members',
+      'Review code and design systems',
+      'Learn new technologies'
+    ],
+    skills: ['Programming', 'Problem-solving', 'Logical thinking', 'Teamwork', 'Continuous learning'],
+    personalityTraits: ['Analytical', 'Creative', 'Patient', 'Detail-oriented'],
+    careerProgression: 'Junior Developer → Senior Developer → Team Lead → Architect/Manager',
+    challenges: ['Rapidly changing technology', 'Tight deadlines', 'Complex problem-solving'],
+    rewards: ['High demand', 'Good salary', 'Creative work', 'Global opportunities'],
+    relatedCareers: ['Data Scientist', 'Cybersecurity Specialist', 'UI/UX Designer', 'IT Manager'],
+    kenyaSpecific: {
+      majorEmployers: ['Safaricom', 'Equity Bank', 'KCB', 'Tech startups', 'International companies'],
+      techHubs: ['iHub Nairobi', 'Silicon Savannah', 'Konza Technopolis'],
+      universities: ['JKUAT', 'University of Nairobi', 'Strathmore University'],
+      bootcamps: ['Moringa School', 'AkiraChix', 'Andela Kenya']
+    }
+  },
+  {
+    id: 'civil-engineer',
+    title: 'Civil Engineer',
+    category: 'Engineering',
+    averageSalary: 280000,
+    salaryRange: { min: 150000, max: 500000 },
+    educationLevel: 'University Degree',
+    educationPath: 'Bachelor of Civil Engineering (4 years)',
+    keySubjects: ['Mathematics', 'Physics', 'Chemistry', 'English'],
+    minimumGrades: { overall: 'B+', math: 'A-', physics: 'B+' },
+    workEnvironment: 'Construction sites, Offices, Government agencies',
+    jobOutlook: 'good',
+    industryGrowth: 'medium',
+    employmentRate: 0.85,
+    description: 'Design, build, and maintain infrastructure projects like roads, bridges, and buildings.',
+    dailyTasks: [
+      'Design infrastructure projects',
+      'Supervise construction work',
+      'Conduct site inspections',
+      'Prepare technical reports',
+      'Ensure safety compliance'
+    ],
+    skills: ['Engineering design', 'Project management', 'Problem-solving', 'Leadership'],
+    personalityTraits: ['Practical', 'Organized', 'Leadership qualities', 'Safety-conscious'],
+    careerProgression: 'Graduate Engineer → Project Engineer → Senior Engineer → Chief Engineer',
+    challenges: ['Weather-dependent work', 'Safety risks', 'Budget constraints'],
+    rewards: ['Build lasting infrastructure', 'Good career prospects', 'Varied work environments'],
+    relatedCareers: ['Architect', 'Construction Manager', 'Structural Engineer', 'Urban Planner'],
+    kenyaSpecific: {
+      majorEmployers: ['Ministry of Transport', 'Kenya Urban Roads Authority', 'Private contractors'],
+      majorProjects: ['Standard Gauge Railway', 'Thika Superhighway', 'Lamu Port'],
+      universities: ['University of Nairobi', 'JKUAT', 'Moi University'],
+      licensingBody: 'Engineers Board of Kenya (EBK)'
+    }
+  },
+  {
+    id: 'teacher',
+    title: 'Secondary School Teacher',
+    category: 'Education',
+    averageSalary: 180000,
+    salaryRange: { min: 100000, max: 300000 },
+    educationLevel: 'University Degree',
+    educationPath: 'Bachelor of Education (4 years)',
+    keySubjects: ['Mathematics', 'English', 'Teaching subjects (Science/Humanities)', 'Kiswahili'],
+    minimumGrades: { overall: 'B', teachingSubjects: 'B+' },
+    workEnvironment: 'Schools, Classrooms, Educational institutions',
+    jobOutlook: 'stable',
+    industryGrowth: 'stable',
+    employmentRate: 0.88,
+    description: 'Educate and mentor students in specific subject areas. Shape the future generation through quality education.',
+    dailyTasks: [
+      'Prepare and deliver lessons',
+      'Grade student work',
+      'Manage classroom behavior',
+      'Meet with parents',
+      'Participate in school activities'
+    ],
+    skills: ['Subject expertise', 'Communication', 'Patience', 'Classroom management'],
+    personalityTraits: ['Patient', 'Caring', 'Organized', 'Inspiring'],
+    careerProgression: 'Teacher → Senior Teacher → Deputy Head → Headteacher',
+    challenges: ['Large class sizes', 'Limited resources', 'Student discipline issues'],
+    rewards: ['Shape young minds', 'Job security', 'School holidays', 'Make a difference'],
+    relatedCareers: ['Education Administrator', 'Curriculum Developer', 'School Counselor', 'Lecturer'],
+    kenyaSpecific: {
+      majorEmployers: ['Teachers Service Commission (TSC)', 'Private schools', 'International schools'],
+      universities: ['Kenyatta University', 'Moi University', 'Maseno University'],
+      licensingBody: 'Teachers Service Commission (TSC)',
+      benefits: 'Government employment, pension scheme, medical cover'
+    }
+  },
+  {
+    id: 'business-analyst',
+    title: 'Business Analyst',
+    category: 'Business & Finance',
+    averageSalary: 250000,
+    salaryRange: { min: 120000, max: 450000 },
+    educationLevel: 'University Degree',
+    educationPath: 'Bachelor of Commerce/Business Administration (4 years)',
+    keySubjects: ['Mathematics', 'English', 'Business Studies', 'Economics'],
+    minimumGrades: { overall: 'B+', math: 'B+', business: 'A-' },
+    workEnvironment: 'Corporate offices, Banks, Consulting firms',
+    jobOutlook: 'good',
+    industryGrowth: 'medium',
+    employmentRate: 0.82,
+    description: 'Analyze business processes and data to improve organizational efficiency and profitability.',
+    dailyTasks: [
+      'Analyze business data and processes',
+      'Create reports and presentations',
+      'Meet with stakeholders',
+      'Recommend improvements',
+      'Monitor key performance indicators'
+    ],
+    skills: ['Data analysis', 'Critical thinking', 'Communication', 'Business acumen'],
+    personalityTraits: ['Analytical', 'Detail-oriented', 'Strategic thinker', 'Good communicator'],
+    careerProgression: 'Junior Analyst → Business Analyst → Senior Analyst → Manager',
+    challenges: ['Complex data interpretation', 'Managing stakeholder expectations'],
+    rewards: ['Influence business decisions', 'Good salary growth', 'Diverse industries'],
+    relatedCareers: ['Data Analyst', 'Management Consultant', 'Project Manager', 'Financial Analyst'],
+    kenyaSpecific: {
+      majorEmployers: ['Banks', 'Telecommunications companies', 'Consulting firms', 'Government'],
+      universities: ['University of Nairobi', 'Strathmore University', 'USIU'],
+      certifications: 'CPA(K), ACCA, professional business analysis certificates'
+    }
+  }
+];
+
+// Career Exploration Cloud Function
+Parse.Cloud.define('exploreCareers', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const { 
+    filters,
+    searchQuery,
+    studentProfile,
+    sortBy,
+    limit
+  } = request.params;
+
+  console.log('🔍 Processing Career Exploration request:', {
+    filters: filters ? 'provided' : 'none',
+    searchQuery: searchQuery ? 'provided' : 'none',
+    studentProfile: studentProfile ? 'provided' : 'none',
+    sortBy: sortBy || 'relevance',
+    limit: limit || 20
+  });
+
+  try {
+    let careers = [...KENYA_CAREERS_DATABASE];
+
+    // Apply filters
+    if (filters) {
+      if (filters.categories && filters.categories.length > 0) {
+        careers = careers.filter(career => 
+          filters.categories.includes(career.category)
+        );
+      }
+
+      if (filters.salaryRange) {
+        careers = careers.filter(career => 
+          career.averageSalary >= filters.salaryRange.min &&
+          career.averageSalary <= filters.salaryRange.max
+        );
+      }
+
+      if (filters.educationLevel) {
+        careers = careers.filter(career => 
+          career.educationLevel === filters.educationLevel
+        );
+      }
+
+      if (filters.jobOutlook) {
+        careers = careers.filter(career => 
+          career.jobOutlook === filters.jobOutlook
+        );
+      }
+    }
+
+    // Apply search query
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      careers = careers.filter(career =>
+        career.title.toLowerCase().includes(query) ||
+        career.category.toLowerCase().includes(query) ||
+        career.description.toLowerCase().includes(query) ||
+        career.skills.some(skill => skill.toLowerCase().includes(query)) ||
+        career.dailyTasks.some(task => task.toLowerCase().includes(query))
+      );
+    }
+
+    // Calculate match scores if student profile provided
+    if (studentProfile) {
+      careers = careers.map(career => ({
+        ...career,
+        matchScore: calculateCareerMatchScore(career, studentProfile),
+        personalizedInsights: generatePersonalizedInsights(career, studentProfile)
+      }));
+    }
+
+    // Apply sorting
+    careers = careers.sort((a, b) => {
+      switch (sortBy) {
+        case 'salary':
+          return b.averageSalary - a.averageSalary;
+        case 'growth':
+          return getGrowthScore(b.industryGrowth) - getGrowthScore(a.industryGrowth);
+        case 'employment':
+          return b.employmentRate - a.employmentRate;
+        case 'match':
+          return (b.matchScore || 0) - (a.matchScore || 0);
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
+        default: // relevance
+          if (studentProfile) {
+            return (b.matchScore || 0) - (a.matchScore || 0);
+          }
+          return b.averageSalary - a.averageSalary;
+      }
+    });
+
+    // Apply limit
+    const limitedCareers = careers.slice(0, limit || 20);
+
+    // Generate exploration insights
+    const insights = generateExplorationInsights(limitedCareers, filters, studentProfile);
+
+    // Log activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'career_exploration',
+      details: {
+        filters: filters || {},
+        searchQuery: searchQuery || '',
+        resultsCount: limitedCareers.length,
+        sortBy: sortBy || 'relevance'
+      }
+    });
+
+    return {
+      success: true,
+      careers: limitedCareers,
+      insights,
+      metadata: {
+        totalResults: careers.length,
+        returnedResults: limitedCareers.length,
+        filters: filters || {},
+        sortBy: sortBy || 'relevance'
+      }
+    };
+
+  } catch (error) {
+    console.error('❌ Career Exploration error:', error);
+    throw new Error(`Failed to explore careers: ${error.message}`);
+  }
+});
+
+// Get detailed career information
+Parse.Cloud.define('getCareerDetails', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const { careerId, studentProfile } = request.params;
+
+  console.log('📋 Getting career details for:', careerId);
+
+  try {
+    const career = KENYA_CAREERS_DATABASE.find(c => c.id === careerId);
+    if (!career) {
+      throw new Error('Career not found');
+    }
+
+    // Add personalized information if student profile provided
+    let personalizedCareer = { ...career };
+    if (studentProfile) {
+      personalizedCareer.matchScore = calculateCareerMatchScore(career, studentProfile);
+      personalizedCareer.personalizedInsights = generatePersonalizedInsights(career, studentProfile);
+      personalizedCareer.educationGapAnalysis = analyzeEducationGap(career, studentProfile);
+      personalizedCareer.actionPlan = generateCareerActionPlan(career, studentProfile);
+    }
+
+    // Add related information
+    personalizedCareer.similarCareers = findSimilarCareers(career);
+    personalizedCareer.industryTrends = getIndustryTrends(career.category);
+    personalizedCareer.successStories = getSuccessStories(career);
+
+    // Log activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'career_details_view',
+      details: {
+        careerId,
+        careerTitle: career.title,
+        category: career.category
+      }
+    });
+
+    return {
+      success: true,
+      career: personalizedCareer
+    };
+
+  } catch (error) {
+    console.error('❌ Get Career Details error:', error);
+    throw new Error(`Failed to get career details: ${error.message}`);
+  }
+});
+
+// Helper function to calculate career match score
+function calculateCareerMatchScore(career, studentProfile) {
+  let score = 0;
+  const weights = { subjects: 30, grades: 25, interests: 25, skills: 20 };
+
+  // Subject alignment
+  if (studentProfile.subjects) {
+    const matchingSubjects = career.keySubjects.filter(subject =>
+      studentProfile.subjects.some(studentSubject =>
+        studentSubject.toLowerCase().includes(subject.toLowerCase()) ||
+        subject.toLowerCase().includes(studentSubject.toLowerCase())
+      )
+    );
+    score += (matchingSubjects.length / career.keySubjects.length) * weights.subjects;
+  }
+
+  // Grade requirements
+  if (studentProfile.grades) {
+    const studentClusterPoints = calculateClusterPoints(studentProfile.grades);
+    // Estimate required cluster points based on education requirements
+    const requiredPoints = career.educationLevel === 'University Degree' ? 
+      (career.averageSalary > 300000 ? 70 : 60) : 50;
+    
+    if (studentClusterPoints >= requiredPoints) {
+      score += weights.grades;
+    } else {
+      score += Math.max(0, weights.grades * (studentClusterPoints / requiredPoints));
+    }
+  } else {
+    score += weights.grades * 0.7; // Default partial credit
+  }
+
+  // Interest alignment
+  if (studentProfile.interests) {
+    const interestMatch = studentProfile.interests.some(interest =>
+      career.category.toLowerCase().includes(interest.toLowerCase()) ||
+      career.skills.some(skill => skill.toLowerCase().includes(interest.toLowerCase()))
+    );
+    score += interestMatch ? weights.interests : weights.interests * 0.3;
+  } else {
+    score += weights.interests * 0.5; // Default partial credit
+  }
+
+  // Skill alignment
+  if (studentProfile.skills) {
+    const skillMatches = career.skills.filter(skill =>
+      studentProfile.skills.some(studentSkill =>
+        skill.toLowerCase().includes(studentSkill.toLowerCase()) ||
+        studentSkill.toLowerCase().includes(skill.toLowerCase())
+      )
+    );
+    score += (skillMatches.length / career.skills.length) * weights.skills;
+  } else {
+    score += weights.skills * 0.5; // Default partial credit
+  }
+
+  return Math.round(score);
+}
+
+// Helper function to generate personalized insights
+function generatePersonalizedInsights(career, studentProfile) {
+  const insights = [];
+
+  // Academic fit analysis
+  if (studentProfile.subjects && studentProfile.grades) {
+    const missingSubjects = career.keySubjects.filter(subject =>
+      !studentProfile.subjects.some(studentSubject =>
+        studentSubject.toLowerCase().includes(subject.toLowerCase())
+      )
+    );
+
+    if (missingSubjects.length === 0) {
+      insights.push({
+        type: 'positive',
+        title: 'Strong Academic Fit',
+        message: 'You have all the key subjects needed for this career path.'
+      });
+    } else {
+      insights.push({
+        type: 'improvement',
+        title: 'Subject Requirements',
+        message: `Consider strengthening these subjects: ${missingSubjects.join(', ')}`
+      });
+    }
+  }
+
+  // Salary comparison
+  if (career.averageSalary > 250000) {
+    insights.push({
+      type: 'positive',
+      title: 'High Earning Potential',
+      message: `This career offers above-average salary potential in Kenya.`
+    });
+  }
+
+  // Job market analysis
+  if (career.jobOutlook === 'excellent' || career.industryGrowth === 'high') {
+    insights.push({
+      type: 'positive',
+      title: 'Growing Field',
+      message: 'This career is in high demand with excellent job prospects.'
+    });
+  }
+
+  return insights;
+}
+
+// Helper function to analyze education gap
+function analyzeEducationGap(career, studentProfile) {
+  const gaps = [];
+
+  if (studentProfile.currentEducation !== career.educationLevel) {
+    gaps.push({
+      type: 'education_level',
+      current: studentProfile.currentEducation || 'Secondary School',
+      required: career.educationLevel,
+      steps: getEducationSteps(studentProfile.currentEducation, career.educationLevel)
+    });
+  }
+
+  return gaps;
+}
+
+// Helper function to generate career action plan
+function generateCareerActionPlan(career, studentProfile) {
+  const actionPlan = {
+    shortTerm: [], // Next 1-2 years
+    mediumTerm: [], // 2-5 years
+    longTerm: [] // 5+ years
+  };
+
+  // Short-term actions
+  actionPlan.shortTerm.push('Complete KCSE with focus on key subjects');
+  actionPlan.shortTerm.push('Research universities offering relevant programs');
+  
+  // Medium-term actions
+  actionPlan.mediumTerm.push(`Pursue ${career.educationPath}`);
+  actionPlan.mediumTerm.push('Gain practical experience through internships');
+  
+  // Long-term actions
+  actionPlan.longTerm.push('Start career in entry-level position');
+  actionPlan.longTerm.push('Pursue professional development and certifications');
+
+  return actionPlan;
+}
+
+// Helper function to find similar careers
+function findSimilarCareers(targetCareer) {
+  return KENYA_CAREERS_DATABASE
+    .filter(career => 
+      career.id !== targetCareer.id &&
+      (career.category === targetCareer.category ||
+       career.keySubjects.some(subject => targetCareer.keySubjects.includes(subject)))
+    )
+    .slice(0, 3)
+    .map(career => ({
+      id: career.id,
+      title: career.title,
+      category: career.category,
+      averageSalary: career.averageSalary
+    }));
+}
+
+// Helper function to get growth score for sorting
+function getGrowthScore(growth) {
+  switch (growth) {
+    case 'very_high': return 5;
+    case 'high': return 4;
+    case 'medium': return 3;
+    case 'stable': return 2;
+    case 'low': return 1;
+    default: return 2;
+  }
+}
+
+// Helper function to generate exploration insights
+function generateExplorationInsights(careers, filters, studentProfile) {
+  const insights = [];
+
+  if (careers.length === 0) {
+    insights.push({
+      type: 'suggestion',
+      title: 'No matches found',
+      message: 'Try broadening your search criteria or exploring different categories.'
+    });
+  } else {
+    const avgSalary = careers.reduce((sum, career) => sum + career.averageSalary, 0) / careers.length;
+    insights.push({
+      type: 'info',
+      title: 'Search Results',
+      message: `Found ${careers.length} careers with average salary of KSh ${Math.round(avgSalary).toLocaleString()}`
+    });
+
+    if (studentProfile) {
+      const highMatchCareers = careers.filter(career => (career.matchScore || 0) >= 70);
+      if (highMatchCareers.length > 0) {
+        insights.push({
+          type: 'positive',
+          title: 'Great Matches Found',
+          message: `${highMatchCareers.length} career(s) are excellent matches for your profile.`
+        });
+      }
+    }
+  }
+
+  return insights;
+}
+
+// Helper function to get industry trends (mock data)
+function getIndustryTrends(category) {
+  const trends = {
+    'Healthcare & Medical': 'Growing demand due to expanding healthcare coverage',
+    'Technology & IT': 'Rapid growth in digital transformation and fintech',
+    'Engineering': 'Infrastructure development driving steady demand',
+    'Education': 'Stable demand with focus on quality improvement',
+    'Business & Finance': 'Digital banking and financial inclusion creating opportunities'
+  };
+  
+  return trends[category] || 'Industry showing steady development';
+}
+
+// Helper function to get success stories (mock data)
+function getSuccessStories(career) {
+  return [
+    `Many ${career.title.toLowerCase()}s have successfully established practices and made significant contributions to Kenya's development.`,
+    `Career progression from entry-level to senior positions typically takes 5-10 years with dedication and continuous learning.`
+  ];
+}
+
+// Helper function to get education steps
+function getEducationSteps(current, required) {
+  if (required === 'University Degree') {
+    return [
+      'Complete KCSE with good grades',
+      'Apply for relevant university program through KUCCPS',
+      'Complete 4-year bachelor\'s degree',
+      'Consider internship or practical training'
+    ];
+  }
+  return ['Continue current education path'];
+}
+
+console.log('☁️ Elimu Smart Cloud Functions loaded successfully (including RIASEC API + Subject-Career Mapper + Skills Assessment + University Course Finder + Career Exploration)');
