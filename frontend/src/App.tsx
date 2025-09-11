@@ -35,6 +35,11 @@ import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { SecurityMonitoringPage } from './pages/admin/SecurityMonitoringPage';
 import { MaintenanceToolsPage } from './pages/admin/MaintenanceToolsPage';
 import { ProfessionalNetworkingHub } from './components/professional/ProfessionalNetworkingHub';
+import FreeRiasecAssessment from './components/assessments/FreeRiasecAssessment';
+import SubjectCareerMapper from './components/assessments/SubjectCareerMapper';
+import SkillsAssessment from './components/assessments/SkillsAssessment';
+import UniversityCourseFinder from './components/assessments/UniversityCourseFinder';
+import CareerExploration from './components/assessments/CareerExploration';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -63,6 +68,11 @@ const AppContent: React.FC = () => {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings/*" element={<AccountSettingsPage />} />
         <Route path="/assessment" element={<Sprint18AssessmentPage />} />
+        <Route path="/assessment/career" element={<FreeRiasecAssessment />} />
+        <Route path="/assessment/subjects" element={<SubjectCareerMapper />} />
+        <Route path="/assessment/skills" element={<SkillsAssessment />} />
+        <Route path="/assessment/university" element={<UniversityCourseFinder />} />
+        <Route path="/assessment/explore" element={<CareerExploration />} />
         <Route path="/guidance" element={<Sprint18GuidancePage />} />
         <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
         <Route path="/admin/portal" element={<AdminPortal />} />

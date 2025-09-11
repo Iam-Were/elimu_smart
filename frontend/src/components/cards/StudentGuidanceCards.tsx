@@ -171,80 +171,6 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     },
   },
   {
-    id: 'crisis-support',
-    title: 'Emergency Support',
-    studentDescription: 'Immediate help when you\'re really struggling - depression, family issues, academic pressure, or just need someone NOW',
-    icon: <Shield className="h-6 w-6" />,
-    status: 'available',
-    priority: 'essential',
-    actionText: 'Get Help Now',
-    actionLink: '/student/crisis-support',
-    studentValue: 'Immediate professional support when life gets overwhelming - you don\'t have to handle everything alone',
-    realTalk: 'Confidential crisis counseling available 24/7 for serious situations - depression, anxiety, family problems, academic overwhelm',
-    whenToUse: 'When you\'re having thoughts of self-harm, severe depression, panic attacks, or feeling completely overwhelmed',
-    timeNeeded: 'Immediate response, sessions as long as needed',
-    studentWorries: [
-      'What if someone finds out?',
-      'What if they call my parents?',
-      'What if I\'m not "bad enough" for help?',
-    ],
-    whatHappens: [
-      'Click for immediate chat or call support',
-      'Talk to a trained crisis counselor',
-      'Get immediate emotional support and safety planning',
-      'Connect with ongoing support resources',
-      'Complete confidentiality (except for safety concerns)',
-    ],
-    successStories: 'Anonymous student: "I was planning to hurt myself but the crisis counselor helped me see other options. I\'m still here and doing better."',
-    connections: [
-      'Links to ongoing mental health support',
-      'Connects to family counseling resources',
-      'Can arrange academic accommodations',
-    ],
-    cost: 'free',
-    availability: {
-      timing: '24/7 availability',
-      responseTime: 'Immediate - under 2 minutes',
-    },
-  },
-  {
-    id: 'parent-conversation-help',
-    title: 'Navigate Parent Conversations',
-    studentDescription: 'Get help talking to your parents about your career choices - especially when they have different ideas!',
-    icon: <Heart className="h-6 w-6" />,
-    status: 'available',
-    priority: 'essential',
-    actionText: 'Get Conversation Tips',
-    actionLink: '/student/parent-conversations',
-    studentValue: 'Scripts, strategies, and support for those difficult career conversations with family',
-    realTalk: 'Practical help for when your parents want you to be a doctor/lawyer but you want something else',
-    whenToUse: 'When your parents disagree with your career choice or you need to convince them of your path',
-    timeNeeded: '15-20 minutes to learn strategies, ongoing practice',
-    studentWorries: [
-      'What if they get angry?',
-      'What if they stop supporting me financially?',
-      'What if I disappoint them?',
-    ],
-    whatHappens: [
-      'Learn effective communication strategies',
-      'Get specific scripts for common situations',
-      'Practice conversations with a counselor',
-      'Learn to present your career choice convincingly',
-      'Get backup plans if things don\'t go well',
-    ],
-    successStories: 'Mary\'s parents insisted on medicine, but using our conversation guide, she convinced them that computer science was also prestigious and profitable.',
-    connections: [
-      'Uses Career Discovery results as evidence',
-      'Links to career salary and job market data',
-      'Connects to family counseling if needed',
-    ],
-    cost: 'free',
-    availability: {
-      timing: 'Resources available 24/7, counselor support weekdays',
-      responseTime: 'Immediate access to guides, counselor within 24 hours',
-    },
-  },
-  {
     id: 'scholarship-finder',
     title: 'Find Scholarships & Funding',
     studentDescription: 'Discover scholarships you actually qualify for - don\'t let money stop your dreams!',
@@ -558,16 +484,6 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
           }
           break;
 
-        case 'crisis-support':
-          // Always available but higher priority during exam periods
-          const currentMonthForExams = new Date().getMonth();
-          const isExamPeriod = currentMonthForExams === 10 || currentMonthForExams === 11; // Nov-Dec
-          
-          if (isExamPeriod) {
-            card.priority = 'essential';
-            card.studentValue = 'Extra support available during exam period - you don\'t have to handle stress alone';
-          }
-          break;
 
         case 'scholarship-hunter':
           if (careerReadinessScore && careerReadinessScore.breakdown.courseExploration > 60) {
@@ -577,17 +493,6 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
           }
           break;
 
-        case 'parent-conversation-guide':
-          const familyDiscussionActivities = userActivities.filter(a => 
-            a.activityType === 'family_guide_click' || a.activityType === 'parent_conversation_view'
-          );
-          
-          if (familyDiscussionActivities.length === 0 && careerReadinessScore?.overall && careerReadinessScore.overall > 50) {
-            card.priority = 'helpful';
-            card.status = 'available';
-            card.studentValue = 'You\'re making good progress - time to involve your family in career planning';
-          }
-          break;
 
         case 'job-ready-skills':
           if (careerReadinessScore && careerReadinessScore.breakdown.actionsTaken < 30) {
@@ -636,7 +541,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
         if (careerReadinessScore.overall < 30 && card.priority === 'optional') {
           card.priority = 'helpful'; // Upgrade priority for struggling students
         }
-        if (careerReadinessScore.overall > 80 && card.priority === 'essential' && card.id !== 'crisis-support') {
+        if (careerReadinessScore.overall > 80 && card.priority === 'essential') {
           card.priority = 'helpful'; // Reduce pressure on high-performing students
         }
       }
