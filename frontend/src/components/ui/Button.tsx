@@ -2,11 +2,12 @@ import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'default';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
+  asChild?: boolean;
   children: React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   icon: Icon,
   iconPosition = 'left',
+  asChild = false,
   children,
   className = '',
   disabled,
@@ -29,7 +31,9 @@ const Button: React.FC<ButtonProps> = ({
     primary: 'gradient-primary text-white hover:shadow-gradient-primary hover:-translate-y-0.5 active:translate-y-0 shadow-sm',
     secondary: 'bg-white border-2 border-orange-500 text-orange-600 hover:gradient-primary hover:text-white hover:shadow-gradient-primary hover:-translate-y-0.5 transition-all duration-200',
     ghost: 'bg-transparent text-orange-600 hover:bg-orange-100 dark:hover:bg-orange-900/20 hover:scale-105 active:scale-95',
-    destructive: 'bg-red-600 text-white hover:bg-red-700 hover:shadow-lg'
+    destructive: 'bg-red-600 text-white hover:bg-red-700 hover:shadow-lg',
+    outline: 'border-2 border-orange-500 bg-transparent text-orange-600 hover:bg-orange-50 hover:text-orange-700',
+    default: 'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300'
   };
   
   // Size-specific spacing - EXACT PIXEL VALUES
@@ -46,25 +50,36 @@ const Button: React.FC<ButtonProps> = ({
     lg: 'h-5 w-5'
   };
   
+  const combinedClassName = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  
+  const content = loading ? (
+    <div className={`animate-spin rounded-full border-2 border-current border-t-transparent ${iconSizes[size]}`} />
+  ) : (
+    <>
+      {Icon && iconPosition === 'left' && (
+        <Icon className={`${iconSizes[size]} shrink-0`} />
+      )}
+      {children}
+      {Icon && iconPosition === 'right' && (
+        <Icon className={`${iconSizes[size]} shrink-0`} />
+      )}
+    </>
+  );
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<any>, {
+      className: combinedClassName,
+      ...props
+    });
+  }
+
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={combinedClassName}
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? (
-        <div className={`animate-spin rounded-full border-2 border-current border-t-transparent ${iconSizes[size]}`} />
-      ) : (
-        <>
-          {Icon && iconPosition === 'left' && (
-            <Icon className={`${iconSizes[size]} shrink-0`} />
-          )}
-          {children}
-          {Icon && iconPosition === 'right' && (
-            <Icon className={`${iconSizes[size]} shrink-0`} />
-          )}
-        </>
-      )}
+      {content}
     </button>
   );
 };

@@ -155,7 +155,7 @@ export const LinkedInStyleProfile: React.FC = () => {
                 </Button>
                 <Button
                   leftSection={<PersonIcon width={16} height={16} />}
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => navigate('/counseling')}
                 >
                   Book Counselor Session
@@ -357,7 +357,7 @@ export const LinkedInStyleProfile: React.FC = () => {
                   Start building your academic portfolio by adding projects, 
                   research work, and achievements.
                 </Text>
-                <Button size="xs" variant="outline">
+                <Button size="xs" variant="secondary">
                   Upload First Project
                 </Button>
               </Stack>

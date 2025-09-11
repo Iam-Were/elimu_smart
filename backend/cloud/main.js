@@ -1195,4 +1195,687 @@ async function fetchKuccpsDataFromGitHub() {
   }
 }
 
+// ====================================
+// 6. EMAIL NOTIFICATION SYSTEM
+// ====================================
+
+const { SendMailClient } = require('zeptomail');
+
+// Initialize ZeptoMail client
+const zeptoMailClient = new SendMailClient({
+  url: process.env.ZEPTOMAIL_API_URL || 'api.zeptomail.com/',
+  token: process.env.ZEPTOMAIL_TOKEN || 'your_zeptomail_token_here'
+});
+
+// Send welcome email to new students
+Parse.Cloud.define('sendWelcomeEmail', async (request) => {
+  const { email, firstName, userRole } = request.params;
+  
+  try {
+    const emailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": email,
+          "name": firstName
+        }
+      }],
+      "subject": `Welcome to Elimu Smart, ${firstName}! 🎓`,
+      "htmlbody": generateWelcomeEmailHTML(firstName, userRole),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    const result = await zeptoMailClient.sendMail(emailContent);
+    
+    // Log email activity
+    const emailLog = new Parse.Object('EmailLog');
+    emailLog.set('recipient', email);
+    emailLog.set('type', 'welcome');
+    emailLog.set('status', 'sent');
+    emailLog.set('zeptoMessageId', result?.message_id || 'unknown');
+    await emailLog.save();
+
+    return { success: true, messageId: result?.message_id };
+  } catch (error) {
+    console.error('Failed to send welcome email:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to send welcome email');
+  }
+});
+
+// Send assessment completion notification
+Parse.Cloud.define('sendAssessmentCompletionEmail', async (request) => {
+  const { email, firstName, assessmentName, results } = request.params;
+  
+  try {
+    const emailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": email,
+          "name": firstName
+        }
+      }],
+      "subject": `🎯 ${assessmentName} Results Ready - Your Career Path Awaits!`,
+      "htmlbody": generateAssessmentEmailHTML(firstName, assessmentName, results),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    const result = await zeptoMailClient.sendMail(emailContent);
+    
+    // Log email activity
+    const emailLog = new Parse.Object('EmailLog');
+    emailLog.set('recipient', email);
+    emailLog.set('type', 'assessment_completion');
+    emailLog.set('status', 'sent');
+    emailLog.set('assessmentName', assessmentName);
+    emailLog.set('zeptoMessageId', result?.message_id || 'unknown');
+    await emailLog.save();
+
+    return { success: true, messageId: result?.message_id };
+  } catch (error) {
+    console.error('Failed to send assessment completion email:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to send assessment email');
+  }
+});
+
+// Send KUCCPS deadline reminder
+Parse.Cloud.define('sendKuccpsDeadlineReminder', async (request) => {
+  const { email, firstName, deadlineName, daysRemaining } = request.params;
+  
+  try {
+    const urgencyLevel = daysRemaining <= 7 ? 'urgent' : daysRemaining <= 30 ? 'important' : 'normal';
+    
+    const emailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": email,
+          "name": firstName
+        }
+      }],
+      "subject": `⏰ KUCCPS Alert: ${deadlineName} - ${daysRemaining} Days Left!`,
+      "htmlbody": generateKuccpsReminderHTML(firstName, deadlineName, daysRemaining, urgencyLevel),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    const result = await zeptoMailClient.sendMail(emailContent);
+    
+    // Log email activity
+    const emailLog = new Parse.Object('EmailLog');
+    emailLog.set('recipient', email);
+    emailLog.set('type', 'kuccps_reminder');
+    emailLog.set('status', 'sent');
+    emailLog.set('deadlineName', deadlineName);
+    emailLog.set('daysRemaining', daysRemaining);
+    emailLog.set('urgencyLevel', urgencyLevel);
+    emailLog.set('zeptoMessageId', result?.message_id || 'unknown');
+    await emailLog.save();
+
+    return { success: true, messageId: result?.message_id };
+  } catch (error) {
+    console.error('Failed to send KUCCPS reminder email:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to send reminder email');
+  }
+});
+
+// Send counselor session booking confirmation
+Parse.Cloud.define('sendSessionBookingConfirmation', async (request) => {
+  const { studentEmail, counselorEmail, studentName, counselorName, sessionDate, sessionTime, sessionType } = request.params;
+  
+  try {
+    // Send email to student
+    const studentEmailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": studentEmail,
+          "name": studentName
+        }
+      }],
+      "subject": `✅ Session Confirmed: ${sessionType} with ${counselorName}`,
+      "htmlbody": generateSessionConfirmationHTML('student', studentName, counselorName, sessionDate, sessionTime, sessionType),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    // Send email to counselor
+    const counselorEmailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": counselorEmail,
+          "name": counselorName
+        }
+      }],
+      "subject": `📅 New Session Booked: ${sessionType} with ${studentName}`,
+      "htmlbody": generateSessionConfirmationHTML('counselor', studentName, counselorName, sessionDate, sessionTime, sessionType),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    // Send both emails
+    const [studentResult, counselorResult] = await Promise.all([
+      zeptoMailClient.sendMail(studentEmailContent),
+      zeptoMailClient.sendMail(counselorEmailContent)
+    ]);
+    
+    // Log email activities
+    const studentEmailLog = new Parse.Object('EmailLog');
+    studentEmailLog.set('recipient', studentEmail);
+    studentEmailLog.set('type', 'session_booking_student');
+    studentEmailLog.set('status', 'sent');
+    studentEmailLog.set('sessionType', sessionType);
+    studentEmailLog.set('zeptoMessageId', studentResult?.message_id || 'unknown');
+    
+    const counselorEmailLog = new Parse.Object('EmailLog');
+    counselorEmailLog.set('recipient', counselorEmail);
+    counselorEmailLog.set('type', 'session_booking_counselor');
+    counselorEmailLog.set('status', 'sent');
+    counselorEmailLog.set('sessionType', sessionType);
+    counselorEmailLog.set('zeptoMessageId', counselorResult?.message_id || 'unknown');
+    
+    await Parse.Object.saveAll([studentEmailLog, counselorEmailLog]);
+
+    return { 
+      success: true, 
+      studentMessageId: studentResult?.message_id,
+      counselorMessageId: counselorResult?.message_id 
+    };
+  } catch (error) {
+    console.error('Failed to send session booking emails:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to send booking confirmation emails');
+  }
+});
+
+// Send scholarship opportunity alert
+Parse.Cloud.define('sendScholarshipAlert', async (request) => {
+  const { email, firstName, scholarshipName, deadline, amount, requirements } = request.params;
+  
+  try {
+    const emailContent = {
+      "from": {
+        "address": process.env.ZEPTOMAIL_FROM_EMAIL || "noreply@elimusmart.co.ke",
+        "name": process.env.ZEPTOMAIL_FROM_NAME || "Elimu Smart Platform"
+      },
+      "to": [{
+        "email_address": {
+          "address": email,
+          "name": firstName
+        }
+      }],
+      "subject": `💰 New Scholarship Match: ${scholarshipName} - ${amount}`,
+      "htmlbody": generateScholarshipAlertHTML(firstName, scholarshipName, deadline, amount, requirements),
+      "track_clicks": true,
+      "track_opens": true
+    };
+
+    const result = await zeptoMailClient.sendMail(emailContent);
+    
+    // Log email activity
+    const emailLog = new Parse.Object('EmailLog');
+    emailLog.set('recipient', email);
+    emailLog.set('type', 'scholarship_alert');
+    emailLog.set('status', 'sent');
+    emailLog.set('scholarshipName', scholarshipName);
+    emailLog.set('amount', amount);
+    emailLog.set('zeptoMessageId', result?.message_id || 'unknown');
+    await emailLog.save();
+
+    return { success: true, messageId: result?.message_id };
+  } catch (error) {
+    console.error('Failed to send scholarship alert:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to send scholarship alert');
+  }
+});
+
+// Get email statistics for admin dashboard
+Parse.Cloud.define('getEmailStatistics', async (request) => {
+  const user = request.user;
+  if (!user) {
+    throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'User must be logged in');
+  }
+
+  try {
+    const emailLogQuery = new Parse.Query('EmailLog');
+    emailLogQuery.limit(1000);
+    emailLogQuery.descending('createdAt');
+    
+    const logs = await emailLogQuery.find();
+    
+    // Calculate statistics
+    const stats = {
+      totalSent: logs.length,
+      byType: {},
+      byStatus: {},
+      recentActivity: logs.slice(0, 10).map(log => ({
+        type: log.get('type'),
+        recipient: log.get('recipient'),
+        status: log.get('status'),
+        sentAt: log.get('createdAt')
+      })),
+      last24Hours: 0,
+      thisWeek: 0
+    };
+    
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    logs.forEach(log => {
+      const type = log.get('type') || 'unknown';
+      const status = log.get('status') || 'unknown';
+      const createdAt = log.get('createdAt');
+      
+      // Count by type
+      stats.byType[type] = (stats.byType[type] || 0) + 1;
+      
+      // Count by status
+      stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
+      
+      // Count recent emails
+      if (createdAt > yesterday) stats.last24Hours++;
+      if (createdAt > weekAgo) stats.thisWeek++;
+    });
+    
+    return stats;
+  } catch (error) {
+    console.error('Failed to get email statistics:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to retrieve email statistics');
+  }
+});
+
+// ====================================
+// EMAIL TEMPLATE HELPER FUNCTIONS
+// ====================================
+
+function generateWelcomeEmailHTML(firstName, userRole) {
+  const roleMessage = {
+    'student': 'Welcome to your career discovery journey! 🚀',
+    'counselor': 'Ready to guide students to success! 🌟',
+    'admin': 'Welcome to your administrative dashboard! 🏢'
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to Elimu Smart</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ea580c 0%, #fb923c 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: 0; }
+        .button { display: inline-block; background: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .features { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
+        .feature { flex: 1; min-width: 200px; text-align: center; }
+        .feature-icon { font-size: 32px; margin-bottom: 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to Elimu Smart, ${firstName}! 🎓</h1>
+          <p>${roleMessage[userRole] || roleMessage['student']}</p>
+        </div>
+        
+        <div class="content">
+          <p>Hi ${firstName},</p>
+          
+          <p>We're excited to have you join the Elimu Smart community! You're now part of Kenya's premier career guidance platform designed specifically for students navigating university placement and career decisions.</p>
+          
+          <div class="features">
+            <div class="feature">
+              <div class="feature-icon">🎯</div>
+              <h3>Career Discovery</h3>
+              <p>Personalized assessments to find your perfect career match</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🏫</div>
+              <h3>University Placement</h3>
+              <p>Real-time KUCCPS guidance and placement probability</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">💰</div>
+              <h3>Scholarship Matching</h3>
+              <p>Automated alerts for funding opportunities</p>
+            </div>
+          </div>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="https://elimusmart.co.ke/dashboard" class="button">Get Started Now</a>
+          </p>
+          
+          <p>Need help getting started? Our platform is designed to be intuitive, but if you have questions, don't hesitate to reach out!</p>
+          
+          <p>Best regards,<br>The Elimu Smart Team</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Elimu Smart</strong> - Empowering Kenyan students through intelligent career guidance</p>
+          <p>📧 support@elimusmart.co.ke | 🌐 <a href="https://elimusmart.co.ke">elimusmart.co.ke</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateAssessmentEmailHTML(firstName, assessmentName, results) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your ${assessmentName} Results</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; }
+        .results-card { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+        .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎯 Your ${assessmentName} Results Are Ready!</h1>
+          <p>Discover your career path, ${firstName}!</p>
+        </div>
+        
+        <div class="content">
+          <p>Hi ${firstName},</p>
+          
+          <p>Congratulations on completing your <strong>${assessmentName}</strong>! Your personalized results are now available and ready to guide your career journey.</p>
+          
+          <div class="results-card">
+            <h3>🏆 Your Top Results:</h3>
+            <p><strong>Match Score:</strong> ${results?.matchScore || '85%'}</p>
+            <p><strong>Recommended Path:</strong> ${results?.recommendedPath || 'STEM Fields - Engineering & Technology'}</p>
+            <p><strong>Strengths:</strong> ${results?.strengths || 'Problem-solving, Analytical thinking, Technical aptitude'}</p>
+          </div>
+          
+          <p><strong>What's Next?</strong></p>
+          <ul>
+            <li>📊 View your detailed results and career matches</li>
+            <li>🏫 Explore university programs aligned with your profile</li>
+            <li>💼 Connect with industry professionals in your field</li>
+            <li>📚 Access personalized learning resources</li>
+          </ul>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="https://elimusmart.co.ke/assessment/results" class="button">View Full Results</a>
+          </p>
+          
+          <p>Remember, this is just the beginning of your career discovery journey. Use these insights to make informed decisions about your educational and career path.</p>
+          
+          <p>Best of luck,<br>The Elimu Smart Team</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Elimu Smart</strong> - Your Career Guidance Partner</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateKuccpsReminderHTML(firstName, deadlineName, daysRemaining, urgencyLevel) {
+  const urgencyColors = {
+    urgent: '#ef4444',
+    important: '#f59e0b', 
+    normal: '#3b82f6'
+  };
+
+  const urgencyMessages = {
+    urgent: '🚨 URGENT - Act Now!',
+    important: '⚠️ Important Reminder',
+    normal: '📅 Friendly Reminder'
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>KUCCPS Deadline Alert</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: ${urgencyColors[urgencyLevel]}; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; }
+        .deadline-card { background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; text-align: center; }
+        .countdown { font-size: 48px; font-weight: bold; color: ${urgencyColors[urgencyLevel]}; }
+        .button { display: inline-block; background: ${urgencyColors[urgencyLevel]}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${urgencyMessages[urgencyLevel]}</h1>
+          <h2>KUCCPS Deadline Approaching</h2>
+        </div>
+        
+        <div class="content">
+          <p>Hi ${firstName},</p>
+          
+          <p>This is a reminder about an important KUCCPS deadline that's approaching:</p>
+          
+          <div class="deadline-card">
+            <h3>${deadlineName}</h3>
+            <div class="countdown">${daysRemaining}</div>
+            <p style="margin: 0; font-size: 18px; font-weight: bold;">Days Remaining</p>
+          </div>
+          
+          <p><strong>Action Items:</strong></p>
+          <ul>
+            <li>✅ Review your application status</li>
+            <li>📋 Complete any pending requirements</li>
+            <li>📧 Check for official communications</li>
+            <li>🔍 Verify all submitted information</li>
+            ${daysRemaining <= 7 ? '<li><strong>🚨 Submit immediately - deadline is critical!</strong></li>' : ''}
+          </ul>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="https://elimusmart.co.ke/placement" class="button">Check KUCCPS Status</a>
+          </p>
+          
+          <p>Don't let deadlines catch you off-guard. Stay ahead of your university placement journey with Elimu Smart!</p>
+          
+          <p>Good luck,<br>The Elimu Smart Team</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Elimu Smart</strong> - Keeping you on track for university success</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateSessionConfirmationHTML(recipient, studentName, counselorName, sessionDate, sessionTime, sessionType) {
+  const isStudent = recipient === 'student';
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Session Confirmation</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; }
+        .session-card { background: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+        .button { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Session Confirmed!</h1>
+          <p>${isStudent ? 'Your counseling session is booked' : 'New student session scheduled'}</p>
+        </div>
+        
+        <div class="content">
+          <p>Hi ${isStudent ? studentName : counselorName},</p>
+          
+          <p>${isStudent ? 
+            `Great news! Your ${sessionType.toLowerCase()} session with ${counselorName} has been confirmed.` :
+            `You have a new ${sessionType.toLowerCase()} session booked with ${studentName}.`
+          }</p>
+          
+          <div class="session-card">
+            <h3>📅 Session Details</h3>
+            <p><strong>Type:</strong> ${sessionType}</p>
+            <p><strong>Date:</strong> ${sessionDate}</p>
+            <p><strong>Time:</strong> ${sessionTime}</p>
+            <p><strong>${isStudent ? 'Counselor' : 'Student'}:</strong> ${isStudent ? counselorName : studentName}</p>
+          </div>
+          
+          <p><strong>${isStudent ? 'How to prepare:' : 'Session preparation:'}</strong></p>
+          <ul>
+            ${isStudent ? `
+            <li>📝 Prepare any questions about your career path</li>
+            <li>📊 Review your assessment results if available</li>
+            <li>🎯 Think about your goals and concerns</li>
+            <li>📱 Ensure stable internet connection for the session</li>
+            ` : `
+            <li>📋 Review ${studentName}'s profile and assessment results</li>
+            <li>📝 Prepare session materials and resources</li>
+            <li>🎯 Plan session agenda based on student's needs</li>
+            <li>⏰ Set up your session environment</li>
+            `}
+          </ul>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="https://elimusmart.co.ke/${isStudent ? 'guidance' : 'counselor'}/sessions" class="button">${isStudent ? 'View Session Details' : 'Manage Sessions'}</a>
+          </p>
+          
+          <p>${isStudent ? 
+            'We\'re excited to support your career journey. Make the most of this opportunity!' :
+            'Thank you for your commitment to student success.'
+          }</p>
+          
+          <p>Best regards,<br>The Elimu Smart Team</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Elimu Smart</strong> - Connecting students with expert guidance</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateScholarshipAlertHTML(firstName, scholarshipName, deadline, amount, requirements) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Scholarship Opportunity</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; }
+        .scholarship-card { background: #f3e8ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #7c3aed; }
+        .amount { font-size: 32px; font-weight: bold; color: #7c3aed; text-align: center; }
+        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: 0; }
+        .requirements { background: #fef7cd; padding: 15px; border-radius: 6px; margin: 15px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>💰 New Scholarship Match!</h1>
+          <p>A funding opportunity just for you, ${firstName}!</p>
+        </div>
+        
+        <div class="content">
+          <p>Hi ${firstName},</p>
+          
+          <p>Exciting news! We've found a scholarship opportunity that matches your academic profile and career interests.</p>
+          
+          <div class="scholarship-card">
+            <h3>🏆 ${scholarshipName}</h3>
+            <div class="amount">${amount}</div>
+            <p><strong>Application Deadline:</strong> ${deadline}</p>
+          </div>
+          
+          <div class="requirements">
+            <h4>📋 Requirements:</h4>
+            <ul>
+              ${requirements.map(req => `<li>${req}</li>`).join('')}
+            </ul>
+          </div>
+          
+          <p><strong>Why this matches you:</strong></p>
+          <ul>
+            <li>✅ Your academic performance aligns with requirements</li>
+            <li>🎯 Matches your career interests and goals</li>
+            <li>📊 High compatibility score based on your profile</li>
+            <li>⏰ Application deadline allows adequate preparation time</li>
+          </ul>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="https://elimusmart.co.ke/scholarships" class="button">Apply Now</a>
+          </p>
+          
+          <p><strong>⚡ Quick Tips:</strong></p>
+          <ul>
+            <li>Start your application early to avoid last-minute rush</li>
+            <li>Gather all required documents and references</li>
+            <li>Tailor your personal statement to this specific opportunity</li>
+            <li>Proofread everything before submitting</li>
+          </ul>
+          
+          <p>This opportunity won't last forever. Take action today and invest in your future!</p>
+          
+          <p>Wishing you success,<br>The Elimu Smart Team</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Elimu Smart</strong> - Unlocking educational funding opportunities</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 console.log('☁️ Elimu Smart Cloud Functions loaded successfully');

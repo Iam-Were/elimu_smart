@@ -455,7 +455,7 @@ export const ContentModeration: React.FC = () => {
                         <Badge size="sm" color={getStatusColor(item.status)} variant="light">
                           {item.status}
                         </Badge>
-                        <Badge size="sm" color="blue" variant="outline">
+                        <Badge size="sm" color="blue" variant="secondary">
                           {item.type}
                         </Badge>
                       </Group>
@@ -683,7 +683,7 @@ export const ContentModeration: React.FC = () => {
                 <Badge color={getStatusColor(selectedItem.status)}>
                   {selectedItem.status}
                 </Badge>
-                <Badge variant="outline">
+                <Badge variant="secondary">
                   {selectedItem.type}
                 </Badge>
               </Group>

@@ -265,7 +265,7 @@ export const UserManagement: React.FC = () => {
             <Button leftSection={<PlusIcon className="h-4 w-4" />} onClick={open}>
               Add User
             </Button>
-            <Button variant="outline" leftSection={<UploadIcon className="h-4 w-4" />} onClick={openBulk}>
+            <Button variant="secondary" leftSection={<UploadIcon className="h-4 w-4" />} onClick={openBulk}>
               Bulk Operations
             </Button>
           </Group>
@@ -505,7 +505,7 @@ export const UserManagement: React.FC = () => {
             ]}
           />
           <Group justify="flex-end">
-            <Button variant="outline" onClick={close}>Cancel</Button>
+            <Button variant="secondary" onClick={close}>Cancel</Button>
             <Button>Create User</Button>
           </Group>
         </Stack>
@@ -545,7 +545,7 @@ export const UserManagement: React.FC = () => {
                   ]}
                 />
                 <Group justify="flex-end">
-                  <Button variant="outline" onClick={closeEdit}>Cancel</Button>
+                  <Button variant="secondary" onClick={closeEdit}>Cancel</Button>
                   <Button>Save Changes</Button>
                 </Group>
               </Stack>
@@ -567,7 +567,7 @@ export const UserManagement: React.FC = () => {
                   ]}
                 />
                 <Group justify="flex-end">
-                  <Button variant="outline" onClick={closeEdit}>Cancel</Button>
+                  <Button variant="secondary" onClick={closeEdit}>Cancel</Button>
                   <Button>Update Permissions</Button>
                 </Group>
               </Stack>
@@ -646,7 +646,7 @@ export const UserManagement: React.FC = () => {
                 </Text>
               </Alert>
               <Group justify="flex-end">
-                <Button variant="outline" onClick={closeBulk}>Cancel</Button>
+                <Button variant="secondary" onClick={closeBulk}>Cancel</Button>
                 <Button>Import Users</Button>
               </Group>
             </Stack>
@@ -677,7 +677,7 @@ export const UserManagement: React.FC = () => {
                 ]}
               />
               <Group justify="flex-end">
-                <Button variant="outline" onClick={closeBulk}>Cancel</Button>
+                <Button variant="secondary" onClick={closeBulk}>Cancel</Button>
                 <Button leftSection={<DownloadIcon className="h-4 w-4" />}>
                   Export
                 </Button>
@@ -756,7 +756,7 @@ export const UserManagement: React.FC = () => {
             />
 
             <Group justify="flex-end">
-              <Button variant="outline" onClick={closeImpersonate}>Cancel</Button>
+              <Button variant="secondary" onClick={closeImpersonate}>Cancel</Button>
               <Button color="red" onClick={confirmImpersonation}>
                 Start Impersonation
               </Button>

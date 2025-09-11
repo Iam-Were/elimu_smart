@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Plus, Search, Users } from 'lucide-react';
@@ -167,7 +167,7 @@ const CounselorChatPage: React.FC = () => {
                   </Button>
                   <Button 
                     type="button" 
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => setShowCreateRoom(false)}
                   >
                     Cancel

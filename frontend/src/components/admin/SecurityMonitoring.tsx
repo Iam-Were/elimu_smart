@@ -394,7 +394,7 @@ export const SecurityMonitoring: React.FC = () => {
                         <Badge
                           size="sm"
                           color={getStatusColor(alert.status)}
-                          variant="outline"
+                          variant="secondary"
                         >
                           {alert.status}
                         </Badge>

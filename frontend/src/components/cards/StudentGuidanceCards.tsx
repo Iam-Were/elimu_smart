@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Users,
@@ -16,6 +16,7 @@ import {
   Play,
   Shield,
   Compass,
+  Linkedin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -391,6 +392,44 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
       responseTime: '1-2 days for thoughtful responses',
     },
   },
+  {
+    id: 'professional-networking',
+    title: 'Build Your Professional Network',
+    studentDescription: 'Learn to leverage LinkedIn and professional connections for career growth - like having a professional older sibling network',
+    icon: <Linkedin className="h-6 w-6" />,
+    status: 'available',
+    priority: 'helpful',
+    actionText: 'Start Networking',
+    actionLink: '/guidance/professional-networking',
+    studentValue: 'Connect with industry professionals who can guide your career journey and open doors to opportunities',
+    realTalk: 'Networking feels awkward at first, but it\'s how most people find great opportunities - 85% of jobs come through connections',
+    whenToUse: 'Start building your network in Form 3-4, not when you need a job',
+    timeNeeded: '30 minutes daily for networking activities',
+    studentWorries: [
+      'What if professionals don\'t want to talk to students?',
+      'What if I don\'t have anything interesting to say?',
+      'What if I seem desperate or annoying?'
+    ],
+    whatHappens: [
+      'Learn to optimize your LinkedIn profile for students',
+      'Get templates for reaching out to professionals',
+      'Follow successful Kenya industry leaders',
+      'Practice networking skills in low-pressure environments',
+      'Build genuine relationships, not just collect contacts',
+      'Share your learning journey to attract mentors'
+    ],
+    successStories: 'Kevin optimized his LinkedIn profile and connected with 50+ tech professionals. Three offered him informational interviews, and one led to a summer internship at a Nairobi startup.',
+    connections: [
+      'Uses Career Discovery results for networking targeting',
+      'Links to mentorship matching system',
+      'Connects to professional development resources'
+    ],
+    cost: 'free',
+    availability: {
+      timing: 'LinkedIn optimization available 24/7, professional responses vary',
+      responseTime: 'Profile tips immediate, professional connections 2-7 days'
+    }
+  }
 ];
 
 // Student-specific theme styling with consistent orange theme
@@ -463,17 +502,171 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
   showAll = false,
   maxCards = 6,
 }) => {
-  const { logActivity } = useDynamicDashboard();
-  const displayCards = showAll ? studentGuidanceCards : studentGuidanceCards.slice(0, maxCards);
+  const { 
+    logActivity, 
+    userActivities, 
+    careerReadinessScore,
+    loading,
+    error 
+  } = useDynamicDashboard();
 
-  const handleCardClick = (card: any) => {
+  // Transform static cards with dynamic data based on user activity and needs
+  const getDynamicGuidanceCards = (): StudentGuidanceCard[] => {
+    const baseCards = [...studentGuidanceCards];
+    
+    // Update status and priority based on user activity and career readiness
+    baseCards.forEach(card => {
+      switch (card.id) {
+        case 'talk-to-counselor':
+          // High priority if user has low career readiness or many assessment clicks
+          const assessmentClicks = userActivities.filter(a => 
+            a.activityType.includes('assessment') || a.activityType.includes('career')
+          ).length;
+          
+          if (careerReadinessScore && careerReadinessScore.overall < 40) {
+            card.priority = 'essential';
+            card.status = 'urgent';
+            card.studentValue = 'Critical guidance needed - your readiness score suggests you need professional support';
+          } else if (assessmentClicks > 10) {
+            card.priority = 'helpful';
+            card.status = 'active';
+            card.studentValue = 'Great time to discuss your assessment results with a counselor';
+          }
+          break;
+
+        case 'quick-question-help':
+          const questionActivities = userActivities.filter(a => 
+            a.activityType === 'question_asked' || a.activityType === 'quick_help_click'
+          );
+          
+          if (questionActivities.length > 0) {
+            card.status = 'active';
+            card.studentValue = `You've asked ${questionActivities.length} questions - keep the momentum going!`;
+          }
+          break;
+
+        case 'career-mentorship':
+          const careerExplorationActivities = userActivities.filter(a => 
+            a.activityType === 'career_exploration_click' || 
+            a.activityType === 'professional_interview_view'
+          );
+          
+          if (careerExplorationActivities.length > 5) {
+            card.priority = 'essential';
+            card.status = 'available';
+            card.studentValue = 'Perfect timing! You\'ve been exploring careers - now connect with real professionals';
+          }
+          break;
+
+        case 'crisis-support':
+          // Always available but higher priority during exam periods
+          const currentMonthForExams = new Date().getMonth();
+          const isExamPeriod = currentMonthForExams === 10 || currentMonthForExams === 11; // Nov-Dec
+          
+          if (isExamPeriod) {
+            card.priority = 'essential';
+            card.studentValue = 'Extra support available during exam period - you don\'t have to handle stress alone';
+          }
+          break;
+
+        case 'scholarship-hunter':
+          if (careerReadinessScore && careerReadinessScore.breakdown.courseExploration > 60) {
+            card.priority = 'helpful';
+            card.status = 'available';
+            card.studentValue = 'You\'re exploring courses - perfect time to secure funding for your education';
+          }
+          break;
+
+        case 'parent-conversation-guide':
+          const familyDiscussionActivities = userActivities.filter(a => 
+            a.activityType === 'family_guide_click' || a.activityType === 'parent_conversation_view'
+          );
+          
+          if (familyDiscussionActivities.length === 0 && careerReadinessScore?.overall && careerReadinessScore.overall > 50) {
+            card.priority = 'helpful';
+            card.status = 'available';
+            card.studentValue = 'You\'re making good progress - time to involve your family in career planning';
+          }
+          break;
+
+        case 'job-ready-skills':
+          if (careerReadinessScore && careerReadinessScore.breakdown.actionsTaken < 30) {
+            card.priority = 'helpful';
+            card.status = 'available';
+            card.studentValue = 'Boost your action score by developing practical job skills';
+          }
+          break;
+
+        case 'professional-networking':
+          const networkingActivities = userActivities.filter(a => 
+            a.activityType === 'linkedin_profile_click' || 
+            a.activityType === 'professional_networking_view' ||
+            a.activityType === 'mentor_connection_click'
+          );
+          
+          const careerExplorationCount = userActivities.filter(a => 
+            a.activityType === 'career_exploration_click'
+          ).length;
+          
+          if (careerExplorationCount > 3 && networkingActivities.length === 0) {
+            card.priority = 'essential';
+            card.status = 'available';
+            card.studentValue = 'Perfect timing! You\'ve explored careers - now connect with real professionals in those fields';
+          } else if (networkingActivities.length > 0) {
+            card.status = 'active';
+            card.studentValue = `Great progress! You've engaged with networking ${networkingActivities.length} times - keep building those connections`;
+          }
+          
+          // Higher priority during university application season
+          const currentMonthForApps = new Date().getMonth();
+          const isApplicationSeason = currentMonthForApps === 0 || currentMonthForApps === 1 || currentMonthForApps === 11; // Jan-Feb, Dec
+          
+          if (isApplicationSeason && careerReadinessScore && careerReadinessScore.overall > 50) {
+            card.priority = 'essential';
+            card.studentValue = 'Application season! Professional connections can provide valuable university and career insights';
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      // General priority adjustment based on overall career readiness
+      if (careerReadinessScore) {
+        if (careerReadinessScore.overall < 30 && card.priority === 'optional') {
+          card.priority = 'helpful'; // Upgrade priority for struggling students
+        }
+        if (careerReadinessScore.overall > 80 && card.priority === 'essential' && card.id !== 'crisis-support') {
+          card.priority = 'helpful'; // Reduce pressure on high-performing students
+        }
+      }
+    });
+
+    // Sort by priority and status for better user experience
+    return baseCards.sort((a, b) => {
+      const priorityWeight = { 'essential': 3, 'helpful': 2, 'optional': 1 };
+      const statusWeight = { 'urgent': 4, 'active': 3, 'available': 2, 'completed': 1 };
+      
+      const aScore = priorityWeight[a.priority] + statusWeight[a.status];
+      const bScore = priorityWeight[b.priority] + statusWeight[b.status];
+      
+      return bScore - aScore;
+    });
+  };
+
+  const dynamicCards = getDynamicGuidanceCards();
+  const displayCards = showAll ? dynamicCards : dynamicCards.slice(0, maxCards);
+
+  const handleCardClick = (card: StudentGuidanceCard) => {
     logActivity('guidance_card_click', {
       cardId: card.id,
       cardTitle: card.title,
       priority: card.priority,
       status: card.status,
-      studentBenefit: card.studentBenefit,
-      realTalk: card.realTalk
+      studentValue: card.studentValue,
+      realTalk: card.realTalk,
+      careerReadinessScore: careerReadinessScore?.overall || 0,
+      totalActivities: userActivities.length
     });
   };
 
@@ -490,7 +683,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
           </p>
         </div>
         {!showAll && studentGuidanceCards.length > maxCards && (
-          <Button asChild variant="outline" className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50">
+          <Button asChild variant="secondary" className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50">
             <Link to="/student/guidance">
               See All Support Options
               <ArrowRight className="h-4 w-4" />
@@ -514,39 +707,110 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
         </CardHeader>
         
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-orange-600">
-                {studentGuidanceCards.filter(card => card.cost === 'free').length}
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Loading your support options...</span>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-orange-600">
+                    {dynamicCards.filter(card => card.cost === 'free').length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Free Services</div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-red-600">
+                    {dynamicCards.filter(card => card.priority === 'essential').length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Essential Support</div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {dynamicCards.filter(card => card.status === 'urgent' || card.status === 'active').length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Active/Urgent</div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {userActivities.filter(a => a.activityType.includes('guidance')).length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Support Used</div>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">Free Services</div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-red-600">
-                {studentGuidanceCards.filter(card => card.priority === 'essential').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Essential Support</div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-green-600">24/7</div>
-              <div className="text-sm text-muted-foreground">Crisis Support</div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-blue-600">100%</div>
-              <div className="text-sm text-muted-foreground">Confidential</div>
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-orange-100 to-orange-50 border border-orange-200">
-            <h4 className="font-semibold text-orange-800 mb-2">Remember:</h4>
-            <p className="text-sm text-orange-700">
-              Every successful person had help along the way. Using these support services isn't weakness - it's wisdom. 
-              You're not bothering anyone; helping students is literally what we're here for.
-            </p>
-          </div>
+
+              {/* Dynamic Personalized Message */}
+              {careerReadinessScore && (
+                <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-100">
+                  <h4 className="font-medium text-orange-800 mb-2 flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    {careerReadinessScore.overall < 40 
+                      ? 'Priority Support Recommended' 
+                      : careerReadinessScore.overall > 70 
+                      ? 'Great Progress - Consider Advanced Support' 
+                      : 'Support Available When Needed'
+                    }
+                  </h4>
+                  <p className="text-sm text-orange-700">
+                    {careerReadinessScore.overall < 40 
+                      ? 'Your readiness score suggests you could benefit from counselor support. Don\'t hesitate to reach out - it shows strength, not weakness.'
+                      : careerReadinessScore.overall > 70 
+                      ? 'You\'re doing well! Consider mentorship or parent conversation guides to take your progress to the next level.'
+                      : 'You\'re making progress. Support services are here whenever you need guidance or have questions.'
+                    }
+                  </p>
+                </div>
+              )}
+
+              {/* Seasonal/Contextual Messages */}
+              {(() => {
+                const currentMonth = new Date().getMonth();
+                const isExamPeriod = currentMonth === 10 || currentMonth === 11; // Nov-Dec
+                const isApplicationPeriod = currentMonth === 0 || currentMonth === 1; // Jan-Feb
+                
+                if (isExamPeriod) {
+                  return (
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-red-50 to-orange-50 border border-red-100">
+                      <h4 className="font-medium text-red-800 mb-2 flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Exam Period Support
+                      </h4>
+                      <p className="text-sm text-red-700">
+                        Extra support available during exam season. Crisis support is prioritized and counselors have extended hours.
+                      </p>
+                    </div>
+                  );
+                } else if (isApplicationPeriod) {
+                  return (
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 border border-blue-100">
+                      <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        University Application Support
+                      </h4>
+                      <p className="text-sm text-blue-700">
+                        Application season is here! Counselors and mentors are available for application guidance and scholarship hunting.
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Error Display */}
+              {error && (
+                <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-700">
+                    Unable to load personalized support data. All support services remain available.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 

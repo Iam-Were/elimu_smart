@@ -452,7 +452,7 @@ export const QuestionQueue: React.FC = () => {
                       {/* Question Meta */}
                       <Group justify="space-between">
                         <Group gap="sm">
-                          <Badge size="xs" variant="outline" color="blue">
+                          <Badge size="xs" variant="secondary" color="blue">
                             {question.category}
                           </Badge>
                           {question.tags.slice(0, 2).map(tag => (
@@ -529,7 +529,7 @@ export const QuestionQueue: React.FC = () => {
                       <Badge size="sm" color={getPriorityColor(selectedQuestion.priority)}>
                         {selectedQuestion.priority} priority
                       </Badge>
-                      <Badge size="sm" variant="outline" color="blue">
+                      <Badge size="sm" variant="secondary" color="blue">
                         {selectedQuestion.category}
                       </Badge>
                     </Group>

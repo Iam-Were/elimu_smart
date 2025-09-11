@@ -69,7 +69,7 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
     : [];
 
   const handleItemClick = (item: BreadcrumbItem) => {
-    if (item.path !== location.pathname) {
+    if (item.path && item.path !== location.pathname) {
       navigate(item.path);
     }
   };
@@ -100,7 +100,7 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
         >
           {item.icon && (
             <div style={{ color: isActive ? 'var(--primary)' : 'var(--muted-foreground)' }}>
-              {item.icon}
+              {typeof item.icon === 'function' ? React.createElement(item.icon as any, { size: 16 }) : item.icon}
             </div>
           )}
           
@@ -146,16 +146,11 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
                 {item.actions!.map(action => (
                   <Menu.Item
                     key={action.id}
-                    leftSection={action.icon}
+                    leftSection={React.createElement(action.icon, { size: 16 })}
                     onClick={action.onClick}
                   >
                     <div>
                       <Text size="sm">{action.label}</Text>
-                      {action.description && (
-                        <Text size="xs" c="dimmed">
-                          {action.description}
-                        </Text>
-                      )}
                     </div>
                   </Menu.Item>
                 ))}
@@ -218,7 +213,7 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
             {collapsedItems.map(item => (
               <Menu.Item
                 key={item.id}
-                leftSection={item.icon || <HomeIcon width={14} height={14} />}
+                leftSection={item.icon as React.ReactNode || <HomeIcon width={14} height={14} />}
                 onClick={() => handleItemClick(item)}
                 rightSection={
                   item.metadata?.lastVisited && (

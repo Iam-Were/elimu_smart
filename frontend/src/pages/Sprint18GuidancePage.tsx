@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import StudentGuidanceCards from '../components/cards/StudentGuidanceCards';
+import { ProfessionalNetworkingPreview } from '../components/professional/ProfessionalNetworkingPreview';
 import { useDynamicDashboard } from '../hooks/useDynamicDashboard';
 
 const Sprint18GuidancePage: React.FC = () => {
@@ -26,8 +27,14 @@ const Sprint18GuidancePage: React.FC = () => {
   }, [logActivity, pageLoadTime]);
   
   return (
-    <div className="py-8">
+    <div className="py-8 space-y-12">
       <StudentGuidanceCards showAll={true} />
+      
+      {/* Professional Networking Section */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Professional Development</h2>
+        <ProfessionalNetworkingPreview />
+      </div>
     </div>
   );
 };

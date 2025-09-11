@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -312,8 +312,105 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
   maxCards = 6,
   size = 'medium',
 }) => {
-  const { logActivity } = useDynamicDashboard();
-  const displayCards = showAll ? studentAssessmentCards : studentAssessmentCards.slice(0, maxCards);
+  const { 
+    logActivity, 
+    careerReadinessScore,
+    userActivities,
+    courseRecommendations,
+    loading,
+    error 
+  } = useDynamicDashboard();
+
+  // Transform static cards with dynamic data
+  const getDynamicCards = (): StudentAssessmentCard[] => {
+    const baseCards = [...studentAssessmentCards];
+    
+    // Calculate dynamic progress for each card based on user activities
+    baseCards.forEach(card => {
+      switch (card.id) {
+        case 'discover-my-career': {
+          const careerActivities = userActivities.filter(a => 
+            a.activityType === 'career_assessment_click' || 
+            a.activityType === 'personality_test_completion'
+          );
+          card.progress = Math.min(careerActivities.length * 20, 100);
+          card.status = careerActivities.length === 0 ? 'not-started' : 
+                       careerActivities.length < 5 ? 'in-progress' : 'completed';
+          break;
+        }
+
+        case 'subject-to-career-mapper': {
+          const subjectActivities = userActivities.filter(a => 
+            a.activityType === 'subject_mapping_click' || 
+            a.activityType === 'grade_input_completion'
+          );
+          card.progress = Math.min(subjectActivities.length * 15, 100);
+          card.status = subjectActivities.length === 0 ? 'not-started' : 
+                       subjectActivities.length < 7 ? 'in-progress' : 'completed';
+          break;
+        }
+
+        case 'skills-strength-finder': {
+          const skillsActivities = userActivities.filter(a => 
+            a.activityType === 'skills_assessment_click' || 
+            a.activityType === 'strength_discovery_completion'
+          );
+          card.progress = Math.min(skillsActivities.length * 25, 100);
+          card.status = skillsActivities.length === 0 ? 'not-started' : 
+                       skillsActivities.length < 4 ? 'in-progress' : 'completed';
+          break;
+        }
+
+        case 'university-course-finder': {
+          const courseActivities = userActivities.filter(a => 
+            a.activityType === 'course_finder_click' || 
+            a.activityType === 'university_exploration'
+          );
+          card.progress = Math.min(courseActivities.length * 10, 100);
+          card.status = courseActivities.length === 0 ? 'not-started' : 
+                       courseActivities.length < 10 ? 'in-progress' : 'completed';
+          
+          // Update with dynamic course recommendations
+          if (courseRecommendations && courseRecommendations.highMatches > 0) {
+            card.studentBenefit = `${courseRecommendations.highMatches} high-match courses identified for your profile`;
+            card.status = courseRecommendations.highMatches > 0 ? 'needs-attention' : card.status;
+            card.urgency = 'high';
+          }
+          break;
+        }
+
+        case 'career-exploration-journey': {
+          const explorationActivities = userActivities.filter(a => 
+            a.activityType === 'career_exploration_click' || 
+            a.activityType === 'professional_interview_view'
+          );
+          card.progress = Math.min(explorationActivities.length * 5, 100);
+          card.status = explorationActivities.length === 0 ? 'not-started' : 
+                       explorationActivities.length < 20 ? 'in-progress' : 'completed';
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      // Update urgency based on career readiness score
+      if (careerReadinessScore) {
+        if (careerReadinessScore.overall < 30) {
+          card.urgency = 'high';
+        } else if (careerReadinessScore.overall < 70) {
+          card.urgency = 'medium';
+        } else {
+          card.urgency = 'low';
+        }
+      }
+    });
+
+    return baseCards;
+  };
+
+  const dynamicCards = getDynamicCards();
+  const displayCards = showAll ? dynamicCards : dynamicCards.slice(0, maxCards);
 
   const handleCardClick = (card: StudentAssessmentCard) => {
     logActivity('assessment_card_click', {
@@ -353,7 +450,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
           </p>
         </div>
         {!showAll && studentAssessmentCards.length > maxCards && (
-          <Button asChild variant="outline" className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50">
+          <Button asChild variant="secondary" className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50">
             <Link to="/student/assessments">
               See All Assessments
               <ArrowRight className="h-4 w-4" />
@@ -377,48 +474,121 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         </CardHeader>
         
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-orange-600">
-                {studentAssessmentCards.filter(card => card.progress === 100 || card.status === 'completed').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Assessments Completed</div>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Loading your progress...</span>
             </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-blue-600">
-                {Math.round(
-                  studentAssessmentCards.reduce((sum, card) => sum + (card.progress || 0), 0) / 
-                  studentAssessmentCards.length
-                )}%
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-orange-600">
+                    {dynamicCards.filter(card => card.progress === 100 || card.status === 'completed').length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Assessments Completed</div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {careerReadinessScore?.overall || Math.round(
+                      dynamicCards.reduce((sum, card) => sum + (card.progress || 0), 0) / 
+                      dynamicCards.length
+                    )}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {careerReadinessScore ? 'Career Readiness' : 'Overall Progress'}
+                  </div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-red-600">
+                    {dynamicCards.filter(card => card.urgency === 'high').length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Priority Items</div>
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {userActivities.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Activities</div>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">Overall Progress</div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-green-600">
-                {studentAssessmentCards.filter(card => card.urgency === 'high').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Priority Items</div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-purple-600">
-                AI
-              </div>
-              <div className="text-sm text-muted-foreground">Ready for Enhancement</div>
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 rounded-lg bg-orange-50 border border-orange-100">
-            <h4 className="font-medium text-orange-800 mb-2 flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              Smart Career Matching
-            </h4>
-            <p className="text-sm text-orange-700">
-              Complete more assessments to unlock AI-powered career recommendations tailored to your interests, skills, and Kenya's job market.
-            </p>
-          </div>
+              
+              {/* Dynamic Career Readiness Breakdown */}
+              {careerReadinessScore && (
+                <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-100">
+                  <h4 className="font-medium text-orange-800 mb-3 flex items-center gap-2">
+                    <Brain className="h-4 w-4" />
+                    Your Career Readiness Breakdown
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-orange-600">
+                        {careerReadinessScore.breakdown.assessmentCompletion}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Assessments</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-600">
+                        {careerReadinessScore.breakdown.careerResearch}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Research</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-600">
+                        {careerReadinessScore.breakdown.courseExploration}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Exploration</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-purple-600">
+                        {careerReadinessScore.breakdown.actionsTaken}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Actions</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Course Recommendations */}
+              {courseRecommendations && courseRecommendations.highMatches > 0 && (
+                <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border border-green-100">
+                  <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Course Recommendations Ready
+                  </h4>
+                  <p className="text-sm text-green-700">
+                    {courseRecommendations.highMatches} high-match courses found! 
+                    Check the University Course Finder for detailed recommendations.
+                  </p>
+                </div>
+              )}
+
+              {/* Default AI Enhancement Message */}
+              {!careerReadinessScore && !courseRecommendations && (
+                <div className="mt-6 p-4 rounded-lg bg-orange-50 border border-orange-100">
+                  <h4 className="font-medium text-orange-800 mb-2 flex items-center gap-2">
+                    <Brain className="h-4 w-4" />
+                    Smart Career Matching
+                  </h4>
+                  <p className="text-sm text-orange-700">
+                    Complete more assessments to unlock AI-powered career recommendations tailored to your interests, skills, and Kenya's job market.
+                  </p>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-700">
+                    Unable to load some dynamic data. Showing static progress for now.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 

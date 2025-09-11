@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Calculator, GraduationCap, Target, TrendingUp, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import UniversityPlacementCards from '../components/cards/UniversityPlacementCards';
@@ -42,7 +42,7 @@ const PlacementPage: React.FC = () => {
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="secondary" size="sm">
             <Link to="/dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
@@ -209,10 +209,10 @@ const PlacementPage: React.FC = () => {
             to maximize your placement opportunities.
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <Badge variant="outline" className="text-orange-700 border-orange-300">Government Sponsored</Badge>
-            <Badge variant="outline" className="text-orange-700 border-orange-300">Course Matching</Badge>
-            <Badge variant="outline" className="text-orange-700 border-orange-300">Institution Selection</Badge>
-            <Badge variant="outline" className="text-orange-700 border-orange-300">Scholarship Opportunities</Badge>
+            <Badge variant="secondary" className="text-orange-700 border-orange-300">Government Sponsored</Badge>
+            <Badge variant="secondary" className="text-orange-700 border-orange-300">Course Matching</Badge>
+            <Badge variant="secondary" className="text-orange-700 border-orange-300">Institution Selection</Badge>
+            <Badge variant="secondary" className="text-orange-700 border-orange-300">Scholarship Opportunities</Badge>
           </div>
         </div>
       </div>

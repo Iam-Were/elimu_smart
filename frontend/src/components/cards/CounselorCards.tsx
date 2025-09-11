@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -275,7 +275,7 @@ export const CounselorCards: React.FC<CounselorCardsProps> = ({
                     )}
                   </div>
                 </div>
-                <Badge variant="outline" className={getStatusColor(card.status)}>
+                <Badge variant="secondary" className={getStatusColor(card.status)}>
                   {getStatusIcon(card.status)}
                   <span className="ml-1">{card.status}</span>
                 </Badge>

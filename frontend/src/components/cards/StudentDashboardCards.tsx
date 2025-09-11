@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import {
   TrendingUp,
   TrendingDown,
@@ -14,6 +14,7 @@ import {
   Move,
   RotateCcw,
   Loader2,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -129,6 +130,18 @@ const studentDashboardCards: StudentDashboardCard[] = [
     actionText: 'Continue Streak',
     actionLink: '/student/daily-checkin'
   },
+  {
+    id: 'professional-network-growth',
+    title: 'Professional Network',
+    description: 'LinkedIn connections & mentors',
+    icon: Network,
+    changeType: 'positive',
+    value: 'Loading...',
+    change: 'Building connections',
+    actionText: 'Expand Network',
+    actionLink: '/guidance/professional-networking',
+    isDynamic: true
+  }
 ];
 
 // Reference design pattern - professional change indicators
@@ -174,6 +187,7 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
     careerReadinessScore,
     universityPlacement,
     scholarshipMatches,
+    userActivities,
     loading: dashboardLoading,
     error: dashboardError,
     logActivity
@@ -265,6 +279,24 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
             value: '8', // Placeholder - would come from activity tracking
             change: '2 new this week',
             changeType: 'positive' as 'positive' | 'negative' | 'neutral'
+          };
+
+        case 'professional-network-growth':
+          // Calculate networking progress from user activities
+          const networkingActivities = userActivities.filter((a: any) => 
+            a.activityType === 'linkedin_profile_click' || 
+            a.activityType === 'professional_networking_view' ||
+            a.activityType === 'mentor_connection_click'
+          );
+          
+          const connectionCount = Math.min(networkingActivities.length * 3 + 12, 85); // Simulate growing network
+          const weeklyGrowth = Math.floor(networkingActivities.length / 3);
+          
+          return {
+            ...card,
+            value: `${connectionCount} connections`,
+            change: weeklyGrowth > 0 ? `+${weeklyGrowth} this week` : 'Ready to start networking',
+            changeType: (connectionCount > 50 ? 'positive' : connectionCount > 20 ? 'neutral' : 'positive') as 'positive' | 'negative' | 'neutral'
           };
 
         default:
@@ -385,7 +417,7 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
                   Drag to rearrange
                 </div>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={resetToDefault}
                   className="flex items-center gap-1"

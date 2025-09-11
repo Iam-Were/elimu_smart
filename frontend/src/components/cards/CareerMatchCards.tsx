@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ProgressRing } from '@/components/ui/progress-visualizations';
@@ -288,7 +288,7 @@ export const CareerMatchCards: React.FC<CareerMatchCardsProps> = ({
           </p>
         </div>
         {!showAll && matches.length > maxCards && (
-          <Button asChild variant="outline" className="gap-2">
+          <Button asChild variant="secondary" className="gap-2">
             <Link to="/career-matches">
               View All Matches
               <ArrowRight className="h-4 w-4" />
@@ -497,12 +497,12 @@ export const CareerMatchCards: React.FC<CareerMatchCardsProps> = ({
                   </h4>
                   <div className="flex flex-wrap gap-1">
                     {career.requiredSkills.slice(0, 4).map((skill, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
+                      <Badge key={idx} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
                     ))}
                     {career.requiredSkills.length > 4 && (
-                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                      <Badge variant="secondary" className="text-xs text-muted-foreground">
                         +{career.requiredSkills.length - 4} more
                       </Badge>
                     )}
@@ -550,7 +550,7 @@ export const CareerMatchCards: React.FC<CareerMatchCardsProps> = ({
                   View Details
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1">
+              <Button asChild variant="secondary" className="flex-1">
                 <Link to={`/careers/${career.id}/apply`} className="flex items-center gap-2">
                   <Heart className="h-4 w-4" />
                   Save Career

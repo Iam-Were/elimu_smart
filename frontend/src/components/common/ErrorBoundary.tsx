@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Button onClick={this.handleReset} variant="light">
                   Try Again
                 </Button>
-                <Button onClick={this.handleReload} variant="outline" size="sm">
+                <Button onClick={this.handleReload} variant="secondary" size="sm">
                   Reload Page
                 </Button>
               </Stack>

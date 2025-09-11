@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -341,7 +341,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
                 <Button size="sm" onClick={restoreFromRecovery}>
                   Restore
                 </Button>
-                <Button size="sm" variant="outline" onClick={dismissRecovery}>
+                <Button size="sm" variant="secondary" onClick={dismissRecovery}>
                   Dismiss
                 </Button>
               </div>
@@ -379,7 +379,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
               
               {showPreview && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setShowPreviewMode(!showPreviewMode)}
                 >
@@ -427,7 +427,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
         
         <div className="flex gap-3">
           {onSaveDraft && formState.isDirty && (
-            <Button variant="outline" onClick={autoSave} disabled={formState.saveStatus === 'saving'}>
+            <Button variant="secondary" onClick={autoSave} disabled={formState.saveStatus === 'saving'}>
               <Save className="h-4 w-4 mr-2" />
               Save Draft
             </Button>

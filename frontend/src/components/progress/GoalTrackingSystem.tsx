@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -213,7 +213,7 @@ export const GoalTrackingSystem: React.FC<GoalTrackingSystemProps> = ({
         {/* Achievements View */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Your Achievements 🏆</h2>
-          <Button variant="outline" onClick={() => setShowAchievements(false)}>
+          <Button variant="secondary" onClick={() => setShowAchievements(false)}>
             Back to Goals
           </Button>
         </div>
@@ -249,7 +249,7 @@ export const GoalTrackingSystem: React.FC<GoalTrackingSystemProps> = ({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowAchievements(true)}>
+          <Button variant="secondary" onClick={() => setShowAchievements(true)}>
             <Award className="h-4 w-4 mr-2" />
             Achievements ({mockAchievements.length})
           </Button>
@@ -345,7 +345,7 @@ export const GoalTrackingSystem: React.FC<GoalTrackingSystemProps> = ({
                     <CardTitle className="text-xl">{selectedGoal.title}</CardTitle>
                     <CardDescription>{selectedGoal.description}</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Edit3 className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
@@ -406,7 +406,7 @@ export const GoalTrackingSystem: React.FC<GoalTrackingSystemProps> = ({
                               </Badge>
                             )}
                             {!milestone.completed && milestone.dueDate && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="secondary" className="text-xs">
                                 Due {milestone.dueDate.toLocaleDateString()}
                               </Badge>
                             )}

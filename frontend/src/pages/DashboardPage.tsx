@@ -20,61 +20,6 @@ export const DashboardPage: React.FC = () => {
   const { currentTheme } = useThemeContext();
   const [timeRange, setTimeRange] = React.useState('30d');
 
-  // Mock data removed after cleaning up dead code - keep for potential future admin dashboard
-  const _studentStats = {
-    assessmentsCompleted: 2,
-    totalAssessments: 4,
-    careerMatches: 12,
-    profileCompletion: 75,
-    recentActivity: [
-      {
-        id: 1,
-        action: 'Completed Interest Assessment',
-        time: '2 hours ago',
-        type: 'assessment',
-      },
-      {
-        id: 2,
-        action: 'Updated academic information',
-        time: '1 day ago',
-        type: 'profile',
-      },
-      {
-        id: 3,
-        action: 'Viewed Career Recommendations',
-        time: '3 days ago',
-        type: 'career',
-      },
-    ],
-    upcomingEvents: [
-      {
-        id: 1,
-        title: 'Career Fair Registration Opens',
-        date: 'Tomorrow',
-        type: 'deadline',
-      },
-      {
-        id: 2,
-        title: 'Skills Assessment Reminder',
-        date: 'In 3 days',
-        type: 'assessment',
-      },
-    ],
-    achievements: [
-      {
-        id: 1,
-        title: 'Assessment Pioneer',
-        description: 'Completed your first assessment',
-        unlocked: true,
-      },
-      {
-        id: 2,
-        title: 'Profile Master',
-        description: 'Complete your profile 100%',
-        unlocked: false,
-      },
-    ],
-  };
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {

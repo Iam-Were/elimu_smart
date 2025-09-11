@@ -338,7 +338,7 @@ export const CounselorCollaboration: React.FC = () => {
 
                     <Group gap="xs">
                       {resource.tags.slice(0, 4).map(tag => (
-                        <Badge key={tag} size="xs" variant="outline" color="gray">
+                        <Badge key={tag} size="xs" variant="secondary" color="gray">
                           #{tag}
                         </Badge>
                       ))}

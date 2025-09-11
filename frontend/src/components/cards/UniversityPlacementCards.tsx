@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { 
   GraduationCap, 
   TrendingUp, 
@@ -414,7 +414,7 @@ export const UniversityPlacementCards: React.FC<UniversityPlacementCardsProps> =
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
                   <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                  <Badge variant="outline" className={getCategoryColor(card.category)}>
+                  <Badge variant="secondary" className={getCategoryColor(card.category)}>
                     {card.category}
                   </Badge>
                 </div>
@@ -446,7 +446,7 @@ export const UniversityPlacementCards: React.FC<UniversityPlacementCardsProps> =
 
                   {card.actionText && card.actionLink && (
                     <Button 
-                      variant="outline" 
+                      variant="secondary" 
                       size="sm" 
                       className="w-full text-orange-700 border-orange-200 hover:bg-orange-50"
                       onClick={() => {

@@ -213,33 +213,35 @@ export const UniversalIcon: React.FC<UniversalIconProps> = ({
   onClick,
   ariaHidden = false
 }) => {
-  const iconConfig = ICON_INTELLIGENCE_SYSTEM[category as keyof typeof ICON_INTELLIGENCE_SYSTEM]?.[type as any];
+  const categoryData = ICON_INTELLIGENCE_SYSTEM[category as keyof typeof ICON_INTELLIGENCE_SYSTEM];
+  const iconConfig = categoryData ? categoryData[type as keyof typeof categoryData] : undefined;
   
   if (!iconConfig) {
     console.warn(`Icon not found: ${category}.${type}`);
     return null;
   }
 
-  const IconComponent = iconConfig.icon;
-  const effectiveSize = size || iconConfig.size || 'base';
+  // Type assertions to fix TypeScript never type issue
+  const IconComponent = (iconConfig as any).icon;
+  const effectiveSize = size || (iconConfig as any).size || 'base';
   const sizeClass = iconSizes[effectiveSize as keyof typeof iconSizes];
 
   const iconElement = (
     <IconComponent
-      className={`${sizeClass} ${className} ${animate ? iconConfig.hoverEffect || '' : ''}`}
+      className={`${sizeClass} ${className} ${animate ? (iconConfig as any).hoverEffect || '' : ''}`}
       aria-hidden={ariaHidden}
-      aria-label={!ariaHidden ? iconConfig.ariaLabel : undefined}
+      aria-label={!ariaHidden ? (iconConfig as any).ariaLabel : undefined}
     />
   );
 
-  if (showContainer && iconConfig.containerClass) {
+  if (showContainer && (iconConfig as any).containerClass) {
     return (
       <div 
-        className={`${iconConfig.containerClass} ${animate ? 'transition-all duration-200' : ''}`}
+        className={`${(iconConfig as any).containerClass} ${animate ? 'transition-all duration-200' : ''}`}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        aria-label={iconConfig.ariaLabel}
+        aria-label={(iconConfig as any).ariaLabel}
       >
         {iconElement}
       </div>
@@ -250,7 +252,7 @@ export const UniversalIcon: React.FC<UniversalIconProps> = ({
     <button
       onClick={onClick}
       className={`focus-enhanced ${className}`}
-      aria-label={iconConfig.ariaLabel}
+      aria-label={(iconConfig as any).ariaLabel}
     >
       {iconElement}
     </button>
@@ -309,11 +311,12 @@ export const StatCardIcon: React.FC<StatCardIconProps> = ({
   trend,
   onClick
 }) => {
-  const iconConfig = ICON_INTELLIGENCE_SYSTEM[category as keyof typeof ICON_INTELLIGENCE_SYSTEM]?.[type as any];
+  const categoryData = ICON_INTELLIGENCE_SYSTEM[category as keyof typeof ICON_INTELLIGENCE_SYSTEM];
+  const iconConfig = categoryData ? categoryData[type as keyof typeof categoryData] : undefined;
   
   if (!iconConfig) return null;
 
-  const IconComponent = iconConfig.icon;
+  const IconComponent = (iconConfig as any).icon;
   const trendColor = trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
 
   return (
@@ -323,9 +326,9 @@ export const StatCardIcon: React.FC<StatCardIconProps> = ({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div className={iconConfig.containerClass}>
+      <div className={(iconConfig as any).containerClass}>
         <IconComponent 
-          className={iconSizes[iconConfig.size]} 
+          className={iconSizes[(iconConfig as any).size as keyof typeof iconSizes]} 
           aria-hidden="true"
         />
       </div>

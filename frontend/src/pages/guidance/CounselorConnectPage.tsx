@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -156,7 +156,7 @@ const CounselorConnectPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Available Counselors</h2>
-            <Badge variant="outline" className="text-sm">
+            <Badge variant="secondary" className="text-sm">
               {mockCounselors.filter(c => c.isOnline).length} online now
             </Badge>
           </div>
@@ -244,7 +244,7 @@ const CounselorConnectPage: React.FC = () => {
                       </Button>
                     ) : (
                       <Button 
-                        variant="outline" 
+                        variant="secondary" 
                         className="w-full"
                         disabled
                       >
@@ -254,7 +254,7 @@ const CounselorConnectPage: React.FC = () => {
                     )}
                     
                     <Button 
-                      variant="outline" 
+                      variant="secondary" 
                       className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
                     >
                       <Calendar className="h-4 w-4 mr-2" />

@@ -5,6 +5,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
+  adminRoleType?: 'platform' | 'operations' | 'provider_safety';
   profileImage?: string;
   isActive: boolean;
   createdAt: string;
@@ -105,4 +106,38 @@ export interface FormField {
     pattern?: RegExp;
     message?: string;
   };
+}
+
+// Admin Types
+export type AdminRoleType = 'platform' | 'operations' | 'provider_safety';
+
+export interface AdminPermissions {
+  // Business Intelligence & Strategy
+  viewRevenue: boolean;
+  managePricing: boolean;
+  viewBusinessAnalytics: boolean;
+  manageProviderCommissions: boolean;
+  
+  // Operations & Technical
+  manageSystemHealth: boolean;
+  accessMaintenanceTools: boolean;
+  manageUserSupport: boolean;
+  viewSystemLogs: boolean;
+  
+  // Safety & Compliance
+  manageProviderVerification: boolean;
+  accessStudentSafety: boolean;
+  manageTrustSafety: boolean;
+  viewComplianceReports: boolean;
+  
+  // System Administration
+  manageUsers: boolean;
+  configureSystem: boolean;
+  accessAuditLogs: boolean;
+  manageSecuritySettings: boolean;
+  
+  // Cross-cutting concerns
+  viewCommonDashboard: boolean;
+  escalateToSuperAdmin: boolean;
+  collaborateAcrossRoles: boolean;
 }

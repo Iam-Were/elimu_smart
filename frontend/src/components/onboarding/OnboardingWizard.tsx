@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -388,7 +388,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
         <div className="flex items-center justify-between p-6 border-t">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handlePrevious}
             disabled={currentStep === 1}
           >

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar,
@@ -261,13 +261,13 @@ export const CounselorSessionCards: React.FC<CounselorSessionCardsProps> = ({
                     <CardTitle className="text-lg text-yellow-900">{session.title}</CardTitle>
                     <p className="text-sm text-yellow-700 font-medium">{session.studentName}</p>
                     {session.preparationNeeded && (
-                      <Badge variant="outline" className="mt-1 bg-orange-50 text-orange-700 border-orange-200">
+                      <Badge variant="secondary" className="mt-1 bg-orange-50 text-orange-700 border-orange-200">
                         Prep Needed
                       </Badge>
                     )}
                   </div>
                 </div>
-                <Badge variant="outline" className={getStatusColor(session.status)}>
+                <Badge variant="secondary" className={getStatusColor(session.status)}>
                   {getStatusIcon(session.status)}
                   <span className="ml-1 capitalize">{session.status.replace('-', ' ')}</span>
                 </Badge>
@@ -345,7 +345,7 @@ export const CounselorSessionCards: React.FC<CounselorSessionCardsProps> = ({
                       View Details
                     </Button>
                   )}
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                 </>
@@ -359,7 +359,7 @@ export const CounselorSessionCards: React.FC<CounselorSessionCardsProps> = ({
                     <PlayCircle className="mr-2 h-4 w-4" />
                     Continue Session
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <FileText className="h-4 w-4" />
                   </Button>
                 </>
@@ -367,7 +367,7 @@ export const CounselorSessionCards: React.FC<CounselorSessionCardsProps> = ({
 
               {session.status === 'completed' && (
                 <Button 
-                  variant="outline"
+                  variant="secondary"
                   className="flex-1"
                 >
                   <FileText className="mr-2 h-4 w-4" />

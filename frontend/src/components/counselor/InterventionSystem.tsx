@@ -634,7 +634,7 @@ export const InterventionSystem: React.FC = () => {
                       </Tooltip>
                     ))}
                     {assessment.factors.length > 3 && (
-                      <Badge size="sm" variant="outline" color="gray">
+                      <Badge size="sm" variant="secondary" color="gray">
                         +{assessment.factors.length - 3} more
                       </Badge>
                     )}

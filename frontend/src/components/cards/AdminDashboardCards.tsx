@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Users,
@@ -30,6 +30,7 @@ import {
   type AdminRoleType, 
   getAccessibleCardIds
 } from '../../utils/adminPermissions';
+import { useAdminDashboard } from '@/hooks/useAdminDashboard';
 
 interface AdminCard {
   id: string;
@@ -57,6 +58,18 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
   size = 'medium',
   cardOffset = 0
 }) => {
+  const { 
+    systemMetrics,
+    securityMetrics,
+    businessMetrics,
+    contentMetrics,
+    supportMetrics,
+    recentAuditLogs,
+    loading,
+    error,
+    logAdminActivity,
+    getDerivedMetrics
+  } = useAdminDashboard(adminRole);
   
   // Platform Administrator Cards (Strategic & Business Focus)
   const platformAdminCards: AdminCard[] = [
@@ -346,7 +359,92 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
     }
   ];
 
-  // Select cards based on admin role with RBAC filtering
+  // Transform static cards with dynamic data
+  const transformCardsWithDynamicData = (cards: AdminCard[]): AdminCard[] => {
+    return cards.map(card => {
+      const transformedCard = { ...card };
+
+      switch (card.id) {
+        case 'business-analytics':
+          if (businessMetrics) {
+            transformedCard.value = `₹${(businessMetrics.monthlyRevenue / 100000).toFixed(1)}L`;
+            transformedCard.change = `${businessMetrics.subscriptionGrowth > 0 ? '+' : ''}${businessMetrics.subscriptionGrowth.toFixed(1)}%`;
+            transformedCard.status = businessMetrics.subscriptionGrowth > 10 ? 'good' : 
+                                    businessMetrics.subscriptionGrowth < 0 ? 'critical' : 'normal';
+          }
+          break;
+
+        case 'platform-overview':
+          if (systemMetrics) {
+            transformedCard.value = systemMetrics.totalUsers.toLocaleString();
+            const growthRate = getDerivedMetrics.growthRate;
+            transformedCard.change = `${growthRate > 0 ? '+' : ''}${growthRate.toFixed(1)}%`;
+            transformedCard.status = growthRate > 5 ? 'good' : growthRate < -5 ? 'critical' : 'normal';
+          }
+          break;
+
+        case 'system-health':
+          if (systemMetrics) {
+            transformedCard.value = `${getDerivedMetrics.systemHealth.toFixed(1)}%`;
+            transformedCard.change = systemMetrics.serverLoad < 70 ? 'Optimal' : 
+                                    systemMetrics.serverLoad < 85 ? 'High Load' : 'Critical';
+            transformedCard.status = systemMetrics.serverLoad < 70 ? 'good' : 
+                                    systemMetrics.serverLoad < 85 ? 'warning' : 'critical';
+          }
+          break;
+
+        case 'security-center':
+          if (securityMetrics) {
+            transformedCard.value = securityMetrics.activeThreats.toString();
+            transformedCard.change = `${securityMetrics.complianceScore}% compliance`;
+            transformedCard.status = securityMetrics.activeThreats === 0 ? 'good' : 
+                                    securityMetrics.activeThreats < 5 ? 'warning' : 'critical';
+          }
+          break;
+
+        case 'user-administration':
+          if (systemMetrics) {
+            transformedCard.value = systemMetrics.activeUsers.toLocaleString();
+            transformedCard.change = `${systemMetrics.newUsersToday} new today`;
+            transformedCard.status = systemMetrics.newUsersToday > 0 ? 'good' : 'normal';
+          }
+          break;
+
+        case 'content-moderation':
+          if (contentMetrics) {
+            transformedCard.value = contentMetrics.moderationQueue.toString();
+            transformedCard.change = `${contentMetrics.averageReviewTime.toFixed(1)}h avg`;
+            transformedCard.status = contentMetrics.moderationQueue < 10 ? 'good' : 
+                                    contentMetrics.moderationQueue < 50 ? 'warning' : 'critical';
+          }
+          break;
+
+        case 'user-support':
+          if (supportMetrics) {
+            transformedCard.value = supportMetrics.openTickets.toString();
+            transformedCard.change = `${supportMetrics.averageResponseTime.toFixed(1)}h response`;
+            transformedCard.status = supportMetrics.openTickets < 20 ? 'good' : 
+                                    supportMetrics.openTickets < 50 ? 'warning' : 'critical';
+          }
+          break;
+
+        case 'audit-logs':
+          transformedCard.value = getDerivedMetrics.recentCriticalLogs.toString();
+          transformedCard.change = recentAuditLogs.length > 0 ? 
+            `Last: ${recentAuditLogs[0]?.timestamp.toLocaleTimeString()}` : 'No recent activity';
+          transformedCard.status = getDerivedMetrics.recentCriticalLogs > 0 ? 'warning' : 'good';
+          break;
+
+        default:
+          // Keep original static values for cards without dynamic data
+          break;
+      }
+
+      return transformedCard;
+    });
+  };
+
+  // Select cards based on admin role with RBAC filtering and dynamic data
   const getCardsForRole = (): AdminCard[] => {
     let roleCards: AdminCard[] = [];
     
@@ -367,14 +465,30 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
     // Add common cards to all roles
     roleCards = [...roleCards, ...commonAdminCards];
     
+    // Transform cards with dynamic data
+    const dynamicCards = transformCardsWithDynamicData(roleCards);
+    
     // Apply RBAC filtering - only show cards the user has access to
     const accessibleCardIds = getAccessibleCardIds(adminRole);
-    const filteredCards = roleCards.filter(card => accessibleCardIds.includes(card.id));
+    const filteredCards = dynamicCards.filter(card => accessibleCardIds.includes(card.id));
     
     return filteredCards.slice(cardOffset, cardOffset + maxCards);
   };
 
   const cards = getCardsForRole();
+
+  // Handle card clicks with activity logging
+  const handleCardClick = (card: AdminCard) => {
+    logAdminActivity('admin_card_click', {
+      cardId: card.id,
+      cardTitle: card.title,
+      status: card.status,
+      adminRole: adminRole,
+      value: card.value,
+      systemHealth: getDerivedMetrics.systemHealth,
+      criticalIssues: getDerivedMetrics.criticalIssues
+    });
+  };
   
   // Responsive card sizing with proper content space
   const getCardSizeClasses = () => {
@@ -401,17 +515,6 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
     }
   };
   
-  const getTitleSize = () => {
-    switch (size) {
-      case 'compact':
-        return 'text-sm font-medium';
-      case 'large':
-        return 'text-lg font-semibold';
-      case 'medium':
-      default:
-        return 'text-base font-medium';
-    }
-  };
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -446,17 +549,69 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
   };
 
   return (
-    <div className={getGridClasses()}>
+    <>
+      {/* Loading State */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Card key={i} className="border-slate-200">
+              <CardHeader className="pb-3">
+                <div className="animate-pulse">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-gray-200 w-10 h-10"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      <div className="h-3 bg-gray-100 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="animate-pulse">
+                  <div className="h-3 bg-gray-100 rounded w-full"></div>
+                  <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-20 mt-4"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : error ? (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Unable to load admin dashboard data: {error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Critical Issues Alert */}
+          {getDerivedMetrics.criticalIssues > 0 && (
+            <Card className="mb-6 border-red-200 bg-red-50">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-red-700">
+                  <AlertTriangle className="h-5 w-5" />
+                  <span>
+                    {getDerivedMetrics.criticalIssues} critical issue(s) detected. 
+                    Immediate attention required.
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className={getGridClasses()}>
       {cards.map((card) => (
         <Card key={card.id} className={`border-slate-200 hover:shadow-md transition-shadow ${getCardSizeClasses()}`}>
-          <CardHeader className="pb-3">
+          <CardHeader title={card.title} className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
                   {card.icon}
                 </div>
                 <div className="space-y-1">
-                  <CardTitle className={getTitleSize()}>{card.title}</CardTitle>
                   {card.badge && (
                     <Badge className={cn("text-xs", getBadgeColor(card.badge))}>
                       {card.badge}
@@ -468,9 +623,9 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
           </CardHeader>
           
           <CardContent className="space-y-3">
-            <CardDescription className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
               {card.description}
-            </CardDescription>
+            </p>
             
             {/* Key Metric */}
             {card.value && (
@@ -515,8 +670,11 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
           </CardContent>
           
           <CardFooter>
-            <Button asChild variant="outline" size="sm" className="w-full">
-              <Link to={card.link}>
+            <Button asChild variant="secondary" size="sm" className="w-full">
+              <Link 
+                to={card.link}
+                onClick={() => handleCardClick(card)}
+              >
                 Access {card.title}
                 <ArrowRight className="h-3 w-3 ml-2" />
               </Link>
@@ -524,6 +682,9 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
           </CardFooter>
         </Card>
       ))}
-    </div>
+          </div>
+        </>
+      )}
+    </>
   );
 };

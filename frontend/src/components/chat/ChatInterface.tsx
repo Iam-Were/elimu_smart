@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +106,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <MessageSquare className="h-8 w-8 mx-auto mb-2" />
             <p>{error}</p>
             <Button 
-              variant="outline" 
+              variant="secondary" 
               size="sm" 
               className="mt-2"
               onClick={() => window.location.reload()}
@@ -198,13 +198,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Phone className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Video className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </div>
@@ -298,7 +298,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             {/* Message Input */}
             <div className="border-t p-4">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <Button type="button" variant="outline" size="sm">
+                <Button type="button" variant="secondary" size="sm">
                   <Paperclip className="h-4 w-4" />
                 </Button>
                 

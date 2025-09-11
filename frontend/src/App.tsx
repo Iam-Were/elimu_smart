@@ -8,20 +8,17 @@ import {
 import { ThemeProvider } from './components/common/ThemeProvider';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingOverlay } from './components/common/LoadingOverlay';
-import { AppLayout } from './components/layouts/AppLayout';
+import { Sprint18Layout } from './components/layouts/Sprint18Layout';
 import { useAuth } from './hooks/useAuth';
 import LandingPage from './pages/LandingPageReplication';
-import { LoginPage } from './pages/LoginPage';
+import LoginPageShadcn from './pages/LoginPageShadcn';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { DashboardPage } from './pages/DashboardPage';
+import Sprint18DashboardPage from './pages/Sprint18DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { FormDemoPage } from './pages/FormDemoPage';
+import Sprint18AssessmentPage from './pages/Sprint18AssessmentPage';
 import { AccountSettingsPage } from './pages/AccountSettingsPage';
-import { CareerAssessment } from './components/student/CareerAssessment';
-import { SubjectCareerMapper } from './components/student/SubjectCareerMapper';
-import { CareerGuidanceHub } from './components/student/CareerGuidanceHub';
-import StudentGuidance from './pages/StudentGuidance';
+import Sprint18GuidancePage from './pages/Sprint18GuidancePage';
 import AdminPortal from './pages/admin/AdminPortal';
 import CounselorToolkit from './pages/counselor/CounselorToolkit';
 import { StudentsPage } from './pages/counselor/StudentsPage';
@@ -37,6 +34,7 @@ import { SystemConfigurationPage } from './pages/admin/SystemConfigurationPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { SecurityMonitoringPage } from './pages/admin/SecurityMonitoringPage';
 import { MaintenanceToolsPage } from './pages/admin/MaintenanceToolsPage';
+import { ProfessionalNetworkingHub } from './components/professional/ProfessionalNetworkingHub';
 import './styles/globals.css';
 
 const AppContent: React.FC = () => {
@@ -50,7 +48,7 @@ const AppContent: React.FC = () => {
     return (
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPageShadcn />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -59,16 +57,14 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <AppLayout>
+    <Sprint18Layout>
       <Routes>
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<Sprint18DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/form-demo" element={<FormDemoPage />} />
         <Route path="/settings/*" element={<AccountSettingsPage />} />
-        <Route path="/assessment" element={<CareerAssessment />} />
-        <Route path="/subject-mapper" element={<SubjectCareerMapper />} />
-        <Route path="/career-hub" element={<CareerGuidanceHub />} />
-        <Route path="/guidance" element={<StudentGuidance />} />
+        <Route path="/assessment" element={<Sprint18AssessmentPage />} />
+        <Route path="/guidance" element={<Sprint18GuidancePage />} />
+        <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
         <Route path="/admin/portal" element={<AdminPortal />} />
         <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
         <Route path="/counselor/students" element={<StudentsPage />} />
@@ -87,7 +83,7 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </AppLayout>
+    </Sprint18Layout>
   );
 };
 

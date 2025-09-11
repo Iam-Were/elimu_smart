@@ -539,7 +539,7 @@ export const SessionManager: React.FC = () => {
                       <Tooltip label={session.type}>
                         <Badge
                           size="sm"
-                          variant="outline"
+                          variant="secondary"
                           color="gray"
                           leftSection={getTypeIcon(session.type)}
                         >

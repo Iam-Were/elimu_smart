@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useCounselorDashboard } from '@/hooks/useCounselorDashboard';
 import { 
   Users, 
   MessageSquare, 
@@ -267,9 +268,135 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
   size = 'medium',
   cardOffset = 0
 }) => {
+  const { 
+    assignedStudents, 
+    activeChatSessions, 
+    analytics, 
+    loading, 
+    error,
+    logCounselorActivity,
+    getDerivedMetrics
+  } = useCounselorDashboard();
+
+  // Transform static cards with dynamic data
+  const getDynamicCounselorCards = (): CounselorDashboardCard[] => {
+    const baseCards = [...counselorDashboardCards];
+    const metrics = getDerivedMetrics;
+
+    baseCards.forEach(card => {
+      switch (card.id) {
+        case 'assigned-students':
+          card.stats = {
+            primary: `${assignedStudents.length} Students`,
+            secondary: `${metrics.urgentStudents} need immediate attention`,
+            trend: metrics.urgentStudents > 5 ? 'up' : metrics.urgentStudents < 2 ? 'down' : 'stable'
+          };
+          card.metadata = {
+            count: assignedStudents.length,
+            nextAction: metrics.urgentStudents > 0 ? 'Review at-risk students' : 'Check student progress',
+            urgent: metrics.urgentStudents > 0,
+            lastUpdated: 'Live data'
+          };
+          card.status = metrics.urgentStudents > 3 ? 'attention' : 'active';
+          card.priority = metrics.urgentStudents > 5 ? 'high' : 'medium';
+          break;
+
+        case 'active-chat-sessions':
+          const avgResponseTime = activeChatSessions.reduce((sum, session) => sum + session.responseTime, 0) / 
+                                  (activeChatSessions.length || 1);
+          card.stats = {
+            primary: `${metrics.activeChats} Active`,
+            secondary: `Avg response: ${Math.round(avgResponseTime / 60)} mins`,
+            trend: avgResponseTime < 300000 ? 'up' : avgResponseTime > 600000 ? 'down' : 'stable' // 5-10 mins
+          };
+          card.metadata = {
+            count: metrics.activeChats,
+            nextAction: metrics.waitingChats > 0 ? 'Respond to waiting messages' : 'Monitor active chats',
+            urgent: metrics.waitingChats > 0,
+            lastUpdated: 'Live data'
+          };
+          card.status = metrics.activeChats > 0 ? 'active' : 'completed';
+          card.priority = metrics.waitingChats > 0 ? 'high' : 'medium';
+          break;
+
+        case 'upcoming-appointments':
+          const nextAppointment = metrics.nextAppointment;
+          card.stats = {
+            primary: `${metrics.todaysAppointments} Sessions`,
+            secondary: nextAppointment 
+              ? `Next: ${nextAppointment.scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} with ${nextAppointment.studentName}`
+              : 'No upcoming sessions today',
+            trend: metrics.todaysAppointments > 5 ? 'up' : 'stable'
+          };
+          card.metadata = {
+            count: metrics.todaysAppointments,
+            nextAction: nextAppointment ? 'Prepare for next session' : 'Schedule more sessions',
+            lastUpdated: 'Live data'
+          };
+          card.status = nextAppointment ? 'scheduled' : 'completed';
+          break;
+
+        case 'counseling-analytics':
+          if (analytics) {
+            card.stats = {
+              primary: `${Math.round(analytics.successRate)}% Success`,
+              secondary: `Student satisfaction: ${analytics.studentSatisfactionScore.toFixed(1)}/5`,
+              trend: analytics.trend.sessionEffectiveness
+            };
+            card.metadata = {
+              completion: analytics.successRate,
+              nextAction: analytics.successRate < 80 ? 'Review session strategies' : 'Maintain excellence',
+              lastUpdated: 'Live data'
+            };
+            card.status = analytics.successRate > 85 ? 'completed' : 'attention';
+            card.priority = analytics.successRate < 70 ? 'high' : 'medium';
+          }
+          break;
+
+        case 'pending-question-queue':
+          card.stats = {
+            primary: `${metrics.unansweredQuestions} Pending`,
+            secondary: `${metrics.highPriorityQuestions} high priority`,
+            trend: metrics.unansweredQuestions > 10 ? 'up' : metrics.unansweredQuestions < 5 ? 'down' : 'stable'
+          };
+          card.metadata = {
+            count: metrics.unansweredQuestions,
+            nextAction: metrics.highPriorityQuestions > 0 ? 'Answer urgent questions' : 'Continue responding',
+            urgent: metrics.highPriorityQuestions > 0,
+            lastUpdated: 'Live data'
+          };
+          card.status = metrics.unansweredQuestions > 8 ? 'attention' : 'active';
+          card.priority = metrics.highPriorityQuestions > 2 ? 'high' : 'medium';
+          break;
+
+        default:
+          break;
+      }
+
+      // Update priority based on overall workload
+      if (metrics.totalWorkload > 15) {
+        if (card.priority === 'medium') card.priority = 'high';
+      } else if (metrics.totalWorkload < 5) {
+        if (card.priority === 'high' && card.id !== 'active-chat-sessions') card.priority = 'medium';
+      }
+    });
+
+    // Sort by urgency and priority for better counselor workflow
+    return baseCards.sort((a, b) => {
+      const priorityWeight = { 'high': 3, 'medium': 2, 'low': 1 };
+      const statusWeight = { 'attention': 4, 'active': 3, 'scheduled': 2, 'completed': 1 };
+      
+      const aScore = priorityWeight[a.priority] + statusWeight[a.status] + (a.metadata.urgent ? 2 : 0);
+      const bScore = priorityWeight[b.priority] + statusWeight[b.status] + (b.metadata.urgent ? 2 : 0);
+      
+      return bScore - aScore;
+    });
+  };
+
+  const dynamicCards = getDynamicCounselorCards();
   const filteredCards = filter === 'all' 
-    ? counselorDashboardCards 
-    : counselorDashboardCards.filter(card => card.priority === filter);
+    ? dynamicCards 
+    : dynamicCards.filter(card => card.priority === filter);
     
   const displayCards = showAll ? filteredCards : filteredCards.slice(cardOffset, cardOffset + maxCards);
   
@@ -310,6 +437,19 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
     }
   };
 
+  // Handle card clicks with activity logging
+  const handleCardClick = (card: CounselorDashboardCard) => {
+    logCounselorActivity('counselor_card_click', {
+      cardId: card.id,
+      cardTitle: card.title,
+      priority: card.priority,
+      status: card.status,
+      currentStats: card.stats,
+      urgentFlags: card.metadata.urgent || false,
+      workloadLevel: getDerivedMetrics.totalWorkload
+    });
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
@@ -322,33 +462,98 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         </p>
       </div>
 
-      {/* Quick Stats Summary */}
+      {/* Dynamic Quick Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-gradient-to-r from-amber-25 to-amber-50 border-amber-100">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-amber-700">34</div>
-            <div className="text-sm text-amber-600">Assigned Students</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-r from-orange-25 to-orange-50 border-orange-100">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-700">8</div>
-            <div className="text-sm text-orange-600">Active Chats</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-r from-blue-25 to-blue-50 border-blue-100">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-700">6</div>
-            <div className="text-sm text-blue-600">Today's Sessions</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-r from-emerald-25 to-emerald-50 border-emerald-100">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-emerald-700">4.7</div>
-            <div className="text-sm text-emerald-600">Avg Satisfaction</div>
-          </CardContent>
-        </Card>
+        {loading ? (
+          // Loading skeleton
+          Array.from({ length: 4 }, (_, i) => (
+            <Card key={i} className="bg-gradient-to-r from-gray-25 to-gray-50 border-gray-100">
+              <CardContent className="p-4 text-center">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-100 rounded w-3/4 mx-auto"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <>
+            <Card className={`bg-gradient-to-r from-amber-25 to-amber-50 border-amber-100 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300' : ''}`}>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-amber-700">{assignedStudents.length}</div>
+                <div className="text-sm text-amber-600">Assigned Students</div>
+                {getDerivedMetrics.urgentStudents > 0 && (
+                  <div className="text-xs text-amber-500 mt-1">
+                    {getDerivedMetrics.urgentStudents} urgent
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className={`bg-gradient-to-r from-orange-25 to-orange-50 border-orange-100 ${getDerivedMetrics.activeChats > 5 ? 'ring-2 ring-orange-300' : ''}`}>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-orange-700">{getDerivedMetrics.activeChats}</div>
+                <div className="text-sm text-orange-600">Active Chats</div>
+                {getDerivedMetrics.waitingChats > 0 && (
+                  <div className="text-xs text-orange-500 mt-1">
+                    {getDerivedMetrics.waitingChats} waiting
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-blue-25 to-blue-50 border-blue-100">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-blue-700">{getDerivedMetrics.todaysAppointments}</div>
+                <div className="text-sm text-blue-600">Today's Sessions</div>
+                {getDerivedMetrics.nextAppointment && (
+                  <div className="text-xs text-blue-500 mt-1">
+                    Next: {getDerivedMetrics.nextAppointment.scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-emerald-25 to-emerald-50 border-emerald-100">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-emerald-700">
+                  {analytics ? analytics.studentSatisfactionScore.toFixed(1) : '--'}
+                </div>
+                <div className="text-sm text-emerald-600">Avg Satisfaction</div>
+                {analytics && (
+                  <div className="text-xs text-emerald-500 mt-1">
+                    {analytics.successRate}% success rate
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <Card className="mb-6 bg-red-50 border-red-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Unable to load some counselor data: {error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Workload Alert */}
+      {!loading && getDerivedMetrics.totalWorkload > 15 && (
+        <Card className="mb-6 bg-amber-50 border-amber-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-amber-700">
+              <Bell className="h-4 w-4" />
+              <span>High workload detected ({getDerivedMetrics.totalWorkload} urgent items). Consider prioritizing urgent students and questions.</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Dashboard Cards */}
       <div className={getGridClasses()}>
@@ -375,7 +580,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
                     )}
                   </div>
                 </div>
-                <Badge variant="outline" className={getStatusColor(card.status)}>
+                <Badge variant="secondary" className={getStatusColor(card.status)}>
                   {getStatusIcon(card.status)}
                   <span className="ml-1 capitalize">{card.status}</span>
                 </Badge>
@@ -446,7 +651,11 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
                 className="w-full bg-amber-600 hover:bg-amber-700 text-white" 
                 asChild
               >
-                <a href={card.actionLink} className="flex items-center justify-center">
+                <a 
+                  href={card.actionLink} 
+                  className="flex items-center justify-center"
+                  onClick={() => handleCardClick(card)}
+                >
                   {card.actionText}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, Star, Users, Award, TrendingUp } from 'lucide-react';
-import Button from './Button';
+import Button from './button';
 
 interface HeroProps {
   title: string;

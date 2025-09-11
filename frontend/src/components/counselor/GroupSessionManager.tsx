@@ -587,12 +587,12 @@ export const GroupSessionManager: React.FC = () => {
                       <Text size="sm" fw={500}>Objectives</Text>
                       <Group gap="xs">
                         {session.objectives.slice(0, 3).map((objective, index) => (
-                          <Badge key={index} size="sm" variant="outline" color="blue">
+                          <Badge key={index} size="sm" variant="secondary" color="blue">
                             {objective}
                           </Badge>
                         ))}
                         {session.objectives.length > 3 && (
-                          <Badge size="sm" variant="outline" color="gray">
+                          <Badge size="sm" variant="secondary" color="gray">
                             +{session.objectives.length - 3} more
                           </Badge>
                         )}

@@ -277,7 +277,7 @@ export const CounselorAnalyticsCards: React.FC<CounselorAnalyticsCardsProps> = (
                   </div>
                   <div>
                     <CardTitle className="text-lg text-yellow-900">{metric.title}</CardTitle>
-                    <Badge variant="outline" className={getCategoryColor(metric.category)}>
+                    <Badge variant="secondary" className={getCategoryColor(metric.category)}>
                       {metric.category}
                     </Badge>
                   </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { 
   Target, 
@@ -146,7 +146,7 @@ const AssessmentProgressPage: React.FC = () => {
                       <div className="flex items-center gap-2 mb-2">
                         {getStatusIcon(assessment.status)}
                         <h3 className="font-semibold">{assessment.name}</h3>
-                        <Badge variant="outline" className={getStatusColor(assessment.status)}>
+                        <Badge variant="secondary" className={getStatusColor(assessment.status)}>
                           {assessment.status.replace('-', ' ')}
                         </Badge>
                       </div>

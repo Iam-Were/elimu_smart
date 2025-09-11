@@ -197,7 +197,7 @@ export const LandingPage: React.FC = () => {
               </Button>
               <Button
                 size="xl"
-                variant="outline"
+                variant="secondary"
                 style={{
                   color: 'white',
                   borderColor: 'white',
@@ -571,7 +571,7 @@ export const LandingPage: React.FC = () => {
               </Button>
               <Button
                 size="xl"
-                variant="outline"
+                variant="secondary"
                 style={{
                   color: 'white',
                   borderColor: 'rgba(255,255,255,0.6)',

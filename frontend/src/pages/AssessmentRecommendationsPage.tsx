@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -195,7 +195,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                         </div>
                         <div>
                           <CardTitle className="text-xl">{career.title}</CardTitle>
-                          <Badge variant="outline" className="mt-1">{career.category}</Badge>
+                          <Badge variant="secondary" className="mt-1">{career.category}</Badge>
                         </div>
                       </div>
                       <p className="text-muted-foreground">{career.description}</p>
@@ -217,7 +217,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      <Badge variant="outline" className={getGrowthColor(career.growth)}>
+                      <Badge variant="secondary" className={getGrowthColor(career.growth)}>
                         {career.growth} Growth
                       </Badge>
                     </div>
@@ -255,7 +255,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                         <h4 className="font-medium mb-2">Top Companies:</h4>
                         <div className="flex flex-wrap gap-2">
                           {career.companies.map((company, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
+                            <Badge key={idx} variant="secondary" className="text-xs">
                               {company}
                             </Badge>
                           ))}
@@ -269,7 +269,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                       <BookOpen className="h-4 w-4 mr-2" />
                       Learn More
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="secondary" size="sm">
                       <Users className="h-4 w-4 mr-2" />
                       Connect with Professionals
                     </Button>
@@ -316,7 +316,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                     </ul>
                   </div>
                   
-                  <Button variant="outline" className="w-full">
+                  <Button variant="secondary" className="w-full">
                     Explore All {category.category} Careers
                     <ExternalLink className="h-4 w-4 ml-2" />
                   </Button>
@@ -345,7 +345,7 @@ const AssessmentRecommendationsPage: React.FC = () => {
                       </div>
                       <p className="text-muted-foreground">{step.description}</p>
                     </div>
-                    <Button variant="outline">
+                    <Button variant="secondary">
                       {step.action}
                       <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>

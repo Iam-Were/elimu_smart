@@ -1,7 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg';
@@ -9,7 +9,6 @@ interface CardProps {
   clickable?: boolean;
   gradient?: boolean;
   variant?: 'default' | 'featured' | 'success' | 'warning';
-  onClick?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -20,7 +19,8 @@ const Card: React.FC<CardProps> = ({
   clickable = false,
   gradient = false,
   variant = 'default',
-  onClick
+  onClick,
+  ...props
 }) => {
   // Base card styling - NEVER CHANGE THESE VALUES
   const baseClasses = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm';
@@ -51,20 +51,22 @@ const Card: React.FC<CardProps> = ({
     <div
       className={`${baseClasses} ${paddingClasses[padding]} ${variantClasses[variant]} ${interactiveClasses} ${clickableClasses} ${className}`}
       onClick={clickable ? onClick : undefined}
+      {...props}
     >
       {children}
     </div>
   );
 };
 
-// Card Header Component - EXACT PATTERN
+// Card Header Component - FLEXIBLE PATTERN
 interface CardHeaderProps {
   icon?: LucideIcon;
-  title: string;
+  title?: string;
   subtitle?: string;
   action?: React.ReactNode;
   gradient?: boolean;
   className?: string;
+  children?: React.ReactNode;
 }
 
 const CardHeader: React.FC<CardHeaderProps> = ({
@@ -73,8 +75,19 @@ const CardHeader: React.FC<CardHeaderProps> = ({
   subtitle,
   action,
   gradient = false,
-  className = ''
+  className = '',
+  children
 }) => {
+  // If children are provided, use them directly (shadcn pattern)
+  if (children) {
+    return (
+      <div className={`mb-4 ${className}`}>
+        {children}
+      </div>
+    );
+  }
+  
+  // Otherwise use the original structured pattern
   return (
     <div className={`flex items-center justify-between mb-4 ${className}`}>
       <div className="flex items-center space-x-3">
@@ -183,4 +196,31 @@ const StatsCard: React.FC<StatsCardProps> = ({
   );
 };
 
-export { Card, CardHeader, CardContent, CardFooter, StatsCard };
+// Additional shadcn-style components
+interface CardTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CardTitle: React.FC<CardTitleProps> = ({ children, className = '' }) => {
+  return (
+    <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 ${className}`}>
+      {children}
+    </h3>
+  );
+};
+
+interface CardDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CardDescription: React.FC<CardDescriptionProps> = ({ children, className = '' }) => {
+  return (
+    <p className={`text-sm text-gray-600 dark:text-gray-400 ${className}`}>
+      {children}
+    </p>
+  );
+};
+
+export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription, StatsCard };

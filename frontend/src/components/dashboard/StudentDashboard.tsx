@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Target, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import StudentDashboardCards from '../cards/StudentDashboardCards';
 import StudentAssessmentCards from '../cards/StudentAssessmentCards';
 import StudentGuidanceCards from '../cards/StudentGuidanceCards';
@@ -34,7 +34,7 @@ const StudentDashboard: React.FC = () => {
               <p className="text-muted-foreground">Discover your perfect career path</p>
             </div>
           </div>
-          <Button asChild variant="outline" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
+          <Button asChild variant="secondary" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
             <Link to="/assessment">
               View All Assessments
               <ArrowRight className="h-4 w-4 ml-2" />
@@ -57,7 +57,7 @@ const StudentDashboard: React.FC = () => {
               <p className="text-muted-foreground">Get help with your academic and career journey</p>
             </div>
           </div>
-          <Button asChild variant="outline" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
+          <Button asChild variant="secondary" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
             <Link to="/guidance">
               View All Services
               <ArrowRight className="h-4 w-4 ml-2" />

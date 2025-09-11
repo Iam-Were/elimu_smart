@@ -5,7 +5,7 @@ import CounselorAnalyticsCards from '../../components/counselor/CounselorAnalyti
 import CounselorSessionCards from '../../components/counselor/CounselorSessionCards';
 import { StudentRoster } from '../../components/counselor/StudentRoster';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
+import Button from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { 
@@ -77,7 +77,7 @@ const CounselorDashboardPage: React.FC = () => {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="secondary">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </Button>

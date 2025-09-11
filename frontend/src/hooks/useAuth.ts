@@ -1,65 +1,47 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 
-// Mock authentication service - replace with real API calls
-const mockAuthService = {
-  login: async (credentials: LoginCredentials): Promise<User> => {
-    // Simulate API delay - reduced for better UX
-    await new Promise(resolve => setTimeout(resolve, 500));
+// Backend API URL
+const API_BASE_URL = 'http://localhost:3001/api';
 
-    // Mock validation
-    if (
-      credentials.email === 'admin@elimu.com' &&
-      credentials.password === 'admin'
-    ) {
-      return {
-        id: '1',
-        email: credentials.email,
-        firstName: 'Mike',
-        lastName: 'Admin',
-        role: 'admin',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-    } else if (
-      credentials.email === 'counselor@elimu.com' &&
-      credentials.password === 'counselor'
-    ) {
-      return {
-        id: '2',
-        email: credentials.email,
-        firstName: 'Sarah',
-        lastName: 'Counselor',
-        role: 'counselor',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-    } else if (
-      credentials.email === 'student@elimu.com' &&
-      credentials.password === 'student'
-    ) {
-      return {
-        id: '3',
-        email: credentials.email,
-        firstName: 'Alex',
-        lastName: 'Student',
-        role: 'student',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+// Real authentication service connecting to backend
+const authService = {
+  login: async (credentials: LoginCredentials): Promise<User> => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid email or password');
     }
 
-    throw new Error('Invalid email or password');
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Login failed');
+    }
+
+    // Convert backend user format to frontend User type
+    return {
+      id: data.user.name?.split(' ')[0]?.toLowerCase() || 'user',
+      email: credentials.email,
+      firstName: data.user.name?.split(' ')[0] || 'User',
+      lastName: data.user.name?.split(' ')[1] || '',
+      role: data.user.role,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   },
 
   register: async (data: RegisterData): Promise<User> => {
-    // Simulate API delay - reduced for better UX
+    // For now, keep mock registration since it's not implemented in backend
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Mock user creation
     return {
       id: Date.now().toString(),
       email: data.email,
@@ -73,14 +55,15 @@ const mockAuthService = {
   },
 
   logout: async (): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Simple logout - just clear local storage
+    await new Promise(resolve => setTimeout(resolve, 200));
   },
 
   getCurrentUser: async (): Promise<User | null> => {
     const token = localStorage.getItem('elimu-auth-token');
     if (!token) return null;
 
-    // Mock token validation
+    // Get user from local storage
     try {
       const userData = JSON.parse(localStorage.getItem('elimu-user') || '');
       return userData;
@@ -102,7 +85,7 @@ export const useAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const user = await mockAuthService.getCurrentUser();
+        const user = await authService.getCurrentUser();
         setAuthState({
           user,
           isAuthenticated: !!user,
@@ -127,7 +110,7 @@ export const useAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const user = await mockAuthService.login(credentials);
+      const user = await authService.login(credentials);
 
       // Store auth data
       localStorage.setItem('elimu-auth-token', 'mock-token');
@@ -157,7 +140,7 @@ export const useAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const user = await mockAuthService.register(data);
+      const user = await authService.register(data);
 
       // Store auth data
       localStorage.setItem('elimu-auth-token', 'mock-token');
@@ -187,7 +170,7 @@ export const useAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      await mockAuthService.logout();
+      await authService.logout();
 
       // Clear auth data
       localStorage.removeItem('elimu-auth-token');

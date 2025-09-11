@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Parse from 'parse';
+import Parse from '@/config/parse';
 
 interface UserActivity {
   activityType: string;
@@ -87,6 +87,30 @@ interface CourseRecommendations {
   mediumMatches: number;
 }
 
+interface LinkedInInsights {
+  industryLeaders: Array<{
+    name: string;
+    title: string;
+    company: string;
+    careerPath: string[];
+    education: string;
+    keyInsights: string[];
+    linkedinUrl?: string;
+    inspirationQuote: string;
+  }>;
+  profileOptimization: {
+    headlines: string[];
+    summaryTemplate: string;
+    skillsSuggestions: string[];
+  };
+  networkingRecommendations: Array<{
+    category: string;
+    description: string;
+    strategy: string;
+    messageTemplate: string;
+  }>;
+}
+
 interface DashboardData {
   careerReadinessScore: CareerReadinessScore | null;
   universityPlacement: UniversityPlacementData | null;
@@ -95,6 +119,7 @@ interface DashboardData {
   cutoffAnalysis: CutoffAnalysis | null;
   kuccpsTimeline: KuccpsTimeline | null;
   courseRecommendations: CourseRecommendations | null;
+  linkedinInsights: LinkedInInsights | null;
   loading: boolean;
   error: string | null;
 }
@@ -108,6 +133,7 @@ export const useDynamicDashboard = () => {
     cutoffAnalysis: null,
     kuccpsTimeline: null,
     courseRecommendations: null,
+    linkedinInsights: null,
     loading: true,
     error: null
   });
@@ -254,6 +280,33 @@ export const useDynamicDashboard = () => {
     }
   };
 
+  // Get LinkedIn professional insights
+  const getLinkedInInsights = async (): Promise<LinkedInInsights | null> => {
+    try {
+      const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
+        industry: 'technology', // Default to technology, could be dynamic based on user profile
+        careerLevel: 'entry'
+      });
+      
+      if (result.success) {
+        return {
+          industryLeaders: result.industryLeaders || [],
+          profileOptimization: result.profileOptimization || {
+            headlines: [],
+            summaryTemplate: '',
+            skillsSuggestions: []
+          },
+          networkingRecommendations: result.networkingRecommendations || []
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to get LinkedIn insights:', error);
+      return null;
+    }
+  };
+
   // Load all dashboard data
   const loadDashboardData = async () => {
     setDashboardData(prev => ({ ...prev, loading: true, error: null }));
@@ -266,7 +319,8 @@ export const useDynamicDashboard = () => {
         activities, 
         cutoffAnalysis, 
         timeline, 
-        courseRecs
+        courseRecs,
+        linkedinInsights
       ] = await Promise.all([
         calculateCareerReadiness(),
         getUniversityPlacement(), 
@@ -274,7 +328,8 @@ export const useDynamicDashboard = () => {
         getUserActivities(),
         getCutoffAnalysis(),
         getKuccpsTimeline(),
-        getCourseRecommendations()
+        getCourseRecommendations(),
+        getLinkedInInsights()
       ]);
 
       setDashboardData({
@@ -285,6 +340,7 @@ export const useDynamicDashboard = () => {
         cutoffAnalysis,
         kuccpsTimeline: timeline,
         courseRecommendations: courseRecs,
+        linkedinInsights,
         loading: false,
         error: null
       });

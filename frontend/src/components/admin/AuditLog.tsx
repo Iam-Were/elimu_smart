@@ -523,7 +523,7 @@ export const AuditLog: React.FC = () => {
                     <Table.Td>
                       <Stack gap="xs">
                         <Text size="sm" fw={500}>{log.username}</Text>
-                        <Badge size="xs" variant="outline">
+                        <Badge size="xs" variant="secondary">
                           {log.userRole}
                         </Badge>
                       </Stack>
