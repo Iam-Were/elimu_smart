@@ -1,5 +1,6 @@
 import React from 'react';
-import { Stack, Text, Card, Group, Skeleton } from '@mantine/core';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SkeletonCardProps {
   showAvatar?: boolean;
@@ -16,33 +17,31 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
     className="dashboard-card"
     style={{ height, backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
   >
-    <Stack gap="md">
+    <div className="space-y-4">
       {showAvatar && (
-        <Group gap="sm">
-          <Skeleton height={40} circle />
-          <Stack gap="xs" style={{ flex: 1 }}>
-            <Skeleton height={12} width="60%" className="skeleton-pulse" />
-            <Skeleton height={10} width="40%" className="skeleton-pulse" />
-          </Stack>
-        </Group>
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-3 w-[60%]" />
+            <Skeleton className="h-2.5 w-[40%]" />
+          </div>
+        </div>
       )}
       
-      <Stack gap="sm">
+      <div className="space-y-3">
         {Array.from({ length: lines }).map((_, index) => (
           <Skeleton
             key={index}
-            height={12}
-            width={index === lines - 1 ? '70%' : '100%'}
-            className="skeleton-pulse"
+            className={`h-3 ${index === lines - 1 ? 'w-[70%]' : 'w-full'}`}
           />
         ))}
-      </Stack>
+      </div>
       
-      <Group gap="sm" mt="auto">
-        <Skeleton height={32} width={80} className="skeleton-pulse" />
-        <Skeleton height={32} width={60} className="skeleton-pulse" />
-      </Group>
-    </Stack>
+      <div className="flex items-center space-x-3 mt-auto">
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-8 w-15" />
+      </div>
+    </div>
   </Card>
 );
 
@@ -117,7 +116,7 @@ export const ProgressiveList: React.FC<ProgressiveListProps> = ({
   renderItem,
   renderSkeleton = () => <SkeletonCard />,
 }) => (
-  <Stack gap="md">
+  <div className="space-y-4">
     {Array.from({ length: itemCount }).map((_, index) => (
       <div key={index} className="progressive-reveal">
         {renderItem(index)}
@@ -128,7 +127,7 @@ export const ProgressiveList: React.FC<ProgressiveListProps> = ({
         {renderSkeleton()}
       </div>
     ))}
-  </Stack>
+  </div>
 );
 
 interface TableSkeletonProps {
@@ -144,33 +143,29 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
     className="dashboard-card"
     style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
   >
-    <Stack gap="md">
+    <div className="space-y-4">
       {/* Table Header */}
-      <Group gap="md">
+      <div className="flex items-center space-x-4">
         {Array.from({ length: columns }).map((_, index) => (
           <Skeleton
             key={`header-${index}`}
-            height={14}
-            width={`${100 / columns}%`}
-            className="skeleton-pulse"
+            className="h-3.5 flex-1"
           />
         ))}
-      </Group>
+      </div>
       
       {/* Table Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <Group key={`row-${rowIndex}`} gap="md">
+        <div key={`row-${rowIndex}`} className="flex items-center space-x-4">
           {Array.from({ length: columns }).map((_, colIndex) => (
             <Skeleton
               key={`cell-${rowIndex}-${colIndex}`}
-              height={12}
-              width={`${100 / columns}%`}
-              className="skeleton-pulse"
+              className="h-3 flex-1"
             />
           ))}
-        </Group>
+        </div>
       ))}
-    </Stack>
+    </div>
   </Card>
 );
 
@@ -191,48 +186,47 @@ export const ChartSkeleton: React.FC<ChartSkeletonProps> = ({
       border: '1px solid var(--border)' 
     }}
   >
-    <Stack gap="md" h="100%">
+    <div className="space-y-4 h-full">
       {/* Chart Title */}
-      <Skeleton height={16} width="40%" className="skeleton-pulse" />
+      <Skeleton className="h-4 w-[40%]" />
       
       {/* Chart Content */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div className="flex-1 relative">
         {type === 'bar' && (
-          <Group gap="xs" align="flex-end" h="100%">
+          <div className="flex items-end justify-between space-x-1 h-full">
             {Array.from({ length: 6 }).map((_, index) => (
               <Skeleton
                 key={index}
-                height={Math.random() * 80 + 20 + '%'}
-                width={30}
-                className="skeleton-pulse"
+                className="w-8"
+                style={{ height: `${Math.random() * 80 + 20}%` }}
               />
             ))}
-          </Group>
+          </div>
         )}
         
         {type === 'line' && (
-          <div style={{ position: 'relative', height: '100%' }}>
-            <Skeleton height="100%" width="100%" className="skeleton-pulse" />
+          <div className="relative h-full">
+            <Skeleton className="h-full w-full" />
           </div>
         )}
         
         {(type === 'pie' || type === 'donut') && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <Skeleton height={150} width={150} circle className="skeleton-pulse" />
+          <div className="flex justify-center items-center h-full">
+            <Skeleton className="h-[150px] w-[150px] rounded-full" />
           </div>
         )}
       </div>
       
       {/* Chart Legend */}
-      <Group gap="sm">
+      <div className="flex items-center space-x-4">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Group key={index} gap="xs">
-            <Skeleton height={12} width={12} className="skeleton-pulse" />
-            <Skeleton height={10} width={60} className="skeleton-pulse" />
-          </Group>
+          <div key={index} className="flex items-center space-x-2">
+            <Skeleton className="h-3 w-3" />
+            <Skeleton className="h-2.5 w-15" />
+          </div>
         ))}
-      </Group>
-    </Stack>
+      </div>
+    </div>
   </Card>
 );
 
@@ -265,9 +259,58 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       }}
     >
       <LoadingSpinner size={32} />
-      <Text size="lg" style={{ color: 'var(--muted-foreground)' }}>
+      <p className="text-lg text-muted-foreground">
         {message}
-      </Text>
+      </p>
     </div>
   );
+};
+
+interface LoadingStatesProps {
+  type: 'cards' | 'list' | 'table' | 'content';
+  count?: number;
+}
+
+export const LoadingStates: React.FC<LoadingStatesProps> = ({
+  type,
+  count = 3,
+}) => {
+  switch (type) {
+    case 'cards':
+      return (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: count }).map((_, index) => (
+            <SkeletonCard key={index} showAvatar lines={3} />
+          ))}
+        </div>
+      );
+    
+    case 'list':
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: count }).map((_, index) => (
+            <SkeletonCard key={index} lines={2} height={120} />
+          ))}
+        </div>
+      );
+    
+    case 'table':
+      return <TableSkeleton rows={count} />;
+    
+    case 'content':
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-[60%]" />
+          <div className="space-y-2">
+            {Array.from({ length: count }).map((_, index) => (
+              <Skeleton key={index} className="h-4 w-full" />
+            ))}
+            <Skeleton className="h-4 w-[80%]" />
+          </div>
+        </div>
+      );
+    
+    default:
+      return <SkeletonCard />;
+  }
 };

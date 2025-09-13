@@ -1,34 +1,27 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import {
-  Stack,
-  Group,
-  Text,
-  TextInput,
-  Textarea,
-  Select,
-  Button,
-  Progress,
-  Card,
-  Alert,
-  Checkbox,
-  MultiSelect,
-  NumberInput,
-  Badge,
-  ActionIcon,
-} from '@mantine/core';
-import {
-  CheckCircledIcon,
-  ExclamationTriangleIcon,
-  EyeOpenIcon,
-  EyeClosedIcon,
-  ReloadIcon,
-} from '@radix-ui/react-icons';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import Button from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  CheckCircle, 
+  AlertTriangle, 
+  Eye, 
+  EyeOff, 
+  RefreshCw,
+  Check
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ValidationRule {
   type: 'required' | 'email' | 'minLength' | 'maxLength' | 'pattern' | 'custom';
-  value?: any;
+  value?: string | number | RegExp;
   message: string;
-  validator?: (value: any) => boolean;
+  validator?: (value: unknown) => boolean;
 }
 
 interface FormField {
@@ -41,9 +34,9 @@ interface FormField {
   validation?: ValidationRule[];
   options?: Array<{ value: string; label: string }>;
   dependencies?: string[]; // Field IDs this field depends on
-  conditional?: (formData: Record<string, any>) => boolean;
+  conditional?: (formData: Record<string, unknown>) => boolean;
   autoSuggest?: string[]; // Suggestions for the field
-  defaultValue?: any;
+  defaultValue?: unknown;
 }
 
 interface FormSection {
@@ -51,13 +44,13 @@ interface FormSection {
   title: string;
   description?: string;
   fields: FormField[];
-  conditional?: (formData: Record<string, any>) => boolean;
+  conditional?: (formData: Record<string, unknown>) => boolean;
 }
 
 interface SmartFormProps {
   sections: FormSection[];
-  onSubmit: (data: Record<string, any>) => Promise<void>;
-  onSave?: (data: Record<string, any>) => Promise<void>; // Auto-save function
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSave?: (data: Record<string, unknown>) => Promise<void>; // Auto-save function
   autoSave?: boolean;
   showProgress?: boolean;
   submitLabel?: string;
@@ -75,7 +68,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
   title,
   description,
 }) => {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,7 +78,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 
   // Initialize form data with default values
   useEffect(() => {
-    const initialData: Record<string, any> = {};
+    const initialData: Record<string, unknown> = {};
     sections.forEach(section => {
       section.fields.forEach(field => {
         if (field.defaultValue !== undefined) {
@@ -118,7 +111,7 @@ export const SmartForm: React.FC<SmartFormProps> = ({
   }, [formData, autoSave, onSave, autoSaveStatus]);
 
   // Validation function
-  const validateField = useCallback((field: FormField, value: any): string | null => {
+  const validateField = useCallback((field: FormField, value: unknown): string | null => {
     if (!field.validation) return null;
 
     for (const rule of field.validation) {
@@ -130,28 +123,28 @@ export const SmartForm: React.FC<SmartFormProps> = ({
           break;
         case 'email': {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (value && !emailRegex.test(value)) {
+          if (value && typeof value === 'string' && !emailRegex.test(value)) {
             return rule.message;
           }
           break;
         }
         case 'minLength':
-          if (value && value.length < rule.value) {
+          if (value && typeof value === 'string' && rule.value && typeof rule.value === 'number' && value.length < rule.value) {
             return rule.message;
           }
           break;
         case 'maxLength':
-          if (value && value.length > rule.value) {
+          if (value && typeof value === 'string' && rule.value && typeof rule.value === 'number' && value.length > rule.value) {
             return rule.message;
           }
           break;
         case 'pattern':
-          if (value && !new RegExp(rule.value).test(value)) {
+          if (value && typeof value === 'string' && rule.value && (typeof rule.value === 'string' || rule.value instanceof RegExp) && !new RegExp(rule.value).test(value)) {
             return rule.message;
           }
           break;
         case 'custom':
-          if (value && rule.validator && !rule.validator(value)) {
+          if (rule.validator && !rule.validator(value)) {
             return rule.message;
           }
           break;
@@ -160,176 +153,172 @@ export const SmartForm: React.FC<SmartFormProps> = ({
     return null;
   }, []);
 
-  // Handle field change
-  const handleFieldChange = useCallback((fieldId: string, value: any) => {
+  const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [fieldId]: value }));
     
-    // Find the field definition
-    const field = sections
-      .flatMap(section => section.fields)
-      .find(f => f.id === fieldId);
+    // Clear error when user starts typing
+    if (errors[fieldId]) {
+      setErrors(prev => ({ ...prev, [fieldId]: '' }));
+    }
     
-    if (field && touched[fieldId]) {
-      const error = validateField(field, value);
-      setErrors(prev => ({ ...prev, [fieldId]: error || '' }));
-    }
-
-    // Generate suggestions for text fields
-    if (field?.autoSuggest && typeof value === 'string' && value.length > 2) {
+    // Update suggestions
+    const field = sections.flatMap(s => s.fields).find(f => f.id === fieldId);
+    if (field?.autoSuggest && typeof value === 'string') {
       const filteredSuggestions = field.autoSuggest.filter(suggestion =>
-        suggestion.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 5);
+        suggestion.toLowerCase().includes(value.toLowerCase()) && suggestion !== value
+      );
       setSuggestions(prev => ({ ...prev, [fieldId]: filteredSuggestions }));
-    } else {
-      setSuggestions(prev => ({ ...prev, [fieldId]: [] }));
     }
-  }, [sections, touched, validateField]);
+  }, [errors, sections]);
 
-  // Handle field blur
   const handleFieldBlur = useCallback((fieldId: string) => {
     setTouched(prev => ({ ...prev, [fieldId]: true }));
     
-    const field = sections
-      .flatMap(section => section.fields)
-      .find(f => f.id === fieldId);
-    
+    const field = sections.flatMap(s => s.fields).find(f => f.id === fieldId);
     if (field) {
-      const error = validateField(field, formData[fieldId]);
-      setErrors(prev => ({ ...prev, [fieldId]: error || '' }));
+      const value = formData[fieldId];
+      const error = validateField(field, value);
+      if (error) {
+        setErrors(prev => ({ ...prev, [fieldId]: error }));
+      }
     }
-  }, [sections, formData, validateField]);
+    
+    // Clear suggestions
+    setSuggestions(prev => ({ ...prev, [fieldId]: [] }));
+  }, [formData, sections, validateField]);
 
-  // Calculate form completion
-  const calculateProgress = (): number => {
-    const visibleFields = sections
-      .filter(section => !section.conditional || section.conditional(formData))
-      .flatMap(section => 
-        section.fields.filter(field => !field.conditional || field.conditional(formData))
-      );
+  // Calculate form completion progress
+  const calculateProgress = useCallback(() => {
+    const visibleFields = sections.flatMap(section => {
+      if (section.conditional && !section.conditional(formData)) return [];
+      return section.fields.filter(field => !field.conditional || field.conditional(formData));
+    });
     
     const completedFields = visibleFields.filter(field => {
       const value = formData[field.id];
-      return value !== undefined && value !== '' && value !== null;
+      if (field.required) {
+        return value !== undefined && value !== '' && value !== false;
+      }
+      return value !== undefined && value !== '';
     });
+    
+    return visibleFields.length > 0 ? Math.round((completedFields.length / visibleFields.length) * 100) : 0;
+  }, [sections, formData]);
 
-    return visibleFields.length > 0 ? (completedFields.length / visibleFields.length) * 100 : 0;
-  };
-
-  // Handle form submission
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all visible fields
-    const visibleFields = sections
-      .filter(section => !section.conditional || section.conditional(formData))
-      .flatMap(section => 
-        section.fields.filter(field => !field.conditional || field.conditional(formData))
-      );
-
-    const newErrors: Record<string, string> = {};
+    // Validate all fields
     let hasErrors = false;
-
-    visibleFields.forEach(field => {
-      const error = validateField(field, formData[field.id]);
-      if (error) {
-        newErrors[field.id] = error;
-        hasErrors = true;
-      }
+    const newErrors: Record<string, string> = {};
+    
+    sections.forEach(section => {
+      if (section.conditional && !section.conditional(formData)) return;
+      
+      section.fields.forEach(field => {
+        if (field.conditional && !field.conditional(formData)) return;
+        
+        const value = formData[field.id];
+        const error = validateField(field, value);
+        if (error) {
+          newErrors[field.id] = error;
+          hasErrors = true;
+        }
+      });
     });
-
+    
     setErrors(newErrors);
-    setTouched(
-      visibleFields.reduce((acc, field) => ({ ...acc, [field.id]: true }), {})
-    );
-
-    if (!hasErrors) {
-      setIsSubmitting(true);
-      try {
-        await onSubmit(formData);
-      } catch (error) {
-        console.error('Form submission error:', error);
-      } finally {
-        setIsSubmitting(false);
-      }
+    
+    if (hasErrors) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Render form field
   const renderField = (field: FormField) => {
-    const value = formData[field.id] || '';
+    const getValue = () => {
+      const storedValue = formData[field.id];
+      if (storedValue !== undefined) return storedValue;
+      
+      // Return appropriate default values based on field type
+      switch (field.type) {
+        case 'multiselect':
+          return [];
+        case 'checkbox':
+          return false;
+        case 'number':
+          return undefined;
+        default:
+          return '';
+      }
+    };
+    
+    const value = getValue();
     const error = errors[field.id];
     const isTouched = touched[field.id];
     const fieldSuggestions = suggestions[field.id] || [];
-
-    const commonProps = {
-      label: field.label,
-      placeholder: field.placeholder,
-      description: field.description,
-      error: isTouched && error ? error : undefined,
-      required: field.required,
-      value,
-      onChange: (val: any) => handleFieldChange(field.id, val),
-      onBlur: () => handleFieldBlur(field.id),
-      style: { marginBottom: '1rem' },
-    };
 
     switch (field.type) {
       case 'text':
       case 'email':
         return (
-          <div key={field.id} style={{ position: 'relative' }}>
-            <TextInput
-              {...commonProps}
-              type={field.type}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              rightSection={
-                isTouched && !error ? (
-                  <CheckCircledIcon width={16} height={16} style={{ color: 'var(--success)' }} />
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={cn(field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+              {field.label}
+            </Label>
+            <div className="relative">
+              <Input
+                id={field.id}
+                type={field.type}
+                placeholder={field.placeholder}
+                value={value as string}
+                onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                onBlur={() => handleFieldBlur(field.id)}
+                className={cn(
+                  error && isTouched && "border-red-500",
+                  !error && isTouched && value && "border-green-500"
+                )}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {isTouched && !error && value ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : isTouched && error ? (
-                  <ExclamationTriangleIcon width={16} height={16} style={{ color: 'var(--destructive)' }} />
-                ) : null
-              }
-            />
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                ) : null}
+              </div>
+            </div>
+            {field.description && (
+              <p className="text-sm text-muted-foreground">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
             
             {/* Auto-suggestions */}
             {fieldSuggestions.length > 0 && (
-              <Card
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  zIndex: 1000,
-                  marginTop: '4px',
-                  maxHeight: '150px',
-                  overflow: 'auto',
-                }}
-              >
-                <Stack gap="xs">
+              <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-40 overflow-auto">
+                <CardContent className="p-0">
                   {fieldSuggestions.map((suggestion, index) => (
-                    <Text
+                    <div
                       key={index}
-                      size="sm"
-                      style={{
-                        padding: '8px',
-                        cursor: 'pointer',
-                        borderRadius: '4px',
-                      }}
+                      className="px-3 py-2 cursor-pointer hover:bg-muted rounded-sm"
                       onClick={() => {
                         handleFieldChange(field.id, suggestion);
                         setSuggestions(prev => ({ ...prev, [field.id]: [] }));
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--sidebar-accent)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
                     >
-                      {suggestion}
-                    </Text>
+                      <span className="text-sm">{suggestion}</span>
+                    </div>
                   ))}
-                </Stack>
+                </CardContent>
               </Card>
             )}
           </div>
@@ -337,90 +326,154 @@ export const SmartForm: React.FC<SmartFormProps> = ({
 
       case 'password':
         return (
-          <TextInput
-            key={field.id}
-            {...commonProps}
-            type={showPassword[field.id] ? 'text' : 'password'}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-            rightSection={
-              <Group gap="xs">
-                <ActionIcon
-                  variant="subtle"
-                  onClick={() => setShowPassword(prev => ({
-                    ...prev,
-                    [field.id]: !prev[field.id]
-                  }))}
-                >
-                  {showPassword[field.id] ? (
-                    <EyeClosedIcon width={16} height={16} />
-                  ) : (
-                    <EyeOpenIcon width={16} height={16} />
-                  )}
-                </ActionIcon>
-                {isTouched && !error && (
-                  <CheckCircledIcon width={16} height={16} style={{ color: 'var(--success)' }} />
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={cn(field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+              {field.label}
+            </Label>
+            <div className="relative">
+              <Input
+                id={field.id}
+                type={showPassword[field.id] ? 'text' : 'password'}
+                placeholder={field.placeholder}
+                value={value as string}
+                onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                onBlur={() => handleFieldBlur(field.id)}
+                className={cn(
+                  error && isTouched && "border-red-500",
+                  !error && isTouched && value && "border-green-500"
                 )}
-              </Group>
-            }
-          />
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                onClick={() => setShowPassword(prev => ({ ...prev, [field.id]: !prev[field.id] }))}
+              >
+                {showPassword[field.id] ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+            </div>
+            {field.description && (
+              <p className="text-sm text-muted-foreground">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+          </div>
         );
 
       case 'textarea':
         return (
-          <Textarea
-            key={field.id}
-            {...commonProps}
-            autosize
-            minRows={3}
-            maxRows={6}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-          />
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={cn(field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+              {field.label}
+            </Label>
+            <Textarea
+              id={field.id}
+              placeholder={field.placeholder}
+              value={value as string}
+              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+              onBlur={() => handleFieldBlur(field.id)}
+              className={cn(
+                "min-h-[100px]",
+                error && isTouched && "border-red-500",
+                !error && isTouched && value && "border-green-500"
+              )}
+            />
+            {field.description && (
+              <p className="text-sm text-muted-foreground">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+          </div>
         );
 
       case 'select':
         return (
-          <Select
-            key={field.id}
-            {...commonProps}
-            data={field.options || []}
-            onChange={(val) => handleFieldChange(field.id, val)}
-            clearable
-            searchable
-          />
-        );
-
-      case 'multiselect':
-        return (
-          <MultiSelect
-            key={field.id}
-            {...commonProps}
-            data={field.options || []}
-            onChange={(val) => handleFieldChange(field.id, val)}
-            clearable
-            searchable
-          />
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={cn(field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+              {field.label}
+            </Label>
+            <Select
+              value={value as string}
+              onValueChange={(val) => handleFieldChange(field.id, val)}
+            >
+              <SelectTrigger
+                className={cn(
+                  error && isTouched && "border-red-500",
+                  !error && isTouched && value && "border-green-500"
+                )}
+              >
+                <SelectValue placeholder={field.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {field.description && (
+              <p className="text-sm text-muted-foreground">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+          </div>
         );
 
       case 'number':
         return (
-          <NumberInput
-            key={field.id}
-            {...commonProps}
-            onChange={(val) => handleFieldChange(field.id, val)}
-          />
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={cn(field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+              {field.label}
+            </Label>
+            <Input
+              id={field.id}
+              type="number"
+              placeholder={field.placeholder}
+              value={value as string}
+              onChange={(e) => handleFieldChange(field.id, e.target.value ? Number(e.target.value) : undefined)}
+              onBlur={() => handleFieldBlur(field.id)}
+              className={cn(
+                error && isTouched && "border-red-500",
+                !error && isTouched && value !== undefined && "border-green-500"
+              )}
+            />
+            {field.description && (
+              <p className="text-sm text-muted-foreground">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+          </div>
         );
 
       case 'checkbox':
         return (
-          <Checkbox
-            key={field.id}
-            label={field.label}
-            description={field.description}
-            checked={value}
-            onChange={(e) => handleFieldChange(field.id, e.target.checked)}
-            error={isTouched && error ? error : undefined}
-            style={{ marginBottom: '1rem' }}
-          />
+          <div key={field.id} className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={field.id}
+                checked={value as boolean}
+                onCheckedChange={(checked) => handleFieldChange(field.id, checked)}
+                onBlur={() => handleFieldBlur(field.id)}
+              />
+              <Label htmlFor={field.id} className={cn("text-sm", field.required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+                {field.label}
+              </Label>
+            </div>
+            {field.description && (
+              <p className="text-sm text-muted-foreground pl-6">{field.description}</p>
+            )}
+            {isTouched && error && (
+              <p className="text-sm text-red-500 pl-6">{error}</p>
+            )}
+          </div>
         );
 
       default:
@@ -431,134 +484,95 @@ export const SmartForm: React.FC<SmartFormProps> = ({
   const progress = calculateProgress();
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack gap="lg">
-        {/* Form Header */}
-        {(title || description) && (
-          <div>
-            {title && (
-              <Text size="xl" fw={700} mb="xs">
-                {title}
-              </Text>
-            )}
-            {description && (
-              <Text size="md" c="dimmed">
-                {description}
-              </Text>
-            )}
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      {(title || description) && (
+        <div className="text-center space-y-2">
+          {title && <h1 className="text-3xl font-bold">{title}</h1>}
+          {description && <p className="text-muted-foreground text-lg">{description}</p>}
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      {showProgress && (
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Form Progress</span>
+            <span className="text-sm font-medium">{progress}%</span>
           </div>
-        )}
+          <Progress value={progress} className="h-2" />
+        </div>
+      )}
 
-        {/* Progress Bar */}
-        {showProgress && (
-          <Card
-            style={{
-              backgroundColor: 'var(--muted)',
-              padding: '16px',
-            }}
-          >
-            <Group justify="space-between" align="center" mb="xs">
-              <Text size="sm" fw={500}>
-                Form Progress
-              </Text>
-              <Group gap="xs">
-                <Text size="sm" c="dimmed">
-                  {Math.round(progress)}% complete
-                </Text>
-                {autoSave && (
-                  <Badge
-                    size="sm"
-                    variant="light"
-                    color={
-                      autoSaveStatus === 'saved' ? 'green' :
-                      autoSaveStatus === 'saving' ? 'blue' :
-                      autoSaveStatus === 'error' ? 'red' : 'gray'
-                    }
-                  >
-                    {autoSaveStatus === 'saved' ? 'Saved' :
-                     autoSaveStatus === 'saving' ? 'Saving...' :
-                     autoSaveStatus === 'error' ? 'Save Error' : 'Draft'}
-                  </Badge>
+      {/* Auto-save status */}
+      {autoSave && onSave && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {autoSaveStatus === 'saving' && (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          )}
+          {autoSaveStatus === 'saved' && (
+            <>
+              <Check className="h-4 w-4 text-green-500" />
+              <span className="text-green-600">Saved</span>
+            </>
+          )}
+          {autoSaveStatus === 'error' && (
+            <>
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <span className="text-red-600">Save failed</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {sections.map(section => {
+          // Check section visibility
+          if (section.conditional && !section.conditional(formData)) return null;
+
+          return (
+            <Card key={section.id}>
+              <CardHeader>
+                <CardTitle>{section.title}</CardTitle>
+                {section.description && (
+                  <p className="text-muted-foreground">{section.description}</p>
                 )}
-              </Group>
-            </Group>
-            <Progress value={progress} size="md" />
-          </Card>
-        )}
-
-        {/* Form Sections */}
-        {sections
-          .filter(section => !section.conditional || section.conditional(formData))
-          .map(section => (
-            <Card
-              key={section.id}
-              className="card-linkedin dashboard-card"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-              }}
-            >
-              <Stack gap="md">
-                {/* Section Header */}
-                <div>
-                  <Text size="lg" fw={600} mb="xs">
-                    {section.title}
-                  </Text>
-                  {section.description && (
-                    <Text size="sm" c="dimmed">
-                      {section.description}
-                    </Text>
-                  )}
-                </div>
-
-                {/* Section Fields */}
-                <Stack gap="md">
-                  {section.fields
-                    .filter(field => !field.conditional || field.conditional(formData))
-                    .map(renderField)}
-                </Stack>
-              </Stack>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {section.fields.map(field => {
+                  // Check field visibility
+                  if (field.conditional && !field.conditional(formData)) return null;
+                  return renderField(field);
+                })}
+              </CardContent>
             </Card>
-          ))}
+          );
+        })}
 
-        {/* Form Actions */}
-        <Group justify="space-between" align="center">
-          <Group gap="xs">
-            {autoSaveStatus === 'error' && (
-              <Alert
-                icon={<ExclamationTriangleIcon width={16} height={16} />}
-                color="red"
-                variant="light"
-              >
-                Auto-save failed. Please save manually.
-              </Alert>
+        {/* Submit Button */}
+        <div className="flex justify-end pt-6">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-w-[120px]"
+          >
+            {isSubmitting ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              submitLabel
             )}
-          </Group>
-
-          <Group gap="sm">
-            {onSave && (
-              <Button
-                variant="light"
-                leftSection={<ReloadIcon width={16} height={16} />}
-                onClick={() => onSave(formData)}
-                loading={autoSaveStatus === 'saving'}
-                className="btn-ghost-linkedin btn-md"
-              >
-                Save Draft
-              </Button>
-            )}
-            
-            <Button
-              type="submit"
-              loading={isSubmitting}
-              className="btn-primary-linkedin btn-md"
-              leftSection={<CheckCircledIcon width={16} height={16} />}
-            >
-              {submitLabel}
-            </Button>
-          </Group>
-        </Group>
-      </Stack>
-    </form>
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
+
+export default SmartForm;

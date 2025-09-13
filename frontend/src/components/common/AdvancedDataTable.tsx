@@ -1,20 +1,32 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   Table,
-  Card,
-  Group,
-  Text,
-  Button,
-  Checkbox,
-  ActionIcon,
-  Badge,
-  Menu,
-  TextInput,
-  Pagination,
-  Stack,
-  Modal,
-  Progress,
-} from '@mantine/core';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -28,7 +40,7 @@ import {
   Cross2Icon,
 } from '@radix-ui/react-icons';
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   id: keyof T;
   label: string;
   type: 'text' | 'number' | 'date' | 'boolean' | 'badge' | 'action' | 'custom';
@@ -36,8 +48,8 @@ export interface TableColumn<T = any> {
   filterable?: boolean;
   resizable?: boolean;
   width?: number | 'auto';
-  render?: (value: any, row: T) => React.ReactNode;
-  filterOptions?: { value: any; label: string }[];
+  render?: (value: unknown, row: T) => React.ReactNode;
+  filterOptions?: { value: unknown; label: string }[];
 }
 
 interface SortConfig {
@@ -47,11 +59,11 @@ interface SortConfig {
 
 interface FilterConfig {
   column: string;
-  value: any;
+  value: unknown;
   operator: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'greaterThan' | 'lessThan';
 }
 
-interface BulkAction<T = any> {
+interface BulkAction<T = Record<string, unknown>> {
   id: string;
   label: string;
   icon: React.ReactNode;
@@ -79,7 +91,7 @@ interface AdvancedDataTableProps<T> {
   loading?: boolean;
 }
 
-export const AdvancedDataTable = <T extends Record<string, any>>({
+export const AdvancedDataTable = <T extends Record<string, unknown>>({
   data,
   columns,
   bulkActions = [],
@@ -132,11 +144,11 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
           case 'equals':
             return value === filter.value;
           case 'contains':
-            return value?.toString().toLowerCase().includes(filter.value.toLowerCase());
+            return value?.toString().toLowerCase().includes(String(filter.value).toLowerCase());
           case 'startsWith':
-            return value?.toString().toLowerCase().startsWith(filter.value.toLowerCase());
+            return value?.toString().toLowerCase().startsWith(String(filter.value).toLowerCase());
           case 'endsWith':
-            return value?.toString().toLowerCase().endsWith(filter.value.toLowerCase());
+            return value?.toString().toLowerCase().endsWith(String(filter.value).toLowerCase());
           case 'greaterThan':
             return Number(value) > Number(filter.value);
           case 'lessThan':
@@ -158,6 +170,10 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -174,7 +190,6 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
 
   // Selection logic
   const isAllSelected = selectedRows.size === paginatedData.length && paginatedData.length > 0;
-  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < paginatedData.length;
 
   const handleSort = (columnId: string) => {
     setSortConfig(current => {
@@ -290,18 +305,18 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
     switch (column.type) {
       case 'badge':
         return (
-          <Badge size="sm" variant="light">
-            {value}
+          <Badge variant="secondary">
+            {String(value || '')}
           </Badge>
         );
       case 'boolean':
         return value ? '✓' : '✗';
       case 'date':
-        return value ? new Date(value).toLocaleDateString() : '';
+        return value ? new Date(value as string | number | Date).toLocaleDateString() : '';
       case 'number':
-        return typeof value === 'number' ? value.toLocaleString() : value;
+        return typeof value === 'number' ? value.toLocaleString() : String(value || '');
       default:
-        return value?.toString() || '';
+        return String(value || '');
     }
   };
 
@@ -321,103 +336,107 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
           backgroundColor: 'var(--muted)',
         }}
       >
-        <Group justify="space-between" align="center">
+        <div className="flex justify-between items-center">
           <div>
             {title && (
-              <Text size="lg" fw={600} mb="xs">
+              <h3 className="text-lg font-semibold mb-2">
                 {title}
-              </Text>
+              </h3>
             )}
-            <Group gap="sm">
+            <div className="flex items-center gap-3">
               {searchable && (
-                <TextInput
-                  placeholder="Search..."
-                  leftSection={<MagnifyingGlassIcon width={16} height={16} />}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ width: 250 }}
-                />
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-[250px] pl-10"
+                  />
+                </div>
               )}
               
               {/* Active Filters */}
               {filters.map(filter => (
                 <Badge
                   key={filter.column}
-                  variant="light"
-                  rightSection={
-                    <ActionIcon size="xs" onClick={() => removeFilter(filter.column)}>
-                      <Cross2Icon width={10} height={10} />
-                    </ActionIcon>
-                  }
+                  variant="secondary"
+                  className="flex items-center gap-1"
                 >
-                  {filter.column}: {filter.value}
+                  {filter.column}: {String(filter.value)}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 hover:bg-transparent"
+                    onClick={() => removeFilter(filter.column)}
+                  >
+                    <Cross2Icon className="w-3 h-3" />
+                  </Button>
                 </Badge>
               ))}
-            </Group>
+            </div>
           </div>
 
-          <Group gap="sm">
+          <div className="flex items-center gap-2">
             {/* Bulk Actions */}
             {selectedRows.size > 0 && bulkActions.length > 0 && (
-              <Group gap="xs">
-                <Text size="sm" c="dimmed">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
                   {selectedRows.size} selected
-                </Text>
+                </span>
                 {bulkActions.map(action => (
                   <Button
                     key={action.id}
                     size="sm"
-                    variant={action.danger ? 'filled' : 'light'}
-                    color={action.danger ? 'red' : undefined}
-                    leftSection={action.icon}
+                    variant={action.danger ? 'destructive' : 'secondary'}
                     onClick={() => handleBulkAction(action)}
-                    className="btn-secondary-linkedin btn-sm"
+                    className="flex items-center gap-2"
                   >
+                    {action.icon}
                     {action.label}
                   </Button>
                 ))}
-              </Group>
+              </div>
             )}
 
             {/* Table Actions */}
-            <Group gap="xs">
+            <div className="flex items-center gap-2">
               {exportable && (
                 <Button
                   size="sm"
-                  variant="light"
-                  leftSection={<DownloadIcon width={16} height={16} />}
+                  variant="outline"
                   onClick={exportData}
-                  className="btn-ghost-linkedin btn-sm"
+                  className="flex items-center gap-2"
                 >
+                  <DownloadIcon className="w-4 h-4" />
                   Export
                 </Button>
               )}
               
-              <ActionIcon variant="light" size="lg">
-                <MixerHorizontalIcon width={16} height={16} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        </Group>
+              <Button variant="outline" size="sm">
+                <MixerHorizontalIcon className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Table Content */}
       <div style={{ overflow: 'auto' }}>
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
+        <Table>
+          <TableHeader>
+            <TableRow>
               {selectable && (
-                <Table.Th style={{ width: 40 }}>
+                <TableHead style={{ width: 40 }}>
                   <Checkbox
                     checked={isAllSelected}
-                    indeterminate={isIndeterminate}
-                    onChange={handleSelectAll}
+                    onCheckedChange={handleSelectAll}
                   />
-                </Table.Th>
+                </TableHead>
               )}
               
               {columns.map(column => (
-                <Table.Th
+                <TableHead
                   key={column.id.toString()}
                   style={{
                     cursor: column.sortable ? 'pointer' : 'default',
@@ -426,21 +445,21 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
                   }}
                   onClick={() => column.sortable && handleSort(column.id.toString())}
                 >
-                  <Group gap="xs" justify="space-between">
-                    <Text fw={600}>{column.label}</Text>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold">{column.label}</span>
                     {column.sortable && getSortIcon(column.id.toString())}
-                  </Group>
-                </Table.Th>
+                  </div>
+                </TableHead>
               ))}
               
-              <Table.Th style={{ width: 60 }}>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
+              <TableHead style={{ width: 60 }}>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
           
-          <Table.Tbody>
+          <TableBody>
             {loading ? (
-              <Table.Tr>
-                <Table.Td colSpan={columns.length + (selectable ? 1 : 0) + 1}>
+              <TableRow>
+                <TableCell colSpan={columns.length + (selectable ? 1 : 0) + 1}>
                   <div style={{ padding: '40px', textAlign: 'center' }}>
                     <div className="loading-dots">
                       <span></span>
@@ -448,23 +467,23 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
                       <span></span>
                     </div>
                   </div>
-                </Table.Td>
-              </Table.Tr>
+                </TableCell>
+              </TableRow>
             ) : paginatedData.length === 0 ? (
-              <Table.Tr>
-                <Table.Td colSpan={columns.length + (selectable ? 1 : 0) + 1}>
+              <TableRow>
+                <TableCell colSpan={columns.length + (selectable ? 1 : 0) + 1}>
                   <div style={{ padding: '40px', textAlign: 'center' }}>
-                    <Text c="dimmed">No data available</Text>
+                    <span className="text-muted-foreground">No data available</span>
                   </div>
-                </Table.Td>
-              </Table.Tr>
+                </TableCell>
+              </TableRow>
             ) : (
               paginatedData.map(row => {
                 const rowId = getRowId(row);
                 const isSelected = selectedRows.has(rowId);
                 
                 return (
-                  <Table.Tr
+                  <TableRow
                     key={rowId}
                     style={{
                       backgroundColor: isSelected ? 'var(--sidebar-accent)' : 'transparent',
@@ -473,66 +492,68 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
                     onClick={() => onRowClick?.(row)}
                   >
                     {selectable && (
-                      <Table.Td>
+                      <TableCell>
                         <Checkbox
                           checked={isSelected}
-                          onChange={() => handleRowSelect(row)}
+                          onCheckedChange={() => handleRowSelect(row)}
                           onClick={(e) => e.stopPropagation()}
                         />
-                      </Table.Td>
+                      </TableCell>
                     )}
                     
                     {columns.map(column => (
-                      <Table.Td key={column.id.toString()}>
+                      <TableCell key={String(column.id)}>
                         {renderCellContent(column, row)}
-                      </Table.Td>
+                      </TableCell>
                     ))}
                     
-                    <Table.Td>
-                      <Menu shadow="md" width={200}>
-                        <Menu.Target>
-                          <ActionIcon
-                            variant="subtle"
-                            onClick={(e) => e.stopPropagation()}
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
                           >
-                            <DotsVerticalIcon width={16} height={16} />
-                          </ActionIcon>
-                        </Menu.Target>
-                        
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            leftSection={<EyeOpenIcon width={14} height={14} />}
+                            <DotsVerticalIcon className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
                             onClick={() => onRowClick?.(row)}
+                            className="flex items-center gap-2"
                           >
+                            <EyeOpenIcon className="w-4 h-4" />
                             View
-                          </Menu.Item>
+                          </DropdownMenuItem>
                           
                           {onRowEdit && (
-                            <Menu.Item
-                              leftSection={<Pencil1Icon width={14} height={14} />}
+                            <DropdownMenuItem
                               onClick={() => onRowEdit(row)}
+                              className="flex items-center gap-2"
                             >
+                              <Pencil1Icon className="w-4 h-4" />
                               Edit
-                            </Menu.Item>
+                            </DropdownMenuItem>
                           )}
                           
                           {onRowDelete && (
-                            <Menu.Item
-                              leftSection={<TrashIcon width={14} height={14} />}
-                              color="red"
+                            <DropdownMenuItem
                               onClick={() => onRowDelete(row)}
+                              className="flex items-center gap-2 text-destructive"
                             >
+                              <TrashIcon className="w-4 h-4" />
                               Delete
-                            </Menu.Item>
+                            </DropdownMenuItem>
                           )}
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Table.Td>
-                  </Table.Tr>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </Table.Tbody>
+          </TableBody>
         </Table>
       </div>
 
@@ -547,53 +568,74 @@ export const AdvancedDataTable = <T extends Record<string, any>>({
             alignItems: 'center',
           }}
         >
-          <Text size="sm" c="dimmed">
+          <span className="text-sm text-muted-foreground">
             Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} entries
-          </Text>
+          </span>
           
-          <Pagination
-            total={totalPages}
-            value={currentPage}
-            onChange={setCurrentPage}
-            size="sm"
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Bulk Action Confirmation Modal */}
-      <Modal
-        opened={bulkActionModal.isOpen}
-        onClose={() => setBulkActionModal({ isOpen: false, isProcessing: false })}
-        title={bulkActionModal.action?.confirmation?.title || 'Confirm Action'}
+      <Dialog
+        open={bulkActionModal.isOpen}
+        onOpenChange={(open) => !open && setBulkActionModal({ isOpen: false, isProcessing: false })}
       >
-        <Stack gap="md">
-          <Text>
-            {bulkActionModal.action?.confirmation?.message || 
-             `Are you sure you want to perform this action on ${selectedRows.size} item(s)?`}
-          </Text>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkActionModal.action?.confirmation?.title || 'Confirm Action'}
+            </DialogTitle>
+            <DialogDescription>
+              {bulkActionModal.action?.confirmation?.message || 
+               `Are you sure you want to perform this action on ${selectedRows.size} item(s)?`}
+            </DialogDescription>
+          </DialogHeader>
           
           {bulkActionModal.isProcessing && (
-            <Progress value={100} animated />
+            <Progress value={100} className="animate-pulse" />
           )}
           
-          <Group justify="flex-end" gap="sm">
+          <DialogFooter>
             <Button
-              variant="light"
+              variant="outline"
               onClick={() => setBulkActionModal({ isOpen: false, isProcessing: false })}
               disabled={bulkActionModal.isProcessing}
             >
               Cancel
             </Button>
             <Button
-              color={bulkActionModal.action?.danger ? 'red' : undefined}
+              variant={bulkActionModal.action?.danger ? 'destructive' : 'default'}
               onClick={confirmBulkAction}
-              loading={bulkActionModal.isProcessing}
+              disabled={bulkActionModal.isProcessing}
             >
               {bulkActionModal.action?.confirmation?.confirmLabel || 'Confirm'}
             </Button>
-          </Group>
-        </Stack>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

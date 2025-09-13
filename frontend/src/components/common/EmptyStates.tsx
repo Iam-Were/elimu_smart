@@ -1,5 +1,6 @@
 import React from 'react';
-import { Stack, Text, Button, Card } from '@mantine/core';
+import { Card, CardContent } from '@/components/ui/card';
+import Button from '@/components/ui/button';
 import {
   MagnifyingGlassIcon,
   PersonIcon,
@@ -31,72 +32,48 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   action,
   secondaryAction,
 }) => (
-  <Card
-    className="dashboard-card"
-    style={{
-      backgroundColor: 'var(--card)',
-      border: '1px solid var(--border)',
-      textAlign: 'center',
-      padding: '3rem 2rem',
-    }}
-  >
-    <Stack gap="lg" align="center">
-      {/* Icon */}
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: '50%',
-          backgroundColor: 'var(--muted)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--muted-foreground)',
-        }}
-      >
-        {icon || <FileTextIcon width={32} height={32} />}
+  <Card className="dashboard-card border border-border theme-transition">
+    <CardContent className="p-12 text-center">
+      <div className="flex flex-col items-center space-y-6">
+        {/* Icon */}
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+          {icon || <FileTextIcon width={32} height={32} />}
+        </div>
+
+        {/* Content */}
+        <div className="space-y-2 max-w-md mx-auto">
+          <h3 className="text-xl font-semibold text-foreground">
+            {title}
+          </h3>
+          <p className="text-muted-foreground leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        {/* Actions */}
+        {(action || secondaryAction) && (
+          <div className="flex flex-col items-center space-y-2">
+            {action && (
+              <Button
+                className={action.variant === 'primary' ? 'bg-primary hover:bg-primary/90' : 'variant-secondary'}
+                onClick={action.onClick}
+              >
+                {action.label}
+              </Button>
+            )}
+            
+            {secondaryAction && (
+              <Button
+                variant="ghost"
+                onClick={secondaryAction.onClick}
+              >
+                {secondaryAction.label}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Content */}
-      <Stack gap="sm" align="center">
-        <Text size="xl" fw={600} style={{ color: 'var(--foreground)' }}>
-          {title}
-        </Text>
-        <Text
-          size="md"
-          style={{ 
-            color: 'var(--muted-foreground)', 
-            maxWidth: 400,
-            lineHeight: 1.5 
-          }}
-        >
-          {description}
-        </Text>
-      </Stack>
-
-      {/* Actions */}
-      {(action || secondaryAction) && (
-        <Stack gap="sm" align="center">
-          {action && (
-            <Button
-              className={action.variant === 'primary' ? 'btn-primary-linkedin btn-md' : 'btn-secondary-linkedin btn-md'}
-              onClick={action.onClick}
-            >
-              {action.label}
-            </Button>
-          )}
-          
-          {secondaryAction && (
-            <Button
-              className="btn-ghost-linkedin btn-md"
-              onClick={secondaryAction.onClick}
-            >
-              {secondaryAction.label}
-            </Button>
-          )}
-        </Stack>
-      )}
-    </Stack>
+    </CardContent>
   </Card>
 );
 
@@ -310,33 +287,18 @@ export const EmptyTable: React.FC<EmptyTableProps> = ({
   onImportData,
   entityName = "items"
 }) => (
-  <Card
-    className="dashboard-card"
-    style={{
-      backgroundColor: 'var(--card)',
-      border: '1px solid var(--border)',
-    }}
-  >
+  <Card className="dashboard-card border border-border theme-transition">
     {/* Table Header */}
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
-        gap: '1rem',
-        padding: '1rem',
-        borderBottom: '1px solid var(--border)',
-        backgroundColor: 'var(--muted)',
-      }}
-    >
+    <div className={`grid gap-4 p-4 border-b border-border bg-muted`} style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}>
       {columns.map((column, index) => (
-        <Text key={index} size="sm" fw={600} style={{ color: 'var(--muted-foreground)' }}>
+        <span key={index} className="text-sm font-semibold text-muted-foreground">
           {column}
-        </Text>
+        </span>
       ))}
     </div>
 
     {/* Empty State */}
-    <div style={{ padding: '3rem 2rem' }}>
+    <CardContent className="p-12">
       <EmptyState
         icon={<FileTextIcon width={24} height={24} />}
         title={`No ${entityName} yet`}
@@ -351,6 +313,6 @@ export const EmptyTable: React.FC<EmptyTableProps> = ({
           onClick: onImportData
         } : undefined}
       />
-    </div>
+    </CardContent>
   </Card>
 );

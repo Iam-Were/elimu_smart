@@ -1,19 +1,9 @@
 import React from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Grid,
-  Stack,
-  Badge,
-  Group,
-  Button,
-  RingProgress,
-  SimpleGrid,
-  Alert,
-  Progress,
-} from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import Button from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import {
   PersonIcon,
   ActivityLogIcon,
@@ -131,556 +121,389 @@ export const AdminDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success':
-        return 'green';
-      case 'warning':
-        return 'yellow';
-      case 'error':
-        return 'red';
-      case 'info':
-        return 'blue';
-      default:
-        return 'gray';
+      case 'success': return 'green';
+      case 'warning': return 'yellow';
+      case 'error': return 'red';
+      case 'info': return 'blue';
+      default: return 'gray';
     }
   };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'user':
-        return <PersonIcon width={14} height={14} />;
-      case 'system':
-        return <GearIcon width={14} height={14} />;
-      case 'content':
-        return <ActivityLogIcon width={14} height={14} />;
-      case 'admin':
-        return <GearIcon width={14} height={14} />;
-      default:
-        return <ClockIcon width={14} height={14} />;
+      case 'user': return <PersonIcon width={14} height={14} />;
+      case 'system': return <GearIcon width={14} height={14} />;
+      case 'content': return <ActivityLogIcon width={14} height={14} />;
+      case 'admin': return <GearIcon width={14} height={14} />;
+      default: return <ClockIcon width={14} height={14} />;
     }
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container max-w-7xl mx-auto py-6 px-4">
+      <div className="space-y-6">
         {/* Welcome Section */}
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start">
-            <Stack gap="xs">
-              <Title order={1} size="2rem">
+        <div className="space-y-2">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold text-foreground">
                 {getWelcomeMessage()}
-              </Title>
-              <Text size="lg" c="dimmed">
+              </h1>
+              <p className="text-lg text-muted-foreground">
                 Platform administration and system oversight
-              </Text>
-            </Stack>
-            <Badge
-              size="lg"
-              variant="light"
-              color="violet"
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--secondary-foreground)',
-              }}
-            >
+              </p>
+            </div>
+            <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-sm px-3 py-1">
               System Administrator
             </Badge>
-          </Group>
-        </Stack>
+          </div>
+        </div>
 
         {/* Key System Metrics */}
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-          <Card
-            className="card-linkedin dashboard-card progressive-reveal"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <div
-                style={{
-                  color: 'var(--primary)',
-                  fontSize: '2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="p-6 text-center">
+            <CardContent className="space-y-2">
+              <div className="text-purple-600 flex justify-center">
                 <PersonIcon width={32} height={32} />
               </div>
-              <Text fw={500} size="sm" ta="center">
+              <p className="text-sm font-medium text-muted-foreground">
                 Total Users
-              </Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+              </p>
+              <h3 className="text-2xl font-bold text-purple-600">
                 {systemMetrics.users.total.toLocaleString()}
-              </Title>
-              <Text size="xs" c="dimmed" ta="center">
+              </h3>
+              <p className="text-xs text-muted-foreground">
                 {systemMetrics.users.active.toLocaleString()} active
-              </Text>
-            </Stack>
+              </p>
+            </CardContent>
           </Card>
 
-          <Card
-            className="card-linkedin dashboard-card progressive-reveal"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <RingProgress
-                size={60}
-                thickness={6}
-                sections={[
-                  {
-                    value: systemMetrics.performance.uptime,
-                    color: systemMetrics.performance.uptime > 99 ? 'var(--success)' : 'var(--warning)',
-                  },
-                ]}
-                label={
-                  <Text
-                    ta="center"
-                    fw={700}
-                    size="xs"
-                    style={{ 
-                      color: systemMetrics.performance.uptime > 99 ? 'var(--success)' : 'var(--warning)' 
-                    }}
-                  >
+          <Card className="p-6 text-center">
+            <CardContent className="space-y-2">
+              <div className="relative w-16 h-16 mx-auto">
+                <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center ${
+                  systemMetrics.performance.uptime > 99 ? 'border-green-500' : 'border-yellow-500'
+                }`}>
+                  <span className={`text-xs font-bold ${
+                    systemMetrics.performance.uptime > 99 ? 'text-green-600' : 'text-yellow-600'
+                  }`}>
                     {systemMetrics.performance.uptime}%
-                  </Text>
-                }
-              />
-              <Text fw={500} size="sm" ta="center">
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">
                 System Uptime
-              </Text>
-              <Text size="xs" c="dimmed" ta="center">
+              </p>
+              <p className="text-xs text-muted-foreground">
                 Last 30 days
-              </Text>
-            </Stack>
+              </p>
+            </CardContent>
           </Card>
 
-          <Card
-            className="card-linkedin dashboard-card progressive-reveal"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <div
-                style={{
-                  color: 'var(--primary)',
-                  fontSize: '2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+          <Card className="p-6 text-center">
+            <CardContent className="space-y-2">
+              <div className="text-purple-600 flex justify-center">
                 <ClockIcon width={32} height={32} />
               </div>
-              <Text fw={500} size="sm" ta="center">
+              <p className="text-sm font-medium text-muted-foreground">
                 Avg Response Time
-              </Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+              </p>
+              <h3 className="text-2xl font-bold text-purple-600">
                 {systemMetrics.performance.responseTime}ms
-              </Title>
-              <Text size="xs" c="dimmed" ta="center">
+              </h3>
+              <p className="text-xs text-muted-foreground">
                 API response time
-              </Text>
-            </Stack>
+              </p>
+            </CardContent>
           </Card>
 
-          <Card
-            className="card-linkedin dashboard-card progressive-reveal"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <div
-                style={{
-                  color: systemMetrics.content.pendingModeration > 10 ? 'var(--destructive)' : 'var(--primary)',
-                  fontSize: '2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+          <Card className="p-6 text-center">
+            <CardContent className="space-y-2">
+              <div className={`flex justify-center ${
+                systemMetrics.content.pendingModeration > 10 ? 'text-red-600' : 'text-purple-600'
+              }`}>
                 <ExclamationTriangleIcon width={32} height={32} />
               </div>
-              <Text fw={500} size="sm" ta="center">
+              <p className="text-sm font-medium text-muted-foreground">
                 Pending Moderation
-              </Text>
-              <Title 
-                order={2} 
-                size="1.5rem" 
-                style={{ 
-                  color: systemMetrics.content.pendingModeration > 10 ? 'var(--destructive)' : 'var(--primary)' 
-                }}
-              >
+              </p>
+              <h3 className={`text-2xl font-bold ${
+                systemMetrics.content.pendingModeration > 10 ? 'text-red-600' : 'text-purple-600'
+              }`}>
                 {systemMetrics.content.pendingModeration}
-              </Title>
-              <Text size="xs" c="dimmed" ta="center">
+              </h3>
+              <p className="text-xs text-muted-foreground">
                 Items need review
-              </Text>
-            </Stack>
+              </p>
+            </CardContent>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* System Health Overview */}
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Text size="sm" fw={500}>CPU Usage</Text>
-                <Text size="sm" style={{ color: 'var(--primary)' }}>{systemMetrics.system.cpuUsage}%</Text>
-              </Group>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="p-4">
+            <CardContent className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">CPU Usage</span>
+                <span className="text-sm text-purple-600">{systemMetrics.system.cpuUsage}%</span>
+              </div>
               <Progress 
                 value={systemMetrics.system.cpuUsage} 
-                color={systemMetrics.system.cpuUsage > 80 ? 'red' : systemMetrics.system.cpuUsage > 60 ? 'yellow' : 'green'}
-                className="progress-bar-animate"
+                className={`h-2 ${
+                  systemMetrics.system.cpuUsage > 80 ? '[&>div]:bg-red-500' : 
+                  systemMetrics.system.cpuUsage > 60 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'
+                }`}
               />
-            </Stack>
+            </CardContent>
           </Card>
 
-          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Text size="sm" fw={500}>Memory Usage</Text>
-                <Text size="sm" style={{ color: 'var(--primary)' }}>{systemMetrics.system.memoryUsage}%</Text>
-              </Group>
+          <Card className="p-4">
+            <CardContent className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Memory Usage</span>
+                <span className="text-sm text-purple-600">{systemMetrics.system.memoryUsage}%</span>
+              </div>
               <Progress 
-                value={systemMetrics.system.memoryUsage} 
-                color={systemMetrics.system.memoryUsage > 80 ? 'red' : systemMetrics.system.memoryUsage > 60 ? 'yellow' : 'green'}
-                className="progress-bar-animate"
+                value={systemMetrics.system.memoryUsage}
+                className={`h-2 ${
+                  systemMetrics.system.memoryUsage > 80 ? '[&>div]:bg-red-500' : 
+                  systemMetrics.system.memoryUsage > 60 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'
+                }`}
               />
-            </Stack>
+            </CardContent>
           </Card>
 
-          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Text size="sm" fw={500}>Disk Usage</Text>
-                <Text size="sm" style={{ color: 'var(--primary)' }}>{systemMetrics.system.diskUsage}%</Text>
-              </Group>
+          <Card className="p-4">
+            <CardContent className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Disk Usage</span>
+                <span className="text-sm text-purple-600">{systemMetrics.system.diskUsage}%</span>
+              </div>
               <Progress 
-                value={systemMetrics.system.diskUsage} 
-                color={systemMetrics.system.diskUsage > 80 ? 'red' : systemMetrics.system.diskUsage > 60 ? 'yellow' : 'green'}
-                className="progress-bar-animate"
+                value={systemMetrics.system.diskUsage}
+                className={`h-2 ${
+                  systemMetrics.system.diskUsage > 80 ? '[&>div]:bg-red-500' : 
+                  systemMetrics.system.diskUsage > 60 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'
+                }`}
               />
-            </Stack>
+            </CardContent>
           </Card>
 
-          <Card className="card-linkedin dashboard-card progressive-reveal" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <GlobeIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
-              <Text size="sm" fw={500}>Active Connections</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
+          <Card className="p-4 text-center">
+            <CardContent className="space-y-2">
+              <GlobeIcon width={24} height={24} className="text-purple-600 mx-auto" />
+              <p className="text-sm font-medium">Active Connections</p>
+              <p className="text-lg font-bold text-purple-600">
                 {systemMetrics.system.activeConnections.toLocaleString()}
-              </Text>
-            </Stack>
+              </p>
+            </CardContent>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* Main Content Grid */}
-        <Grid>
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Stack gap="lg">
-              {/* Quick Actions */}
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Stack gap="md">
-                  <Title order={3}>Quick Actions</Title>
-                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-                    <Button
-                      className="btn-secondary-linkedin btn-md"
-                      leftSection={<PersonIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/users')}
-                      style={{
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                      }}
-                    >
-                      Manage Users
-                    </Button>
-                    <Button
-                      className="btn-secondary-linkedin btn-md"
-                      leftSection={<BarChartIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/analytics')}
-                      style={{
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                      }}
-                    >
-                      Analytics
-                    </Button>
-                    <Button
-                      className="btn-secondary-linkedin btn-md"
-                      leftSection={<ActivityLogIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/content-moderation')}
-                      style={{
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                      }}
-                    >
-                      Content Moderation
-                    </Button>
-                    <Button
-                      className="btn-secondary-linkedin btn-md"
-                      leftSection={<GearIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/system-configuration')}
-                      style={{
-                        justifyContent: 'flex-start',
-                        width: '100%',
-                      }}
-                    >
-                      System Configuration
-                    </Button>
-                    <Button
-                      variant="light"
-                      size="md"
-                      leftSection={<ActivityLogIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/audit-log')}
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                        justifyContent: 'flex-start',
-                      }}
-                    >
-                      Audit Log
-                    </Button>
-                    <Button
-                      variant="light"
-                      size="md"
-                      leftSection={<ExclamationTriangleIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/security-monitoring')}
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                        justifyContent: 'flex-start',
-                      }}
-                    >
-                      Security Monitoring
-                    </Button>
-                    <Button
-                      variant="light"
-                      size="md"
-                      leftSection={<GearIcon width={18} height={18} />}
-                      onClick={() => navigate('/admin/maintenance-tools')}
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                        justifyContent: 'flex-start',
-                      }}
-                    >
-                      Maintenance Tools
-                    </Button>
-                  </SimpleGrid>
-                </Stack>
-              </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/users')}
+                  >
+                    <PersonIcon width={18} height={18} />
+                    Manage Users
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/analytics')}
+                  >
+                    <BarChartIcon width={18} height={18} />
+                    Analytics
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/content-moderation')}
+                  >
+                    <ActivityLogIcon width={18} height={18} />
+                    Content Moderation
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/system-configuration')}
+                  >
+                    <GearIcon width={18} height={18} />
+                    System Configuration
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/audit-log')}
+                  >
+                    <ActivityLogIcon width={18} height={18} />
+                    Audit Log
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => navigate('/admin/security-monitoring')}
+                  >
+                    <ExclamationTriangleIcon width={18} height={18} />
+                    Security Monitoring
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Recent Activity */}
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Stack gap="md">
-                  <Title order={3}>Recent System Activity</Title>
-                  <Stack gap="sm">
-                    {recentActivity.map(activity => (
-                      <Group key={activity.id} gap="md">
-                        <div style={{ color: getStatusColor(activity.status) }}>
-                          {getActivityIcon(activity.type)}
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent System Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map(activity => (
+                    <div key={activity.id} className="flex items-center gap-4">
+                      <div className={`text-${getStatusColor(activity.status)}-600`}>
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{activity.action}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{activity.user}</span>
+                          <span>•</span>
+                          <span>{activity.time}</span>
                         </div>
-                        <Stack gap={2} style={{ flex: 1 }}>
-                          <Text size="sm">{activity.action}</Text>
-                          <Group gap="sm">
-                            <Text size="xs" c="dimmed">
-                              {activity.user}
-                            </Text>
-                            <Text size="xs" c="dimmed">•</Text>
-                            <Text size="xs" c="dimmed">
-                              {activity.time}
-                            </Text>
-                          </Group>
-                        </Stack>
-                        <Badge
-                          size="xs"
-                          color={getStatusColor(activity.status)}
-                          variant="light"
-                        >
-                          {activity.status}
-                        </Badge>
-                      </Group>
-                    ))}
-                  </Stack>
-                </Stack>
-              </Card>
-            </Stack>
-          </Grid.Col>
+                      </div>
+                      <Badge variant="outline" className={`text-${getStatusColor(activity.status)}-600`}>
+                        {activity.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Stack gap="lg">
-              {/* System Alerts */}
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Stack gap="md">
-                  <Title order={4}>System Alerts</Title>
-                  <Stack gap="sm">
-                    {systemAlerts.filter(alert => !alert.resolved).map(alert => (
-                      <Alert
-                        key={alert.id}
-                        variant="light"
-                        color={getStatusColor(alert.level)}
-                        styles={{
-                          root: {
-                            backgroundColor: 'var(--muted)',
-                            borderColor: 'var(--border)',
-                          },
-                        }}
-                      >
-                        <Stack gap={2}>
-                          <Text size="sm" fw={500}>
-                            {alert.message}
-                          </Text>
-                          <Text size="xs" c="dimmed">
-                            {alert.timestamp}
-                          </Text>
-                        </Stack>
-                      </Alert>
-                    ))}
-                    {systemAlerts.filter(alert => !alert.resolved).length === 0 && (
-                      <Alert
-                        variant="light"
-                        color="green"
-                        icon={<CheckCircledIcon width={16} height={16} />}
-                      >
-                        <Text size="sm">All systems operating normally</Text>
-                      </Alert>
-                    )}
-                  </Stack>
-                </Stack>
-              </Card>
+          <div className="space-y-6">
+            {/* System Alerts */}
+            <Card>
+              <CardHeader>
+                <CardTitle>System Alerts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {systemAlerts.filter(alert => !alert.resolved).map(alert => (
+                    <Alert key={alert.id} className={`border-${getStatusColor(alert.level)}-200`}>
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <AlertDescription>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{alert.message}</p>
+                          <p className="text-xs text-muted-foreground">{alert.timestamp}</p>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  ))}
+                  {systemAlerts.filter(alert => !alert.resolved).length === 0 && (
+                    <Alert className="border-green-200">
+                      <CheckCircledIcon className="h-4 w-4" />
+                      <AlertDescription>
+                        <p className="text-sm">All systems operating normally</p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* User Distribution */}
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Stack gap="md">
-                  <Title order={4}>User Distribution</Title>
-                  <Stack gap="sm">
-                    <Group justify="space-between">
-                      <Text size="sm">Students</Text>
-                      <Group gap="xs">
-                        <Text size="sm" fw={500} style={{ color: 'var(--primary)' }}>
-                          {systemMetrics.users.students.toLocaleString()}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          ({Math.round((systemMetrics.users.students / systemMetrics.users.total) * 100)}%)
-                        </Text>
-                      </Group>
-                    </Group>
-                    
-                    <Group justify="space-between">
-                      <Text size="sm">Counselors</Text>
-                      <Group gap="xs">
-                        <Text size="sm" fw={500} style={{ color: 'var(--primary)' }}>
-                          {systemMetrics.users.counselors}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          ({Math.round((systemMetrics.users.counselors / systemMetrics.users.total) * 100)}%)
-                        </Text>
-                      </Group>
-                    </Group>
+            {/* User Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>User Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Students</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-purple-600">
+                        {systemMetrics.users.students.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round((systemMetrics.users.students / systemMetrics.users.total) * 100)}%)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Counselors</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-purple-600">
+                        {systemMetrics.users.counselors}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round((systemMetrics.users.counselors / systemMetrics.users.total) * 100)}%)
+                      </span>
+                    </div>
+                  </div>
 
-                    <Group justify="space-between">
-                      <Text size="sm">Administrators</Text>
-                      <Group gap="xs">
-                        <Text size="sm" fw={500} style={{ color: 'var(--primary)' }}>
-                          {systemMetrics.users.admins}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          ({Math.round((systemMetrics.users.admins / systemMetrics.users.total) * 100)}%)
-                        </Text>
-                      </Group>
-                    </Group>
-                  </Stack>
-                </Stack>
-              </Card>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Administrators</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-purple-600">
+                        {systemMetrics.users.admins}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round((systemMetrics.users.admins / systemMetrics.users.total) * 100)}%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Performance Summary */}
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Stack gap="md">
-                  <Title order={4}>Performance Summary</Title>
-                  <Stack gap="sm">
-                    <Group justify="space-between">
-                      <Text size="sm">API Calls (24h)</Text>
-                      <Text size="sm" fw={500} style={{ color: 'var(--primary)' }}>
-                        {systemMetrics.performance.apiCalls.toLocaleString()}
-                      </Text>
-                    </Group>
-                    
-                    <Group justify="space-between">
-                      <Text size="sm">Error Rate</Text>
-                      <Text size="sm" fw={500} style={{ 
-                        color: systemMetrics.performance.errorRate > 1 ? 'var(--destructive)' : 'var(--success)' 
-                      }}>
-                        {systemMetrics.performance.errorRate}%
-                      </Text>
-                    </Group>
+            {/* Performance Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">API Calls (24h)</span>
+                    <span className="text-sm font-medium text-purple-600">
+                      {systemMetrics.performance.apiCalls.toLocaleString()}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Error Rate</span>
+                    <span className={`text-sm font-medium ${
+                      systemMetrics.performance.errorRate > 1 ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {systemMetrics.performance.errorRate}%
+                    </span>
+                  </div>
 
-                    <Group justify="space-between">
-                      <Text size="sm">New Users (Month)</Text>
-                      <Text size="sm" fw={500} style={{ color: 'var(--primary)' }}>
-                        {systemMetrics.users.newThisMonth}
-                      </Text>
-                    </Group>
-                  </Stack>
-                </Stack>
-              </Card>
-            </Stack>
-          </Grid.Col>
-        </Grid>
-      </Stack>
-    </Container>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">New Users (Month)</span>
+                    <span className="text-sm font-medium text-purple-600">
+                      {systemMetrics.users.newThisMonth}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

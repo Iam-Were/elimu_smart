@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import Button from '@/components/ui/button';
 import {
-  Card,
-  Group,
-  Text,
-  Stack,
-  Select,
-  RingProgress,
-  Progress,
-  ActionIcon,
   Tooltip,
-} from '@mantine/core';
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   DownloadIcon,
   InfoCircledIcon,
@@ -21,7 +20,7 @@ interface ChartDataPoint {
   label: string;
   value: number;
   color?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // interface TimeSeriesDataPoint {
@@ -54,106 +53,100 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
   const chartTotal = total || data.reduce((sum, item) => sum + item.value, 0);
   const percentage = chartTotal > 0 ? Math.round((data[0]?.value || 0) / chartTotal * 100) : 0;
 
-  const ringData = data.map((item, index) => ({
-    value: chartTotal > 0 ? (item.value / chartTotal) * 100 : 0,
-    color: item.color || `var(--chart-${index + 1})`,
-    tooltip: `${item.label}: ${item.value}`,
-  }));
-
   return (
-    <Card
-      className="chart-animate card-linkedin dashboard-card"
-      style={{
-        backgroundColor: 'var(--card)',
-        borderColor: 'var(--border)',
-        height,
-      }}
+    <Card 
+      className="chart-animate dashboard-card border border-border theme-transition"
+      style={{ height }}
     >
-      <Stack gap="md" h="100%">
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Text fw={600} size="lg">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-semibold">
               {title}
-            </Text>
+            </CardTitle>
             {subtitle && (
-              <Text size="sm" c="dimmed">
+              <p className="text-sm text-muted-foreground">
                 {subtitle}
-              </Text>
+              </p>
             )}
-          </Stack>
+          </div>
           
-          <Group gap="xs">
-            <Tooltip label="Chart information">
-              <ActionIcon variant="subtle" size="sm">
-                <InfoCircledIcon width={14} height={14} />
-              </ActionIcon>
-            </Tooltip>
-            <ActionIcon variant="subtle" size="sm">
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <InfoCircledIcon width={14} height={14} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Chart information</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <DownloadIcon width={14} height={14} />
-            </ActionIcon>
-          </Group>
-        </Group>
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-        <Group gap="xl" align="center" style={{ flex: 1 }}>
-          <div style={{ position: 'relative' }}>
-            <RingProgress
-              size={120}
-              thickness={12}
-              sections={ringData}
-              label={
-                <div style={{ textAlign: 'center' }}>
-                  <Text size="xl" fw={700} style={{ color: 'var(--primary)' }}>
+      <CardContent className="flex-1">
+        <div className="flex items-center gap-8">
+          {/* Simplified Ring Progress - Using CSS for visual representation */}
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full border-8 border-muted relative overflow-hidden">
+              <div 
+                className="absolute inset-0 rounded-full border-8 border-primary transition-all duration-500"
+                style={{
+                  background: `conic-gradient(hsl(var(--primary)) ${percentage * 3.6}deg, transparent 0deg)`
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
                     {percentage}%
-                  </Text>
-                  <Text size="xs" c="dimmed">
+                  </div>
+                  <div className="text-xs text-muted-foreground">
                     Complete
-                  </Text>
+                  </div>
                 </div>
-              }
-            />
+              </div>
+            </div>
           </div>
 
           {showLegend && (
-            <Stack gap="xs" style={{ flex: 1 }}>
+            <div className="flex-1 space-y-2">
               {data.map((item, index) => (
-                <Group
+                <div
                   key={index}
-                  gap="sm"
-                  style={{
-                    padding: '8px',
-                    borderRadius: '6px',
-                    backgroundColor: hoveredSection === index ? 'var(--sidebar-accent)' : 'transparent',
-                    cursor: interactive ? 'pointer' : 'default',
-                    transition: 'background-color 0.2s ease',
-                  }}
+                  className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
+                    hoveredSection === index ? 'bg-muted' : ''
+                  } ${interactive ? 'cursor-pointer' : ''}`}
                   onMouseEnter={() => interactive && setHoveredSection(index)}
                   onMouseLeave={() => interactive && setHoveredSection(null)}
                 >
                   <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      backgroundColor: item.color || `var(--chart-${index + 1})`,
+                      backgroundColor: item.color || `hsl(var(--chart-${index + 1}))`,
                     }}
                   />
-                  <Stack gap={0} style={{ flex: 1 }}>
-                    <Text size="sm" fw={500}>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">
                       {item.label}
-                    </Text>
-                    <Text size="xs" c="dimmed">
+                    </div>
+                    <div className="text-xs text-muted-foreground">
                       {item.value.toLocaleString()}
-                    </Text>
-                  </Stack>
-                  <Text size="sm" fw={600} style={{ color: 'var(--primary)' }}>
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-primary">
                     {chartTotal > 0 ? Math.round((item.value / chartTotal) * 100) : 0}%
-                  </Text>
-                </Group>
+                  </div>
+                </div>
               ))}
-            </Stack>
+            </div>
           )}
-        </Group>
-      </Stack>
+        </div>
+      </CardContent>
     </Card>
   );
 };
@@ -181,33 +174,31 @@ export const BarChart: React.FC<BarChartProps> = ({
   const chartHeight = height - 100; // Reserve space for labels and title
 
   return (
-    <Card
-      className={`chart-animate card-linkedin dashboard-card ${animated ? 'progressive-reveal' : ''}`}
-      style={{
-        backgroundColor: 'var(--card)',
-        borderColor: 'var(--border)',
-        height,
-      }}
+    <Card 
+      className={`chart-animate dashboard-card border border-border theme-transition ${animated ? 'progressive-reveal' : ''}`}
+      style={{ height }}
     >
-      <Stack gap="md" h="100%">
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Text fw={600} size="lg">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-semibold">
               {title}
-            </Text>
+            </CardTitle>
             {subtitle && (
-              <Text size="sm" c="dimmed">
+              <p className="text-sm text-muted-foreground">
                 {subtitle}
-              </Text>
+              </p>
             )}
-          </Stack>
+          </div>
           
-          <ActionIcon variant="subtle" size="sm">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <DownloadIcon width={14} height={14} />
-          </ActionIcon>
-        </Group>
+          </Button>
+        </div>
+      </CardHeader>
 
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', padding: '0 16px' }}>
+              <CardContent className="flex-1">
+        <div className="flex items-end gap-2 px-4 h-full">
           {data.map((item, index) => {
             const barHeight = maxValue > 0 ? (item.value / maxValue) * chartHeight : 0;
             const isHovered = hoveredBar === index;
@@ -215,63 +206,38 @@ export const BarChart: React.FC<BarChartProps> = ({
             return (
               <div
                 key={index}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                }}
+                className="flex-1 flex flex-col items-center gap-2 cursor-pointer"
                 onMouseEnter={() => setHoveredBar(index)}
                 onMouseLeave={() => setHoveredBar(null)}
               >
+                {/* Bar Value */}
                 {showValues && (
-                  <Text
-                    size="xs"
-                    fw={600}
-                    style={{
-                      color: 'var(--primary)',
-                      opacity: isHovered ? 1 : 0,
-                      transition: 'opacity 0.2s ease',
-                    }}
-                  >
+                  <span className="text-xs font-medium text-foreground">
                     {item.value.toLocaleString()}
-                  </Text>
+                  </span>
                 )}
                 
+                {/* Bar */}
                 <div
+                  className={`w-full rounded-t transition-all duration-300 ${
+                    isHovered ? 'opacity-80' : ''
+                  }`}
                   style={{
-                    width: '100%',
-                    maxWidth: 40,
-                    height: barHeight,
-                    backgroundColor: item.color || 'var(--primary)',
-                    borderRadius: '4px 4px 0 0',
-                    transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    opacity: isHovered ? 0.9 : 0.8,
-                    position: 'relative',
-                    overflow: 'hidden',
+                    height: `${barHeight}px`,
+                    backgroundColor: item.color || `hsl(var(--chart-${index + 1}))`,
+                    minHeight: '4px'
                   }}
-                  className={animated ? 'progress-bar-animate' : ''}
                 />
                 
-                <Text
-                  size="xs"
-                  style={{
-                    textAlign: 'center',
-                    color: isHovered ? 'var(--primary)' : 'var(--muted-foreground)',
-                    fontWeight: isHovered ? 600 : 400,
-                    transition: 'all 0.2s ease',
-                  }}
-                >
+                {/* Label */}
+                <span className="text-xs text-center text-muted-foreground max-w-full">
                   {item.label}
-                </Text>
+                </span>
               </div>
             );
           })}
         </div>
-      </Stack>
+      </CardContent>
     </Card>
   );
 };
@@ -305,32 +271,32 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         borderColor: 'var(--border)',
       }}
     >
-      <Stack gap="sm">
-        <Group justify="space-between" align="flex-start">
-          <Text size="sm" c="dimmed" fw={500}>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-3">
+          <span className="text-sm text-muted-foreground font-medium">
             {title}
-          </Text>
+          </span>
           {icon && (
             <div style={{ color, opacity: 0.7 }}>
               {icon}
             </div>
           )}
-        </Group>
+        </div>
 
-        <Group justify="space-between" align="flex-end">
-          <Stack gap="xs">
-            <Text size="xl" fw={700} style={{ color }}>
+        <div className="flex justify-between items-end">
+          <div className="space-y-1">
+            <div className="text-2xl font-bold" style={{ color }}>
               {typeof value === 'number' ? value.toLocaleString() : value}
-            </Text>
+            </div>
             {subtitle && (
-              <Text size="xs" c="dimmed">
+              <div className="text-xs text-muted-foreground">
                 {subtitle}
-              </Text>
+              </div>
             )}
-          </Stack>
+          </div>
 
           {trend && (
-            <Group gap="xs" align="center">
+            <div className="flex items-center gap-2">
               {trend.positive !== undefined && (
                 <div style={{ color: trend.positive ? 'var(--success)' : 'var(--destructive)' }}>
                   {trend.positive ? (
@@ -340,10 +306,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                   )}
                 </div>
               )}
-              <Stack gap={0} align="flex-end">
-                <Text
-                  size="sm"
-                  fw={600}
+              <div className="flex flex-col items-end">
+                <span
+                  className="text-sm font-semibold"
                   style={{
                     color: trend.positive !== undefined 
                       ? (trend.positive ? 'var(--success)' : 'var(--destructive)')
@@ -351,15 +316,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                   }}
                 >
                   {trend.value > 0 ? '+' : ''}{trend.value}%
-                </Text>
-                <Text size="xs" c="dimmed">
+                </span>
+                <span className="text-xs text-muted-foreground">
                   {trend.period}
-                </Text>
-              </Stack>
-            </Group>
+                </span>
+              </div>
+            </div>
           )}
-        </Group>
-      </Stack>
+        </div>
+      </CardContent>
     </Card>
   );
 };
@@ -390,59 +355,60 @@ export const ProgressBarChart: React.FC<ProgressBarChartProps> = ({
         height,
       }}
     >
-      <Stack gap="md" h="100%">
-        <Group justify="space-between" align="center">
-          <Text fw={600} size="lg">
+      <div className="flex flex-col gap-6 h-full">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">
             {title}
-          </Text>
-          <ActionIcon variant="subtle" size="sm">
+          </h3>
+          <Button variant="ghost" size="sm">
             <DownloadIcon width={14} height={14} />
-          </ActionIcon>
-        </Group>
+          </Button>
+        </div>
 
-        <Stack gap="lg" style={{ flex: 1 }}>
+        <div className="flex flex-col gap-6 flex-1">
           {data.map((item, index) => {
             const percentage = item.maxValue > 0 ? (item.value / item.maxValue) * 100 : 0;
             
             return (
-              <Stack key={index} gap="xs">
-                <Group justify="space-between" align="center">
-                  <Stack gap={0}>
-                    <Text size="sm" fw={500}>
+              <div key={index} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-sm font-medium">
                       {item.label}
-                    </Text>
+                    </div>
                     {item.description && (
-                      <Text size="xs" c="dimmed">
+                      <div className="text-xs text-muted-foreground">
                         {item.description}
-                      </Text>
+                      </div>
                     )}
-                  </Stack>
-                  <Group gap="xs" align="center">
-                    <Text size="sm" fw={600} style={{ color: 'var(--primary)' }}>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary">
                       {item.value.toLocaleString()}
-                    </Text>
-                    <Text size="xs" c="dimmed">
+                    </span>
+                    <span className="text-xs text-muted-foreground">
                       / {item.maxValue.toLocaleString()}
-                    </Text>
-                  </Group>
-                </Group>
+                    </span>
+                  </div>
+                </div>
                 
                 <Progress
                   value={percentage}
-                  color={item.color}
-                  size="md"
-                  radius="sm"
                   className="progress-bar-animate"
+                  style={{ 
+                    backgroundColor: 'var(--muted)',
+                    '--progress-foreground': item.color 
+                  } as React.CSSProperties}
                 />
                 
-                <Text size="xs" style={{ textAlign: 'right', color: 'var(--muted-foreground)' }}>
+                <div className="text-xs text-right text-muted-foreground">
                   {Math.round(percentage)}% complete
-                </Text>
-              </Stack>
+                </div>
+              </div>
             );
           })}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
     </Card>
   );
 };
@@ -530,24 +496,27 @@ export const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({
   ];
 
   return (
-    <Stack gap="lg">
+    <div className="space-y-6">
       {/* Header Controls */}
-      <Group justify="space-between" align="center">
-        <Text size="xl" fw={700}>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">
           Analytics Dashboard
-        </Text>
-        <Select
-          value={timeRange}
-          onChange={(value) => onTimeRangeChange(value || '30d')}
-          data={[
-            { value: '7d', label: 'Last 7 days' },
-            { value: '30d', label: 'Last 30 days' },
-            { value: '90d', label: 'Last 3 months' },
-            { value: '1y', label: 'Last year' },
-          ]}
-          style={{ width: 150 }}
-        />
-      </Group>
+        </h1>
+        <Select 
+          value={timeRange} 
+          onValueChange={(value) => onTimeRangeChange(value || '30d')}
+        >
+          <SelectTrigger className="w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 3 months</SelectItem>
+            <SelectItem value="1y">Last year</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Metric Cards */}
       <div
@@ -591,6 +560,6 @@ export const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({
         data={mockProgressBarData}
         height={280}
       />
-    </Stack>
+    </div>
   );
 };

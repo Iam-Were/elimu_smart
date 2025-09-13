@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import {
   RefreshCw,
   BarChart3
 } from 'lucide-react';
-import { useEmailService } from '@/hooks/useEmailService';
+import { useEmailService, type EmailStatistics } from '@/hooks/useEmailService';
 
 interface EmailManagementProps {
   className?: string;
@@ -21,21 +21,21 @@ interface EmailManagementProps {
 
 export const EmailManagement: React.FC<EmailManagementProps> = ({ className }) => {
   const { getEmailStatistics, error } = useEmailService();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<EmailStatistics | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadEmailStats = async () => {
+  const loadEmailStats = useCallback(async () => {
     setRefreshing(true);
     const statistics = await getEmailStatistics();
     if (statistics) {
       setStats(statistics);
     }
     setRefreshing(false);
-  };
+  }, [getEmailStatistics]);
 
   useEffect(() => {
     loadEmailStats();
-  }, []);
+  }, [loadEmailStats]);
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -130,8 +130,8 @@ export const EmailManagement: React.FC<EmailManagementProps> = ({ className }) =
           <CardHeader title="Success Rate" icon={CheckCircle} className="flex flex-row items-center justify-between space-y-0 pb-2" />
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {stats?.byStatus?.sent 
-                ? Math.round((stats.byStatus.sent / stats.totalSent) * 100) 
+              {stats?.byStatus?.['sent']
+                ? Math.round((stats.byStatus['sent'] / stats.totalSent) * 100)
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
@@ -173,7 +173,7 @@ export const EmailManagement: React.FC<EmailManagementProps> = ({ className }) =
           <CardHeader title="Recent Email Activity" icon={Clock} />
           <CardContent>
             <div className="space-y-4">
-              {stats.recentActivity.map((activity: any, index: number) => (
+              {stats.recentActivity.map((activity: EmailStatistics['recentActivity'][0], index: number) => (
                 <div 
                   key={index}
                   className="flex items-center justify-between p-3 rounded-lg border border-gray-200"

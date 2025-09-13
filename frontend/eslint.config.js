@@ -19,5 +19,12 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Disable Fast Refresh warnings for utility files
+      'react-refresh/only-export-components': ['warn', {
+        allowConstantExport: true,
+        allowExportNames: ['icons', 'getIcon', 'iconIntelligence', 'badgeVariants', 'buttonVariants', 'toggleVariants']
+      }]
+    }
   },
 ]);

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Group, UnstyledButton } from '@mantine/core';
 import {
   HomeIcon,
   MagnifyingGlassIcon,
@@ -138,44 +137,27 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
     onClick: () => void;
     icon?: React.ComponentType<{ width?: number; height?: number }>;
   }> = ({ label, active = false, onClick, icon: Icon }) => (
-    <UnstyledButton
+    <button
       onClick={onClick}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s ease',
-        backgroundColor: active ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-        minWidth: '60px',
-        borderBottom: active ? '2px solid var(--primary)' : '2px solid transparent',
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }
-      }}
+      className={`flex flex-col items-center px-2 py-1 rounded cursor-pointer transition-colors min-w-[60px] border-b-2 ${
+        active 
+          ? 'bg-black/8 text-primary border-primary' 
+          : 'bg-transparent text-foreground border-transparent hover:bg-black/5'
+      }`}
     >
       {Icon && (
-        <div style={{ color: active ? 'var(--primary)' : 'var(--foreground)' }}>
+        <div className={active ? 'text-primary' : 'text-foreground'}>
           <Icon width={20} height={20} />
         </div>
       )}
-      <span style={{ fontSize: '12px', fontWeight: 400, color: active ? 'var(--primary)' : 'var(--foreground)', marginTop: '2px' }}>
+      <span className={`text-xs font-normal mt-0.5 ${active ? 'text-primary' : 'text-foreground'}`}>
         {label}
       </span>
-    </UnstyledButton>
+    </button>
   );
 
   return (
-    <Group gap="xs" className={`header-navigation ${className}`}>
+    <div className={`header-navigation flex items-center space-x-1 ${className}`}>
       {/* Home */}
       <NavigationButton
         label="Home"
@@ -242,7 +224,6 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ className = 
           icon={BackpackIcon}
         />
       )}
-
-    </Group>
+    </div>
   );
 };

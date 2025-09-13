@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import Parse from '../lib/parse';
+import Parse from 'parse';
 import { useAuth } from './useAuth';
+import type { ParseLike } from '../types/shared';
 
 export interface ChatRoom {
   id: string;
@@ -51,42 +52,42 @@ export const useChat = () => {
   });
 
   // Live query subscriptions
-  const [messageSubscription, setMessageSubscription] = useState<any | null>(null);
-  const [roomSubscription, setRoomSubscription] = useState<any | null>(null);
+  const [messageSubscription, setMessageSubscription] = useState<{ unsubscribe: () => void } | null>(null);
+  const [roomSubscription, setRoomSubscription] = useState<{ unsubscribe: () => void } | null>(null);
 
   // Parse objects to interface converters
-  const parseRoomToRoom = useCallback((parseRoom: Parse.Object): ChatRoom => {
+  const parseRoomToRoom = useCallback((parseRoom: ParseLike): ChatRoom => {
     return {
       id: parseRoom.id || '',
-      title: parseRoom.get('title'),
-      type: parseRoom.get('type'),
-      participants: parseRoom.get('participants'),
-      lastMessage: parseRoom.get('lastMessage'),
-      lastActivity: parseRoom.get('lastActivity'),
-      messageCount: parseRoom.get('messageCount') || 0,
-      isActive: parseRoom.get('isActive'),
-      createdBy: parseRoom.get('createdBy')?.id || ''
+      title: parseRoom.get('title') as string || '',
+      type: parseRoom.get('type') as 'counseling' | 'mentoring' | 'group' || 'counseling',
+      participants: parseRoom.get('participants') as string[] || [],
+      lastMessage: parseRoom.get('lastMessage') as string || '',
+      lastActivity: parseRoom.get('lastActivity') as Date || new Date(),
+      messageCount: parseRoom.get('messageCount') as number || 0,
+      isActive: parseRoom.get('isActive') as boolean || false,
+      createdBy: (parseRoom.get('createdBy') as ParseLike)?.id || ''
     };
   }, []);
 
-  const parseMessageToMessage = useCallback((parseMessage: Parse.Object): ChatMessage => {
-    const sender = parseMessage.get('sender');
-    const chatRoom = parseMessage.get('chatRoom');
+  const parseMessageToMessage = useCallback((parseMessage: ParseLike): ChatMessage => {
+    const sender = parseMessage.get('sender') as ParseLike;
+    const chatRoom = parseMessage.get('chatRoom') as ParseLike;
     return {
       id: parseMessage.id || '',
       chatRoomId: chatRoom?.id || '',
       sender: {
         id: sender?.id || '',
-        firstName: sender?.get('firstName') || '',
-        lastName: sender?.get('lastName') || ''
+        firstName: sender?.get('firstName') as string || '',
+        lastName: sender?.get('lastName') as string || ''
       },
-      message: parseMessage.get('message') || '',
-      messageType: parseMessage.get('messageType') || 'text',
-      timestamp: parseMessage.get('timestamp') || new Date(),
-      isRead: parseMessage.get('isRead') || false,
-      fileUrl: parseMessage.get('fileUrl'),
-      fileName: parseMessage.get('fileName'),
-      fileSize: parseMessage.get('fileSize')
+      message: parseMessage.get('message') as string || '',
+      messageType: parseMessage.get('messageType') as 'text' | 'file' | 'image' || 'text',
+      timestamp: parseMessage.get('timestamp') as Date || new Date(),
+      isRead: parseMessage.get('isRead') as boolean || false,
+      fileUrl: parseMessage.get('fileUrl') as string | undefined,
+      fileName: parseMessage.get('fileName') as string | undefined,
+      fileSize: parseMessage.get('fileSize') as number | undefined
     };
   }, []);
 
@@ -97,8 +98,10 @@ export const useChat = () => {
     setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
+
+
       const rooms = await Parse.Cloud.run('getChatRooms');
-      const chatRooms = rooms.map(parseRoomToRoom);
+      const chatRooms = (rooms as ParseLike[]).map(parseRoomToRoom);
       
       setChatState(prev => ({ 
         ...prev, 
@@ -122,8 +125,9 @@ export const useChat = () => {
     setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
+
       const messages = await Parse.Cloud.run('getChatMessages', { chatRoomId });
-      const chatMessages = messages.map(parseMessageToMessage);
+      const chatMessages = (messages as ParseLike[]).map(parseMessageToMessage);
       
       setChatState(prev => ({ 
         ...prev, 
@@ -148,6 +152,7 @@ export const useChat = () => {
     if (!user) return;
 
     try {
+
       const result = await Parse.Cloud.run('sendMessage', { 
         chatRoomId, 
         message, 
@@ -171,6 +176,7 @@ export const useChat = () => {
     if (!user) return;
 
     try {
+
       const result = await Parse.Cloud.run('createChatRoom', { 
         participantIds: [...participantIds, user.id], 
         type, 
@@ -205,86 +211,104 @@ export const useChat = () => {
     if (!user) return;
 
     // Subscribe to new messages in current room
-    if (chatState.currentRoom) {
-      const ChatMessage = Parse.Object.extend('ChatMessage');
-      const messageQuery = new Parse.Query(ChatMessage);
-      messageQuery.equalTo('chatRoom', {
-        __type: 'Pointer',
-        className: 'ChatRoom',
-        objectId: chatState.currentRoom.id
-      });
+    const setupMessageLiveQuery = async () => {
+      if (chatState.currentRoom) {
+        try {
 
-      const client = new Parse.LiveQueryClient({
-        applicationId: 'elimu_smart_app',
-        serverURL: 'ws://localhost:1337/parse',
-        javascriptKey: 'your-javascript-key-here',
-        masterKey: undefined,
-        sessionToken: undefined,
-        installationId: undefined
-      });
+          const ChatMessage = Parse.Object.extend('ChatMessage');
+          const messageQuery = new Parse.Query(ChatMessage);
+          messageQuery.equalTo('chatRoom', {
+            __type: 'Pointer',
+            className: 'ChatRoom',
+            objectId: chatState.currentRoom.id
+          });
 
-      client.open();
-      const subscription = client.subscribe(messageQuery);
+          const client = new Parse.LiveQueryClient({
+            applicationId: 'elimu_smart_app',
+            serverURL: 'ws://localhost:1337/parse',
+            javascriptKey: 'your-javascript-key-here',
+            masterKey: undefined,
+            sessionToken: undefined,
+            installationId: undefined
+          });
 
-      subscription?.on('create', (message: Parse.Object) => {
-        const newMessage = parseMessageToMessage(message);
-        setChatState(prev => ({ 
-          ...prev, 
-          messages: [...prev.messages, newMessage] 
-        }));
-      });
+          client.open();
+          const subscription = client.subscribe(messageQuery);
 
-      setMessageSubscription(subscription);
+          subscription?.on('create', (message: ParseLike) => {
+            const newMessage = parseMessageToMessage(message);
+            setChatState(prev => ({ 
+              ...prev, 
+              messages: [...prev.messages, newMessage] 
+            }));
+          });
 
-      return () => {
-        subscription?.unsubscribe();
-        client.close();
-      };
-    }
+          setMessageSubscription(subscription || null);
+
+          return () => {
+            subscription?.unsubscribe();
+            client.close();
+          };
+        } catch (error) {
+          console.error('Failed to setup message live query:', error);
+        }
+      }
+    };
+
+    setupMessageLiveQuery();
   }, [user, chatState.currentRoom, parseMessageToMessage]);
 
   // Setup live queries for chat room updates
   useEffect(() => {
     if (!user) return;
 
-    const ChatRoom = Parse.Object.extend('ChatRoom');
-    const roomQuery = new Parse.Query(ChatRoom);
-    roomQuery.containsAll('participants', [user.id]);
+    const setupRoomLiveQuery = async () => {
+      try {
 
-    const client = new Parse.LiveQueryClient({
-      applicationId: 'elimu_smart_app',
-      serverURL: 'ws://localhost:1337/parse',
-      javascriptKey: 'your-javascript-key-here',
-      masterKey: undefined,
-      sessionToken: undefined,
-      installationId: undefined
-    });
+        const ChatRoom = Parse.Object.extend('ChatRoom');
+        const roomQuery = new Parse.Query(ChatRoom);
+        roomQuery.containsAll('participants', [user.id]);
 
-    client.open();
-    const subscription = client.subscribe(roomQuery);
+        const client = new Parse.LiveQueryClient({
+          applicationId: 'elimu_smart_app',
+          serverURL: 'ws://localhost:1337/parse',
+          javascriptKey: 'your-javascript-key-here',
+          masterKey: undefined,
+          sessionToken: undefined,
+          installationId: undefined
+        });
 
-    subscription?.on('update', (room: Parse.Object) => {
-      const updatedRoom = parseRoomToRoom(room);
-      setChatState(prev => ({
-        ...prev,
-        rooms: prev.rooms.map(r => r.id === updatedRoom.id ? updatedRoom : r)
-      }));
-    });
+        client.open();
+        const subscription = client.subscribe(roomQuery);
 
-    subscription?.on('create', (room: Parse.Object) => {
-      const newRoom = parseRoomToRoom(room);
-      setChatState(prev => ({ 
-        ...prev, 
-        rooms: [newRoom, ...prev.rooms] 
-      }));
-    });
+        subscription?.on('update', (room: ParseLike) => {
+          const updatedRoom = parseRoomToRoom(room);
+          setChatState(prev => ({
+            ...prev,
+            rooms: prev.rooms.map(r => r.id === updatedRoom.id ? updatedRoom : r)
+          }));
+        });
 
-    setRoomSubscription(subscription);
+        subscription?.on('create', (room: ParseLike) => {
+          const newRoom = parseRoomToRoom(room);
+          setChatState(prev => ({ 
+            ...prev, 
+            rooms: [newRoom, ...prev.rooms] 
+          }));
+        });
 
-    return () => {
-      subscription?.unsubscribe();
-      client.close();
+        setRoomSubscription(subscription || null);
+
+        return () => {
+          subscription?.unsubscribe();
+          client.close();
+        };
+      } catch (error) {
+        console.error('Failed to setup room live query:', error);
+      }
     };
+
+    setupRoomLiveQuery();
   }, [user, parseRoomToRoom]);
 
   // Load initial data

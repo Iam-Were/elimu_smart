@@ -23,7 +23,7 @@ import {
   TrashIcon,
   GearIcon,
 } from '@radix-ui/react-icons';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 
 export const MaintenanceTools: React.FC = () => {
   const [backupProgress, setBackupProgress] = useState(0);
@@ -44,10 +44,8 @@ export const MaintenanceTools: React.FC = () => {
     }
 
     setIsBackupRunning(false);
-    notifications.show({
-      title: 'Backup Completed',
-      message: 'System backup has been created successfully',
-      color: 'green',
+    toast.success('Backup Completed', {
+      description: 'System backup has been created successfully'
     });
   };
 
@@ -56,10 +54,8 @@ export const MaintenanceTools: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 3000));
     setCleanupInProgress(false);
 
-    notifications.show({
-      title: 'Maintenance Complete',
-      message: 'System cleanup and optimization completed',
-      color: 'green',
+    toast.success('Maintenance Complete', {
+      description: 'System cleanup and optimization completed'
     });
   };
 
@@ -89,9 +85,9 @@ export const MaintenanceTools: React.FC = () => {
         <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md">
           <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <Stack gap="xs" align="center">
-              <GearIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
+              <GearIcon width={24} height={24} style={{ color: 'purple' }} />
               <Text size="xs" c="dimmed" ta="center">Database Size</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
+              <Text fw={700} size="lg" style={{ color: 'purple' }}>
                 2.4 GB
               </Text>
             </Stack>
@@ -99,9 +95,9 @@ export const MaintenanceTools: React.FC = () => {
 
           <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <Stack gap="xs" align="center">
-              <DownloadIcon width={24} height={24} style={{ color: 'var(--success)' }} />
+              <DownloadIcon width={24} height={24} style={{ color: 'purple' }} />
               <Text size="xs" c="dimmed" ta="center">Last Backup</Text>
-              <Text fw={700} size="sm" style={{ color: 'var(--success)' }} ta="center">
+              <Text fw={700} size="sm" style={{ color: 'purple' }} ta="center">
                 {lastBackup.toLocaleDateString()}
               </Text>
             </Stack>
@@ -109,9 +105,9 @@ export const MaintenanceTools: React.FC = () => {
 
           <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <Stack gap="xs" align="center">
-              <ClockIcon width={24} height={24} style={{ color: 'var(--primary)' }} />
+              <ClockIcon width={24} height={24} style={{ color: 'purple' }} />
               <Text size="xs" c="dimmed" ta="center">Uptime</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
+              <Text fw={700} size="lg" style={{ color: 'purple' }}>
                 99.8%
               </Text>
             </Stack>
@@ -119,9 +115,9 @@ export const MaintenanceTools: React.FC = () => {
 
           <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <Stack gap="xs" align="center">
-              <TrashIcon width={24} height={24} style={{ color: 'var(--secondary)' }} />
+              <TrashIcon width={24} height={24} style={{ color: 'purple' }} />
               <Text size="xs" c="dimmed" ta="center">Cache Usage</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--secondary)' }}>
+              <Text fw={700} size="lg" style={{ color: 'purple' }}>
                 67%
               </Text>
             </Stack>
@@ -167,7 +163,7 @@ export const MaintenanceTools: React.FC = () => {
                   loading={isBackupRunning}
                   style={{
                     backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
+                    // color: 'var(--primary-foreground)',
                   }}
                 >
                   Create Backup Now
@@ -226,10 +222,8 @@ export const MaintenanceTools: React.FC = () => {
                 <Button
                   leftSection={<TrashIcon width={16} height={16} />}
                   variant="light"
-                  onClick={() => notifications.show({
-                    title: 'Cache Cleared',
-                    message: 'System cache has been cleared successfully',
-                    color: 'green',
+                  onClick={() => toast.success('Cache Cleared', {
+                    description: 'System cache has been cleared successfully'
                   })}
                 >
                   Clear Cache
@@ -244,10 +238,8 @@ export const MaintenanceTools: React.FC = () => {
                 <Button
                   leftSection={<TrashIcon width={16} height={16} />}
                   variant="light"
-                  onClick={() => notifications.show({
-                    title: 'Logs Archived',
-                    message: 'Old log files have been archived',
-                    color: 'green',
+                  onClick={() => toast.success('Logs Archived', {
+                    description: 'Old log files have been archived'
                   })}
                 >
                   Archive Logs
@@ -263,10 +255,8 @@ export const MaintenanceTools: React.FC = () => {
                   leftSection={<ReloadIcon width={16} height={16} />}
                   variant="light"
                   color="orange"
-                  onClick={() => notifications.show({
-                    title: 'Restart Scheduled',
-                    message: 'System restart scheduled for 2 AM',
-                    color: 'orange',
+                  onClick={() => toast.info('Restart Scheduled', {
+                    description: 'System restart scheduled for 2 AM'
                   })}
                 >
                   Schedule Restart

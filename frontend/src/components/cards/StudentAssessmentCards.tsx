@@ -459,60 +459,68 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         )}
       </div>
 
-      {/* Student Progress Summary - Moved to Top */}
-      <Card className="bg-gradient-to-br from-orange-50/50 via-background to-orange-50/30 border-orange-200/50">
-        <CardHeader>
+      {/* Student Progress Summary - Enhanced with Glassmorphism */}
+      <Card className="glass-assessment-card border-orange-200/30 relative overflow-hidden">
+        {/* Multi-layer floating decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/15 to-orange-300/8 rounded-full -mr-16 -mt-16 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400/12 to-orange-200/6 rounded-full -ml-12 -mb-12"></div>
+        
+        <CardHeader className="relative z-10">
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-              <Award className="h-5 w-5" />
+            <div className="p-3 rounded-xl glass-card bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg hover:scale-110 transition-transform duration-300">
+              <Award className="h-6 w-6 drop-shadow-sm" />
             </div>
-            Your Discovery Progress
+            <div>
+              <div className="text-xl font-bold bg-gradient-to-r from-orange-800 to-orange-600 bg-clip-text text-transparent">
+                Your Discovery Progress
+              </div>
+              <div className="text-sm text-orange-600/80 font-medium">
+                AI-powered career journey tracking
+              </div>
+            </div>
           </CardTitle>
-          <CardDescription>
-            Track your journey to finding the perfect career fit
-          </CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="relative z-10">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-8 glass-card-primary rounded-xl">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Loading your progress...</span>
+              <span className="ml-2 text-sm text-orange-700 font-medium">Loading your progress...</span>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold text-orange-600">
+                <div className="glass-card-success p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+                  <div className="text-3xl font-bold text-emerald-600 drop-shadow-sm">
                     {dynamicCards.filter(card => card.progress === 100 || card.status === 'completed').length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Assessments Completed</div>
+                  <div className="text-sm font-medium text-emerald-700">Assessments Completed</div>
                 </div>
                 
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold text-blue-600">
+                <div className="glass-card-primary p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+                  <div className="text-3xl font-bold text-orange-600 drop-shadow-sm">
                     {careerReadinessScore?.overall || Math.round(
                       dynamicCards.reduce((sum, card) => sum + (card.progress || 0), 0) / 
                       dynamicCards.length
                     )}%
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm font-medium text-orange-700">
                     {careerReadinessScore ? 'Career Readiness' : 'Overall Progress'}
                   </div>
                 </div>
                 
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold text-red-600">
+                <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform border-red-200/30">
+                  <div className="text-3xl font-bold text-red-600 drop-shadow-sm">
                     {dynamicCards.filter(card => card.urgency === 'high').length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Priority Items</div>
+                  <div className="text-sm font-medium text-red-700">Priority Items</div>
                 </div>
                 
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold text-purple-600">
+                <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+                  <div className="text-3xl font-bold text-purple-600 drop-shadow-sm">
                     {userActivities.length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Activities</div>
+                  <div className="text-sm font-medium text-slate-600">Total Activities</div>
                 </div>
               </div>
               
@@ -601,35 +609,42 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
             <Card
               key={card.id}
               className={cn(
-                "group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 cursor-pointer",
-                "bg-gradient-to-br from-white via-white to-orange-50/20 border-orange-100",
+                "glass-assessment-card group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02]",
+                "border-orange-200/30",
                 getCardClasses(),
-                card.urgency === 'high' && "ring-2 ring-orange-300 shadow-lg"
+                card.urgency === 'high' && "ring-2 ring-red-300/50 shadow-lg shadow-red-500/10"
               )}
             >
-              {/* Urgency Indicator */}
+              {/* Enhanced layered decorative elements */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/15 to-orange-300/8 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-orange-400/10 to-orange-200/5 rounded-full -ml-8 -mb-8 group-hover:rotate-12 transition-transform duration-700"></div>
+              
+              {/* Glass overlay effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+              
+              {/* Enhanced Urgency Indicator */}
               {card.urgency === 'high' && (
-                <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-red-500">
-                  <Star className="absolute -top-6 -right-5 h-3 w-3 text-white" />
+                <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-red-500/80 backdrop-blur-sm">
+                  <Star className="absolute -top-6 -right-5 h-3 w-3 text-white drop-shadow-sm" />
                 </div>
               )}
               
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 relative z-10">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-colors">
+                    <div className="p-2.5 rounded-xl glass-card bg-gradient-to-br from-orange-500/20 to-orange-400/10 text-orange-600 group-hover:scale-110 transition-transform duration-300">
                       {card.icon}
                     </div>
                     <div className="space-y-1">
-                      <CardTitle className="text-lg leading-tight">{card.title}</CardTitle>
+                      <CardTitle className="text-lg leading-tight font-semibold text-slate-800 group-hover:text-orange-800 transition-colors">{card.title}</CardTitle>
                       <div className="flex items-center gap-2">
                         {getUrgencyBadge(card.urgency)}
                         <Badge 
                           variant="secondary"
-                          className={statusConfig.className}
+                          className={cn(statusConfig.className, "glass-card border-0")}
                         >
                           {statusConfig.icon}
-                          <span className="ml-1 text-xs">{statusConfig.badge}</span>
+                          <span className="ml-1 text-xs font-medium">{statusConfig.badge}</span>
                         </Badge>
                       </div>
                     </div>
@@ -637,41 +652,43 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <CardDescription className="text-sm leading-relaxed">
+              <CardContent className="space-y-4 relative z-10">
+                <CardDescription className="text-sm leading-relaxed text-slate-600">
                   {card.studentFocusedDescription}
                 </CardDescription>
 
-                {/* Student Benefit */}
-                <div className="p-3 rounded-lg bg-orange-50 border-l-4 border-orange-400">
-                  <h4 className="font-medium text-sm text-orange-800 mb-1">What You'll Gain:</h4>
-                  <p className="text-sm text-orange-700">{card.studentBenefit}</p>
+                {/* Enhanced Student Benefit */}
+                <div className="glass-card-primary p-3 rounded-xl border-orange-200/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-orange-400/15 to-orange-200/8 rounded-full -mr-6 -mt-6"></div>
+                  <h4 className="font-semibold text-sm text-orange-800 mb-1 relative z-10">What You'll Gain:</h4>
+                  <p className="text-sm text-orange-700 leading-relaxed relative z-10">{card.studentBenefit}</p>
                 </div>
 
-                {/* Progress Bar */}
+                {/* Enhanced Progress Bar */}
                 {card.progress !== undefined && (
-                  <div className="space-y-2">
+                  <div className="glass-card p-3 rounded-xl space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="text-orange-600 font-medium">{card.progress}%</span>
+                      <span className="text-slate-600 font-medium">Progress</span>
+                      <span className="text-orange-600 font-bold">{card.progress}%</span>
                     </div>
-                    <Progress value={card.progress} className="h-2" />
+                    <Progress value={card.progress} className="h-2.5" />
                   </div>
                 )}
 
-                {/* Time Commitment */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>{card.timeCommitment}</span>
+                {/* Enhanced Time Commitment */}
+                <div className="glass-card-primary p-2.5 rounded-lg flex items-center gap-2 text-sm border-orange-200/20">
+                  <Clock className="h-4 w-4 text-orange-600" />
+                  <span className="text-orange-700 font-medium">{card.timeCommitment}</span>
                 </div>
 
-                {/* AI Future Enhancement */}
-                <div className="p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100">
-                  <div className="flex items-center gap-2 mb-2">
+                {/* Enhanced AI Future Enhancement */}
+                <div className="glass-card p-3 rounded-xl bg-gradient-to-r from-blue-50/50 to-purple-50/50 border-blue-200/30 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-br from-blue-400/15 to-purple-300/10 rounded-full -mr-5 -mt-5"></div>
+                  <div className="flex items-center gap-2 mb-2 relative z-10">
                     <Brain className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-sm text-blue-800">AI-Enhanced Soon</span>
+                    <span className="font-semibold text-sm text-blue-800">AI-Enhanced Soon</span>
                   </div>
-                  <p className="text-xs text-blue-700">{card.aiReadiness.futureAI}</p>
+                  <p className="text-xs text-blue-700 leading-relaxed relative z-10">{card.aiReadiness.futureAI}</p>
                 </div>
               </CardContent>
 

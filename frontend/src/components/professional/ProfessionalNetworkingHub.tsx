@@ -14,7 +14,7 @@ import {
   Target,
   Lightbulb
 } from 'lucide-react';
-import Parse from '@/config/parse';
+import { getParse } from '@/config/parse';
 
 interface ProfessionalInsight {
   name: string;
@@ -52,6 +52,8 @@ export const ProfessionalNetworkingHub: React.FC = () => {
   useEffect(() => {
     const fetchProfessionalData = async () => {
       try {
+        const Parse = await getParse();
+        if (!Parse) return;
         const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
           industry: userIndustry,
           careerLevel: 'entry'

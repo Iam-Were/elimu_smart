@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Stack,
-  Group,
-  Button,
-  TextInput,
-  Select,
-  Badge,
-  Avatar,
-  Modal,
-  ActionIcon,
-  Tooltip,
-  Divider,
-  Alert,
-  Tabs,
-} from '@mantine/core';
+import { Card } from "@/components/ui/card";
+import Button from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   MagnifyingGlassIcon,
   ChatBubbleIcon,
@@ -27,10 +19,6 @@ import {
   PersonIcon,
   ExclamationTriangleIcon,
 } from '@radix-ui/react-icons';
-import { useDisclosure } from '@mantine/hooks';
-import { RichTextEditor } from '@mantine/tiptap';
-import { useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 
 interface Question {
   id: string;
@@ -168,16 +156,15 @@ const responseTemplates = [
 export const QuestionQueue: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>(mockQuestions);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [opened, { open, close }] = useDisclosure(false);
-  const [activeTab, setActiveTab] = useState<string | null>('pending');
+  const [activeTab, setActiveTab] = useState<string>('pending');
+  const [opened, setOpened] = useState(false);
+  const open = () => setOpened(true);
+  const close = () => setOpened(false);
 
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: '',
-  });
+  const editor = null; // Simplified editor removed
 
   const filteredQuestions = questions.filter(question => {
     const matchesSearch = 
@@ -193,46 +180,20 @@ export const QuestionQueue: React.FC = () => {
     return matchesSearch && matchesCategory && matchesStatus && matchesTab;
   });
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'red';
-      case 'medium':
-        return 'yellow';
-      case 'low':
-        return 'green';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'orange';
-      case 'answered':
-        return 'blue';
-      case 'resolved':
-        return 'green';
-      default:
-        return 'gray';
-    }
-  };
-
   const handleViewQuestion = (question: Question) => {
     setSelectedQuestion(question);
     // Load existing response if editing
     if (question.responses.length > 0 && editor) {
-      editor.commands.setContent(question.responses[question.responses.length - 1].content);
+      // editor.commands.setContent(question.responses[question.responses.length - 1].content);
     } else if (editor) {
-      editor.commands.clearContent();
+      // editor.commands.clearContent();
     }
     open();
   };
 
   const handleSendResponse = () => {
     if (selectedQuestion && editor) {
-      const content = editor.getHTML();
+      const content = "";
       if (content.trim()) {
         const newResponse: Response = {
           id: Date.now().toString(),
@@ -256,15 +217,16 @@ export const QuestionQueue: React.FC = () => {
         });
 
         setQuestions(updatedQuestions);
-        editor.commands.clearContent();
+        // editor.commands.clearContent();
         close();
       }
     }
   };
 
-  const handleUseTemplate = React.useCallback((template: typeof responseTemplates[0]) => {
+  const handleUseTemplate = React.useCallback(() => {
     if (editor) {
-      editor.commands.setContent(template.content);
+      // Future implementation: template content insertion
+      console.log('Template feature not yet implemented');
     }
   }, [editor]);
 
@@ -283,358 +245,316 @@ export const QuestionQueue: React.FC = () => {
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container mx-auto py-6 max-w-7xl">
+      <div className="space-y-6">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">
               Student Questions
-            </Title>
-            <Text size="lg" c="dimmed">
+            </h1>
+            <p className="text-lg text-muted-foreground">
               Respond to student questions and provide guidance
-            </Text>
-          </Stack>
-          <Group gap="sm">
-            <Badge size="lg" color="orange" variant="light">
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="text-sm px-3 py-1">
               {getQuestionsByStatus('pending')} Pending
             </Badge>
-            <Badge size="lg" color="blue" variant="light">
+            <Badge variant="outline" className="text-sm px-3 py-1">
               {getQuestionsByStatus('answered')} Answered
             </Badge>
-          </Group>
-        </Group>
+          </div>
+        </div>
 
         {/* Filters */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Group gap="md" grow>
-            <TextInput
-              placeholder="Search questions..."
-              leftSection={<MagnifyingGlassIcon width={16} height={16} />}
-              value={searchQuery}
-              onChange={event => setSearchQuery(event.currentTarget.value)}
-            />
+        <Card className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search questions..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+              />
+            </div>
             <Select
-              placeholder="Filter by category"
               value={filterCategory}
-              onChange={setFilterCategory}
-              data={[
-                { value: 'Career Choice', label: 'Career Choice' },
-                { value: 'Education Planning', label: 'Education Planning' },
-                { value: 'University Applications', label: 'University Applications' },
-                { value: 'Career Exploration', label: 'Career Exploration' },
-              ]}
-              clearable
-            />
+              onValueChange={setFilterCategory}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Career Choice">Career Choice</SelectItem>
+                <SelectItem value="Education Planning">Education Planning</SelectItem>
+                <SelectItem value="University Applications">University Applications</SelectItem>
+                <SelectItem value="Career Exploration">Career Exploration</SelectItem>
+              </SelectContent>
+            </Select>
             <Select
-              placeholder="Filter by status"
               value={filterStatus}
-              onChange={setFilterStatus}
-              data={[
-                { value: 'pending', label: 'Pending' },
-                { value: 'answered', label: 'Answered' },
-                { value: 'resolved', label: 'Resolved' },
-              ]}
-              clearable
-            />
-          </Group>
+              onValueChange={setFilterStatus}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="answered">Answered</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </Card>
 
         {/* Question Tabs */}
-        <Tabs value={activeTab} onChange={setActiveTab}>
-          <Tabs.List>
-            <Tabs.Tab value="pending" leftSection={<ClockIcon width={14} height={14} />}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <ClockIcon className="h-4 w-4" />
               Pending ({getQuestionsByStatus('pending')})
-            </Tabs.Tab>
-            <Tabs.Tab value="answered" leftSection={<ChatBubbleIcon width={14} height={14} />}>
+            </TabsTrigger>
+            <TabsTrigger value="answered" className="flex items-center gap-2">
+              <ChatBubbleIcon className="h-4 w-4" />
               Answered ({getQuestionsByStatus('answered')})
-            </Tabs.Tab>
-            <Tabs.Tab value="resolved" leftSection={<CheckCircledIcon width={14} height={14} />}>
+            </TabsTrigger>
+            <TabsTrigger value="resolved" className="flex items-center gap-2">
+              <CheckCircledIcon className="h-4 w-4" />
               Resolved ({getQuestionsByStatus('resolved')})
-            </Tabs.Tab>
-          </Tabs.List>
+            </TabsTrigger>
+          </TabsList>
 
           {/* Questions List */}
-          <Tabs.Panel value={activeTab || 'pending'} pt="lg">
-            <Stack gap="md">
+          <TabsContent value={activeTab || 'pending'} className="mt-6">
+            <div className="space-y-4">
               {filteredQuestions.length === 0 ? (
-                <Alert
-                  icon={<ChatBubbleIcon width={16} height={16} />}
-                  title="No questions found"
-                  color="blue"
-                >
-                  <Text size="sm">
+                <Alert>
+                  <ChatBubbleIcon className="h-4 w-4" />
+                  <AlertTitle>No questions found</AlertTitle>
+                  <AlertDescription>
                     No questions match your current filters. Try adjusting your search criteria.
-                  </Text>
+                  </AlertDescription>
                 </Alert>
               ) : (
                 filteredQuestions.map(question => (
                   <Card
                     key={question.id}
-                    shadow="sm"
-                    padding="lg"
-                    radius="md"
-                    className="hover-lift theme-transition"
-                    style={{
-                      backgroundColor: 'var(--card)',
-                      borderColor: 'var(--border)',
-                      border: '1px solid var(--border)',
-                      cursor: 'pointer',
-                    }}
+                    className="hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => handleViewQuestion(question)}
                   >
-                    <Stack gap="sm">
+                    <div className="p-6 space-y-4">
                       {/* Question Header */}
-                      <Group justify="space-between" align="flex-start">
-                        <Group gap="sm" style={{ flex: 1 }}>
-                          <Avatar
-                            size={32}
-                            radius="xl"
-                            color="yellow"
-                            style={{ backgroundColor: 'var(--primary)' }}
-                          >
-                            {question.studentName.split(' ').map(n => n[0]).join('')}
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3 flex-1">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {question.studentName.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
                           </Avatar>
-                          <Stack gap={2} style={{ flex: 1 }}>
-                            <Text fw={500} size="sm" lineClamp={1}>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm truncate">
                               {question.title}
-                            </Text>
-                            <Group gap="xs">
-                              <Text size="xs" c="dimmed">
-                                {question.studentName} • {question.studentGrade}
-                              </Text>
-                              <Text size="xs" c="dimmed">•</Text>
-                              <Text size="xs" c="dimmed">
-                                {formatDate(question.createdAt)}
-                              </Text>
-                            </Group>
-                          </Stack>
-                        </Group>
-                        <Group gap="xs">
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{question.studentName} • {question.studentGrade}</span>
+                              <span>•</span>
+                              <span>{formatDate(question.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <Badge
-                            size="sm"
-                            color={getPriorityColor(question.priority)}
-                            variant="light"
+                            variant={question.priority === 'high' ? 'destructive' : 'secondary'}
                           >
                             {question.priority}
                           </Badge>
                           <Badge
-                            size="sm"
-                            color={getStatusColor(question.status)}
-                            variant="light"
+                            variant={question.status === 'pending' ? 'default' : 'secondary'}
                           >
                             {question.status}
                           </Badge>
                           {question.priority === 'high' && (
-                            <Tooltip label="High Priority">
-                              <ActionIcon size="sm" color="red" variant="light">
-                                <ExclamationTriangleIcon width={12} height={12} />
-                              </ActionIcon>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                                  <ExclamationTriangleIcon className="h-3 w-3 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                High Priority
+                              </TooltipContent>
                             </Tooltip>
                           )}
-                        </Group>
-                      </Group>
+                        </div>
+                      </div>
 
                       {/* Question Content Preview */}
-                      <Text size="sm" c="dimmed" lineClamp={2}>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {question.content}
-                      </Text>
+                      </p>
 
                       {/* Question Meta */}
-                      <Group justify="space-between">
-                        <Group gap="sm">
-                          <Badge size="xs" variant="secondary" color="blue">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
                             {question.category}
                           </Badge>
                           {question.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} size="xs" variant="light" color="gray">
+                            <Badge key={tag} variant="secondary" className="text-xs">
                               #{tag}
                             </Badge>
                           ))}
                           {question.tags.length > 2 && (
-                            <Badge size="xs" variant="light" color="gray">
+                            <Badge variant="secondary" className="text-xs">
                               +{question.tags.length - 2} more
                             </Badge>
                           )}
-                        </Group>
-                        <Group gap="sm">
-                          <Group gap={2}>
-                            <PersonIcon width={12} height={12} />
-                            <Text size="xs" c="dimmed">{question.views} views</Text>
-                          </Group>
-                          <Group gap={2}>
-                            <BookmarkIcon width={12} height={12} />
-                            <Text size="xs" c="dimmed">{question.upvotes} helpful</Text>
-                          </Group>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <PersonIcon className="h-3 w-3" />
+                            <span>{question.views} views</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <BookmarkIcon className="h-3 w-3" />
+                            <span>{question.upvotes} helpful</span>
+                          </div>
                           {question.responses.length > 0 && (
-                            <Group gap={2}>
-                              <ChatBubbleIcon width={12} height={12} />
-                              <Text size="xs" c="dimmed">{question.responses.length} responses</Text>
-                            </Group>
+                            <div className="flex items-center gap-1">
+                              <ChatBubbleIcon className="h-3 w-3" />
+                              <span>{question.responses.length} responses</span>
+                            </div>
                           )}
-                        </Group>
-                      </Group>
-                    </Stack>
+                        </div>
+                      </div>
+                    </div>
                   </Card>
                 ))
               )}
-            </Stack>
-          </Tabs.Panel>
+            </div>
+          </TabsContent>
         </Tabs>
 
         {/* Question Detail Modal */}
-        <Modal
-          opened={opened}
-          onClose={close}
-          title={selectedQuestion?.title || 'Question Details'}
-          size="xl"
-        >
-          {selectedQuestion && (
-            <Stack gap="lg">
-              {/* Student Info */}
-              <Group gap="sm">
-                <Avatar
-                  size={40}
-                  radius="xl"
-                  color="yellow"
-                  style={{ backgroundColor: 'var(--primary)' }}
-                >
-                  {selectedQuestion.studentName.split(' ').map(n => n[0]).join('')}
-                </Avatar>
-                <Stack gap={2}>
-                  <Text fw={500}>{selectedQuestion.studentName}</Text>
-                  <Text size="sm" c="dimmed">
-                    {selectedQuestion.studentGrade} • {selectedQuestion.studentEmail}
-                  </Text>
-                </Stack>
-              </Group>
+        <Dialog open={opened} onOpenChange={(open) => !open && close()}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedQuestion?.title || 'Question Details'}</DialogTitle>
+            </DialogHeader>
+            {selectedQuestion && (
+              <div className="space-y-6">
+                {/* Student Info */}
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {selectedQuestion.studentName.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{selectedQuestion.studentName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedQuestion.studentGrade} • {selectedQuestion.studentEmail}
+                    </p>
+                  </div>
+                </div>
 
-              {/* Question Details */}
-              <Card padding="md" style={{ backgroundColor: 'var(--muted)' }}>
-                <Stack gap="sm">
-                  <Group justify="space-between">
-                    <Badge color={getStatusColor(selectedQuestion.status)}>
-                      {selectedQuestion.status}
-                    </Badge>
-                    <Group gap="xs">
-                      <Badge size="sm" color={getPriorityColor(selectedQuestion.priority)}>
-                        {selectedQuestion.priority} priority
+                {/* Question Details */}
+                <Card className="p-4 bg-muted/50">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Badge variant={selectedQuestion.status === 'pending' ? 'default' : 'secondary'}>
+                        {selectedQuestion.status}
                       </Badge>
-                      <Badge size="sm" variant="secondary" color="blue">
-                        {selectedQuestion.category}
-                      </Badge>
-                    </Group>
-                  </Group>
-                  <Text>{selectedQuestion.content}</Text>
-                  <Group gap="xs">
-                    {selectedQuestion.tags.map(tag => (
-                      <Badge key={tag} size="xs" variant="light" color="gray">
-                        #{tag}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant={selectedQuestion.priority === 'high' ? 'destructive' : 'secondary'}>
+                          {selectedQuestion.priority} priority
+                        </Badge>
+                        <Badge variant="outline">
+                          {selectedQuestion.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <p className="text-sm">{selectedQuestion.content}</p>
+                    <div className="flex gap-2">
+                      {selectedQuestion.tags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Existing Responses */}
+                {selectedQuestion.responses.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="font-medium">Previous Responses</h3>
+                    {selectedQuestion.responses.map(response => (
+                      <Card key={response.id} className="p-4 bg-muted/50">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-medium">{response.counselorName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(response.createdAt)}
+                            </p>
+                          </div>
+                          <div 
+                            className="text-sm"
+                            dangerouslySetInnerHTML={{ __html: response.content }} 
+                          />
+                        </div>
+                      </Card>
                     ))}
-                  </Group>
-                </Stack>
-              </Card>
+                    <Separator />
+                  </div>
+                )}
 
-              {/* Existing Responses */}
-              {selectedQuestion.responses.length > 0 && (
-                <Stack gap="sm">
-                  <Text fw={500}>Previous Responses</Text>
-                  {selectedQuestion.responses.map(response => (
-                    <Card key={response.id} padding="md" style={{ backgroundColor: 'var(--muted)' }}>
-                      <Stack gap="xs">
-                        <Group justify="space-between">
-                          <Text size="sm" fw={500}>{response.counselorName}</Text>
-                          <Text size="xs" c="dimmed">
-                            {formatDate(response.createdAt)}
-                          </Text>
-                        </Group>
-                        <div dangerouslySetInnerHTML={{ __html: response.content }} />
-                      </Stack>
-                    </Card>
-                  ))}
-                  <Divider />
-                </Stack>
-              )}
+                {/* Response Templates */}
+                <div className="space-y-3">
+                  <h3 className="font-medium">Quick Templates</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {responseTemplates.map((template, index) => (
+                      <Button
+                        key={index}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUseTemplate()}
+                      >
+                        {template.title}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
 
-              {/* Response Templates */}
-              <Stack gap="sm">
-                <Text fw={500}>Quick Templates</Text>
-                <Group gap="sm">
-                  {responseTemplates.map((template, index) => (
-                    <Button
-                      key={index}
-                      size="xs"
-                      variant="light"
-                      onClick={() => handleUseTemplate(template)}
-                    >
-                      {template.title}
-                    </Button>
-                  ))}
-                </Group>
-              </Stack>
+                {/* Response Editor */}
+                <div className="space-y-3">
+                  <h3 className="font-medium">Your Response</h3>
+                  <Input
+                    placeholder="Type your response here..."
+                    className="min-h-[100px]"
+                  />
+                </div>
 
-              {/* Response Editor */}
-              <Stack gap="sm">
-                <Text fw={500}>Your Response</Text>
-                <RichTextEditor editor={editor}>
-                  <RichTextEditor.Toolbar sticky stickyOffset={60}>
-                    <RichTextEditor.ControlsGroup>
-                      <RichTextEditor.Bold />
-                      <RichTextEditor.Italic />
-                      <RichTextEditor.Underline />
-                      <RichTextEditor.Strikethrough />
-                      <RichTextEditor.ClearFormatting />
-                    </RichTextEditor.ControlsGroup>
-
-                    <RichTextEditor.ControlsGroup>
-                      <RichTextEditor.H1 />
-                      <RichTextEditor.H2 />
-                      <RichTextEditor.H3 />
-                      <RichTextEditor.H4 />
-                    </RichTextEditor.ControlsGroup>
-
-                    <RichTextEditor.ControlsGroup>
-                      <RichTextEditor.Blockquote />
-                      <RichTextEditor.Hr />
-                      <RichTextEditor.BulletList />
-                      <RichTextEditor.OrderedList />
-                    </RichTextEditor.ControlsGroup>
-                  </RichTextEditor.Toolbar>
-
-                  <RichTextEditor.Content style={{ minHeight: 200 }} />
-                </RichTextEditor>
-              </Stack>
-
-              {/* Action Buttons */}
-              <Group justify="flex-end" gap="sm">
-                <Button variant="light" onClick={close}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSendResponse}
-                  leftSection={<ChatBubbleIcon width={16} height={16} />}
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                  }}
-                >
-                  Send Response
-                </Button>
-              </Group>
-            </Stack>
-          )}
-        </Modal>
-      </Stack>
-    </Container>
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={close}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSendResponse}
+                    className="flex items-center gap-2"
+                  >
+                    <ChatBubbleIcon className="h-4 w-4" />
+                    Send Response
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };

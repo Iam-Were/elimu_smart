@@ -1,17 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import Button from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
-  Group,
-  Text,
-  Avatar,
-  Stack,
-  Divider,
-  Badge,
-  UnstyledButton,
-  Paper,
-  ActionIcon,
-  Switch,
-  Button,
-} from '@mantine/core';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   PersonIcon,
   GearIcon,
@@ -26,7 +25,7 @@ import {
   SunIcon,
 } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
@@ -34,30 +33,10 @@ interface ProfileDropdownProps {
   className?: string;
 }
 
-interface DropdownMenuItem {
-  id: string;
-  label: string;
-  description?: string;
-  icon: React.ComponentType<{ width?: number; height?: number }>;
-  href?: string;
-  onClick?: () => void;
-  danger?: boolean;
-  roleRequired?: string[];
-  badge?: string;
-}
-
-interface DropdownSection {
-  title: string;
-  items: DropdownMenuItem[];
-  roleVisible?: string[];
-}
-
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) => {
-  const [opened, setOpened] = useState(false);
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
   const { user, logout, login } = useAuth();
   const { currentTheme, isDark, toggleDarkMode } = useThemeContext();
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Demo users for quick switching
   const demoUsers = [
@@ -66,7 +45,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
       password: 'student',
       role: 'student',
       name: 'Student',
-      color: 'orange',
       icon: '🎓',
     },
     {
@@ -74,7 +52,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
       password: 'counselor',
       role: 'counselor',
       name: 'Counselor',
-      color: 'yellow',
       icon: '👨‍🏫',
     },
     {
@@ -82,7 +59,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
       password: 'admin',
       role: 'admin',
       name: 'Admin',
-      color: 'violet',
       icon: '👨‍💼',
     },
   ];
@@ -94,48 +70,17 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
         password: demoUser.password,
       });
 
-      notifications.show({
-        title: '🎭 Demo Mode Active',
-        message: `Switched to ${demoUser.name} (${demoUser.role})`,
-        color: demoUser.color,
+      toast.success(`🎭 Demo Mode Active`, {
+        description: `Switched to ${demoUser.name} (${demoUser.role})`,
       });
       
-      setOpened(false);
       navigate('/dashboard');
     } catch {
-      notifications.show({
-        title: 'Demo Login Failed',
-        message: 'Could not switch to demo user',
-        color: 'red',
+      toast.error('Demo Login Failed', {
+        description: 'Could not switch to demo user',
       });
     }
   };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpened(false);
-      }
-    };
-
-    if (opened) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [opened]);
-
-  // Close dropdown on escape key
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && opened) {
-        setOpened(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [opened]);
 
   const handleLogout = async () => {
     try {
@@ -147,7 +92,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
   };
 
   const handleNavigation = (path: string) => {
-    setOpened(false);
     navigate(path);
   };
 
@@ -170,453 +114,210 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className }) =
   const getThemeColor = () => {
     switch (currentTheme) {
       case 'admin':
-        return '#a855f7';
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'counselor':
-        return '#eab308';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
-        return '#f97316';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+    }
+  };
+
+  const getAvatarColor = () => {
+    switch (currentTheme) {
+      case 'admin':
+        return 'bg-purple-600 text-white';
+      case 'counselor':
+        return 'bg-yellow-600 text-white';
+      default:
+        return 'bg-orange-600 text-white';
     }
   };
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
-  const dropdownSections: DropdownSection[] = [
-    {
-      title: 'Profile',
-      items: [
-        {
-          id: 'view-profile',
-          label: 'View Profile',
-          description: 'See your public profile',
-          icon: PersonIcon,
-          onClick: () => handleNavigation('/profile'),
-        },
-        {
-          id: 'edit-profile',
-          label: 'Edit Profile',
-          description: 'Update your information',
-          icon: PersonIcon,
-          onClick: () => handleNavigation('/profile/edit'),
-        },
-      ],
-    },
-    {
-      title: 'Account Settings',
-      items: [
-        {
-          id: 'account-settings',
-          label: 'Account Settings',
-          description: 'Privacy, security, preferences',
-          icon: GearIcon,
-          onClick: () => handleNavigation('/settings/account'),
-        },
-        {
-          id: 'security',
-          label: 'Security',
-          description: 'Password, 2FA, sessions',
-          icon: LockClosedIcon,
-          onClick: () => handleNavigation('/settings/security'),
-        },
-        {
-          id: 'privacy',
-          label: 'Privacy',
-          description: 'Data and visibility settings',
-          icon: EyeOpenIcon,
-          onClick: () => handleNavigation('/settings/privacy'),
-        },
-        {
-          id: 'notifications',
-          label: 'Notifications',
-          description: 'Email and push preferences',
-          icon: BellIcon,
-          onClick: () => handleNavigation('/settings/notifications'),
-        },
-      ],
-    },
-    {
-      title: 'Development',
-      items: [
-      ],
-    },
-  ];
-
-  // Add admin-specific section
-  if (isAdmin) {
-    dropdownSections.push({
-      title: 'Administration',
-      items: [
-        {
-          id: 'system-admin',
-          label: 'System Administration',
-          description: 'Platform management',
-          icon: DashboardIcon,
-          onClick: () => handleNavigation('/admin/dashboard'),
-          badge: 'Admin',
-        },
-        {
-          id: 'user-management',
-          label: 'User Management',
-          description: 'Manage users and roles',
-          icon: PersonIcon,
-          onClick: () => handleNavigation('/admin/users'),
-        },
-        {
-          id: 'audit-logs',
-          label: 'Audit Logs',
-          description: 'System activity logs',
-          icon: ActivityLogIcon,
-          onClick: () => handleNavigation('/admin/audit-log'),
-        },
-      ],
-      roleVisible: ['admin', 'super_admin'],
-    });
-  }
-
   if (!user) return null;
 
   return (
-    <div ref={dropdownRef} className={`profile-dropdown ${className || ''}`} style={{ position: 'relative' }}>
-      <UnstyledButton
-        className="profile-trigger"
-        onClick={() => setOpened(!opened)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.5rem 0.75rem',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          backgroundColor: opened ? 'var(--sidebar-accent)' : 'transparent',
-        }}
-        onMouseEnter={(e) => {
-          if (!opened) {
-            e.currentTarget.style.backgroundColor = 'var(--sidebar-accent)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!opened) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
-      >
-        <div style={{ position: 'relative' }}>
-          <Avatar
-            size={32}
-            radius="xl"
-            color={currentTheme}
-            style={{
-              backgroundColor: getThemeColor(),
-            }}
-          >
-            {user.firstName?.[0]}{user.lastName?.[0]}
-          </Avatar>
-          {/* Online status indicator */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: -1,
-              right: -1,
-              width: 10,
-              height: 10,
-              border: '2px solid var(--background)',
-              borderRadius: '50%',
-              backgroundColor: '#22c55e', // green-500
-            }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0 }}>
-          <Text
-            size="sm"
-            fw={600}
-            style={{
-              color: 'var(--foreground)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '120px',
-            }}
-          >
-            {getUserDisplayName()}
-          </Text>
-          <Text
-            size="xs"
-            style={{
-              color: 'var(--muted-foreground)',
-              textTransform: 'capitalize',
-            }}
-          >
-            {user.role && getRoleDisplayName(user.role)}
-          </Text>
-        </div>
-
-        <ActionIcon size="sm" variant="subtle" style={{ marginLeft: 'auto' }}>
-          <ChevronDownIcon
-            width={16}
-            height={16}
-            style={{
-              transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
-          />
-        </ActionIcon>
-      </UnstyledButton>
-
-      {opened && (
-        <Paper
-          className="dropdown-menu"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            minWidth: '320px',
-            maxWidth: '400px',
-            zIndex: 1000,
-            backgroundColor: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 8px 24px -4px rgba(0, 0, 0, 0.12)',
-            overflow: 'hidden',
-            animation: 'dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="ghost" 
+          className="flex items-center gap-3 p-2 h-auto hover:bg-accent"
         >
-          {/* User Card Header */}
-          <div
-            style={{
-              padding: '1rem 1.25rem',
-              borderBottom: '1px solid var(--border)',
-              backgroundColor: 'var(--muted)',
-            }}
-          >
-            <Group gap="sm">
-              <Avatar
-                size={40}
-                radius="xl"
-                color={currentTheme}
-                style={{
-                  backgroundColor: getThemeColor(),
-                }}
-              >
+          <div className="relative">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.profileImage} />
+              <AvatarFallback className={getAvatarColor()}>
                 {user.firstName?.[0]}{user.lastName?.[0]}
-              </Avatar>
-              <Stack gap={2} style={{ flex: 1 }}>
-                <Text fw={600} size="sm">
-                  {getUserDisplayName()}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {user.email}
-                </Text>
-                <Group gap="xs">
-                  <Badge
-                    size="xs"
-                    variant="light"
-                    color={currentTheme === 'admin' ? 'violet' : currentTheme === 'counselor' ? 'yellow' : 'orange'}
-                  >
-                    {user.role && getRoleDisplayName(user.role)}
-                  </Badge>
-                  {isAdmin && (
-                    <Badge size="xs" variant="dot" color="green">
-                      Online
-                    </Badge>
-                  )}
-                </Group>
-              </Stack>
-            </Group>
+              </AvatarFallback>
+            </Avatar>
+            {/* Online status indicator */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
           </div>
 
-          {/* Dropdown Sections */}
-          <div style={{ padding: '0.5rem' }}>
-            {dropdownSections.map((section, sectionIndex) => {
-              // Check if section should be visible based on role
-              if (section.roleVisible && user.role && !section.roleVisible.includes(user.role)) {
-                return null;
-              }
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-sm font-semibold truncate max-w-[120px]">
+              {getUserDisplayName()}
+            </span>
+            <span className="text-xs text-muted-foreground capitalize">
+              {user.role && getRoleDisplayName(user.role)}
+            </span>
+          </div>
 
-              return (
-                <div key={section.title}>
-                  {sectionIndex > 0 && <Divider my="xs" />}
-                  
-                  <Text
-                    size="xs"
-                    fw={600}
-                    c="dimmed"
-                    style={{
-                      padding: '0.5rem 0.75rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    {section.title}
-                  </Text>
-
-                  {section.items.map((item) => {
-                    // Check if item should be visible based on role
-                    if (item.roleRequired && user.role && !item.roleRequired.includes(user.role)) {
-                      return null;
-                    }
-
-                    return (
-                      <UnstyledButton
-                        key={item.id}
-                        onClick={item.onClick}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.75rem',
-                          width: '100%',
-                          padding: '0.75rem',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s ease',
-                          color: item.danger ? 'var(--destructive)' : 'var(--foreground)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--sidebar-accent)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                      >
-                        <div style={{ color: item.danger ? 'var(--destructive)' : 'var(--muted-foreground)' }}>
-                          <item.icon width={16} height={16} />
-                        </div>
-                        
-                        <Stack gap={1} style={{ flex: 1, textAlign: 'left' }}>
-                          <Group justify="space-between" align="center">
-                            <Text size="sm" fw={500}>
-                              {item.label}
-                            </Text>
-                            {item.badge && (
-                              <Badge size="xs" variant="light" color="blue">
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </Group>
-                          {item.description && (
-                            <Text size="xs" c="dimmed">
-                              {item.description}
-                            </Text>
-                          )}
-                        </Stack>
-                      </UnstyledButton>
-                    );
-                  })}
-                </div>
-              );
-            })}
-
-            {/* Theme & Settings */}
-            <Divider my="xs" />
-            <div style={{ padding: '8px 12px' }}>
-              <Text
-                size="xs"
-                fw={600}
-                c="dimmed"
-                style={{
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginBottom: '8px',
-                }}
-              >
-                Preferences
-              </Text>
-              
-              {/* Dark Mode Toggle */}
-              <Group justify="space-between" mb="sm">
-                <Group gap="sm">
-                  {isDark ? (
-                    <SunIcon width={16} height={16} style={{ color: 'var(--muted-foreground)' }} />
-                  ) : (
-                    <MoonIcon width={16} height={16} style={{ color: 'var(--muted-foreground)' }} />
-                  )}
-                  <Text size="sm" fw={500}>
-                    Dark Mode
-                  </Text>
-                </Group>
-                <Switch
-                  checked={isDark}
-                  onChange={toggleDarkMode}
-                  size="sm"
-                />
-              </Group>
-              
-              {/* Demo User Switching */}
-              <Text
-                size="xs"
-                fw={600}
-                c="dimmed"
-                style={{
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginBottom: '8px',
-                  marginTop: '12px',
-                }}
-              >
-                Demo User Switch
-              </Text>
-              <Stack gap="xs">
-                {demoUsers.map(demoUser => (
-                  <Button
-                    key={demoUser.role}
-                    variant="light"
-                    color={demoUser.color}
-                    size="xs"
-                    fullWidth
-                    leftSection={demoUser.icon}
-                    onClick={() => handleDemoLogin(demoUser)}
-                    style={{
-                      justifyContent: 'flex-start',
-                      height: 'auto',
-                      padding: '8px 12px',
-                    }}
-                  >
-                    <Text fw={500} size="xs">
-                      Switch to {demoUser.name}
-                    </Text>
-                  </Button>
-                ))}
-              </Stack>
-
-              {/* Sign Out Section */}
-              <Divider my="xs" />
-              <UnstyledButton
-                onClick={handleLogout}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease',
-                  color: 'var(--destructive)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--destructive-foreground)';
-                  e.currentTarget.style.color = 'var(--destructive)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--destructive)';
-                }}
-              >
-                <ExitIcon width={16} height={16} />
-                <Stack gap={1} style={{ flex: 1, textAlign: 'left' }}>
-                  <Text size="sm" fw={500}>
-                    Sign Out
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    Sign out of your account
-                  </Text>
-                </Stack>
-              </UnstyledButton>
+          <ChevronDownIcon className="h-4 w-4 ml-auto" />
+        </Button>
+      </DropdownMenuTrigger>
+      
+      <DropdownMenuContent align="end" className="w-80">
+        {/* User Header */}
+        <div className="p-4 border-b bg-muted/50">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user.profileImage} />
+              <AvatarFallback className={getAvatarColor()}>
+                {user.firstName?.[0]}{user.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-semibold">{getUserDisplayName()}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+              <div className="flex items-center gap-2">
+                <Badge className={getThemeColor()}>
+                  {user.role && getRoleDisplayName(user.role)}
+                </Badge>
+                {isAdmin && (
+                  <Badge variant="outline" className="text-green-600 border-green-200">
+                    Online
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-        </Paper>
-      )}
+        </div>
 
-    </div>
+        {/* Profile Section */}
+        <DropdownMenuLabel>Profile</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+          <PersonIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">View Profile</div>
+            <div className="text-xs text-muted-foreground">See your public profile</div>
+          </div>
+        </DropdownMenuItem>
+
+        {/* Account Settings */}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Account Settings</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => handleNavigation('/settings/account')}>
+          <GearIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">Account Settings</div>
+            <div className="text-xs text-muted-foreground">Privacy, security, preferences</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigation('/settings/security')}>
+          <LockClosedIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">Security</div>
+            <div className="text-xs text-muted-foreground">Password, 2FA, sessions</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigation('/settings/privacy')}>
+          <EyeOpenIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">Privacy</div>
+            <div className="text-xs text-muted-foreground">Data and visibility settings</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigation('/settings/notifications')}>
+          <BellIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">Notifications</div>
+            <div className="text-xs text-muted-foreground">Email and push preferences</div>
+          </div>
+        </DropdownMenuItem>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Administration</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => handleNavigation('/admin/dashboard')}>
+              <DashboardIcon className="mr-2 h-4 w-4" />
+              <div className="flex-1">
+                <div className="text-sm">System Administration</div>
+                <div className="text-xs text-muted-foreground">Platform management</div>
+              </div>
+              <Badge variant="secondary">Admin</Badge>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigation('/admin/users')}>
+              <PersonIcon className="mr-2 h-4 w-4" />
+              <div className="flex-1">
+                <div className="text-sm">User Management</div>
+                <div className="text-xs text-muted-foreground">Manage users and roles</div>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigation('/admin/audit-log')}>
+              <ActivityLogIcon className="mr-2 h-4 w-4" />
+              <div className="flex-1">
+                <div className="text-sm">Audit Logs</div>
+                <div className="text-xs text-muted-foreground">System activity logs</div>
+              </div>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {/* Preferences */}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Preferences</DropdownMenuLabel>
+        <div className="px-2 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {isDark ? (
+                <SunIcon className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <MoonIcon className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span className="text-sm font-medium">Dark Mode</span>
+            </div>
+            <Switch
+              checked={isDark}
+              onCheckedChange={toggleDarkMode}
+            />
+          </div>
+        </div>
+
+        {/* Demo User Switching */}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Demo User Switch</DropdownMenuLabel>
+        <div className="px-2 py-2 space-y-1">
+          {demoUsers.map(demoUser => (
+            <Button
+              key={demoUser.role}
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-xs h-auto py-2"
+              onClick={() => handleDemoLogin(demoUser)}
+            >
+              <span className="mr-2">{demoUser.icon}</span>
+              Switch to {demoUser.name}
+            </Button>
+          ))}
+        </div>
+
+        {/* Sign Out */}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={handleLogout}
+          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+        >
+          <ExitIcon className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm">Sign Out</div>
+            <div className="text-xs text-muted-foreground">Sign out of your account</div>
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

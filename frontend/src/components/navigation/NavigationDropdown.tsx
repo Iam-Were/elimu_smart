@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import {
-  UnstyledButton,
-  Paper,
-  Stack,
-  Text,
-  Group,
-} from '@mantine/core';
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,38 +33,9 @@ export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
   className = '',
   icon: Icon,
 }) => {
-  const [opened, setOpened] = useState(false);
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpened(false);
-      }
-    };
-
-    if (opened) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [opened]);
-
-  // Close dropdown on escape key
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && opened) {
-        setOpened(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [opened]);
 
   const handleNavigation = (path: string) => {
-    setOpened(false);
     navigate(path);
   };
 
@@ -77,144 +48,52 @@ export const NavigationDropdown: React.FC<NavigationDropdownProps> = ({
   if (visibleItems.length === 0) return null;
 
   return (
-    <div ref={dropdownRef} className={`navigation-dropdown ${className}`} style={{ position: 'relative' }}>
-      <UnstyledButton
-        onClick={() => setOpened(!opened)}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          transition: 'background-color 0.2s ease',
-          backgroundColor: opened ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
-          minWidth: '60px',
-          position: 'relative',
-        }}
-        onMouseEnter={(e) => {
-          if (!opened) {
-            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!opened) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
-      >
-        <Group gap="xs" style={{ alignItems: 'center' }}>
-          {Icon && (
-            <div style={{ color: 'var(--foreground)' }}>
-              <Icon width={20} height={20} />
+    <NavigationMenu className={className}>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger className="flex flex-col items-center p-2 min-w-[60px] h-auto bg-transparent hover:bg-black/5 data-[state=open]:bg-black/5">
+            <div className="flex items-center space-x-1">
+              {Icon && (
+                <div className="text-foreground">
+                  <Icon width={20} height={20} />
+                </div>
+              )}
+              <ChevronDownIcon width={12} height={12} className="text-foreground" />
             </div>
-          )}
-          <div style={{ 
-            transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
-            color: 'var(--foreground)',
-          }}>
-            <ChevronDownIcon width={12} height={12} />
-          </div>
-        </Group>
-        <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--foreground)', marginTop: '2px' }}>
-          {label}
-        </span>
-      </UnstyledButton>
-
-      {opened && (
-        <Paper
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            minWidth: '280px',
-            maxWidth: '400px',
-            zIndex: 1000,
-            backgroundColor: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            overflow: 'hidden',
-            animation: 'dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            marginTop: '4px',
-          }}
-        >
-          <div style={{ padding: '8px' }}>
-            {visibleItems.map((item) => (
-              <UnstyledButton
-                key={item.id}
-                onClick={() => handleNavigation(item.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease',
-                  textAlign: 'left',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--muted)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                {item.icon && (
-                  <div style={{ 
-                    color: 'var(--primary)', 
-                    marginTop: '2px',
-                    flexShrink: 0,
-                  }}>
-                    <item.icon width={20} height={20} />
-                  </div>
-                )}
-                
-                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                  <Text 
-                    size="sm" 
-                    fw={500}
-                    style={{ 
-                      color: 'var(--foreground)',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {item.label}
-                  </Text>
-                  {item.description && (
-                    <Text 
-                      size="xs" 
-                      c="dimmed"
-                      style={{ 
-                        lineHeight: 1.3,
-                        marginTop: '2px',
-                      }}
-                    >
-                      {item.description}
-                    </Text>
+            <span className="text-xs font-normal text-foreground mt-0.5">
+              {label}
+            </span>
+          </NavigationMenuTrigger>
+          <NavigationMenuContent className="w-80 p-2">
+            <div className="space-y-1">
+              {visibleItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigation(item.path)}
+                  className="flex items-start space-x-3 w-full p-3 rounded-md hover:bg-muted text-left transition-colors"
+                >
+                  {item.icon && (
+                    <div className="text-primary mt-0.5 flex-shrink-0">
+                      <item.icon width={20} height={20} />
+                    </div>
                   )}
-                </Stack>
-              </UnstyledButton>
-            ))}
-          </div>
-        </Paper>
-      )}
-
-      <style>{`
-        @keyframes dropdownSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `}</style>
-    </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground leading-tight">
+                      {item.label}
+                    </div>
+                    {item.description && (
+                      <div className="text-xs text-muted-foreground mt-1 leading-tight">
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 };

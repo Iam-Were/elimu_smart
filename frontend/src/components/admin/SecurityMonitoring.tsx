@@ -27,7 +27,7 @@ import {
   DownloadIcon,
   CheckCircledIcon,
 } from '@radix-ui/react-icons';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 
 interface SecurityAlert {
   id: string;
@@ -166,26 +166,26 @@ export const SecurityMonitoring: React.FC = () => {
     setRefreshing(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setRefreshing(false);
-    notifications.show({
-      title: 'Data Refreshed',
-      message: 'Security monitoring data has been updated',
-      color: 'green',
+    toast.success("Action Completed", {
+      // title: 'Data Refreshed',
+      description: 'Security monitoring data has been updated',
+      // color: 'green',
     });
   };
 
   const exportReport = () => {
-    notifications.show({
-      title: 'Report Generated',
-      message: 'Security report has been exported successfully',
-      color: 'green',
+    toast.success("Action Completed", {
+      // title: 'Report Generated',
+      description: 'Security report has been exported successfully',
+      // color: 'green',
     });
   };
 
   const resolveAlert = () => {
-    notifications.show({
-      title: 'Alert Resolved',
-      message: 'Security alert has been marked as resolved',
-      color: 'green',
+    toast.success("Action Completed", {
+      // title: 'Alert Resolved',
+      description: 'Security alert has been marked as resolved',
+      // color: 'green',
     });
   };
 
@@ -219,7 +219,7 @@ export const SecurityMonitoring: React.FC = () => {
               loading={refreshing}
               style={{
                 backgroundColor: 'var(--primary)',
-                color: 'var(--primary-foreground)',
+                // color: 'var(--primary-foreground)',
               }}
             >
               Refresh
@@ -411,10 +411,10 @@ export const SecurityMonitoring: React.FC = () => {
                             variant="subtle"
                             color="blue"
                             onClick={() => {
-                              notifications.show({
-                                title: 'Alert Details',
-                                message: alert.description,
-                                color: 'blue',
+                              toast.success("Action Completed", {
+                                // title: 'Alert Details',
+                                description: alert.description,
+                                // color: 'blue',
                               });
                             }}
                           >

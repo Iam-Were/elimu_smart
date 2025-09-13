@@ -1,5 +1,7 @@
 import React, { Component, type ReactNode } from 'react';
-import { Container, Title, Text, Button, Stack, Alert } from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Button from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
@@ -27,6 +29,25 @@ export class ErrorBoundary extends Component<Props, State> {
     // Log error to console in development
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
+      
+      // Special handling for Mantine-related errors
+      if (error.message.includes('MantineProvider') || 
+          error.message.includes('useMantineTheme') ||
+          error.message.includes('@mantine/core') ||
+          error.stack?.includes('@mantine')) {
+        
+        console.warn('🚨 MANTINE COMPONENT ERROR DETECTED:');
+        console.warn('Error:', error.message);
+        console.warn('This indicates a component is trying to use Mantine without MantineProvider');
+        console.warn('Component stack:', errorInfo.componentStack);
+        
+        // Extract component name from stack if possible
+        const componentMatch = errorInfo.componentStack?.match(/at (\w+)/);
+        if (componentMatch) {
+          console.warn(`❌ Problem component: ${componentMatch[1]}`);
+          console.warn('💡 Fix: Migrate this component to use shadcn components instead of Mantine');
+        }
+      }
     }
 
     // Update state with error info
@@ -56,57 +77,66 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <Container size="sm" py="xl">
-          <Stack gap="lg" align="center">
-            <Alert color="red" title="Something went wrong" variant="light">
-              <Text size="sm">
-                We encountered an unexpected error. Please try refreshing the
-                page.
-              </Text>
-            </Alert>
-
-            <Stack gap="md" align="center">
-              <Title order={2} ta="center" c="dimmed">
+        <div className="container max-w-sm mx-auto py-12">
+          <Card className="text-center">
+            <CardHeader>
+              <CardTitle className="text-destructive">
                 Oops! Something went wrong
-              </Title>
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <Alert className="border-destructive/20">
+                <AlertTitle>Something went wrong</AlertTitle>
+                <AlertDescription>
+                  We encountered an unexpected error. Please try refreshing the page.
+                </AlertDescription>
+              </Alert>
 
-              <Text ta="center" c="dimmed" size="sm" maw={400}>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                 We're sorry for the inconvenience. An unexpected error occurred
                 while rendering this page.
-              </Text>
+              </p>
 
-              <Stack gap="sm" align="center">
-                <Button onClick={this.handleReset} variant="light">
+              <div className="space-y-3">
+                <Button 
+                  onClick={this.handleReset} 
+                  variant="outline" 
+                  className="w-full"
+                >
                   Try Again
                 </Button>
-                <Button onClick={this.handleReload} variant="secondary" size="sm">
+                <Button 
+                  onClick={this.handleReload} 
+                  variant="secondary" 
+                  size="sm"
+                  className="w-full"
+                >
                   Reload Page
                 </Button>
-              </Stack>
-            </Stack>
+              </div>
 
-            {import.meta.env.DEV && this.state.error && (
-              <Alert color="gray" variant="light" w="100%">
-                <Text size="xs" fw={500} mb="xs">
-                  Error Details (Development Only):
-                </Text>
-                <Text
-                  size="xs"
-                  ff="monospace"
-                  style={{ whiteSpace: 'pre-wrap' }}
-                >
-                  {this.state.error.toString()}
-                  {this.state.errorInfo?.componentStack && (
-                    <>
-                      {'\n\nComponent Stack:'}
-                      {this.state.errorInfo.componentStack}
-                    </>
-                  )}
-                </Text>
-              </Alert>
-            )}
-          </Stack>
-        </Container>
+              {import.meta.env.DEV && this.state.error && (
+                <Alert className="text-left">
+                  <AlertTitle className="text-xs font-medium mb-2">
+                    Error Details (Development Only):
+                  </AlertTitle>
+                  <AlertDescription>
+                    <pre className="text-xs whitespace-pre-wrap font-mono">
+                      {this.state.error.toString()}
+                      {this.state.errorInfo?.componentStack && (
+                        <>
+                          {'\n\nComponent Stack:'}
+                          {this.state.errorInfo.componentStack}
+                        </>
+                      )}
+                    </pre>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       );
     }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,11 +9,9 @@ import {
   TrendingUp,
   DollarSign,
   MapPin,
-  Clock,
   BookOpen,
   Users,
   Building,
-  Star,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -50,7 +48,7 @@ interface Career {
     majorEmployers: string[];
     universities?: string[];
     licensingBody?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   matchScore?: number;
   personalizedInsights?: Array<{
@@ -71,7 +69,7 @@ interface ExplorationResult {
   metadata: {
     totalResults: number;
     returnedResults: number;
-    filters: any;
+    filters: Record<string, unknown>;
     sortBy: string;
   };
 }
@@ -119,7 +117,7 @@ const SORT_OPTIONS = [
 export const CareerExploration: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSalaryRange, setSelectedSalaryRange] = useState<any>(null);
+  const [selectedSalaryRange, setSelectedSalaryRange] = useState<{ label: string; min: number; max: number } | null>(null);
   const [selectedEducation, setSelectedEducation] = useState('');
   const [selectedOutlook, setSelectedOutlook] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
@@ -131,11 +129,6 @@ export const CareerExploration: React.FC = () => {
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  // Initialize with default search
-  useEffect(() => {
-    handleSearch();
-  }, []);
-
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories(prev =>
       prev.includes(category)
@@ -144,12 +137,12 @@ export const CareerExploration: React.FC = () => {
     );
   };
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const filters: any = {};
+      const filters: Record<string, unknown> = {};
       
       if (selectedCategories.length > 0) {
         filters.categories = selectedCategories;
@@ -195,7 +188,7 @@ export const CareerExploration: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedCategories, selectedSalaryRange, selectedEducation, selectedOutlook, searchQuery, sortBy]);
 
   const handleCareerDetails = async (careerId: string) => {
     setIsLoading(true);
@@ -227,6 +220,11 @@ export const CareerExploration: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Initialize with default search
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]); // Include handleSearch in dependency array
 
   const getJobOutlookColor = (outlook: string) => {
     switch (outlook) {

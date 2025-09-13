@@ -1,23 +1,13 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Stack,
-  Group,
-  Button,
-  TextInput,
-  Select,
-  Badge,
-  Alert,
-  Table,
-  Pagination,
-  Modal,
-  SimpleGrid,
-  ActionIcon,
-  Tooltip,
-} from '@mantine/core';
+import { Card } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   MagnifyingGlassIcon,
   EyeOpenIcon,
@@ -28,8 +18,7 @@ import {
   ActivityLogIcon,
   CheckCircledIcon,
 } from '@radix-ui/react-icons';
-import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 
 interface AuditLogEntry {
   id: string;
@@ -44,7 +33,7 @@ interface AuditLogEntry {
   ipAddress: string;
   userAgent: string;
   outcome: 'success' | 'failure' | 'warning';
-  details: Record<string, any>;
+  details: Record<string, string | number | boolean | null>;
   severity: 'low' | 'medium' | 'high' | 'critical';
   sessionId: string;
 }
@@ -160,7 +149,7 @@ const mockAuditLogs: AuditLogEntry[] = [
 export const AuditLog: React.FC = () => {
   const [auditLogs] = useState<AuditLogEntry[]>(mockAuditLogs);
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, setOpened] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [filterOutcome, setFilterOutcome] = useState<string | null>(null);
@@ -190,33 +179,6 @@ export const AuditLog: React.FC = () => {
 
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
-  const getOutcomeColor = (outcome: string) => {
-    switch (outcome) {
-      case 'success':
-        return 'green';
-      case 'failure':
-        return 'red';
-      case 'warning':
-        return 'yellow';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'low':
-        return 'green';
-      case 'medium':
-        return 'yellow';
-      case 'high':
-        return 'orange';
-      case 'critical':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -237,7 +199,7 @@ export const AuditLog: React.FC = () => {
 
   const handleViewDetails = (log: AuditLogEntry) => {
     setSelectedLog(log);
-    open();
+    setOpened(true);
   };
 
   const exportLogs = () => {
@@ -256,10 +218,8 @@ export const AuditLog: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    notifications.show({
-      title: 'Export Complete',
-      message: 'Audit logs have been exported successfully',
-      color: 'green',
+    toast.success('Export Complete', {
+      description: 'Audit logs have been exported successfully'
     });
   };
 
@@ -295,372 +255,384 @@ export const AuditLog: React.FC = () => {
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="space-y-6">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-purple-800">
               Audit Log
-            </Title>
-            <Text size="lg" c="dimmed">
+            </h1>
+            <p className="text-lg text-muted-foreground">
               Monitor and track all system activities and user actions
-            </Text>
-          </Stack>
-          <Group gap="sm">
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             {stats.critical > 0 && (
-              <Badge size="lg" color="red" variant="filled">
+              <Badge variant="destructive" className="text-sm px-3 py-1">
                 {stats.critical} Critical
               </Badge>
             )}
             {stats.failures > 0 && (
-              <Badge size="lg" color="orange" variant="filled">
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-sm px-3 py-1">
                 {stats.failures} Failures
               </Badge>
             )}
             <Button
-              leftSection={<DownloadIcon width={16} height={16} />}
-              variant="light"
               onClick={exportLogs}
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--secondary-foreground)',
-              }}
+              variant="outline"
+              className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"
             >
+              <DownloadIcon className="w-4 h-4 mr-2" />
               Export Logs
             </Button>
-          </Group>
-        </Group>
+          </div>
+        </div>
 
         {/* Statistics Cards */}
-        <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }} spacing="md">
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ActivityLogIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Total Events</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <ActivityLogIcon className="w-5 h-5 text-purple-600" />
+              <p className="text-xs text-muted-foreground text-center">Total Events</p>
+              <p className="text-lg font-bold text-purple-600">
                 {stats.total}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
 
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <CheckCircledIcon width={20} height={20} style={{ color: 'var(--success)' }} />
-              <Text size="xs" c="dimmed" ta="center">Successful</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--success)' }}>
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <CheckCircledIcon className="w-5 h-5 text-green-600" />
+              <p className="text-xs text-muted-foreground text-center">Successful</p>
+              <p className="text-lg font-bold text-green-600">
                 {stats.success}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
 
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ExclamationTriangleIcon width={20} height={20} style={{ color: '#ef4444' }} />
-              <Text size="xs" c="dimmed" ta="center">Failures</Text>
-              <Text fw={700} size="lg" style={{ color: '#ef4444' }}>
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+              <p className="text-xs text-muted-foreground text-center">Failures</p>
+              <p className="text-lg font-bold text-red-600">
                 {stats.failures}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
 
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ExclamationTriangleIcon width={20} height={20} style={{ color: '#eab308' }} />
-              <Text size="xs" c="dimmed" ta="center">Warnings</Text>
-              <Text fw={700} size="lg" style={{ color: '#eab308' }}>
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />
+              <p className="text-xs text-muted-foreground text-center">Warnings</p>
+              <p className="text-lg font-bold text-yellow-600">
                 {stats.warnings}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
 
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--destructive)' }} />
-              <Text size="xs" c="dimmed" ta="center">Critical</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--destructive)' }}>
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+              <p className="text-xs text-muted-foreground text-center">Critical</p>
+              <p className="text-lg font-bold text-red-600">
                 {stats.critical}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
 
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <LockClosedIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Security</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
+          <Card className="p-4">
+            <div className="flex flex-col items-center space-y-2">
+              <LockClosedIcon className="w-5 h-5 text-purple-600" />
+              <p className="text-xs text-muted-foreground text-center">Security</p>
+              <p className="text-lg font-bold text-purple-600">
                 {stats.security}
-              </Text>
-            </Stack>
+              </p>
+            </div>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* Filters */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Group gap="md">
-            <TextInput
-              placeholder="Search by user, action, resource, or IP address..."
-              leftSection={<MagnifyingGlassIcon width={16} height={16} />}
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.currentTarget.value)}
-              style={{ flex: 1 }}
-            />
-            <Select
-              placeholder="Category"
-              value={filterCategory}
-              onChange={setFilterCategory}
-              data={[
-                { value: 'authentication', label: 'Authentication' },
-                { value: 'user_management', label: 'User Management' },
-                { value: 'content', label: 'Content' },
-                { value: 'system', label: 'System' },
-                { value: 'security', label: 'Security' },
-              ]}
-              clearable
-              style={{ minWidth: 150 }}
-            />
-            <Select
-              placeholder="Outcome"
-              value={filterOutcome}
-              onChange={setFilterOutcome}
-              data={[
-                { value: 'success', label: 'Success' },
-                { value: 'failure', label: 'Failure' },
-                { value: 'warning', label: 'Warning' },
-              ]}
-              clearable
-              style={{ minWidth: 120 }}
-            />
-            <Select
-              placeholder="Severity"
-              value={filterSeverity}
-              onChange={setFilterSeverity}
-              data={[
-                { value: 'low', label: 'Low' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'high', label: 'High' },
-                { value: 'critical', label: 'Critical' },
-              ]}
-              clearable
-              style={{ minWidth: 120 }}
-            />
-            <Select
-              value={dateRange}
-              onChange={value => setDateRange(value || 'last-7-days')}
-              data={[
-                { value: 'last-24-hours', label: 'Last 24 Hours' },
-                { value: 'last-7-days', label: 'Last 7 Days' },
-                { value: 'last-30-days', label: 'Last 30 Days' },
-                { value: 'last-90-days', label: 'Last 90 Days' },
-              ]}
-              style={{ minWidth: 150 }}
-            />
-          </Group>
+        <Card className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by user, action, resource, or IP address..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterCategory || 'all'} onValueChange={(value) => setFilterCategory(value === 'all' ? null : value)}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="authentication">Authentication</SelectItem>
+                <SelectItem value="user_management">User Management</SelectItem>
+                <SelectItem value="content">Content</SelectItem>
+                <SelectItem value="system">System</SelectItem>
+                <SelectItem value="security">Security</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterOutcome || 'all'} onValueChange={(value) => setFilterOutcome(value === 'all' ? null : value)}>
+              <SelectTrigger className="w-full md:w-32">
+                <SelectValue placeholder="Outcome" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Outcomes</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="failure">Failure</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterSeverity || 'all'} onValueChange={(value) => setFilterSeverity(value === 'all' ? null : value)}>
+              <SelectTrigger className="w-full md:w-32">
+                <SelectValue placeholder="Severity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Severities</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={dateRange} onValueChange={(value) => setDateRange(value)}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="last-24-hours">Last 24 Hours</SelectItem>
+                <SelectItem value="last-7-days">Last 7 Days</SelectItem>
+                <SelectItem value="last-30-days">Last 30 Days</SelectItem>
+                <SelectItem value="last-90-days">Last 90 Days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </Card>
 
         {/* Critical Events Alert */}
         {stats.critical > 0 && (
-          <Alert
-            icon={<ExclamationTriangleIcon width={16} height={16} />}
-            title="Critical Events Detected"
-            color="red"
-          >
-            <Text size="sm">
+          <Alert className="border-red-200 bg-red-50">
+            <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
+            <AlertTitle className="text-red-800">Critical Events Detected</AlertTitle>
+            <AlertDescription className="text-red-700">
               {stats.critical} critical security event(s) require immediate attention. 
               Review these events and take appropriate action.
-            </Text>
+            </AlertDescription>
           </Alert>
         )}
 
         {/* Audit Log Table */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Title order={3}>Audit Events</Title>
-              <Text size="sm" c="dimmed">
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold text-purple-800">Audit Events</h3>
+              <p className="text-sm text-muted-foreground">
                 {filteredLogs.length} events found
-              </Text>
-            </Group>
+              </p>
+            </div>
 
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Timestamp</Table.Th>
-                  <Table.Th>User</Table.Th>
-                  <Table.Th>Action</Table.Th>
-                  <Table.Th>Category</Table.Th>
-                  <Table.Th>Resource</Table.Th>
-                  <Table.Th>Outcome</Table.Th>
-                  <Table.Th>Severity</Table.Th>
-                  <Table.Th>IP Address</Table.Th>
-                  <Table.Th>Actions</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {paginatedLogs.map(log => (
-                  <Table.Tr key={log.id}>
-                    <Table.Td>
-                      <Text size="sm">{formatDate(log.timestamp)}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Stack gap="xs">
-                        <Text size="sm" fw={500}>{log.username}</Text>
-                        <Badge size="xs" variant="secondary">
-                          {log.userRole}
-                        </Badge>
-                      </Stack>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm">{formatAction(log.action)}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        {getCategoryIcon(log.category)}
-                        <Text size="sm">{log.category.replace('_', ' ')}</Text>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm">{log.resource}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge size="sm" color={getOutcomeColor(log.outcome)} variant="light">
-                        {log.outcome}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge size="sm" color={getSeverityColor(log.severity)} variant="filled">
-                        {log.severity}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm" style={{fontFamily: 'monospace'}}>{log.ipAddress}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Tooltip label="View Details">
-                        <ActionIcon
-                          variant="light"
-                          size="sm"
-                          onClick={() => handleViewDetails(log)}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Resource</TableHead>
+                    <TableHead>Outcome</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>IP Address</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedLogs.map(log => (
+                    <TableRow key={log.id}>
+                      <TableCell>
+                        <span className="text-sm">{formatDate(log.timestamp)}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium">{log.username}</div>
+                          <Badge variant="secondary" className="text-xs">
+                            {log.userRole}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{formatAction(log.action)}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getCategoryIcon(log.category)}
+                          <span className="text-sm">{log.category.replace('_', ' ')}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{log.resource}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={log.outcome === 'success' ? 'default' : log.outcome === 'failure' ? 'destructive' : 'secondary'}
+                          className="text-xs"
                         >
-                          <EyeOpenIcon width={14} height={14} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
+                          {log.outcome}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={log.severity === 'critical' ? 'destructive' : log.severity === 'high' ? 'secondary' : 'outline'}
+                          className={`text-xs ${
+                            log.severity === 'critical' ? 'bg-red-600 text-white' :
+                            log.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                            log.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}
+                        >
+                          {log.severity}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm font-mono">{log.ipAddress}</span>
+                      </TableCell>
+                      <TableCell>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleViewDetails(log)}
+                              >
+                                <EyeOpenIcon className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View Details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
             {totalPages > 1 && (
-              <Group justify="center">
-                <Pagination
-                  value={currentPage}
-                  onChange={setCurrentPage}
-                  total={totalPages}
-                  size="sm"
-                />
-              </Group>
+              <div className="flex justify-center">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
             )}
-          </Stack>
+          </div>
         </Card>
 
         {/* Log Details Modal */}
-        <Modal
-          opened={opened}
-          onClose={close}
-          title="Audit Log Details"
-          size="lg"
-        >
-          {selectedLog && (
-            <Stack gap="md">
-              <Group gap="sm">
-                {getCategoryIcon(selectedLog.category)}
-                <Badge color={getOutcomeColor(selectedLog.outcome)}>
-                  {selectedLog.outcome}
-                </Badge>
-                <Badge color={getSeverityColor(selectedLog.severity)}>
-                  {selectedLog.severity}
-                </Badge>
-              </Group>
+        <Dialog open={opened} onOpenChange={setOpened}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Audit Log Details</DialogTitle>
+            </DialogHeader>
+            {selectedLog && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  {getCategoryIcon(selectedLog.category)}
+                  <Badge 
+                    variant={selectedLog.outcome === 'success' ? 'default' : selectedLog.outcome === 'failure' ? 'destructive' : 'secondary'}
+                  >
+                    {selectedLog.outcome}
+                  </Badge>
+                  <Badge 
+                    variant={selectedLog.severity === 'critical' ? 'destructive' : 'secondary'}
+                    className={selectedLog.severity === 'critical' ? 'bg-red-600 text-white' : ''}
+                  >
+                    {selectedLog.severity}
+                  </Badge>
+                </div>
 
-              <SimpleGrid cols={2} spacing="md">
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Timestamp</Text>
-                  <Text size="sm">{formatDate(selectedLog.timestamp)}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Session ID</Text>
-                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.sessionId}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>User</Text>
-                  <Text size="sm">{selectedLog.username}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Role</Text>
-                  <Text size="sm">{selectedLog.userRole}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Action</Text>
-                  <Text size="sm">{formatAction(selectedLog.action)}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Category</Text>
-                  <Text size="sm">{selectedLog.category.replace('_', ' ')}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Resource</Text>
-                  <Text size="sm">{selectedLog.resource}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>Resource ID</Text>
-                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.resourceId || 'N/A'}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>IP Address</Text>
-                  <Text size="sm" style={{fontFamily: 'monospace'}}>{selectedLog.ipAddress}</Text>
-                </Stack>
-                <Stack gap="xs">
-                  <Text size="sm" fw={500}>User Agent</Text>
-                  <Text size="sm" lineClamp={2}>{selectedLog.userAgent}</Text>
-                </Stack>
-              </SimpleGrid>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Timestamp</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(selectedLog.timestamp)}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Session ID</p>
+                    <p className="text-sm font-mono text-muted-foreground">{selectedLog.sessionId}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">User</p>
+                    <p className="text-sm text-muted-foreground">{selectedLog.username}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Role</p>
+                    <p className="text-sm text-muted-foreground">{selectedLog.userRole}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Action</p>
+                    <p className="text-sm text-muted-foreground">{formatAction(selectedLog.action)}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Category</p>
+                    <p className="text-sm text-muted-foreground">{selectedLog.category.replace('_', ' ')}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Resource</p>
+                    <p className="text-sm text-muted-foreground">{selectedLog.resource}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">Resource ID</p>
+                    <p className="text-sm font-mono text-muted-foreground">{selectedLog.resourceId || 'N/A'}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">IP Address</p>
+                    <p className="text-sm font-mono text-muted-foreground">{selectedLog.ipAddress}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-purple-800">User Agent</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{selectedLog.userAgent}</p>
+                  </div>
+                </div>
 
-              <Stack gap="xs">
-                <Text size="sm" fw={500}>Additional Details</Text>
-                <Card padding="sm" style={{ backgroundColor: 'var(--muted)' }}>
-                  <pre style={{ 
-                    fontSize: '12px', 
-                    margin: 0, 
-                    whiteSpace: 'pre-wrap',
-                    fontFamily: 'monospace'
-                  }}>
-                    {JSON.stringify(selectedLog.details, null, 2)}
-                  </pre>
-                </Card>
-              </Stack>
-            </Stack>
-          )}
-        </Modal>
-      </Stack>
-    </Container>
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-purple-800">Additional Details</p>
+                  <Card className="p-4 bg-muted">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
+                      {JSON.stringify(selectedLog.details, null, 2)}
+                    </pre>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };

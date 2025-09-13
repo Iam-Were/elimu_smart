@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -427,11 +427,7 @@ export const FreeRiasecAssessment: React.FC = () => {
   const totalQuestions = iipRiasecQuestions.length;
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
 
-  useEffect(() => {
-    startAssessment();
-  }, []);
-
-  const startAssessment = async () => {
+  const startAssessment = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('http://localhost:1337/parse/functions/startRiasecAssessment', {
@@ -461,7 +457,11 @@ export const FreeRiasecAssessment: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [logActivity, totalQuestions]);
+
+  useEffect(() => {
+    startAssessment();
+  }, [startAssessment]);
 
   const handleResponse = async (questionId: number, response: number) => {
     if (!assessmentId) return;

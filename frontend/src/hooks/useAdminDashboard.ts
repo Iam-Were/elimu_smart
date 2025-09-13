@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Parse from 'parse';
 import { type AdminRoleType } from '@/utils/adminPermissions';
 
@@ -56,14 +56,14 @@ interface AuditLog {
   user: string;
   timestamp: Date;
   ipAddress: string;
-  details: any;
+  details: Record<string, unknown>;
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
 interface AdminActivity {
   activityType: string;
   adminId: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: Date;
   duration?: number;
 }
@@ -96,7 +96,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   // Log admin activity
   const logAdminActivity = async (
     activityType: string,
-    data: any = {},
+    data: Record<string, unknown> = {},
     duration?: number
   ) => {
     try {
@@ -112,10 +112,11 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   };
 
   // Get system metrics (for operations and platform admins)
-  const getSystemMetrics = async (): Promise<SystemMetrics | null> => {
+  const getSystemMetrics = useCallback(async (): Promise<SystemMetrics | null> => {
     if (adminRole === 'provider_safety') return null; // No system access for safety managers
     
     try {
+      
       const result = await Parse.Cloud.run('getAdminSystemMetrics');
       return {
         totalUsers: result.totalUsers || 0,
@@ -132,33 +133,35 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
       console.error('Failed to get system metrics:', error);
       return null;
     }
-  };
+  }, [adminRole]);
 
   // Get security metrics (for operations and safety admins)
-  const getSecurityMetrics = async (): Promise<SecurityMetrics | null> => {
+  const getSecurityMetrics = useCallback(async (): Promise<SecurityMetrics | null> => {
     if (adminRole === 'platform' && !adminRole) return null; // Limited security access for platform admins
     
     try {
+      
       const result = await Parse.Cloud.run('getAdminSecurityMetrics');
       return {
         activeThreats: result.activeThreats || 0,
         blockedAttempts: result.blockedAttempts || 0,
         vulnerabilityScore: result.vulnerabilityScore || 0,
         complianceScore: result.complianceScore || 0,
-        lastSecurityScan: new Date(result.lastSecurityScan),
+        lastSecurityScan: new Date(result.lastSecurityScan as string | number | Date),
         failedLoginAttempts: result.failedLoginAttempts || 0
       };
     } catch (error) {
       console.error('Failed to get security metrics:', error);
       return null;
     }
-  };
+  }, [adminRole]);
 
   // Get business metrics (primarily for platform admins)
-  const getBusinessMetrics = async (): Promise<BusinessMetrics | null> => {
+  const getBusinessMetrics = useCallback(async (): Promise<BusinessMetrics | null> => {
     if (adminRole !== 'platform') return null; // Business data only for platform admins
     
     try {
+      
       const result = await Parse.Cloud.run('getAdminBusinessMetrics');
       return {
         monthlyRevenue: result.monthlyRevenue || 0,
@@ -172,13 +175,14 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
       console.error('Failed to get business metrics:', error);
       return null;
     }
-  };
+  }, [adminRole]);
 
   // Get content moderation metrics (for operations and safety admins)
-  const getContentMetrics = async (): Promise<ContentMetrics | null> => {
+  const getContentMetrics = useCallback(async (): Promise<ContentMetrics | null> => {
     if (adminRole === 'platform') return null; // Platform admins don't handle content
     
     try {
+      
       const result = await Parse.Cloud.run('getAdminContentMetrics');
       return {
         flaggedContent: result.flaggedContent || 0,
@@ -192,13 +196,14 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
       console.error('Failed to get content metrics:', error);
       return null;
     }
-  };
+  }, [adminRole]);
 
   // Get support metrics (for operations admins)
-  const getSupportMetrics = async (): Promise<SupportMetrics | null> => {
+  const getSupportMetrics = useCallback(async (): Promise<SupportMetrics | null> => {
     if (adminRole !== 'operations') return null; // Support data only for operations
     
     try {
+      
       const result = await Parse.Cloud.run('getAdminSupportMetrics');
       return {
         openTickets: result.openTickets || 0,
@@ -212,17 +217,18 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
       console.error('Failed to get support metrics:', error);
       return null;
     }
-  };
+  }, [adminRole]);
 
   // Get recent audit logs
   const getRecentAuditLogs = async (): Promise<AuditLog[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getAdminAuditLogs', { limit: 10 });
-      return (result || []).map((log: any) => ({
+      return (result || []).map((log: Record<string, unknown>) => ({
         id: log.id,
         action: log.action,
         user: log.user,
-        timestamp: new Date(log.timestamp),
+        timestamp: new Date(log.timestamp as string | number | Date),
         ipAddress: log.ipAddress,
         details: log.details,
         severity: log.severity
@@ -236,12 +242,13 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   // Get recent admin activities
   const getRecentActivities = async (): Promise<AdminActivity[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getAdminRecentActivities', { limit: 20 });
-      return (result || []).map((activity: any) => ({
+      return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
         adminId: activity.adminId,
         data: activity.data,
-        timestamp: new Date(activity.createdAt),
+        timestamp: new Date(activity.createdAt as string | number | Date),
         duration: activity.duration
       }));
     } catch (error) {
@@ -251,7 +258,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   };
 
   // Load all admin dashboard data based on role
-  const loadAdminDashboard = async () => {
+  const loadAdminDashboard = useCallback(async () => {
     setDashboardData(prev => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -291,7 +298,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
         error: error instanceof Error ? error.message : 'Failed to load admin dashboard data'
       }));
     }
-  };
+  }, [getSystemMetrics, getSecurityMetrics, getBusinessMetrics, getContentMetrics, getSupportMetrics]);
 
   // Refresh specific sections
   const refreshSystemMetrics = async () => {
@@ -311,23 +318,37 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
 
   // Load data on mount
   useEffect(() => {
-    const user = Parse.User.current();
-    if (user && user.get('role') === 'admin') {
-      loadAdminDashboard();
-    }
-  }, [adminRole]);
+    const loadDataIfAdmin = async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user && user.get('role') === 'admin') {
+          loadAdminDashboard();
+        }
+      } catch (error) {
+        console.error('Failed to check admin session:', error);
+      }
+    };
+    
+    loadDataIfAdmin();
+  }, [adminRole, loadAdminDashboard]);
 
   // Auto-refresh every 10 minutes (less frequent for admins)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const user = Parse.User.current();
-      if (user && user.get('role') === 'admin') {
-        loadAdminDashboard();
+    const interval = setInterval(async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user && user.get('role') === 'admin') {
+          loadAdminDashboard();
+        }
+      } catch (error) {
+        console.error('Failed to check admin session for auto-refresh:', error);
       }
     }, 10 * 60 * 1000); // 10 minutes
 
     return () => clearInterval(interval);
-  }, [adminRole]);
+  }, [adminRole, loadAdminDashboard]);
 
   // Calculate derived metrics based on role and data
   const getDerivedMetrics = () => {

@@ -21,22 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface StudentProfile {
-  subjects: string[];
-  grades: { [subject: string]: string };
-}
 
-interface AcademicPreferences {
-  careerInterests: string[];
-  studyDuration: string;
-  preferredFields: string[];
-}
-
-interface FinancialConstraints {
-  maxAnnualFees: number;
-  scholarshipRequired: boolean;
-  familyIncome: string;
-}
 
 interface UniversityMatch {
   universityId: string;
@@ -121,7 +106,7 @@ export const UniversityCourseFinder: React.FC = () => {
   // Step 2: Preferences
   const [careerInterests, setCareerInterests] = useState<string[]>([]);
   const [studyDuration, setStudyDuration] = useState('4 years');
-  const [preferredFields, setPreferredFields] = useState<string[]>([]);
+  const [preferredFields] = useState<string[]>([]);
 
   // Step 3: Financial & Location
   const [maxAnnualFees, setMaxAnnualFees] = useState(50000);

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import Parse from '@/config/parse';
+import { useState, useEffect, useCallback } from 'react';
+import Parse from 'parse';
 
 interface UserActivity {
   activityType: string;
-  data: any;
+  data: Record<string, unknown>;
   pageUrl: string;
   duration?: number;
   timestamp: Date;
@@ -141,11 +141,12 @@ export const useDynamicDashboard = () => {
   // Log user activity
   const logActivity = async (
     activityType: string,
-    data: any = {},
+    data: Record<string, unknown> = {},
     pageUrl: string = window.location.pathname,
     duration?: number
   ) => {
     try {
+      
       await Parse.Cloud.run('logUserActivity', {
         activityType,
         data,
@@ -160,6 +161,7 @@ export const useDynamicDashboard = () => {
   // Calculate career readiness score
   const calculateCareerReadiness = async (): Promise<CareerReadinessScore | null> => {
     try {
+      
       const result = await Parse.Cloud.run('calculateCareerReadinessScore');
       return {
         overall: result.overall || 0,
@@ -180,6 +182,7 @@ export const useDynamicDashboard = () => {
   // Get university placement data
   const getUniversityPlacement = async (): Promise<UniversityPlacementData | null> => {
     try {
+      
       const result = await Parse.Cloud.run('getUniversityPlacementData');
       return {
         eligiblePrograms: result.eligiblePrograms || [],
@@ -195,12 +198,13 @@ export const useDynamicDashboard = () => {
   // Find scholarship matches
   const findScholarshipMatches = async (): Promise<ScholarshipMatch[]> => {
     try {
+      
       const result = await Parse.Cloud.run('findScholarshipMatches');
-      return (result.matches || []).map((match: any) => ({
+      return (result.matches || []).map((match: Record<string, unknown>) => ({
         name: match.name,
         provider: match.provider,
         amount: match.amount,
-        deadline: new Date(match.deadline),
+        deadline: new Date(match.deadline as string | number | Date),
         requirements: match.requirements || [],
         matchScore: match.matchScore || 0,
         category: match.category || 'General'
@@ -214,6 +218,7 @@ export const useDynamicDashboard = () => {
   // Calculate cutoff points analysis
   const getCutoffAnalysis = async (): Promise<CutoffAnalysis | null> => {
     try {
+      
       const result = await Parse.Cloud.run('calculateCutoffPoints');
       return {
         currentPoints: result.currentPoints || 0,
@@ -231,11 +236,12 @@ export const useDynamicDashboard = () => {
   // Get KUCCPS timeline and deadlines
   const getKuccpsTimeline = async (): Promise<KuccpsTimeline | null> => {
     try {
+      
       const result = await Parse.Cloud.run('getKuccpsTimeline');
       return {
-        timeline: (result.timeline || []).map((event: any) => ({
+        timeline: (result.timeline || []).map((event: Record<string, unknown>) => ({
           ...event,
-          date: new Date(event.date)
+          date: new Date(event.date as string | number | Date)
         })),
         nextDeadline: result.nextDeadline || '',
         daysRemaining: result.daysRemaining || 0,
@@ -250,6 +256,7 @@ export const useDynamicDashboard = () => {
   // Get course recommendations
   const getCourseRecommendations = async (): Promise<CourseRecommendations | null> => {
     try {
+      
       const result = await Parse.Cloud.run('getCourseRecommendations');
       return {
         recommendations: result.recommendations || [],
@@ -266,13 +273,14 @@ export const useDynamicDashboard = () => {
   // Get user activities
   const getUserActivities = async (): Promise<UserActivity[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getUserActivities', { limit: 50 });
-      return (result || []).map((activity: any) => ({
+      return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
         data: activity.data,
         pageUrl: activity.pageUrl,
         duration: activity.duration,
-        timestamp: new Date(activity.createdAt)
+        timestamp: new Date(activity.createdAt as string | number | Date)
       }));
     } catch (error) {
       console.error('Failed to get user activities:', error);
@@ -283,6 +291,7 @@ export const useDynamicDashboard = () => {
   // Get LinkedIn professional insights
   const getLinkedInInsights = async (): Promise<LinkedInInsights | null> => {
     try {
+      
       const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
         industry: 'technology', // Default to technology, could be dynamic based on user profile
         careerLevel: 'entry'
@@ -308,7 +317,7 @@ export const useDynamicDashboard = () => {
   };
 
   // Load all dashboard data
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setDashboardData(prev => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -351,7 +360,7 @@ export const useDynamicDashboard = () => {
         error: error instanceof Error ? error.message : 'Failed to load dashboard data'
       }));
     }
-  };
+  }, []);
 
   // Refresh specific dashboard sections
   const refreshCareerReadiness = async () => {
@@ -389,23 +398,37 @@ export const useDynamicDashboard = () => {
 
   // Load data on mount
   useEffect(() => {
-    const user = Parse.User.current();
-    if (user) {
-      loadDashboardData();
-    }
-  }, []);
+    const loadDataIfUser = async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user) {
+          loadDashboardData();
+        }
+      } catch (error) {
+        console.error('Failed to check user session:', error);
+      }
+    };
+    
+    loadDataIfUser();
+  }, [loadDashboardData]);
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
-    const interval = setInterval(() => {
-      const user = Parse.User.current();
-      if (user) {
-        loadDashboardData();
+    const interval = setInterval(async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user) {
+          loadDashboardData();
+        }
+      } catch (error) {
+        console.error('Failed to check user session for auto-refresh:', error);
       }
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loadDashboardData]);
 
   return {
     ...dashboardData,

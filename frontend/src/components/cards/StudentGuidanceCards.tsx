@@ -443,7 +443,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
     // Update status and priority based on user activity and career readiness
     baseCards.forEach(card => {
       switch (card.id) {
-        case 'talk-to-counselor':
+        case 'talk-to-counselor': {
           // High priority if user has low career readiness or many assessment clicks
           const assessmentClicks = userActivities.filter(a => 
             a.activityType.includes('assessment') || a.activityType.includes('career')
@@ -459,8 +459,9 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             card.studentValue = 'Great time to discuss your assessment results with a counselor';
           }
           break;
+        }
 
-        case 'quick-question-help':
+        case 'quick-question-help': {
           const questionActivities = userActivities.filter(a => 
             a.activityType === 'question_asked' || a.activityType === 'quick_help_click'
           );
@@ -470,8 +471,9 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             card.studentValue = `You've asked ${questionActivities.length} questions - keep the momentum going!`;
           }
           break;
+        }
 
-        case 'career-mentorship':
+        case 'career-mentorship': {
           const careerExplorationActivities = userActivities.filter(a => 
             a.activityType === 'career_exploration_click' || 
             a.activityType === 'professional_interview_view'
@@ -483,26 +485,29 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             card.studentValue = 'Perfect timing! You\'ve been exploring careers - now connect with real professionals';
           }
           break;
+        }
 
 
-        case 'scholarship-hunter':
+        case 'scholarship-hunter': {
           if (careerReadinessScore && careerReadinessScore.breakdown.courseExploration > 60) {
             card.priority = 'helpful';
             card.status = 'available';
             card.studentValue = 'You\'re exploring courses - perfect time to secure funding for your education';
           }
           break;
+        }
 
 
-        case 'job-ready-skills':
+        case 'job-ready-skills': {
           if (careerReadinessScore && careerReadinessScore.breakdown.actionsTaken < 30) {
             card.priority = 'helpful';
             card.status = 'available';
             card.studentValue = 'Boost your action score by developing practical job skills';
           }
           break;
+        }
 
-        case 'professional-networking':
+        case 'professional-networking': {
           const networkingActivities = userActivities.filter(a => 
             a.activityType === 'linkedin_profile_click' || 
             a.activityType === 'professional_networking_view' ||
@@ -531,6 +536,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             card.studentValue = 'Application season! Professional connections can provide valuable university and career insights';
           }
           break;
+        }
 
         default:
           break;
@@ -728,16 +734,23 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             <Card
               key={card.id}
               className={cn(
-                "group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 cursor-pointer",
-                "bg-gradient-to-br from-white via-white to-orange-50/20 border-orange-100",
-                card.priority === 'essential' && "ring-2 ring-orange-300 shadow-lg",
-                card.status === 'urgent' && "ring-2 ring-red-300 shadow-lg shadow-red-500/10"
+                "glass-guidance-card group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02]",
+                "border-yellow-200/30",
+                card.priority === 'essential' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10",
+                card.status === 'urgent' && "ring-2 ring-red-300/50 shadow-lg shadow-red-500/10"
               )}
             >
-              {/* Priority Indicator */}
+              {/* Enhanced layered decorative elements */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-yellow-500/15 to-yellow-300/8 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-yellow-400/10 to-yellow-200/5 rounded-full -ml-8 -mb-8 group-hover:rotate-12 transition-transform duration-700"></div>
+              
+              {/* Glass overlay effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+              
+              {/* Enhanced Priority Indicator */}
               {card.priority === 'essential' && (
-                <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-orange-500">
-                  <Star className="absolute -top-6 -right-5 h-3 w-3 text-white" />
+                <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-orange-500/80 backdrop-blur-sm">
+                  <Star className="absolute -top-6 -right-5 h-3 w-3 text-white drop-shadow-sm" />
                 </div>
               )}
               
@@ -748,20 +761,20 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
                 </div>
               )}
               
-              <CardHeader className="pb-4">
+              <CardHeader className="glass-guidance-card-header pb-4 relative z-10">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-colors">
+                    <div className="p-2.5 rounded-xl bg-yellow-100/80 text-yellow-600 group-hover:bg-yellow-200/80 transition-colors backdrop-blur-sm">
                       {card.icon}
                     </div>
                     <div className="space-y-1">
-                      <CardTitle className="text-lg leading-tight">{card.title}</CardTitle>
+                      <CardTitle className="text-lg leading-tight text-foreground group-hover:text-yellow-700 transition-colors">{card.title}</CardTitle>
                       <div className="flex items-center gap-2 flex-wrap">
                         {getPriorityBadge(card.priority)}
                         {card.cost && getCostBadge(card.cost)}
                         <Badge 
                           variant="secondary"
-                          className={statusConfig.className}
+                          className={cn(statusConfig.className, "backdrop-blur-sm")}
                         >
                           {statusConfig.icon}
                           <span className="ml-1 text-xs">{statusConfig.badge}</span>
@@ -772,62 +785,72 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <CardDescription className="text-sm leading-relaxed">
+              <CardContent className="glass-guidance-card-content space-y-4 relative z-10">
+                <CardDescription className="text-sm leading-relaxed text-muted-foreground group-hover:text-foreground/90 transition-colors">
                   {card.studentDescription}
                 </CardDescription>
 
-                {/* Student Value */}
-                <div className="p-3 rounded-lg bg-orange-50 border-l-4 border-orange-400">
-                  <h4 className="font-medium text-sm text-orange-800 mb-1">What You Get:</h4>
-                  <p className="text-sm text-orange-700">{card.studentValue}</p>
+                {/* Student Value with enhanced glass effect */}
+                <div className="p-3 rounded-lg bg-gradient-to-r from-yellow-50/60 to-orange-50/40 border-l-4 border-yellow-400/70 backdrop-blur-sm group-hover:from-yellow-50/80 group-hover:to-orange-50/60 transition-all duration-300">
+                  <h4 className="font-medium text-sm text-yellow-800 mb-1 flex items-center gap-2">
+                    <div className="w-1 h-1 bg-yellow-500 rounded-full animate-pulse"></div>
+                    What You Get:
+                  </h4>
+                  <p className="text-sm text-yellow-700">{card.studentValue}</p>
                 </div>
 
-                {/* Real Talk */}
-                <div className="p-3 rounded-lg bg-blue-50 border-l-4 border-blue-400">
-                  <h4 className="font-medium text-sm text-blue-800 mb-1">Real Talk:</h4>
+                {/* Real Talk with enhanced glass effect */}
+                <div className="p-3 rounded-lg bg-gradient-to-r from-blue-50/60 to-indigo-50/40 border-l-4 border-blue-400/70 backdrop-blur-sm group-hover:from-blue-50/80 group-hover:to-indigo-50/60 transition-all duration-300">
+                  <h4 className="font-medium text-sm text-blue-800 mb-1 flex items-center gap-2">
+                    <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+                    Real Talk:
+                  </h4>
                   <p className="text-sm text-blue-700">{card.realTalk}</p>
                 </div>
 
-                {/* Time & Availability */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                {/* Time & Availability with glass styling */}
+                <div className="flex items-center justify-between text-sm p-2 rounded-lg bg-gradient-to-r from-slate-50/40 to-gray-50/20 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground/80 transition-colors">
                     <Clock className="h-4 w-4" />
                     <span>{card.timeNeeded}</span>
                   </div>
-                  <div className="text-xs text-green-600 font-medium">
+                  <div className="text-xs text-green-600 font-medium px-2 py-1 rounded-full bg-green-100/60 backdrop-blur-sm">
                     {card.availability.responseTime}
                   </div>
                 </div>
 
-                {/* Success Story (if available) */}
+                {/* Success Story with enhanced glass effect */}
                 {card.successStories && (
-                  <div className="p-3 rounded-lg bg-green-50 border-l-4 border-green-400">
-                    <h4 className="font-medium text-sm text-green-800 mb-1">Success Story:</h4>
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-green-50/60 to-emerald-50/40 border-l-4 border-green-400/70 backdrop-blur-sm group-hover:from-green-50/80 group-hover:to-emerald-50/60 transition-all duration-300">
+                    <h4 className="font-medium text-sm text-green-800 mb-1 flex items-center gap-2">
+                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                      Success Story:
+                    </h4>
                     <p className="text-xs text-green-700 italic">{card.successStories}</p>
                   </div>
                 )}
               </CardContent>
 
-              <CardFooter className="pt-4">
+              <CardFooter className="glass-guidance-card-footer pt-4 relative z-10">
                 <Button 
                   asChild
                   className={cn(
-                    "w-full gap-2 transition-all duration-200",
+                    "w-full gap-2 transition-all duration-300 backdrop-blur-sm",
+                    "shadow-lg hover:shadow-xl transform hover:-translate-y-0.5",
                     card.priority === 'essential' 
-                      ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white" 
+                      ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0" 
                       : card.status === 'urgent'
-                      ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-                      : "bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white"
+                      ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0"
+                      : "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white border-0"
                   )}
                 >
                   <Link 
                     to={card.actionLink} 
-                    className="flex items-center gap-2"
+                    className="flex items-center justify-center gap-2 w-full"
                     onClick={() => handleCardClick(card)}
                   >
                     {card.actionText}
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                   </Link>
                 </Button>
               </CardFooter>

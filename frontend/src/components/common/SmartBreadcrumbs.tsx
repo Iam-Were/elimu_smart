@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import Button from '@/components/ui/button';
 import {
-  Group,
-  Text,
-  ActionIcon,
-  Menu,
-  Badge,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Tooltip,
-} from '@mantine/core';
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   ChevronRightIcon,
   DotsHorizontalIcon,
@@ -84,98 +92,91 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
     const hasActions = showActions && item.actions && item.actions.length > 0;
 
     return (
-      <Group gap="xs" key={item.id} align="center">
-        <Group
-          gap="xs"
-          style={{
-            cursor: !isLast ? 'pointer' : 'default',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            transition: 'background-color 0.2s ease',
-            backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-          }}
+      <div key={item.id} className="flex items-center gap-2">
+        <div
+          className={`flex items-center gap-2 px-2 py-1 rounded-md transition-colors cursor-pointer hover:bg-muted ${
+            isActive ? 'bg-muted text-primary' : ''
+          } ${isLast ? 'cursor-default' : ''}`}
           onClick={() => !isLast && handleItemClick(item)}
           onMouseEnter={() => setExpandedItem(item.id)}
           onMouseLeave={() => setExpandedItem(null)}
         >
           {item.icon && (
-            <div style={{ color: isActive ? 'var(--primary)' : 'var(--muted-foreground)' }}>
-              {typeof item.icon === 'function' ? React.createElement(item.icon as any, { size: 16 }) : item.icon}
+            <div className={isActive ? 'text-primary' : 'text-muted-foreground'}>
+              {typeof item.icon === 'function' ? React.createElement(item.icon as React.ComponentType<{ size: number }>, { size: 16 }) : item.icon}
             </div>
           )}
           
-          <Text
-            size="sm"
-            fw={isActive ? 600 : 400}
-            style={{
-              color: isActive ? 'var(--primary)' : isLast ? 'var(--foreground)' : 'var(--muted-foreground)',
-            }}
+          <span
+            className={`text-sm ${
+              isActive ? 'font-semibold text-primary' : isLast ? 'text-foreground' : 'text-muted-foreground'
+            }`}
           >
             {item.label}
-          </Text>
+          </span>
 
           {/* Metadata indicators */}
           {showMetadata && (
-            <Group gap={4}>
+            <div className="flex items-center gap-1">
               {item.metadata?.isBookmarked && (
                 <BookmarkIcon
                   width={12}
                   height={12}
-                  style={{ color: 'var(--primary)' }}
+                  className="text-primary"
                 />
               )}
               
               {item.metadata?.frequency && item.metadata.frequency > 5 && (
-                <Badge size="xs" variant="dot" color="blue">
+                <Badge variant="outline" className="text-xs">
                   {item.metadata.frequency}
                 </Badge>
               )}
-            </Group>
+            </div>
           )}
 
           {/* Actions dropdown */}
           {hasActions && expandedItem === item.id && (
-            <Menu shadow="md" width={200}>
-              <Menu.Target>
-                <ActionIcon size="xs" variant="subtle">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                   <ChevronDownIcon width={12} height={12} />
-                </ActionIcon>
-              </Menu.Target>
+                </Button>
+              </DropdownMenuTrigger>
               
-              <Menu.Dropdown>
+              <DropdownMenuContent className="w-48">
                 {item.actions!.map(action => (
-                  <Menu.Item
+                  <DropdownMenuItem
                     key={action.id}
-                    leftSection={React.createElement(action.icon, { size: 16 })}
                     onClick={action.onClick}
+                    className="flex items-center gap-2"
                   >
-                    <div>
-                      <Text size="sm">{action.label}</Text>
-                    </div>
-                  </Menu.Item>
+                    {React.createElement(action.icon as React.ComponentType<{ size: number }>, { size: 16 })}
+                    <span className="text-sm">{action.label}</span>
+                  </DropdownMenuItem>
                 ))}
                 
-                <Menu.Divider />
+                <DropdownMenuSeparator />
                 
-                <Menu.Item
-                  leftSection={<BookmarkIcon width={14} height={14} />}
+                <DropdownMenuItem
                   onClick={() => handleBookmark(item)}
+                  className="flex items-center gap-2"
                 >
+                  <BookmarkIcon width={14} height={14} />
                   {item.metadata?.isBookmarked ? 'Remove Bookmark' : 'Bookmark Page'}
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
-        </Group>
+        </div>
 
         {!isLast && (
           <ChevronRightIcon
             width={14}
             height={14}
-            style={{ color: 'var(--muted-foreground)' }}
+            className="text-muted-foreground"
           />
         )}
-      </Group>
+      </div>
     );
   };
 
@@ -183,79 +184,76 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
     if (collapsedItems.length === 0) return null;
 
     return (
-      <Group gap="xs" align="center">
-        <Menu shadow="md" width={250}>
-          <Menu.Target>
-            <ActionIcon
-              variant="subtle"
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
               size="sm"
-              style={{
-                backgroundColor: 'var(--muted)',
-                borderRadius: '6px',
-              }}
+              className="h-8 w-8 p-0 bg-muted rounded-md"
             >
               <DotsHorizontalIcon width={14} height={14} />
-            </ActionIcon>
-          </Menu.Target>
+            </Button>
+          </DropdownMenuTrigger>
           
-          <Menu.Dropdown>
-            <Menu.Label>
-              <Group gap="xs">
-                <Text size="xs" fw={600}>
+          <DropdownMenuContent className="w-64">
+            <DropdownMenuLabel>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold">
                   Navigation History
-                </Text>
-                <Badge size="xs" variant="light">
+                </span>
+                <Badge variant="secondary" className="text-xs">
                   {collapsedItems.length}
                 </Badge>
-              </Group>
-            </Menu.Label>
+              </div>
+            </DropdownMenuLabel>
             
             {collapsedItems.map(item => (
-              <Menu.Item
+              <DropdownMenuItem
                 key={item.id}
-                leftSection={item.icon as React.ReactNode || <HomeIcon width={14} height={14} />}
                 onClick={() => handleItemClick(item)}
-                rightSection={
-                  item.metadata?.lastVisited && (
-                    <Tooltip label={`Last visited: ${item.metadata.lastVisited.toLocaleDateString()}`}>
-                      <ClockIcon width={12} height={12} style={{ color: 'var(--muted-foreground)' }} />
-                    </Tooltip>
-                  )
-                }
+                className="flex items-center justify-between"
               >
-                <div>
-                  <Text size="sm">{item.label}</Text>
-                  {item.metadata?.frequency && (
-                    <Text size="xs" c="dimmed">
-                      Visited {item.metadata.frequency} times
-                    </Text>
-                  )}
+                <div className="flex items-center gap-2">
+                  {item.icon ? (item.icon as React.ReactNode) : <HomeIcon width={14} height={14} />}
+                  <div>
+                    <div className="text-sm">{item.label}</div>
+                    {item.metadata?.frequency && (
+                      <div className="text-xs text-muted-foreground">
+                        Visited {item.metadata.frequency} times
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </Menu.Item>
+                {item.metadata?.lastVisited && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <ClockIcon width={12} height={12} className="text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Last visited: {item.metadata.lastVisited.toLocaleDateString()}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </DropdownMenuItem>
             ))}
-          </Menu.Dropdown>
-        </Menu>
+          </DropdownMenuContent>
+        </DropdownMenu>
         
         <ChevronRightIcon
           width={14}
           height={14}
-          style={{ color: 'var(--muted-foreground)' }}
+          className="text-muted-foreground"
         />
-      </Group>
+      </div>
     );
   };
 
   return (
-    <div
-      className={`smart-breadcrumbs ${className || ''}`}
-      style={{
-        padding: '12px 16px',
-        backgroundColor: 'var(--muted)',
-        borderBottom: '1px solid var(--border)',
-        overflow: 'auto',
-      }}
-    >
-      <Group gap="xs" align="center" wrap="nowrap">
+    <div className={`smart-breadcrumbs ${className || ''} p-3 bg-muted border-b border-border overflow-auto`}>
+      <div className="flex items-center gap-2 flex-nowrap">
         {shouldCollapse && (
           <>
             {renderBreadcrumbItem(visibleItems[0], false)}
@@ -269,7 +267,7 @@ export const SmartBreadcrumbs: React.FC<SmartBreadcrumbsProps> = ({
         {!shouldCollapse && visibleItems.map((item, index) =>
           renderBreadcrumbItem(item, index === visibleItems.length - 1)
         )}
-      </Group>
+      </div>
     </div>
   );
 };
@@ -288,71 +286,61 @@ export const ContextBreadcrumbs: React.FC<{
   if (relatedPages.length === 0) return null;
 
   return (
-    <div
-      style={{
-        padding: '8px 16px',
-        backgroundColor: 'var(--sidebar-accent)',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
-      <Group gap="sm" align="center">
-        <Text size="xs" c="dimmed" fw={500}>
+    <div className="px-4 py-2 bg-muted/50 border-b border-border">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground font-medium">
           Related:
-        </Text>
+        </span>
         
         {relatedPages.slice(0, 3).map((page, index) => (
           <React.Fragment key={page.path}>
-            <Tooltip label={page.description}>
-              <Text
-                size="xs"
-                style={{
-                  color: 'var(--primary)',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                }}
-                onClick={() => navigate(page.path)}
-              >
-                {page.label}
-              </Text>
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span
+                    className="text-xs text-primary cursor-pointer underline hover:no-underline"
+                    onClick={() => navigate(page.path)}
+                  >
+                    {page.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {page.description}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {index < Math.min(relatedPages.length - 1, 2) && (
-              <Text size="xs" c="dimmed">•</Text>
+              <span className="text-xs text-muted-foreground">•</span>
             )}
           </React.Fragment>
         ))}
         
         {relatedPages.length > 3 && (
-          <Menu shadow="md" width={200}>
-            <Menu.Target>
-              <Text
-                size="xs"
-                style={{
-                  color: 'var(--muted-foreground)',
-                  cursor: 'pointer',
-                }}
-              >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                 +{relatedPages.length - 3} more
-              </Text>
-            </Menu.Target>
+              </span>
+            </DropdownMenuTrigger>
             
-            <Menu.Dropdown>
+            <DropdownMenuContent className="w-48">
               {relatedPages.slice(3).map(page => (
-                <Menu.Item
+                <DropdownMenuItem
                   key={page.path}
                   onClick={() => navigate(page.path)}
                 >
                   <div>
-                    <Text size="sm">{page.label}</Text>
-                    <Text size="xs" c="dimmed">
+                    <div className="text-sm">{page.label}</div>
+                    <div className="text-xs text-muted-foreground">
                       {page.description}
-                    </Text>
+                    </div>
                   </div>
-                </Menu.Item>
+                </DropdownMenuItem>
               ))}
-            </Menu.Dropdown>
-          </Menu>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-      </Group>
+      </div>
     </div>
   );
 };

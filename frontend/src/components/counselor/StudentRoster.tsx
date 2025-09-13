@@ -1,23 +1,14 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Stack,
-  Group,
-  Button,
-  TextInput,
-  Select,
-  Badge,
-  Avatar,
-  SimpleGrid,
-  Modal,
-  Textarea,
-  ActionIcon,
-  Tooltip,
-  Progress,
-} from '@mantine/core';
+import { Card, CardContent } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 import {
   MagnifyingGlassIcon,
   PersonIcon,
@@ -28,7 +19,6 @@ import {
   StarIcon,
   ExclamationTriangleIcon,
 } from '@radix-ui/react-icons';
-import { useDisclosure } from '@mantine/hooks';
 
 interface Student {
   id: string;
@@ -133,10 +123,10 @@ const mockStudents: Student[] = [
 export const StudentRoster: React.FC = () => {
   const [students] = useState<Student[]>(mockStudents);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPriority, setFilterPriority] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [filterPriority, setFilterPriority] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
 
   const filteredStudents = students.filter(student => {
@@ -152,36 +142,10 @@ export const StudentRoster: React.FC = () => {
     return matchesSearch && matchesPriority && matchesStatus;
   });
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'red';
-      case 'medium':
-        return 'yellow';
-      case 'low':
-        return 'green';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'blue';
-      case 'completed':
-        return 'green';
-      case 'on-hold':
-        return 'orange';
-      default:
-        return 'gray';
-    }
-  };
-
   const handleViewStudent = (student: Student) => {
     setSelectedStudent(student);
     setNewNote('');
-    open();
+    setOpened(true);
   };
 
   const handleAddNote = () => {
@@ -200,387 +164,341 @@ export const StudentRoster: React.FC = () => {
     });
   };
 
-  const getProgressColor = (completion: number) => {
-    if (completion >= 80) return 'green';
-    if (completion >= 50) return 'yellow';
-    return 'red';
-  };
-
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container mx-auto py-6">
+      <div className="space-y-6">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold">
               Student Management
-            </Title>
-            <Text size="lg" c="dimmed">
+            </h1>
+            <p className="text-lg text-muted-foreground">
               Manage and track your assigned students
-            </Text>
-          </Stack>
-          <Badge size="lg" color="yellow" variant="light">
+            </p>
+          </div>
+          <Badge variant="secondary" className="text-sm px-3 py-1">
             {filteredStudents.length} Students
           </Badge>
-        </Group>
+        </div>
 
         {/* Filters */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-            <TextInput
-              placeholder="Search students..."
-              leftSection={<MagnifyingGlassIcon width={16} height={16} />}
-              value={searchQuery}
-              onChange={event => setSearchQuery(event.currentTarget.value)}
-            />
-            <Select
-              placeholder="Filter by priority"
-              value={filterPriority}
-              onChange={setFilterPriority}
-              data={[
-                { value: 'high', label: 'High Priority' },
-                { value: 'medium', label: 'Medium Priority' },
-                { value: 'low', label: 'Low Priority' },
-              ]}
-              clearable
-            />
-            <Select
-              placeholder="Filter by status"
-              value={filterStatus}
-              onChange={setFilterStatus}
-              data={[
-                { value: 'active', label: 'Active' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'on-hold', label: 'On Hold' },
-              ]}
-              clearable
-            />
-            <Button
-              variant="light"
-              leftSection={<PersonIcon width={16} height={16} />}
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--secondary-foreground)',
-              }}
-            >
-              Add Student
-            </Button>
-          </SimpleGrid>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search students..."
+                  className="pl-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Priorities</SelectItem>
+                  <SelectItem value="high">High Priority</SelectItem>
+                  <SelectItem value="medium">Medium Priority</SelectItem>
+                  <SelectItem value="low">Low Priority</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="on-hold">On Hold</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="secondary" className="w-full">
+                <PersonIcon className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Students Grid */}
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStudents.map(student => (
-            <Card
-              key={student.id}
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              className="hover-lift theme-transition"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="md">
-                {/* Student Header */}
-                <Group justify="space-between" align="flex-start">
-                  <Group gap="sm">
-                    <Avatar
-                      size={40}
-                      radius="xl"
-                      color="yellow"
-                      style={{ backgroundColor: 'var(--primary)' }}
-                    >
-                      {student.firstName[0]}{student.lastName[0]}
-                    </Avatar>
-                    <Stack gap={2}>
-                      <Text fw={500} size="sm">
-                        {student.firstName} {student.lastName}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {student.grade} • {student.school}
-                      </Text>
-                    </Stack>
-                  </Group>
-                  <Group gap="xs">
-                    <Badge
-                      size="sm"
-                      color={getPriorityColor(student.priority)}
-                      variant="light"
-                    >
-                      {student.priority}
-                    </Badge>
-                    <Badge
-                      size="sm"
-                      color={getStatusColor(student.status)}
-                      variant="light"
-                    >
-                      {student.status}
-                    </Badge>
-                  </Group>
-                </Group>
-
-                {/* Progress */}
-                <Stack gap="xs">
-                  <Group justify="space-between">
-                    <Text size="xs" c="dimmed">Profile Completion</Text>
-                    <Text size="xs" fw={500} style={{ color: 'var(--primary)' }}>
-                      {student.profileCompletion}%
-                    </Text>
-                  </Group>
-                  <Progress
-                    value={student.profileCompletion}
-                    color={getProgressColor(student.profileCompletion)}
-                    size="sm"
-                  />
-                </Stack>
-
-                {/* Stats */}
-                <Group gap="md" grow>
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Assessments</Text>
-                    <Text fw={500} size="sm" style={{ color: 'var(--primary)' }}>
-                      {student.assessmentsCompleted}/{student.totalAssessments}
-                    </Text>
-                  </Stack>
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Career Matches</Text>
-                    <Text fw={500} size="sm" style={{ color: 'var(--primary)' }}>
-                      {student.careerMatches}
-                    </Text>
-                  </Stack>
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Last Contact</Text>
-                    <Text fw={500} size="xs" style={{ color: 'var(--primary)' }}>
-                      {formatDate(student.lastInteraction)}
-                    </Text>
-                  </Stack>
-                </Group>
-
-                {/* Actions */}
-                <Group gap="xs">
-                  <Tooltip label="View Details">
-                    <ActionIcon
-                      variant="light"
-                      size="sm"
-                      onClick={() => handleViewStudent(student)}
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                      }}
-                    >
-                      <EyeOpenIcon width={14} height={14} />
-                    </ActionIcon>
-                  </Tooltip>
-                  <Tooltip label="Send Message">
-                    <ActionIcon
-                      variant="light"
-                      size="sm"
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                      }}
-                    >
-                      <ChatBubbleIcon width={14} height={14} />
-                    </ActionIcon>
-                  </Tooltip>
-                  <Tooltip label="Schedule Session">
-                    <ActionIcon
-                      variant="light"
-                      size="sm"
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                      }}
-                    >
-                      <CalendarIcon width={14} height={14} />
-                    </ActionIcon>
-                  </Tooltip>
-                  <Tooltip label="Add Note">
-                    <ActionIcon
-                      variant="light"
-                      size="sm"
-                      style={{
-                        backgroundColor: 'var(--secondary)',
-                        color: 'var(--secondary-foreground)',
-                      }}
-                    >
-                      <Pencil1Icon width={14} height={14} />
-                    </ActionIcon>
-                  </Tooltip>
-                  {student.priority === 'high' && (
-                    <Tooltip label="High Priority Student">
-                      <ActionIcon
-                        variant="filled"
-                        size="sm"
-                        color="red"
+            <Card key={student.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Student Header */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-3">
+                      <Avatar>
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {student.firstName[0]}{student.lastName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <h3 className="font-medium text-sm">
+                          {student.firstName} {student.lastName}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {student.grade} • {student.school}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge
+                        variant={student.priority === 'high' ? 'destructive' : 
+                                student.priority === 'medium' ? 'default' : 'secondary'}
+                        className="text-xs"
                       >
-                        <ExclamationTriangleIcon width={14} height={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                  )}
-                </Group>
-              </Stack>
+                        {student.priority}
+                      </Badge>
+                      <Badge
+                        variant={student.status === 'active' ? 'default' : 
+                                student.status === 'completed' ? 'secondary' : 'outline'}
+                        className="text-xs"
+                      >
+                        {student.status}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Profile Completion</span>
+                      <span className="text-xs font-medium text-primary">
+                        {student.profileCompletion}%
+                      </span>
+                    </div>
+                    <Progress value={student.profileCompletion} className="h-2" />
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center space-y-1">
+                      <p className="text-xs text-muted-foreground">Assessments</p>
+                      <p className="font-medium text-sm text-primary">
+                        {student.assessmentsCompleted}/{student.totalAssessments}
+                      </p>
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-xs text-muted-foreground">Career Matches</p>
+                      <p className="font-medium text-sm text-primary">
+                        {student.careerMatches}
+                      </p>
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-xs text-muted-foreground">Last Contact</p>
+                      <p className="font-medium text-xs text-primary">
+                        {formatDate(student.lastInteraction)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewStudent(student)}
+                          >
+                            <EyeOpenIcon className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View Details</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <ChatBubbleIcon className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Send Message</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <CalendarIcon className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Schedule Session</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Pencil1Icon className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add Note</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {student.priority === 'high' && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              <ExclamationTriangleIcon className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>High Priority Student</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           ))}
-        </SimpleGrid>
+        </div>
 
         {/* Student Detail Modal */}
-        <Modal
-          opened={opened}
-          onClose={close}
-          title={
-            selectedStudent
-              ? `${selectedStudent.firstName} ${selectedStudent.lastName}`
-              : 'Student Details'
-          }
-          size="lg"
-        >
-          {selectedStudent && (
-            <Stack gap="md">
-              {/* Student Info */}
-              <Group justify="space-between">
-                <Group gap="sm">
-                  <Avatar
-                    size={50}
-                    radius="xl"
-                    color="yellow"
-                    style={{ backgroundColor: 'var(--primary)' }}
-                  >
-                    {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
-                  </Avatar>
-                  <Stack gap={2}>
-                    <Text fw={500}>
-                      {selectedStudent.firstName} {selectedStudent.lastName}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {selectedStudent.email}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {selectedStudent.grade} • {selectedStudent.school}
-                    </Text>
-                  </Stack>
-                </Group>
-                <Group gap="xs">
-                  <Badge color={getPriorityColor(selectedStudent.priority)}>
-                    {selectedStudent.priority} priority
-                  </Badge>
-                  <Badge color={getStatusColor(selectedStudent.status)}>
-                    {selectedStudent.status}
-                  </Badge>
-                </Group>
-              </Group>
-
-              {/* Progress Overview */}
-              <Card padding="md" style={{ backgroundColor: 'var(--muted)' }}>
-                <SimpleGrid cols={3} spacing="md">
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Profile</Text>
-                    <Text fw={500} style={{ color: 'var(--primary)' }}>
-                      {selectedStudent.profileCompletion}%
-                    </Text>
-                  </Stack>
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Assessments</Text>
-                    <Text fw={500} style={{ color: 'var(--primary)' }}>
-                      {selectedStudent.assessmentsCompleted}/{selectedStudent.totalAssessments}
-                    </Text>
-                  </Stack>
-                  <Stack gap={2} align="center">
-                    <Text size="xs" c="dimmed">Career Matches</Text>
-                    <Text fw={500} style={{ color: 'var(--primary)' }}>
-                      {selectedStudent.careerMatches}
-                    </Text>
-                  </Stack>
-                </SimpleGrid>
-              </Card>
-
-              {/* Interests */}
-              <Stack gap="xs">
-                <Text fw={500} size="sm">Interests</Text>
-                <Group gap="xs">
-                  {selectedStudent.interests.map((interest, index) => (
-                    <Badge key={index} variant="light" color="blue" size="sm">
-                      {interest}
+        <Dialog open={opened} onOpenChange={setOpened}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedStudent
+                  ? `${selectedStudent.firstName} ${selectedStudent.lastName}`
+                  : 'Student Details'}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedStudent && (
+              <div className="space-y-6">
+                {/* Student Info */}
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <h3 className="font-medium">
+                        {selectedStudent.firstName} {selectedStudent.lastName}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedStudent.email}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedStudent.grade} • {selectedStudent.school}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant={selectedStudent.priority === 'high' ? 'destructive' : 'secondary'}>
+                      {selectedStudent.priority} priority
                     </Badge>
-                  ))}
-                </Group>
-              </Stack>
+                    <Badge variant={selectedStudent.status === 'active' ? 'default' : 'secondary'}>
+                      {selectedStudent.status}
+                    </Badge>
+                  </div>
+                </div>
 
-              {/* Top Career Matches */}
-              <Stack gap="xs">
-                <Text fw={500} size="sm">Top Career Matches</Text>
-                <Group gap="xs">
-                  {selectedStudent.topCareers.map((career, index) => (
-                    <Badge key={index} variant="light" color="yellow" size="sm">
-                      <Group gap={4}>
-                        <StarIcon width={10} height={10} />
+                {/* Progress Overview */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-muted-foreground">Profile</p>
+                        <p className="font-medium text-primary">
+                          {selectedStudent.profileCompletion}%
+                        </p>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-muted-foreground">Assessments</p>
+                        <p className="font-medium text-primary">
+                          {selectedStudent.assessmentsCompleted}/{selectedStudent.totalAssessments}
+                        </p>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-muted-foreground">Career Matches</p>
+                        <p className="font-medium text-primary">
+                          {selectedStudent.careerMatches}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Interests */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Interests</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedStudent.interests.map((interest, index) => (
+                      <Badge key={index} variant="secondary">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Career Matches */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Top Career Matches</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedStudent.topCareers.map((career, index) => (
+                      <Badge key={index} variant="outline" className="gap-1">
+                        <StarIcon className="w-3 h-3" />
                         {career}
-                      </Group>
-                    </Badge>
-                  ))}
-                </Group>
-              </Stack>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
 
-              {/* Notes */}
-              <Stack gap="xs">
-                <Text fw={500} size="sm">Notes</Text>
-                <Text size="sm" c="dimmed">
-                  {selectedStudent.notes}
-                </Text>
-              </Stack>
+                {/* Notes */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Notes</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedStudent.notes}
+                  </p>
+                </div>
 
-              {/* Add Note */}
-              <Stack gap="xs">
-                <Text fw={500} size="sm">Add New Note</Text>
-                <Textarea
-                  placeholder="Add a note about this student..."
-                  value={newNote}
-                  onChange={event => setNewNote(event.currentTarget.value)}
-                  minRows={3}
-                />
-                <Button
-                  onClick={handleAddNote}
-                  disabled={!newNote.trim()}
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                  }}
-                >
-                  Add Note
-                </Button>
-              </Stack>
+                {/* Add Note */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm">Add New Note</h4>
+                  <Textarea
+                    placeholder="Add a note about this student..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    rows={3}
+                  />
+                  <Button
+                    onClick={handleAddNote}
+                    disabled={!newNote.trim()}
+                    className="w-full"
+                  >
+                    Add Note
+                  </Button>
+                </div>
 
-              {/* Action Buttons */}
-              <Group justify="flex-end" gap="sm">
-                <Button
-                  variant="light"
-                  leftSection={<ChatBubbleIcon width={16} height={16} />}
-                >
-                  Send Message
-                </Button>
-                <Button
-                  variant="light"
-                  leftSection={<CalendarIcon width={16} height={16} />}
-                >
-                  Schedule Session
-                </Button>
-              </Group>
-            </Stack>
-          )}
-        </Modal>
-      </Stack>
-    </Container>
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" className="gap-2">
+                    <ChatBubbleIcon className="w-4 h-4" />
+                    Send Message
+                  </Button>
+                  <Button variant="outline" className="gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    Schedule Session
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };

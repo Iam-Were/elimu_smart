@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Parse from 'parse';
 
 interface StudentAssignment {
@@ -62,7 +62,7 @@ interface CounselorActivity {
   activityType: string;
   studentId?: string;
   sessionId?: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: Date;
   duration?: number;
 }
@@ -93,12 +93,13 @@ export const useCounselorDashboard = () => {
   // Log counselor activity
   const logCounselorActivity = async (
     activityType: string,
-    data: any = {},
+    data: Record<string, unknown> = {},
     studentId?: string,
     sessionId?: string,
     duration?: number
   ) => {
     try {
+      
       await Parse.Cloud.run('logCounselorActivity', {
         activityType,
         data,
@@ -114,13 +115,14 @@ export const useCounselorDashboard = () => {
   // Get assigned students with dynamic status
   const getAssignedStudents = async (): Promise<StudentAssignment[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselorAssignedStudents');
-      return (result.students || []).map((student: any) => ({
+      return (result.students || []).map((student: Record<string, unknown>) => ({
         studentId: student.id,
         studentName: student.name,
         gradeLevel: student.gradeLevel,
         status: student.status,
-        lastContact: new Date(student.lastContact),
+        lastContact: new Date(student.lastContact as string | number | Date),
         careerReadiness: student.careerReadiness || 0,
         assessmentsCompleted: student.assessmentsCompleted || 0,
         urgentFlags: student.urgentFlags || []
@@ -134,13 +136,14 @@ export const useCounselorDashboard = () => {
   // Get active chat sessions
   const getActiveChatSessions = async (): Promise<ChatSession[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselorActiveChatSessions');
-      return (result.sessions || []).map((session: any) => ({
+      return (result.sessions || []).map((session: Record<string, unknown>) => ({
         sessionId: session.id,
         studentName: session.studentName,
         status: session.status,
         priority: session.priority,
-        lastMessage: new Date(session.lastMessage),
+        lastMessage: new Date(session.lastMessage as string | number | Date),
         responseTime: session.averageResponseTime || 0,
         unreadCount: session.unreadCount || 0
       }));
@@ -153,11 +156,12 @@ export const useCounselorDashboard = () => {
   // Get today's appointments
   const getTodaysAppointments = async (): Promise<Appointment[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselorTodaysAppointments');
-      return (result.appointments || []).map((appointment: any) => ({
+      return (result.appointments || []).map((appointment: Record<string, unknown>) => ({
         appointmentId: appointment.id,
         studentName: appointment.studentName,
-        scheduledTime: new Date(appointment.scheduledTime),
+        scheduledTime: new Date(appointment.scheduledTime as string | number | Date),
         type: appointment.type,
         status: appointment.status,
         notes: appointment.notes,
@@ -172,13 +176,14 @@ export const useCounselorDashboard = () => {
   // Get pending questions
   const getPendingQuestions = async (): Promise<PendingQuestion[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselorPendingQuestions');
-      return (result.questions || []).map((question: any) => ({
+      return (result.questions || []).map((question: Record<string, unknown>) => ({
         questionId: question.id,
         studentName: question.studentName,
         subject: question.subject,
         priority: question.priority,
-        createdAt: new Date(question.createdAt),
+        createdAt: new Date(question.createdAt as string | number | Date),
         category: question.category,
         hasResponded: question.hasResponded || false
       }));
@@ -191,6 +196,7 @@ export const useCounselorDashboard = () => {
   // Get counseling analytics
   const getCounselingAnalytics = async (): Promise<CounselingAnalytics | null> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselingAnalytics');
       return {
         totalStudents: result.totalStudents || 0,
@@ -216,13 +222,14 @@ export const useCounselorDashboard = () => {
   // Get recent counselor activities
   const getRecentActivities = async (): Promise<CounselorActivity[]> => {
     try {
+      
       const result = await Parse.Cloud.run('getCounselorRecentActivities', { limit: 20 });
-      return (result || []).map((activity: any) => ({
+      return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
         studentId: activity.studentId,
         sessionId: activity.sessionId,
         data: activity.data,
-        timestamp: new Date(activity.createdAt),
+        timestamp: new Date(activity.createdAt as string | number | Date),
         duration: activity.duration
       }));
     } catch (error) {
@@ -232,7 +239,7 @@ export const useCounselorDashboard = () => {
   };
 
   // Load all counselor dashboard data
-  const loadCounselorDashboard = async () => {
+  const loadCounselorDashboard = useCallback(async () => {
     setDashboardData(prev => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -269,7 +276,7 @@ export const useCounselorDashboard = () => {
         error: error instanceof Error ? error.message : 'Failed to load counselor dashboard data'
       }));
     }
-  };
+  }, []);
 
   // Refresh specific sections
   const refreshStudents = async () => {
@@ -299,23 +306,37 @@ export const useCounselorDashboard = () => {
 
   // Load data on mount
   useEffect(() => {
-    const user = Parse.User.current();
-    if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
-      loadCounselorDashboard();
-    }
-  }, []);
+    const loadDataIfCounselor = async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
+          loadCounselorDashboard();
+        }
+      } catch (error) {
+        console.error('Failed to check counselor session:', error);
+      }
+    };
+    
+    loadDataIfCounselor();
+  }, [loadCounselorDashboard]);
 
   // Auto-refresh every 3 minutes (more frequent for counselors)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const user = Parse.User.current();
-      if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
-        loadCounselorDashboard();
+    const interval = setInterval(async () => {
+      try {
+        
+        const user = Parse.User.current();
+        if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
+          loadCounselorDashboard();
+        }
+      } catch (error) {
+        console.error('Failed to check counselor session for auto-refresh:', error);
       }
     }, 3 * 60 * 1000); // 3 minutes
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loadCounselorDashboard]);
 
   // Calculate derived metrics
   const getDerivedMetrics = () => {
@@ -328,7 +349,7 @@ export const useCounselorDashboard = () => {
 
     const todaysAppointments = dashboardData.upcomingAppointments.filter(a => {
       const today = new Date();
-      const appointmentDate = new Date(a.scheduledTime);
+      const appointmentDate = new Date(a.scheduledTime as string | number | Date);
       return appointmentDate.toDateString() === today.toDateString();
     }).length;
 
@@ -344,8 +365,8 @@ export const useCounselorDashboard = () => {
       unansweredQuestions,
       totalWorkload: urgentStudents + activeChats + highPriorityQuestions,
       nextAppointment: dashboardData.upcomingAppointments
-        .filter(a => new Date(a.scheduledTime) > new Date())
-        .sort((a, b) => new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime())[0]
+        .filter(a => new Date(a.scheduledTime as string | number | Date) > new Date())
+        .sort((a, b) => new Date(a.scheduledTime as string | number | Date).getTime() - new Date(b.scheduledTime as string | number | Date).getTime())[0]
     };
   };
 

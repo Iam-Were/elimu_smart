@@ -1,43 +1,58 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Group,
-  Stack,
-  Button,
-  TextInput,
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import Button from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
   Select,
-  Badge,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
   Table,
-  ActionIcon,
-  Modal,
-  MultiSelect,
-  Checkbox,
-  ScrollArea,
-  Menu,
-  FileInput,
-  Progress,
-  Textarea,
-  Switch,
-  Alert,
-  Tabs,
-} from '@mantine/core';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  DownloadIcon,
   UploadIcon,
   ExclamationTriangleIcon,
   Pencil1Icon,
   EyeOpenIcon,
-  PersonIcon,
-  ClockIcon,
   Cross1Icon,
+  DotsHorizontalIcon,
 } from '@radix-ui/react-icons';
-import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
+import { toast } from 'sonner';
 
 interface UserRecord {
   id: string;
@@ -66,7 +81,7 @@ interface BulkOperation {
   createdAt: Date;
 }
 
-// Mock data - moved outside component to avoid useMemo dependency issues
+// Mock data
 const mockUsers: UserRecord[] = [
   {
     id: '1',
@@ -139,16 +154,15 @@ export const UserManagement: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [sortBy] = useState<string>('createdAt');
-  const [sortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [bulkOperations, setBulkOperations] = useState<BulkOperation[]>([]);
   const [impersonationUser, setImpersonationUser] = useState<UserRecord | null>(null);
 
-  const [opened, { open, close }] = useDisclosure(false);
-  const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
-  const [bulkOpened, { open: openBulk, close: closeBulk }] = useDisclosure(false);
-  const [impersonateOpened, { open: openImpersonate, close: closeImpersonate }] = useDisclosure(false);
+  // Dialog states
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [bulkOpOpen, setBulkOpOpen] = useState(false);
+  const [impersonateOpen, setImpersonateOpen] = useState(false);
 
   const filteredUsers = useMemo(() => {
     return mockUsers.filter((user) => {
@@ -158,24 +172,12 @@ export const UserManagement: React.FC = () => {
       const matchesStatus = !selectedStatus || user.status === selectedStatus;
       
       return matchesSearch && matchesRole && matchesStatus;
-    }).sort((a, b) => {
-      const aValue = a[sortBy as keyof UserRecord];
-      const bValue = b[sortBy as keyof UserRecord];
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      }
-      return aValue < bValue ? 1 : -1;
     });
-  }, [searchQuery, selectedRole, selectedStatus, sortBy, sortOrder]);
+  }, [searchQuery, selectedRole, selectedStatus]);
 
   const handleBulkAction = (action: string) => {
     if (selectedUsers.length === 0) {
-      notifications.show({
-        title: 'No users selected',
-        message: 'Please select users to perform bulk actions',
-        color: 'yellow',
-      });
+      toast.error('No users selected. Please select users to perform bulk actions.');
       return;
     }
 
@@ -212,11 +214,7 @@ export const UserManagement: React.FC = () => {
               : op
           )
         );
-        notifications.show({
-          title: 'Bulk operation completed',
-          message: `${action} completed for ${selectedUsers.length} users`,
-          color: 'green',
-        });
+        toast.success(`${action} completed for ${selectedUsers.length} users`);
         setSelectedUsers([]);
       }
     }, 500);
@@ -224,546 +222,537 @@ export const UserManagement: React.FC = () => {
 
   const handleImpersonate = (user: UserRecord) => {
     setImpersonationUser(user);
-    openImpersonate();
+    setImpersonateOpen(true);
   };
 
   const confirmImpersonation = () => {
     if (impersonationUser) {
-      notifications.show({
-        title: 'Impersonation started',
-        message: `Now viewing as ${impersonationUser.name}`,
-        color: 'blue',
-      });
-      closeImpersonate();
+      toast.success(`Now viewing as ${impersonationUser.name}`);
+      setImpersonateOpen(false);
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'student': return 'orange';
-      case 'counselor': return 'yellow';
-      case 'admin': return 'purple';
-      default: return 'gray';
+      case 'student': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'counselor': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'green';
-      case 'inactive': return 'gray';
-      case 'suspended': return 'red';
-      default: return 'gray';
+      case 'active': return 'bg-green-100 text-green-800 border-green-200';
+      case 'inactive': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'suspended': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
-        <Group justify="space-between">
-          <Title order={2} c="purple.6">User Management</Title>
-          <Group>
-            <Button leftSection={<PlusIcon className="h-4 w-4" />} onClick={open}>
-              Add User
-            </Button>
-            <Button variant="secondary" leftSection={<UploadIcon className="h-4 w-4" />} onClick={openBulk}>
-              Bulk Operations
-            </Button>
-          </Group>
-        </Group>
+    <div className="container max-w-7xl mx-auto py-6 px-4">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-purple-600">User Management</h2>
+          <div className="flex gap-2">
+            <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <PlusIcon className="h-4 w-4" />
+                  Add User
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New User</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" placeholder="Enter full name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="Enter email address" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select user role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="counselor">Counselor</SelectItem>
+                        <SelectItem value="admin">Administrator</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancel</Button>
+                  <Button>Create User</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={bulkOpOpen} onOpenChange={setBulkOpOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <UploadIcon className="h-4 w-4" />
+                  Bulk Operations
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Bulk Operations</DialogTitle>
+                </DialogHeader>
+                <Tabs defaultValue="import">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="import">Import</TabsTrigger>
+                    <TabsTrigger value="export">Export</TabsTrigger>
+                    <TabsTrigger value="operations">History</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="import" className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Upload CSV File</Label>
+                      <Input type="file" accept=".csv" />
+                    </div>
+                    <Alert>
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <AlertDescription>
+                        CSV should include columns: name, email, role, status
+                      </AlertDescription>
+                    </Alert>
+                  </TabsContent>
+                  <TabsContent value="export" className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Export Format</Label>
+                      <Select defaultValue="csv">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="csv">CSV</SelectItem>
+                          <SelectItem value="excel">Excel</SelectItem>
+                          <SelectItem value="json">JSON</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="operations">
+                    {bulkOperations.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No operations found</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {bulkOperations.map((operation) => (
+                          <Card key={operation.id}>
+                            <CardContent className="p-3">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-medium">{operation.type.toUpperCase()}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {operation.createdAt.toLocaleString()}
+                                  </p>
+                                </div>
+                                <Badge className={
+                                  operation.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  operation.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                  operation.status === 'processing' ? 'bg-blue-100 text-blue-800' : 
+                                  'bg-yellow-100 text-yellow-800'
+                                }>
+                                  {operation.status}
+                                </Badge>
+                              </div>
+                              {operation.status === 'processing' && (
+                                <Progress value={operation.progress} className="mt-2" />
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setBulkOpOpen(false)}>Close</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
 
         {/* Search and Filters */}
-        <Card withBorder>
-          <Group grow>
-            <TextInput
-              placeholder="Search users by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.currentTarget.value)}
-              leftSection={<MagnifyingGlassIcon className="h-4 w-4" />}
-            />
-            <Select
-              placeholder="Filter by role"
-              value={selectedRole}
-              onChange={(value) => setSelectedRole(value || '')}
-              data={[
-                { value: '', label: 'All Roles' },
-                { value: 'student', label: 'Students' },
-                { value: 'counselor', label: 'Counselors' },
-                { value: 'admin', label: 'Administrators' },
-              ]}
-            />
-            <Select
-              placeholder="Filter by status"
-              value={selectedStatus}
-              onChange={(value) => setSelectedStatus(value || '')}
-              data={[
-                { value: '', label: 'All Statuses' },
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' },
-                { value: 'suspended', label: 'Suspended' },
-              ]}
-            />
-          </Group>
+        <Card>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Search</Label>
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Filter by role</Label>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Roles</SelectItem>
+                    <SelectItem value="student">Students</SelectItem>
+                    <SelectItem value="counselor">Counselors</SelectItem>
+                    <SelectItem value="admin">Administrators</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Filter by status</Label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Bulk Actions */}
         {selectedUsers.length > 0 && (
-          <Alert color="blue" title={`${selectedUsers.length} users selected`}>
-            <Group>
-              <Button size="xs" onClick={() => handleBulkAction('export')}>
-                Export Selected
-              </Button>
-              <Button size="xs" color="orange" onClick={() => handleBulkAction('update')}>
-                Bulk Update
-              </Button>
-              <Button size="xs" color="red" onClick={() => handleBulkAction('delete')}>
-                Bulk Delete
-              </Button>
-            </Group>
+          <Alert>
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <AlertDescription>
+              <div className="flex items-center justify-between">
+                <span>{selectedUsers.length} users selected</span>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => handleBulkAction('export')}>
+                    Export Selected
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('update')}>
+                    Bulk Update
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                    Bulk Delete
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
-        {/* Bulk Operations Progress */}
-        {bulkOperations.filter(op => op.status === 'processing').length > 0 && (
-          <Card withBorder>
-            <Stack gap="sm">
-              <Text fw={500}>Active Operations</Text>
-              {bulkOperations.filter(op => op.status === 'processing').map((operation) => (
-                <div key={operation.id}>
-                  <Group justify="space-between" mb="xs">
-                    <Text size="sm">{operation.type.toUpperCase()}</Text>
-                    <Text size="sm">{operation.progress}%</Text>
-                  </Group>
-                  <Progress value={operation.progress} />
-                </div>
-              ))}
-            </Stack>
-          </Card>
-        )}
-
         {/* Users Table */}
-        <Card withBorder>
-          <ScrollArea>
+        <Card>
+          <CardContent className="p-0">
             <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
                     <Checkbox
                       checked={selectedUsers.length === filteredUsers.length}
-                      indeterminate={selectedUsers.length > 0 && selectedUsers.length < filteredUsers.length}
-                      onChange={(event) => {
-                        if (event.currentTarget.checked) {
+                      onCheckedChange={(checked) => {
+                        if (checked) {
                           setSelectedUsers(filteredUsers.map(u => u.id));
                         } else {
                           setSelectedUsers([]);
                         }
                       }}
                     />
-                  </Table.Th>
-                  <Table.Th>User</Table.Th>
-                  <Table.Th>Role</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Last Login</Table.Th>
-                  <Table.Th>Login Count</Table.Th>
-                  <Table.Th>Actions</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
+                  </TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead>Login Count</TableHead>
+                  <TableHead className="w-24">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredUsers.map((user) => (
-                  <Table.Tr key={user.id}>
-                    <Table.Td>
+                  <TableRow key={user.id}>
+                    <TableCell>
                       <Checkbox
                         checked={selectedUsers.includes(user.id)}
-                        onChange={(event) => {
-                          if (event.currentTarget.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setSelectedUsers(prev => [...prev, user.id]);
                           } else {
                             setSelectedUsers(prev => prev.filter(id => id !== user.id));
                           }
                         }}
                       />
-                    </Table.Td>
-                    <Table.Td>
+                    </TableCell>
+                    <TableCell>
                       <div>
-                        <Text fw={500}>{user.name}</Text>
-                        <Text size="sm" c="dimmed">{user.email}</Text>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
                       </div>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge color={getRoleColor(user.role)} variant="light">
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getRoleColor(user.role)}>
                         {user.role}
                       </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge color={getStatusColor(user.status)} variant="light">
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(user.status)}>
                         {user.status}
                       </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm">
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
                         {user.lastLogin.toLocaleDateString()}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="sm">{user.metadata.loginCount}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        <ActionIcon variant="light" size="sm" onClick={() => {
-                          setSelectedUser(user);
-                          openEdit();
-                        }}>
-                          <Pencil1Icon width={16} height={16} />
-                        </ActionIcon>
-                        <ActionIcon variant="light" size="sm" color="blue" onClick={() => handleImpersonate(user)}>
-                          <EyeOpenIcon width={16} height={16} />
-                        </ActionIcon>
-                        <Menu>
-                          <Menu.Target>
-                            <ActionIcon variant="light" size="sm">
-                              <PersonIcon width={16} height={16} />
-                            </ActionIcon>
-                          </Menu.Target>
-                          <Menu.Dropdown>
-                            <Menu.Item leftSection={<EyeOpenIcon width={16} height={16} />}>
-                              View Details
-                            </Menu.Item>
-                            <Menu.Item leftSection={<ClockIcon width={16} height={16} />}>
-                              Activity Log
-                            </Menu.Item>
-                            <Menu.Item leftSection={<PersonIcon width={16} height={16} />}>
-                              Reset Password
-                            </Menu.Item>
-                            <Menu.Divider />
-                            <Menu.Item 
-                              leftSection={<Cross1Icon width={16} height={16} />}
-                              color="red"
-                            >
-                              Suspend User
-                            </Menu.Item>
-                          </Menu.Dropdown>
-                        </Menu>
-                      </Group>
-                    </Table.Td>
-                  </Table.Tr>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{user.metadata.loginCount}</div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <DotsHorizontalIcon className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setEditUserOpen(true);
+                          }}>
+                            <Pencil1Icon className="mr-2 h-4 w-4" />
+                            Edit User
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleImpersonate(user)}>
+                            <EyeOpenIcon className="mr-2 h-4 w-4" />
+                            Impersonate
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600">
+                            <Cross1Icon className="mr-2 h-4 w-4" />
+                            Suspend User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </Table.Tbody>
+              </TableBody>
             </Table>
-          </ScrollArea>
+          </CardContent>
         </Card>
 
         {/* Summary Stats */}
-        <Group grow>
-          <Card withBorder>
-            <Text c="dimmed" size="sm">Total Users</Text>
-            <Text size="xl" fw={700}>{mockUsers.length}</Text>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Total Users</div>
+              <div className="text-2xl font-bold">{mockUsers.length}</div>
+            </CardContent>
           </Card>
-          <Card withBorder>
-            <Text c="dimmed" size="sm">Active Users</Text>
-            <Text size="xl" fw={700} c="green">
-              {mockUsers.filter(u => u.status === 'active').length}
-            </Text>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Active Users</div>
+              <div className="text-2xl font-bold text-green-600">
+                {mockUsers.filter(u => u.status === 'active').length}
+              </div>
+            </CardContent>
           </Card>
-          <Card withBorder>
-            <Text c="dimmed" size="sm">Suspended</Text>
-            <Text size="xl" fw={700} c="red">
-              {mockUsers.filter(u => u.status === 'suspended').length}
-            </Text>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Suspended</div>
+              <div className="text-2xl font-bold text-red-600">
+                {mockUsers.filter(u => u.status === 'suspended').length}
+              </div>
+            </CardContent>
           </Card>
-          <Card withBorder>
-            <Text c="dimmed" size="sm">New This Month</Text>
-            <Text size="xl" fw={700} c="blue">12</Text>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">New This Month</div>
+              <div className="text-2xl font-bold text-blue-600">12</div>
+            </CardContent>
           </Card>
-        </Group>
-      </Stack>
-
-      {/* Add User Modal */}
-      <Modal opened={opened} onClose={close} title="Add New User" size="lg">
-        <Stack gap="md">
-          <TextInput label="Full Name" placeholder="Enter full name" required />
-          <TextInput label="Email" placeholder="Enter email address" required />
-          <Select
-            label="Role"
-            placeholder="Select user role"
-            data={[
-              { value: 'student', label: 'Student' },
-              { value: 'counselor', label: 'Counselor' },
-              { value: 'admin', label: 'Administrator' },
-            ]}
-            required
-          />
-          <MultiSelect
-            label="Permissions"
-            placeholder="Select permissions"
-            data={[
-              { value: 'read_content', label: 'Read Content' },
-              { value: 'submit_questions', label: 'Submit Questions' },
-              { value: 'manage_sessions', label: 'Manage Sessions' },
-              { value: 'view_analytics', label: 'View Analytics' },
-              { value: 'counsel_students', label: 'Counsel Students' },
-              { value: 'manage_users', label: 'Manage Users' },
-              { value: 'system_admin', label: 'System Admin' },
-            ]}
-          />
-          <Group justify="flex-end">
-            <Button variant="secondary" onClick={close}>Cancel</Button>
-            <Button>Create User</Button>
-          </Group>
-        </Stack>
-      </Modal>
+        </div>
+      </div>
 
       {/* Edit User Modal */}
-      <Modal opened={editOpened} onClose={closeEdit} title="Edit User" size="lg">
-        {selectedUser && (
-          <Tabs defaultValue="profile">
-            <Tabs.List>
-              <Tabs.Tab value="profile">Profile</Tabs.Tab>
-              <Tabs.Tab value="permissions">Permissions</Tabs.Tab>
-              <Tabs.Tab value="activity">Activity</Tabs.Tab>
-              <Tabs.Tab value="audit">Audit Log</Tabs.Tab>
-            </Tabs.List>
-
-            <Tabs.Panel value="profile" pt="md">
-              <Stack gap="md">
-                <TextInput label="Full Name" defaultValue={selectedUser.name} />
-                <TextInput label="Email" defaultValue={selectedUser.email} />
-                <Select
-                  label="Role"
-                  defaultValue={selectedUser.role}
-                  data={[
-                    { value: 'student', label: 'Student' },
-                    { value: 'counselor', label: 'Counselor' },
-                    { value: 'admin', label: 'Administrator' },
-                  ]}
-                />
-                <Select
-                  label="Status"
-                  defaultValue={selectedUser.status}
-                  data={[
-                    { value: 'active', label: 'Active' },
-                    { value: 'inactive', label: 'Inactive' },
-                    { value: 'suspended', label: 'Suspended' },
-                  ]}
-                />
-                <Group justify="flex-end">
-                  <Button variant="secondary" onClick={closeEdit}>Cancel</Button>
-                  <Button>Save Changes</Button>
-                </Group>
-              </Stack>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="permissions" pt="md">
-              <Stack gap="md">
-                <Text fw={500}>Current Permissions</Text>
-                <MultiSelect
-                  defaultValue={selectedUser.permissions}
-                  data={[
-                    { value: 'read_content', label: 'Read Content' },
-                    { value: 'submit_questions', label: 'Submit Questions' },
-                    { value: 'manage_sessions', label: 'Manage Sessions' },
-                    { value: 'view_analytics', label: 'View Analytics' },
-                    { value: 'counsel_students', label: 'Counsel Students' },
-                    { value: 'manage_users', label: 'Manage Users' },
-                    { value: 'system_admin', label: 'System Admin' },
-                  ]}
-                />
-                <Group justify="flex-end">
-                  <Button variant="secondary" onClick={closeEdit}>Cancel</Button>
-                  <Button>Update Permissions</Button>
-                </Group>
-              </Stack>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="activity" pt="md">
-              <Stack gap="md">
-                <Group justify="space-between">
-                  <Text fw={500}>User Activity</Text>
-                  <Badge color="green">Online</Badge>
-                </Group>
-                <div>
-                  <Text size="sm" c="dimmed">Last Login</Text>
-                  <Text>{selectedUser.lastLogin.toLocaleString()}</Text>
+      <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and permissions
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <Tabs defaultValue="profile">
+              <TabsList>
+                <TabsTrigger value="profile">Profile</TabsTrigger>
+                <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                <TabsTrigger value="activity">Activity</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profile" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="editName">Full Name</Label>
+                    <Input id="editName" defaultValue={selectedUser.name} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="editEmail">Email</Label>
+                    <Input id="editEmail" defaultValue={selectedUser.email} />
+                  </div>
                 </div>
-                <div>
-                  <Text size="sm" c="dimmed">Total Logins</Text>
-                  <Text>{selectedUser.metadata.loginCount}</Text>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select defaultValue={selectedUser.role}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="counselor">Counselor</SelectItem>
+                        <SelectItem value="admin">Administrator</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select defaultValue={selectedUser.status}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Text size="sm" c="dimmed">Device Info</Text>
-                  <Text>{selectedUser.metadata.deviceInfo}</Text>
+              </TabsContent>
+
+              <TabsContent value="permissions" className="space-y-4">
+                <div className="space-y-3">
+                  {[
+                    'read_content',
+                    'submit_questions',
+                    'manage_sessions',
+                    'view_analytics',
+                    'counsel_students',
+                    'manage_users',
+                    'system_admin'
+                  ].map((permission) => (
+                    <div key={permission} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={permission}
+                        defaultChecked={selectedUser.permissions.includes(permission)}
+                      />
+                      <Label htmlFor={permission} className="text-sm">
+                        {permission.replace('_', ' ').toUpperCase()}
+                      </Label>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <Text size="sm" c="dimmed">IP Address</Text>
-                  <Text>{selectedUser.metadata.ipAddress}</Text>
+              </TabsContent>
+
+              <TabsContent value="activity" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Last Login</Label>
+                    <p className="text-sm">{selectedUser.lastLogin.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Total Logins</Label>
+                    <p className="text-sm">{selectedUser.metadata.loginCount}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Device Info</Label>
+                    <p className="text-sm">{selectedUser.metadata.deviceInfo}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">IP Address</Label>
+                    <p className="text-sm">{selectedUser.metadata.ipAddress}</p>
+                  </div>
                 </div>
-              </Stack>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="audit" pt="md">
-              <Stack gap="md">
-                <Text fw={500}>Recent Actions</Text>
-                <ScrollArea h={200}>
-                  <Stack gap="xs">
-                    {[
-                      { action: 'Login', timestamp: new Date(), ip: '192.168.1.100' },
-                      { action: 'Profile Updated', timestamp: new Date(Date.now() - 86400000), ip: '192.168.1.100' },
-                      { action: 'Password Changed', timestamp: new Date(Date.now() - 172800000), ip: '192.168.1.100' },
-                    ].map((log, index) => (
-                      <div key={index}>
-                        <Group justify="space-between">
-                          <Text size="sm">{log.action}</Text>
-                          <Text size="xs" c="dimmed">{log.timestamp.toLocaleDateString()}</Text>
-                        </Group>
-                        <Text size="xs" c="dimmed">IP: {log.ip}</Text>
-                      </div>
-                    ))}
-                  </Stack>
-                </ScrollArea>
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
-        )}
-      </Modal>
-
-      {/* Bulk Operations Modal */}
-      <Modal opened={bulkOpened} onClose={closeBulk} title="Bulk Operations" size="lg">
-        <Tabs defaultValue="import">
-          <Tabs.List>
-            <Tabs.Tab value="import">Import Users</Tabs.Tab>
-            <Tabs.Tab value="export">Export Users</Tabs.Tab>
-            <Tabs.Tab value="operations">Active Operations</Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="import" pt="md">
-            <Stack gap="md">
-              <FileInput
-                label="Upload CSV File"
-                placeholder="Select users CSV file"
-                accept=".csv"
-              />
-              <Alert color="blue" title="CSV Format Requirements">
-                <Text size="sm">
-                  CSV should include columns: name, email, role, status
-                </Text>
-              </Alert>
-              <Group justify="flex-end">
-                <Button variant="secondary" onClick={closeBulk}>Cancel</Button>
-                <Button>Import Users</Button>
-              </Group>
-            </Stack>
-          </Tabs.Panel>
-
-          <Tabs.Panel value="export" pt="md">
-            <Stack gap="md">
-              <MultiSelect
-                label="Select Fields to Export"
-                defaultValue={['name', 'email', 'role', 'status']}
-                data={[
-                  { value: 'name', label: 'Name' },
-                  { value: 'email', label: 'Email' },
-                  { value: 'role', label: 'Role' },
-                  { value: 'status', label: 'Status' },
-                  { value: 'lastLogin', label: 'Last Login' },
-                  { value: 'loginCount', label: 'Login Count' },
-                  { value: 'createdAt', label: 'Created Date' },
-                ]}
-              />
-              <Select
-                label="Export Format"
-                defaultValue="csv"
-                data={[
-                  { value: 'csv', label: 'CSV' },
-                  { value: 'excel', label: 'Excel' },
-                  { value: 'json', label: 'JSON' },
-                ]}
-              />
-              <Group justify="flex-end">
-                <Button variant="secondary" onClick={closeBulk}>Cancel</Button>
-                <Button leftSection={<DownloadIcon className="h-4 w-4" />}>
-                  Export
-                </Button>
-              </Group>
-            </Stack>
-          </Tabs.Panel>
-
-          <Tabs.Panel value="operations" pt="md">
-            <Stack gap="md">
-              <Text fw={500}>Operation History</Text>
-              {bulkOperations.length === 0 ? (
-                <Text c="dimmed" ta="center" py="xl">No operations found</Text>
-              ) : (
-                <ScrollArea h={300}>
-                  <Stack gap="sm">
-                    {bulkOperations.map((operation) => (
-                      <Card key={operation.id} withBorder>
-                        <Group justify="space-between">
-                          <div>
-                            <Text fw={500}>{operation.type.toUpperCase()}</Text>
-                            <Text size="sm" c="dimmed">
-                              {operation.createdAt.toLocaleString()}
-                            </Text>
-                          </div>
-                          <Badge color={
-                            operation.status === 'completed' ? 'green' :
-                            operation.status === 'failed' ? 'red' :
-                            operation.status === 'processing' ? 'blue' : 'yellow'
-                          }>
-                            {operation.status}
-                          </Badge>
-                        </Group>
-                        {operation.status === 'processing' && (
-                          <Progress value={operation.progress} mt="sm" />
-                        )}
-                      </Card>
-                    ))}
-                  </Stack>
-                </ScrollArea>
-              )}
-            </Stack>
-          </Tabs.Panel>
-        </Tabs>
-      </Modal>
+              </TabsContent>
+            </Tabs>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUserOpen(false)}>Cancel</Button>
+            <Button>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* User Impersonation Modal */}
-      <Modal opened={impersonateOpened} onClose={closeImpersonate} title="User Impersonation" size="md">
-        {impersonationUser && (
-          <Stack gap="md">
-            <Alert color="red" title="Security Warning" icon={<ExclamationTriangleIcon className="h-4 w-4" />}>
+      <Dialog open={impersonateOpen} onOpenChange={setImpersonateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Impersonation</DialogTitle>
+            <DialogDescription>
               You are about to impersonate another user. This action will be logged for security purposes.
-            </Alert>
-            
-            <div>
-              <Text fw={500}>Target User</Text>
-              <Group>
-                <div>
-                  <Text>{impersonationUser.name}</Text>
-                  <Text size="sm" c="dimmed">{impersonationUser.email}</Text>
+            </DialogDescription>
+          </DialogHeader>
+          {impersonationUser && (
+            <div className="space-y-4">
+              <Alert className="border-red-200">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Security Warning:</strong> This action will be logged for security purposes.
+                </AlertDescription>
+              </Alert>
+              
+              <div>
+                <Label className="font-medium">Target User</Label>
+                <div className="flex items-center gap-3 mt-2">
+                  <div>
+                    <p className="font-medium">{impersonationUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{impersonationUser.email}</p>
+                  </div>
+                  <Badge className={getRoleColor(impersonationUser.role)}>
+                    {impersonationUser.role}
+                  </Badge>
                 </div>
-                <Badge color={getRoleColor(impersonationUser.role)}>
-                  {impersonationUser.role}
-                </Badge>
-              </Group>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="impersonationReason">Reason for Impersonation</Label>
+                <Textarea
+                  id="impersonationReason"
+                  placeholder="Enter the reason for user impersonation (required for audit trail)"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch id="impersonationAgreement" />
+                <Label htmlFor="impersonationAgreement" className="text-sm">
+                  I understand that this action will be logged and monitored
+                </Label>
+              </div>
             </div>
-
-            <Textarea
-              label="Reason for Impersonation"
-              placeholder="Enter the reason for user impersonation (required for audit trail)"
-              required
-            />
-
-            <Switch
-              label="I understand that this action will be logged and monitored"
-              required
-            />
-
-            <Group justify="flex-end">
-              <Button variant="secondary" onClick={closeImpersonate}>Cancel</Button>
-              <Button color="red" onClick={confirmImpersonation}>
-                Start Impersonation
-              </Button>
-            </Group>
-          </Stack>
-        )}
-      </Modal>
-    </Container>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImpersonateOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmImpersonation}>
+              Start Impersonation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };

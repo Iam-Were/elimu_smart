@@ -1,21 +1,9 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Stack,
-  Group,
-  Button,
-  Paper,
-  Grid,
-  Avatar,
-  ActionIcon,
-  Badge,
-  Divider,
-  FileInput,
-  rem,
-  Progress,
-} from '@mantine/core';
+import Button from '@/components/ui/button';
+import { Card as Paper } from '@/components/ui/card';
+import { Separator as Divider } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   PersonIcon,
   LockClosedIcon,
@@ -23,31 +11,38 @@ import {
   EyeOpenIcon,
   GearIcon,
   TrashIcon,
-  CameraIcon,
   DownloadIcon,
 } from '@radix-ui/react-icons';
 import { useAuth } from '../hooks/useAuth';
 // import type { User } from '../types'; // Unused after refactoring
-import { ProfileSettings } from '../components/settings/ProfileSettings';
-import { SecuritySettings } from '../components/settings/SecuritySettings';
+import ProfileSettings from '../components/settings/ProfileSettings';
+import SecuritySettings from '../components/settings/SecuritySettings';
 import { NotificationSettings } from '../components/settings/NotificationSettings';
 import { PrivacySettings } from '../components/settings/PrivacySettings';
-import { PreferencesSettings } from '../components/settings/PreferencesSettings';
-import { AccountManagement } from '../components/settings/AccountManagement';
+import PreferencesSettings from '../components/settings/PreferencesSettings';
+import AccountManagement from '../components/settings/AccountManagement';
+
+import type { User } from '../types';
+
+interface SettingsTabComponentProps {
+  onUnsavedChanges?: (hasChanges: boolean) => void;
+  user?: User;
+  profileImage?: string | null;
+}
 
 interface SettingsTab {
   id: string;
   label: string;
   description: string;
   icon: React.ComponentType<{ width?: number; height?: number }>;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<SettingsTabComponentProps>;
 }
 
 export const AccountSettingsPage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
+  const [profileImage] = useState<string | null>(user?.profileImage || null);
 
   const settingsTabs: SettingsTab[] = [
     {
@@ -108,14 +103,7 @@ export const AccountSettingsPage: React.FC = () => {
     setHasUnsavedChanges(false);
   };
 
-  const handleProfileImageUpload = (file: File | null) => {
-    if (file) {
-      // Create preview URL for the selected image
-      const previewUrl = URL.createObjectURL(file);
-      setProfileImage(previewUrl);
-      setHasUnsavedChanges(true);
-    }
-  };
+  // (Avatar upload functionality removed in shadcn migration; can be re-added later)
 
   const handleExportData = async () => {
     // TODO: Implement data export functionality
@@ -123,231 +111,95 @@ export const AccountSettingsPage: React.FC = () => {
   };
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="xl">
-        {/* Enhanced Header with Profile Preview */}
-        <Paper p="xl" withBorder>
-          <Group justify="space-between" align="flex-start">
-            <Group align="flex-start" gap="xl">
-              {/* Enhanced Profile Picture Section */}
-              <div style={{ position: 'relative' }}>
-                <Avatar
-                  size={120}
-                  src={profileImage}
-                  alt={user ? `${user.firstName} ${user.lastName}` : 'User'}
-                  style={{
-                    border: '4px solid var(--mantine-color-orange-6)',
-                    boxShadow: 'var(--mantine-shadow-sm)',
-                  }}
-                />
-                <FileInput
-                  accept="image/*"
-                  onChange={handleProfileImageUpload}
-                  style={{ display: 'none' }}
-                  id="profile-image-upload"
-                />
-                <ActionIcon
-                  component="label"
-                  htmlFor="profile-image-upload"
-                  size="md"
-                  variant="filled"
-                  color="orange"
-                  style={{
-                    position: 'absolute',
-                    bottom: 4,
-                    right: 4,
-                    cursor: 'pointer',
-                    border: '2px solid white',
-                  }}
-                >
-                  <CameraIcon width={16} height={16} />
-                </ActionIcon>
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      {/* Header */}
+      <Paper className="p-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          <div className="flex gap-6">
+            <div className="relative">
+              <div className="h-28 w-28 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-3xl font-semibold text-orange-600">
+                {user?.firstName?.[0] || 'U'}
               </div>
-
-              <Stack gap="xs">
-                <div>
-                  <Title order={1} size="h2" mb="xs">
-                    {user ? `${user.firstName} ${user.lastName}` : 'Your Name'}
-                  </Title>
-                  <Text c="dimmed" size="lg">
-                    {user?.email || 'your.email@example.com'}
-                  </Text>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <h1 className="text-2xl font-bold">{user ? `${user.firstName} ${user.lastName}` : 'Your Name'}</h1>
+                <p className="text-gray-600 dark:text-gray-400">{user?.email || 'your.email@example.com'}</p>
+              </div>
+              <div className="flex items-center gap-4 flex-wrap">
+                <Badge variant="secondary">{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student'}</Badge>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Member since {new Date().getFullYear()}</p>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium">Profile Completion</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">85%</p>
                 </div>
+                <Progress value={85} />
+                <p className="text-xs text-gray-500 mt-1">Complete your profile to unlock all features</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={handleExportData} className="flex items-center gap-2">
+              <DownloadIcon className="h-4 w-4" />
+              Export Data
+            </Button>
+          </div>
+        </div>
+      </Paper>
 
-                <Group gap="md" mt="sm">
-                  <Badge 
-                    variant="light" 
-                    color="orange" 
-                    size="lg"
-                    leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--mantine-color-orange-6)' }} />}
-                  >
-                    {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student'}
-                  </Badge>
-                  <Text size="sm" c="dimmed">
-                    Member since {new Date().getFullYear()}
-                  </Text>
-                </Group>
-
-                {/* Profile Completion Indicator */}
-                <div style={{ marginTop: rem(16), minWidth: rem(300) }}>
-                  <Group justify="space-between" mb="xs">
-                    <Text size="sm" fw={500}>Profile Completion</Text>
-                    <Text size="sm" c="dimmed">85%</Text>
-                  </Group>
-                  <Progress value={85} color="orange" size="sm" />
-                  <Text size="xs" c="dimmed" mt={4}>
-                    Complete your profile to unlock all features
-                  </Text>
-                </div>
-              </Stack>
-            </Group>
-
-            <Group gap="md">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Sidebar */}
+        <Paper className="p-4 w-full md:w-64 h-fit sticky top-24 space-y-2">
+          {settingsTabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
               <Button
-                variant="default"
-                leftSection={<DownloadIcon width={16} height={16} />}
-                onClick={handleExportData}
+                key={tab.id}
+                variant={isActive ? 'primary' : 'ghost'}
+                className={`w-full justify-start flex items-center gap-2 ${isActive ? '' : 'text-gray-700 dark:text-gray-300'}`}
+                onClick={() => handleTabChange(tab.id)}
               >
-                Export Data
+                <Icon width={16} height={16} />
+                {tab.label}
               </Button>
-            </Group>
-          </Group>
+            );
+          })}
         </Paper>
 
-        {/* Enhanced Settings Layout */}
-        <Grid gutter="xl" className="settings-layout">
-          {/* Sidebar Navigation */}
-          <Grid.Col span={{ base: 12, md: 3 }}>
-            <Paper
-              p="md"
-              style={{
-                position: 'sticky',
-                top: '80px',
-                height: 'fit-content',
-              }}
-              className="settings-sidebar"
-            >
-              <Stack gap="xs">
-                {settingsTabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  
-                  return (
-                    <Button
-                      key={tab.id}
-                      variant={isActive ? 'filled' : 'subtle'}
-                      color={isActive ? 'orange' : 'gray'}
-                      leftSection={<Icon width={16} height={16} />}
-                      onClick={() => handleTabChange(tab.id)}
-                      justify="flex-start"
-                      style={{
-                        height: 'auto',
-                        padding: rem(12),
-                      }}
-                    >
-                      <div style={{ textAlign: 'left' }}>
-                        <Text fw={isActive ? 600 : 500} size="sm">
-                          {tab.label}
-                        </Text>
-                        <Text size="xs" c={isActive ? 'white' : 'dimmed'} mt={2}>
-                          {tab.description}
-                        </Text>
-                      </div>
-                    </Button>
-                  );
-                })}
-              </Stack>
-            </Paper>
-          </Grid.Col>
-
-          {/* Main Content */}
-          <Grid.Col span={{ base: 12, md: 9 }}>
-            <Paper p="xl" style={{ minHeight: '600px' }}>
-              <Stack gap="lg">
-                {/* Section Header */}
-                <div>
-                  <Group gap="sm" mb="xs">
-                    {activeTabData?.icon && (
-                      <activeTabData.icon width={24} height={24} />
-                    )}
-                    <Title order={2} size="h3">
-                      {activeTabData?.label}
-                    </Title>
-                  </Group>
-                  <Text c="dimmed" size="sm">
-                    {activeTabData?.description}
-                  </Text>
-                </div>
-
-                <Divider />
-
-                {/* Active Component */}
-                {ActiveComponent && (
-                  <ActiveComponent 
-                    onUnsavedChanges={setHasUnsavedChanges} 
-                    user={user}
-                    profileImage={profileImage}
-                  />
-                )}
-              </Stack>
-            </Paper>
-          </Grid.Col>
-        </Grid>
-
-        {/* Enhanced Unsaved Changes Warning */}
-        {hasUnsavedChanges && (
-          <Paper
-            p="md"
-            style={{
-              position: 'fixed',
-              bottom: rem(32),
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 1000,
-              backgroundColor: 'var(--mantine-color-orange-6)',
-              maxWidth: rem(500),
-              width: '90%',
-              boxShadow: 'var(--mantine-shadow-lg)',
-            }}
-          >
-            <Group justify="space-between" align="center">
-              <div>
-                <Text fw={600} c="white">
-                  Unsaved Changes
-                </Text>
-                <Text size="sm" c="white" style={{ opacity: 0.9 }}>
-                  You have unsaved changes that will be lost if you navigate away.
-                </Text>
+        {/* Main content */}
+        <div className="flex-1 space-y-6">
+          <Paper className="p-6 space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                {activeTabData?.icon && <activeTabData.icon width={24} height={24} />}
+                <h2 className="text-xl font-semibold">{activeTabData?.label}</h2>
               </div>
-              <Group gap="sm">
-                <Button
-                  size="sm"
-                  variant="white"
-                  onClick={() => {
-                    // Handle save logic here
-                    setHasUnsavedChanges(false);
-                  }}
-                >
-                  Save Changes
-                </Button>
-              </Group>
-            </Group>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{activeTabData?.description}</p>
+            </div>
+            <Divider />
+            {ActiveComponent && (
+              <ActiveComponent
+                onUnsavedChanges={setHasUnsavedChanges}
+                user={user || undefined}
+                profileImage={profileImage}
+              />
+            )}
           </Paper>
-        )}
-      </Stack>
+        </div>
+      </div>
 
-      <style>{`
-        @media (max-width: 768px) {
-          .settings-layout {
-            display: block !important;
-          }
-          
-          .settings-sidebar {
-            position: static !important;
-            margin-bottom: 1rem;
-          }
-        }
-      `}</style>
-    </Container>
+      {hasUnsavedChanges && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-orange-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-4">
+          <div>
+            <p className="font-semibold">Unsaved Changes</p>
+            <p className="text-sm opacity-90">You have unsaved changes that will be lost if you navigate away.</p>
+          </div>
+          <Button variant="secondary" onClick={() => setHasUnsavedChanges(false)}>Save Changes</Button>
+        </div>
+      )}
+    </div>
   );
 };

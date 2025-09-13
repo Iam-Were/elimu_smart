@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionIcon } from '@mantine/core';
+import Button from '@/components/ui/button';
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
@@ -8,6 +8,18 @@ interface ThemeToggleProps {
   className?: string;
 }
 
+const sizeMap = {
+  sm: 'h-8 w-8',
+  md: 'h-9 w-9', 
+  lg: 'h-10 w-10'
+};
+
+const iconSizeMap = {
+  sm: 16,
+  md: 18,
+  lg: 20
+};
+
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
   size = 'lg', 
   className = '' 
@@ -15,22 +27,17 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const { isDark, toggleDarkMode } = useThemeContext();
 
   return (
-    <ActionIcon
-      variant="subtle"
-      size={size}
+    <Button
+      variant="ghost"
       onClick={toggleDarkMode}
-      className={`theme-toggle ${className}`}
-      style={{
-        borderRadius: '8px',
-        transition: 'background-color 0.2s ease',
-      }}
+      className={`theme-toggle rounded-lg transition-colors hover:bg-muted ${sizeMap[size]} ${className}`}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (
-        <SunIcon width={20} height={20} />
+        <SunIcon width={iconSizeMap[size]} height={iconSizeMap[size]} />
       ) : (
-        <MoonIcon width={20} height={20} />
+        <MoonIcon width={iconSizeMap[size]} height={iconSizeMap[size]} />
       )}
-    </ActionIcon>
+    </Button>
   );
 };

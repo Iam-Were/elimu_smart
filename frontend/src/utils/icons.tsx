@@ -1,10 +1,11 @@
 // Sprint 15: Enhanced Icon utilities with Intelligence System Integration
+/* eslint-disable react-refresh/only-export-components */
 import type { LucideIcon } from 'lucide-react';
-import { iconSizes as intelligentIconSizes, type IconSize, getRoleIconClass } from './iconIntelligence';
+import { iconSizes, type IconSize } from './iconSizes';
+import { getRoleIconClass } from './iconIntelligence';
 
 // Re-export enhanced icon sizes from intelligence system
-export const iconSizes = intelligentIconSizes;
-export type { IconSize };
+export { iconSizes, type IconSize };
 
 // Enhanced Icon wrapper component with Universal Component DNA
 interface IconProps {

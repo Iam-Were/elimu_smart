@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import {
-  Stack,
-  Group,
-  Text,
-  Switch,
-  Card,
-  Select,
-  Alert,
-  Button,
-} from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import Button from '@/components/ui/button';
 import {
   CheckCircledIcon,
 } from '@radix-ui/react-icons';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
 interface PreferencesSettingsProps {
-  onUnsavedChanges: (hasChanges: boolean) => void;
+  onUnsavedChanges?: (hasChanges: boolean) => void;
 }
 
-export const PreferencesSettings: React.FC<PreferencesSettingsProps> = () => {
+export const PreferencesSettings: React.FC<PreferencesSettingsProps> = ({ onUnsavedChanges }) => {
   const { isDark, toggleDarkMode } = useThemeContext();
   const [language, setLanguage] = useState('en');
   const [timezone, setTimezone] = useState('Africa/Nairobi');
@@ -29,93 +25,109 @@ export const PreferencesSettings: React.FC<PreferencesSettingsProps> = () => {
     await new Promise(resolve => setTimeout(resolve, 500));
     setSaveStatus('success');
     setTimeout(() => setSaveStatus('idle'), 3000);
+    onUnsavedChanges?.(false);
   };
 
   return (
-    <Stack gap="xl">
+    <div className="space-y-6">
       {/* Appearance */}
       <Card>
-        <Stack gap="md">
-          <Text size="lg" fw={600}>
-            Appearance
-          </Text>
-          
-          <Group justify="space-between">
-            <div>
-              <Text size="sm" fw={500}>Dark Mode</Text>
-              <Text size="xs" c="dimmed">Use dark theme for the interface</Text>
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Dark Mode</Label>
+              <p className="text-xs text-muted-foreground">Use dark theme for the interface</p>
             </div>
             <Switch
               checked={isDark}
-              onChange={toggleDarkMode}
+              onCheckedChange={toggleDarkMode}
             />
-          </Group>
-        </Stack>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Language & Region */}
       <Card>
-        <Stack gap="md">
-          <Text size="lg" fw={600}>
-            Language & Region
-          </Text>
-          
-          <Select
-            label="Language"
-            description="Choose your preferred language"
-            value={language}
-            onChange={(value) => setLanguage(value || 'en')}
-            data={[
-              { value: 'en', label: 'English' },
-              { value: 'sw', label: 'Kiswahili' },
-              { value: 'fr', label: 'Français' },
-            ]}
-          />
+        <CardHeader>
+          <CardTitle>Language & Region</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="language-select">Language</Label>
+            <Select value={language} onValueChange={(value) => setLanguage(value)}>
+              <SelectTrigger id="language-select">
+                <SelectValue placeholder="Choose your preferred language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="sw">Kiswahili</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Choose your preferred language
+            </p>
+          </div>
 
-          <Select
-            label="Timezone"
-            description="Your local timezone for scheduling"
-            value={timezone}
-            onChange={(value) => setTimezone(value || 'Africa/Nairobi')}
-            data={[
-              { value: 'Africa/Nairobi', label: 'East Africa Time (EAT)' },
-              { value: 'UTC', label: 'Coordinated Universal Time (UTC)' },
-              { value: 'Europe/London', label: 'Greenwich Mean Time (GMT)' },
-            ]}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="timezone-select">Timezone</Label>
+            <Select value={timezone} onValueChange={(value) => setTimezone(value)}>
+              <SelectTrigger id="timezone-select">
+                <SelectValue placeholder="Your local timezone for scheduling" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Africa/Nairobi">East Africa Time (EAT)</SelectItem>
+                <SelectItem value="UTC">Coordinated Universal Time (UTC)</SelectItem>
+                <SelectItem value="Europe/London">Greenwich Mean Time (GMT)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Your local timezone for scheduling
+            </p>
+          </div>
 
-          <Select
-            label="Date Format"
-            description="How dates should be displayed"
-            value={dateFormat}
-            onChange={(value) => setDateFormat(value || 'DD/MM/YYYY')}
-            data={[
-              { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (31/12/2023)' },
-              { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (12/31/2023)' },
-              { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2023-12-31)' },
-            ]}
-          />
-        </Stack>
+          <div className="space-y-2">
+            <Label htmlFor="date-format-select">Date Format</Label>
+            <Select value={dateFormat} onValueChange={(value) => setDateFormat(value)}>
+              <SelectTrigger id="date-format-select">
+                <SelectValue placeholder="How dates should be displayed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (31/12/2023)</SelectItem>
+                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (12/31/2023)</SelectItem>
+                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (2023-12-31)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              How dates should be displayed
+            </p>
+          </div>
+        </CardContent>
       </Card>
 
       {saveStatus === 'success' && (
-        <Alert
-          icon={<CheckCircledIcon width={16} height={16} />}
-          color="green"
-          variant="light"
-        >
-          Preferences updated successfully!
+        <Alert>
+          <CheckCircledIcon width={16} height={16} />
+          <AlertDescription>
+            Preferences updated successfully!
+          </AlertDescription>
         </Alert>
       )}
 
-      <Group justify="flex-end">
+      <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          leftSection={<CheckCircledIcon width={16} height={16} />}
+          className="flex items-center space-x-2"
         >
-          Save Preferences
+          <CheckCircledIcon width={16} height={16} />
+          <span>Save Preferences</span>
         </Button>
-      </Group>
-    </Stack>
+      </div>
+    </div>
   );
 };
+
+export default PreferencesSettings;

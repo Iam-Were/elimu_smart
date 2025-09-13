@@ -67,7 +67,7 @@ const Button: React.FC<ButtonProps> = ({
   );
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, {
+    return React.cloneElement(children as React.ReactElement<React.HTMLAttributes<HTMLElement>>, {
       className: combinedClassName,
       ...props
     });

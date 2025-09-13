@@ -6,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, 
   ArrowRight,
-  CheckCircle,
   Trophy,
   TrendingUp,
   Brain,
@@ -209,7 +208,7 @@ export const SkillsAssessment: React.FC = () => {
       setIsLoading(true);
       
       // First, save all responses to the assessment
-      const assessmentData = await fetch(`http://localhost:1337/parse/classes/SkillsAssessment/${assessmentId}`, {
+      await fetch(`http://localhost:1337/parse/classes/SkillsAssessment/${assessmentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

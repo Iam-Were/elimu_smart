@@ -1,18 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import Parse from '../lib/parse';
+import { getParse, initializeParse } from '../config/parse';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
+import type { ParseUserLike } from '../types/shared';
 import { applyRoleTheme } from '../theme/mantineTheme';
 
 // Convert Parse User to our User interface
-const parseUserToUser = (parseUser: Parse.User): User => {
+const parseUserToUser = (parseUser: ParseUserLike): User => {
   return {
     id: parseUser.id || '',
-    email: parseUser.get('email') || parseUser.get('username') || '',
-    firstName: parseUser.get('firstName') || '',
-    lastName: parseUser.get('lastName') || '',
-    role: parseUser.get('role') || 'student',
-    adminRoleType: parseUser.get('adminRoleType'),
-    profileImage: parseUser.get('profileImage'),
+    email: (parseUser.get('email') || parseUser.get('username') || '') as string,
+    firstName: (parseUser.get('firstName') || '') as string,
+    lastName: (parseUser.get('lastName') || '') as string,
+    role: (parseUser.get('role') || 'student') as User['role'],
+    adminRoleType: parseUser.get('adminRoleType') as User['adminRoleType'],
+    profileImage: parseUser.get('profileImage') as string | undefined,
     isActive: parseUser.get('isActive') !== false,
     createdAt: parseUser.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: parseUser.updatedAt?.toISOString() || new Date().toISOString(),
@@ -31,6 +32,7 @@ export const useParseAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        const Parse = await getParse();
         const currentParseUser = Parse.User.current();
         
         if (currentParseUser) {
@@ -78,6 +80,8 @@ export const useParseAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      await initializeParse(); // Initialize Parse before using it
+      const Parse = await getParse();
       const parseUser = await Parse.User.logIn(credentials.email, credentials.password);
       const user = parseUserToUser(parseUser);
 
@@ -114,6 +118,7 @@ export const useParseAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      const Parse = await getParse();
       const parseUser = new Parse.User();
       parseUser.set('username', data.email);
       parseUser.set('email', data.email);
@@ -150,6 +155,7 @@ export const useParseAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
+      const Parse = await getParse();
       await Parse.User.logOut();
       
       localStorage.removeItem('elimu-theme');
@@ -176,6 +182,7 @@ export const useParseAuth = () => {
   // Test cloud function
   const testCloudFunction = useCallback(async () => {
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('hello');
       console.log('Cloud function result:', result);
       return result;
@@ -188,6 +195,7 @@ export const useParseAuth = () => {
   // Calculate KUCCPS points using cloud function
   const calculateKUCCPSPoints = useCallback(async (subjects: string[], gradePoints: Record<string, string>) => {
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('calculateKUCCPSPoints', {
         subjects,
         gradePoints

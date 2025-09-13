@@ -98,18 +98,21 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
       </div>
       
       <header 
-        className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}
+        className={cn("glass-nav sticky top-0 z-50 w-full border-b border-orange-200/30 relative overflow-hidden", className)}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
       >
-        <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between">
-        {/* Logo */}
+        {/* Subtle floating background elements */}
+        <div className="absolute top-0 left-1/4 w-32 h-32 bg-gradient-to-br from-orange-500/5 to-orange-300/3 rounded-full -mt-16 animate-pulse"></div>
+        <div className="absolute top-0 right-1/3 w-24 h-24 bg-gradient-to-bl from-orange-400/8 to-orange-200/4 rounded-full -mt-12"></div>
+        <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
+        {/* Enhanced Logo with glass effects */}
         <div className="flex items-center space-x-4">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
-              <Brain className="h-5 w-5 text-white" />
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="glass-card flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Brain className="h-6 w-6 text-white drop-shadow-sm" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent group-hover:from-orange-800 group-hover:to-orange-600 transition-all duration-300">
               Elimu Smart
             </span>
           </Link>

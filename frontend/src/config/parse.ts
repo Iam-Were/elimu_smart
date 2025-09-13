@@ -1,32 +1,33 @@
+// Standard Parse import approach  
 import Parse from 'parse';
 
-// Parse Server Configuration - Compatible with PostgreSQL Backend
-Parse.initialize(
-  'elimu-smart-local-dev', // APP_ID from backend/.env
-  'unused-javascript-key'  // JavaScript key (not used in Parse Server)
-);
+// Single Parse initialization following CLAUDE.md patterns  
+let parseInitialized = false;
 
-Parse.serverURL = 'http://localhost:1337/parse'; // SERVER_URL from backend/.env
+const initializeParse = () => {
+  if (!parseInitialized) {
+    Parse.initialize(
+      import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
+      import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
+    );
+    Parse.serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse';
+    
+    parseInitialized = true;
+    console.log('✅ Parse SDK initialized:', {
+      appId: Parse.applicationId,
+      serverURL: Parse.serverURL
+    });
+  }
+  return Parse;
+};
 
-// Enable local datastore for offline support (optional)
-// Parse.enableLocalDatastore();
+// Export function that existing hooks expect
+export const getParse = () => {
+  return initializeParse();
+};
 
-// Development settings  
-if (import.meta.env?.DEV) {
-  Parse.CoreManager.set('REQUEST_HEADERS', {
-    'X-Parse-Application-Id': 'elimu-smart-local-dev'
-  });
-}
+// Export for compatibility with existing imports  
+export { initializeParse };
 
-export default Parse;
-
-// Export commonly used Parse classes for convenience
-export const User = Parse.User;
-export const Query = Parse.Query;
-export const Object = Parse.Object;
-export const Cloud = Parse.Cloud;
-export const File = Parse.File;
-export const GeoPoint = Parse.GeoPoint;
-export const Polygon = Parse.Polygon;
-export const ACL = Parse.ACL;
-export const Role = Parse.Role;
+// Initialize Parse immediately for main.tsx
+initializeParse();

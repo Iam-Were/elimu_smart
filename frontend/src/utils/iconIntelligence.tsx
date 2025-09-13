@@ -1,5 +1,8 @@
 // Sprint 15: Icon Intelligence System - Universal Component DNA Integration
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
+import type { IconConfig } from '../types/shared';
+import { iconSizes, type IconSize } from './iconSizes';
 import {
   // Progress & Achievement Icons
   ClipboardCheck, BarChart3, Flame, Trophy, Target, Flag, Clock, Map,
@@ -22,19 +25,6 @@ import {
   // Interface & Utility Icons
   Menu, X, ChevronDown, Edit, Trash2, Download
 } from 'lucide-react';
-
-// Universal Component DNA - Icon Size System
-export const iconSizes = {
-  xs: 'h-3.5 w-3.5',     // 14px - Micro contextual icons
-  sm: 'h-4 w-4',         // 16px - Small interface icons
-  base: 'h-5 w-5',       // 20px - Standard dashboard icons
-  lg: 'h-6 w-6',         // 24px - Prominent feature icons
-  xl: 'h-8 w-8',         // 32px - Hero/stat card icons
-  '2xl': 'h-10 w-10',    // 40px - Large display icons
-  '3xl': 'h-12 w-12',    // 48px - Extra large hero icons
-} as const;
-
-export type IconSize = keyof typeof iconSizes;
 
 // Semantic Icon Categories with Intelligence
 export const ICON_INTELLIGENCE_SYSTEM = {
@@ -222,26 +212,26 @@ export const UniversalIcon: React.FC<UniversalIconProps> = ({
   }
 
   // Type assertions to fix TypeScript never type issue
-  const IconComponent = (iconConfig as any).icon;
-  const effectiveSize = size || (iconConfig as any).size || 'base';
+  const IconComponent = (iconConfig as IconConfig).icon;
+  const effectiveSize = size || (iconConfig as IconConfig).size || 'base';
   const sizeClass = iconSizes[effectiveSize as keyof typeof iconSizes];
 
   const iconElement = (
     <IconComponent
-      className={`${sizeClass} ${className} ${animate ? (iconConfig as any).hoverEffect || '' : ''}`}
+      className={`${sizeClass} ${className} ${animate ? (iconConfig as IconConfig).hoverEffect || '' : ''}`}
       aria-hidden={ariaHidden}
-      aria-label={!ariaHidden ? (iconConfig as any).ariaLabel : undefined}
+      aria-label={!ariaHidden ? (iconConfig as IconConfig).ariaLabel : undefined}
     />
   );
 
-  if (showContainer && (iconConfig as any).containerClass) {
+  if (showContainer && (iconConfig as IconConfig).containerClass) {
     return (
       <div 
-        className={`${(iconConfig as any).containerClass} ${animate ? 'transition-all duration-200' : ''}`}
+        className={`${(iconConfig as IconConfig).containerClass} ${animate ? 'transition-all duration-200' : ''}`}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        aria-label={(iconConfig as any).ariaLabel}
+        aria-label={(iconConfig as IconConfig).ariaLabel}
       >
         {iconElement}
       </div>
@@ -252,7 +242,7 @@ export const UniversalIcon: React.FC<UniversalIconProps> = ({
     <button
       onClick={onClick}
       className={`focus-enhanced ${className}`}
-      aria-label={(iconConfig as any).ariaLabel}
+      aria-label={(iconConfig as IconConfig).ariaLabel}
     >
       {iconElement}
     </button>
@@ -316,7 +306,7 @@ export const StatCardIcon: React.FC<StatCardIconProps> = ({
   
   if (!iconConfig) return null;
 
-  const IconComponent = (iconConfig as any).icon;
+  const IconComponent = (iconConfig as IconConfig).icon;
   const trendColor = trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
 
   return (
@@ -326,10 +316,10 @@ export const StatCardIcon: React.FC<StatCardIconProps> = ({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div className={(iconConfig as any).containerClass}>
+      <div className={(iconConfig as IconConfig).containerClass}>
         <IconComponent 
-          className={iconSizes[(iconConfig as any).size as keyof typeof iconSizes]} 
-          aria-hidden="true"
+          className={iconSizes[(iconConfig as IconConfig).size as keyof typeof iconSizes]} 
+          aria-hidden={true}
         />
       </div>
       

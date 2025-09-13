@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Parse from 'parse';
+import type { ParseLike, ScholarshipData, ActivityData, AssessmentResults } from '../types/shared';
 
 interface EmailRequest {
   email: string;
@@ -54,6 +55,8 @@ interface EmailStatistics {
   last24Hours: number;
   thisWeek: number;
 }
+
+export type { EmailStatistics };
 
 export const useEmailService = () => {
   const [loading, setLoading] = useState(false);
@@ -217,7 +220,7 @@ export const useEmailService = () => {
       // Convert date strings back to Date objects
       const statistics: EmailStatistics = {
         ...result,
-        recentActivity: result.recentActivity.map((activity: any) => ({
+        recentActivity: result.recentActivity.map((activity: ActivityData) => ({
           ...activity,
           sentAt: new Date(activity.sentAt)
         }))
@@ -237,22 +240,22 @@ export const useEmailService = () => {
   // Utility function to trigger automatic emails based on user actions
   const triggerAutomaticEmails = {
     // Send welcome email on user registration
-    onUserRegistration: async (user: any) => {
+    onUserRegistration: async (user: ParseLike) => {
       if (user?.get('email') && user?.get('firstName')) {
         return sendWelcomeEmail({
-          email: user.get('email'),
-          firstName: user.get('firstName'),
-          userRole: user.get('role') || 'student'
+          email: user.get('email') as string,
+          firstName: user.get('firstName') as string,
+          userRole: user.get('role') as string || 'student'
         });
       }
     },
 
     // Send assessment completion email
-    onAssessmentComplete: async (user: any, assessmentName: string, results?: any) => {
+    onAssessmentComplete: async (user: ParseLike, assessmentName: string, results?: AssessmentResults) => {
       if (user?.get('email') && user?.get('firstName')) {
         return sendAssessmentCompletionEmail({
-          email: user.get('email'),
-          firstName: user.get('firstName'),
+          email: user.get('email') as string,
+          firstName: user.get('firstName') as string,
           assessmentName,
           results
         });
@@ -260,25 +263,25 @@ export const useEmailService = () => {
     },
 
     // Send scholarship alerts when new matches are found
-    onScholarshipMatch: async (user: any, scholarship: any) => {
+    onScholarshipMatch: async (user: ParseLike, scholarship: ScholarshipData) => {
       if (user?.get('email') && user?.get('firstName')) {
         return sendScholarshipAlert({
-          email: user.get('email'),
-          firstName: user.get('firstName'),
+          email: user.get('email') as string,
+          firstName: user.get('firstName') as string,
           scholarshipName: scholarship.name,
           deadline: scholarship.deadline,
-          amount: scholarship.amount,
+          amount: scholarship.amount.toString(),
           requirements: scholarship.requirements || []
         });
       }
     },
 
     // Send KUCCPS deadline reminders
-    onKuccpsDeadlineApproaching: async (user: any, deadlineName: string, daysRemaining: number) => {
+    onKuccpsDeadlineApproaching: async (user: ParseLike, deadlineName: string, daysRemaining: number) => {
       if (user?.get('email') && user?.get('firstName')) {
         return sendKuccpsDeadlineReminder({
-          email: user.get('email'),
-          firstName: user.get('firstName'),
+          email: user.get('email') as string,
+          firstName: user.get('firstName') as string,
           deadlineName,
           daysRemaining
         });

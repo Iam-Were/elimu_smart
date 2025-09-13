@@ -301,7 +301,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
           card.priority = metrics.urgentStudents > 5 ? 'high' : 'medium';
           break;
 
-        case 'active-chat-sessions':
+        case 'active-chat-sessions': {
           const avgResponseTime = activeChatSessions.reduce((sum, session) => sum + session.responseTime, 0) / 
                                   (activeChatSessions.length || 1);
           card.stats = {
@@ -318,8 +318,9 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
           card.status = metrics.activeChats > 0 ? 'active' : 'completed';
           card.priority = metrics.waitingChats > 0 ? 'high' : 'medium';
           break;
+        }
 
-        case 'upcoming-appointments':
+        case 'upcoming-appointments': {
           const nextAppointment = metrics.nextAppointment;
           card.stats = {
             primary: `${metrics.todaysAppointments} Sessions`,
@@ -335,6 +336,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
           };
           card.status = nextAppointment ? 'scheduled' : 'completed';
           break;
+        }
 
         case 'counseling-analytics':
           if (analytics) {

@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Card,
-  Stack,
-  Group,
-  Text,
-  Button,
-  TextInput,
-  Avatar,
-  Badge,
-  Divider,
-  Grid,
-  Alert,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Form components not available yet
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Button from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Edit, Save, X, User, Settings, Shield, Bell } from 'lucide-react';
+
+const profileSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -25,294 +29,334 @@ export const ProfilePage: React.FC = () => {
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
 
-  const form = useForm({
-    initialValues: {
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
       email: user?.email || '',
     },
-    validate: {
-      firstName: value =>
-        value.length < 2 ? 'First name must have at least 2 characters' : null,
-      lastName: value =>
-        value.length < 2 ? 'Last name must have at least 2 characters' : null,
-      email: value =>
-        /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
-    },
   });
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = async (data: ProfileFormValues) => {
+    console.log('Profile data:', data);
     setIsLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      notifications.show({
-        title: 'Profile Updated',
-        message: 'Your profile has been successfully updated',
-        color: 'green',
-      });
+      toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
-      notifications.show({
-        title: 'Update Failed',
-        message: 'Failed to update profile. Please try again.',
-        color: 'red',
-      });
+      toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getRoleDisplayName = (role: string) => {
+  const handleCancelEdit = () => {
+    form.reset();
+    setIsEditing(false);
+  };
+
+  const getRoleColor = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return 'Super Admin';
-      case 'career_counselor':
-        return 'Career Counselor';
-      default:
-        return role.charAt(0).toUpperCase() + role.slice(1);
+      case 'student': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'counselor': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getThemeColor = () => {
-    switch (currentTheme) {
-      case 'admin':
-        return 'violet';
-      case 'counselor':
-        return 'yellow';
-      default:
-        return 'orange';
+  const getThemeColor = (theme: string) => {
+    switch (theme) {
+      case 'student': return 'from-orange-500 to-orange-600';
+      case 'counselor': return 'from-yellow-500 to-yellow-600';
+      case 'admin': return 'from-purple-500 to-purple-600';
+      default: return 'from-gray-500 to-gray-600';
     }
   };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin':
-      case 'super_admin':
-        return '👨‍💼';
-      case 'counselor':
-      case 'career_counselor':
-        return '👨‍🏫';
-      default:
-        return '🎓';
-    }
-  };
-
-  if (!user) {
-    return (
-      <Container size="lg" py="xl">
-        <Alert color="red" title="Error">
-          User information not available
-        </Alert>
-      </Container>
-    );
-  }
 
   return (
-    <Container size="lg" py="xl">
-      <Stack gap="xl">
-        <Title order={1} size="2rem">
-          Profile Settings
-        </Title>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account settings and preferences
+          </p>
+        </div>
 
-        <Grid>
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="md" align="center">
-                <Avatar
-                  size="xl"
-                  radius="xl"
-                  color={getThemeColor()}
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                    fontSize: '2rem',
-                  }}
-                >
-                  {getRoleIcon(user.role)}
+        {/* Profile Card */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={user?.profileImage} />
+                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-xl`}>
+                    {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
+                  </AvatarFallback>
                 </Avatar>
-
-                <Stack gap="xs" align="center">
-                  <Text fw={600} size="lg">
-                    {user.firstName} {user.lastName}
-                  </Text>
-                  <Badge color={getThemeColor()} variant="light" size="md">
-                    {getRoleDisplayName(user.role)}
-                  </Badge>
-                </Stack>
-
-                <Divider w="100%" />
-
-                <Stack gap="xs" w="100%">
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Member since:
-                    </Text>
-                    <Text size="sm" fw={500}>
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </Text>
-                  </Group>
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Account status:
-                    </Text>
-                    <Badge
-                      color={user.isActive ? 'green' : 'red'}
-                      variant="light"
-                      size="xs"
-                    >
-                      {user.isActive ? 'Active' : 'Inactive'}
+                
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl">
+                    {user?.firstName} {user?.lastName}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getRoleColor(user?.role || '')}>
+                      {user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'User'}
                     </Badge>
-                  </Group>
-                </Stack>
-              </Stack>
-            </Card>
-          </Grid.Col>
+                    <Badge variant="outline" className="text-green-600 border-green-200">
+                      Active
+                    </Badge>
+                  </div>
+                  <CardDescription>{user?.email}</CardDescription>
+                </div>
+              </div>
+              
+              {!isEditing && (
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Profile
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+        </Card>
 
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Stack gap="md">
-                <Group justify="space-between" align="center">
-                  <Title order={3}>Personal Information</Title>
-                  {!isEditing ? (
-                    <Button
-                      variant="light"
-                      color={getThemeColor()}
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit Profile
-                    </Button>
-                  ) : (
-                    <Group>
+        {/* Tabbed Content */}
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile" className="gap-2">
+              <User className="h-4 w-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Preferences
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>
+                  Update your personal details and contact information
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                {isEditing ? (
+                  <form onSubmit={form.handleSubmit(handleSaveProfile)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
+                        <Input 
+                          id="firstName"
+                          placeholder="Enter your first name" 
+                          {...form.register('firstName')}
+                          className={form.formState.errors.firstName ? 'border-red-500' : ''}
+                        />
+                        {form.formState.errors.firstName && (
+                          <p className="text-sm text-red-500">{form.formState.errors.firstName.message}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
+                        <Input 
+                          id="lastName"
+                          placeholder="Enter your last name" 
+                          {...form.register('lastName')}
+                          className={form.formState.errors.lastName ? 'border-red-500' : ''}
+                        />
+                        {form.formState.errors.lastName && (
+                          <p className="text-sm text-red-500">{form.formState.errors.lastName.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+                      <Input 
+                        id="email"
+                        placeholder="Enter your email" 
+                        type="email" 
+                        {...form.register('email')}
+                        className={form.formState.errors.email ? 'border-red-500' : ''}
+                      />
+                      {form.formState.errors.email && (
+                        <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-3">
                       <Button
-                        variant="subtle"
-                        onClick={() => {
-                          setIsEditing(false);
-                          form.reset();
-                        }}
+                        type="submit"
+                        disabled={isLoading}
+                        className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90 gap-2`}
                       >
+                        <Save className="h-4 w-4" />
+                        {isLoading ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                        className="gap-2"
+                      >
+                        <X className="h-4 w-4" />
                         Cancel
                       </Button>
-                      <Button
-                        loading={isLoading}
-                        onClick={() => form.onSubmit(handleSaveProfile)()}
-                        style={{
-                          backgroundColor: 'var(--primary)',
-                          color: 'var(--primary-foreground)',
-                        }}
-                      >
-                        Save Changes
-                      </Button>
-                    </Group>
-                  )}
-                </Group>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                        <p className="mt-1 text-sm">{user?.firstName}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                        <p className="mt-1 text-sm">{user?.lastName}</p>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                      <p className="mt-1 text-sm">{user?.email}</p>
+                    </div>
 
-                <Divider />
-
-                <form onSubmit={form.onSubmit(handleSaveProfile)}>
-                  <Stack gap="md">
-                    <Group grow>
-                      <TextInput
-                        label="First Name"
-                        placeholder="Enter first name"
-                        disabled={!isEditing}
-                        {...form.getInputProps('firstName')}
-                      />
-                      <TextInput
-                        label="Last Name"
-                        placeholder="Enter last name"
-                        disabled={!isEditing}
-                        {...form.getInputProps('lastName')}
-                      />
-                    </Group>
-
-                    <TextInput
-                      label="Email Address"
-                      placeholder="Enter email address"
-                      disabled={!isEditing}
-                      {...form.getInputProps('email')}
-                    />
-
-                    <TextInput
-                      label="Role"
-                      value={getRoleDisplayName(user.role)}
-                      disabled
-                      description="Contact your administrator to change your role"
-                    />
-                  </Stack>
-                </form>
-              </Stack>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Account Created</label>
+                      <p className="mt-1 text-sm">
+                        {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Not available'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
             </Card>
-          </Grid.Col>
-        </Grid>
+          </TabsContent>
 
-        {/* Security Settings */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Stack gap="md">
-            <Title order={3}>Security Settings</Title>
-            <Divider />
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>
+                  Manage your password and security preferences
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <Alert>
+                  <Shield className="h-4 w-4" />
+                  <AlertDescription>
+                    Security features are currently being developed. Stay tuned for password management and two-factor authentication.
+                  </AlertDescription>
+                </Alert>
 
-            <Group justify="space-between" align="center">
-              <Stack gap="xs">
-                <Text fw={500}>Password</Text>
-                <Text size="sm" c="dimmed">
-                  Last updated: {new Date(user.updatedAt).toLocaleDateString()}
-                </Text>
-              </Stack>
-              <Button
-                variant="light"
-                color="blue"
-                onClick={() => {
-                  notifications.show({
-                    title: 'Password Reset',
-                    message:
-                      'Password reset functionality will be available in production',
-                    color: 'blue',
-                  });
-                }}
-              >
-                Change Password
-              </Button>
-            </Group>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Password</h4>
+                      <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
+                    </div>
+                    <Button variant="outline" disabled>
+                      Change Password
+                    </Button>
+                  </div>
 
-            <Alert color="blue" variant="light">
-              <Text size="sm">
-                <strong>Demo Mode:</strong> Security features are limited in
-                demo mode. In production, you'll be able to change passwords,
-                enable two-factor authentication, and manage security settings.
-              </Text>
-            </Alert>
-          </Stack>
-        </Card>
-      </Stack>
-    </Container>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Two-Factor Authentication</h4>
+                      <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
+                    </div>
+                    <Button variant="outline" disabled>
+                      Enable 2FA
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Preferences</CardTitle>
+                <CardDescription>
+                  Choose how you want to be notified about updates
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <Alert>
+                  <Bell className="h-4 w-4" />
+                  <AlertDescription>
+                    Notification settings will be available in the next update. You'll be able to customize email and push notifications.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Preferences Tab */}
+          <TabsContent value="preferences">
+            <Card>
+              <CardHeader>
+                <CardTitle>App Preferences</CardTitle>
+                <CardDescription>
+                  Customize your app experience and theme settings
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Current Theme</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)} Theme
+                    </p>
+                  </div>
+                  <Badge className={getRoleColor(currentTheme)}>
+                    Active
+                  </Badge>
+                </div>
+
+                <Alert>
+                  <Settings className="h-4 w-4" />
+                  <AlertDescription>
+                    Additional preference settings including language, timezone, and accessibility options will be added soon.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   );
 };
+
+export default ProfilePage;

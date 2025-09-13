@@ -1,52 +1,42 @@
 import React, { useState } from 'react';
-import {
-  TextInput,
-  Button,
-  Stack,
-  Alert,
-  Text,
-  Anchor,
-  Paper,
-  ThemeIcon,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { AuthLayout } from '../components/layouts/AuthLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Form components not available yet
+import { Input } from '@/components/ui/input';
+import Button from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export const ForgotPasswordPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm({
-    initialValues: {
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
       email: '',
-    },
-    validate: {
-      email: value =>
-        /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
     },
   });
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-
       setEmailSent(true);
-      notifications.show({
-        title: 'Reset Email Sent',
-        message: 'Check your email for password reset instructions',
-        color: 'green',
-      });
-    } catch {
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to send reset email. Please try again.',
-        color: 'red',
-      });
+      console.log('Password reset email sent to:', data.email);
+    } catch (error) {
+      console.error('Password reset error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -54,159 +44,111 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (emailSent) {
     return (
-      <AuthLayout
-        title="Check Your Email"
-        subtitle="We've sent you a password reset link"
-      >
-        <Stack gap="lg" align="center">
-          <ThemeIcon
-            size="xl"
-            radius="xl"
-            style={{
-              backgroundColor: 'var(--success)',
-              color: 'var(--success-foreground)',
-              width: '80px',
-              height: '80px',
-              fontSize: '2rem',
-            }}
-          >
-            📧
-          </ThemeIcon>
-
-          <Stack gap="sm" align="center">
-            <Text ta="center" fw={500}>
-              Password reset link sent!
-            </Text>
-            <Text ta="center" size="sm" c="dimmed" maw={400}>
-              We've sent a password reset link to your email address. Please
-              check your inbox and follow the instructions to reset your
-              password.
-            </Text>
-          </Stack>
-
-          <Stack gap="sm" w="100%">
-            <Button
-              fullWidth
-              variant="light"
-              onClick={() => navigate('/login')}
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--secondary-foreground)',
-              }}
-            >
-              Back to Sign In
-            </Button>
-
-            <Button
-              fullWidth
-              variant="subtle"
-              onClick={() => setEmailSent(false)}
-            >
-              Try Different Email
-            </Button>
-          </Stack>
-
-          <Text ta="center" size="xs" c="dimmed">
-            Didn't receive an email? Check your spam folder or{' '}
-            <Anchor
-              onClick={() => setEmailSent(false)}
-              style={{ cursor: 'pointer' }}
-              size="xs"
-            >
-              try again
-            </Anchor>
-          </Text>
-        </Stack>
-      </AuthLayout>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
+            <CardDescription>
+              We've sent password reset instructions to your email address.
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <Alert>
+              <Mail className="h-4 w-4" />
+              <AlertDescription>
+                If you don't see the email in your inbox, please check your spam folder.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={() => navigate('/login')}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              >
+                Back to Sign In
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => setEmailSent(false)}
+                className="w-full"
+              >
+                Try Different Email
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <AuthLayout
-      title="Reset Password"
-      subtitle="Enter your email to receive reset instructions"
-    >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          <Alert color="blue" variant="light">
-            <Text size="sm">
-              Enter the email address associated with your account and we'll
-              send you a link to reset your password.
-            </Text>
-          </Alert>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/login')}
+              className="p-1 h-auto"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">Back to sign in</span>
+          </div>
+          
+          <CardTitle className="text-2xl font-bold text-center">Reset Password</CardTitle>
+          <CardDescription className="text-center">
+            Enter your email address and we'll send you a link to reset your password.
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+              <Input
+                id="email"
+                placeholder="john.doe@example.com"
+                type="email"
+                {...form.register('email')}
+                className={form.formState.errors.email ? 'border-red-500' : ''}
+              />
+              {form.formState.errors.email && (
+                <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+              )}
+            </div>
 
-          <TextInput
-            label="Email Address"
-            placeholder="your@email.com"
-            required
-            {...form.getInputProps('email')}
-          />
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              >
+                {isLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
+              </Button>
+          </form>
 
-          <Button
-            type="submit"
-            loading={isLoading}
-            fullWidth
-            size="md"
-            style={{
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-            }}
-          >
-            Send Reset Instructions
-          </Button>
-
-          <Stack gap="sm" align="center">
-            <Text ta="center" size="sm" c="dimmed">
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground">
               Remember your password?{' '}
-              <Anchor
+              <button
+                type="button"
+                className="text-orange-600 hover:text-orange-700 font-medium"
                 onClick={() => navigate('/login')}
-                style={{
-                  color: 'var(--primary)',
-                  cursor: 'pointer',
-                  textDecoration: 'none',
-                }}
               >
                 Sign in
-              </Anchor>
-            </Text>
-
-            <Text ta="center" size="sm" c="dimmed">
-              Don't have an account?{' '}
-              <Anchor
-                onClick={() => navigate('/register')}
-                style={{
-                  color: 'var(--primary)',
-                  cursor: 'pointer',
-                  textDecoration: 'none',
-                }}
-              >
-                Create one
-              </Anchor>
-            </Text>
-          </Stack>
-
-          {/* Demo Mode Notice */}
-          <Paper
-            p="sm"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--muted)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="xs">
-              <Text size="xs" fw={500} c="dimmed">
-                Demo Mode Notice:
-              </Text>
-              <Text size="xs" c="dimmed">
-                In demo mode, no actual emails are sent. You can use the demo
-                accounts to explore the platform features.
-              </Text>
-            </Stack>
-          </Paper>
-        </Stack>
-      </form>
-    </AuthLayout>
+              </button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
+
+export default ForgotPasswordPage;

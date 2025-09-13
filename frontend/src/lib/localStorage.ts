@@ -1,11 +1,13 @@
 // Enhanced localStorage-based backend for local development
 // Provides persistent data storage without requiring external services
 
+import type { ParseUser, AssessmentData, ProgressData, GenericRecord } from '../types/shared';
+
 interface StoredData {
-  users: Record<string, any>;
-  sessions: Record<string, any>;
-  assessments: Record<string, any>;
-  progress: Record<string, any>;
+  users: Record<string, ParseUser>;
+  sessions: Record<string, GenericRecord>;
+  assessments: Record<string, AssessmentData>;
+  progress: Record<string, ProgressData>;
 }
 
 const STORAGE_KEY = 'elimu-smart-data';
@@ -22,7 +24,7 @@ class LocalStorageBackend {
     if (stored) {
       try {
         return JSON.parse(stored);
-      } catch (error) {
+      } catch {
         console.warn('Invalid stored data, using defaults');
       }
     }
@@ -40,17 +42,19 @@ class LocalStorageBackend {
   }
 
   // User management
-  saveUser(user: any): void {
-    this.data.users[user.id] = user;
-    this.saveData();
+  saveUser(user: ParseUser): void {
+    if (user.objectId) {
+      this.data.users[user.objectId] = user;
+      this.saveData();
+    }
   }
 
-  getUser(id: string): any | null {
+  getUser(id: string): ParseUser | null {
     return this.data.users[id] || null;
   }
 
   // Assessment data
-  saveAssessment(userId: string, assessmentType: string, results: any): void {
+  saveAssessment(userId: string, assessmentType: string, results: GenericRecord): void {
     const key = `${userId}-${assessmentType}`;
     this.data.assessments[key] = {
       userId,
@@ -61,23 +65,23 @@ class LocalStorageBackend {
     this.saveData();
   }
 
-  getAssessments(userId: string): any[] {
+  getAssessments(userId: string): AssessmentData[] {
     return Object.values(this.data.assessments).filter(
-      (assessment: any) => assessment.userId === userId
+      (assessment) => assessment.userId === userId
     );
   }
 
   // Progress tracking
-  updateProgress(userId: string, progressData: any): void {
+  updateProgress(userId: string, progressData: ProgressData): void {
     this.data.progress[userId] = {
-      ...this.data.progress[userId],
+      ...(this.data.progress[userId] || {}),
       ...progressData,
       updatedAt: new Date().toISOString()
     };
     this.saveData();
   }
 
-  getProgress(userId: string): any {
+  getProgress(userId: string): ProgressData {
     return this.data.progress[userId] || {};
   }
 
@@ -90,7 +94,7 @@ class LocalStorageBackend {
     try {
       this.data = JSON.parse(jsonData);
       this.saveData();
-    } catch (error) {
+    } catch {
       throw new Error('Invalid JSON data for import');
     }
   }

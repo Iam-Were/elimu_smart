@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import {
   TrendingUp,
@@ -281,13 +281,14 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
             changeType: 'positive' as 'positive' | 'negative' | 'neutral'
           };
 
-        case 'professional-network-growth':
+        case 'professional-network-growth': {
           // Calculate networking progress from user activities
-          const networkingActivities = userActivities.filter((a: any) => 
-            a.activityType === 'linkedin_profile_click' || 
-            a.activityType === 'professional_networking_view' ||
-            a.activityType === 'mentor_connection_click'
-          );
+          const networkingActivities = userActivities.filter((a: unknown) => {
+            const activity = a as { activityType?: string };
+            return activity.activityType === 'linkedin_profile_click' || 
+                   activity.activityType === 'professional_networking_view' ||
+                   activity.activityType === 'mentor_connection_click';
+          });
           
           const connectionCount = Math.min(networkingActivities.length * 3 + 12, 85); // Simulate growing network
           const weeklyGrowth = Math.floor(networkingActivities.length / 3);
@@ -298,6 +299,7 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
             change: weeklyGrowth > 0 ? `+${weeklyGrowth} this week` : 'Ready to start networking',
             changeType: (connectionCount > 50 ? 'positive' : connectionCount > 20 ? 'neutral' : 'positive') as 'positive' | 'negative' | 'neutral'
           };
+        }
 
         default:
           return card;
@@ -431,54 +433,66 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
         </div>
       )}
 
-      {/* Overall Progress Summary - Moved to Top */}
-      <Card className="bg-gradient-to-br from-orange-25 via-white to-orange-25/50 border-orange-100 mb-6">
-        <CardHeader>
+      {/* Overall Progress Summary - Enhanced with Glass Morphism */}
+      <Card className="glass-card-primary border-orange-200/30 mb-6 relative overflow-hidden">
+        {/* Multi-layer floating decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-orange-300/10 rounded-full -mr-16 -mt-16 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400/15 to-orange-200/8 rounded-full -ml-12 -mb-12"></div>
+        
+        <CardHeader className="relative z-10">
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-600 text-white">
-              <Trophy className="h-5 w-5" />
+            <div className="p-3 rounded-xl glass-card bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg">
+              <Trophy className="h-6 w-6" />
             </div>
-            Overall Progress Summary
+            <div>
+              <div className="text-xl font-bold bg-gradient-to-r from-orange-800 to-orange-600 bg-clip-text text-transparent">
+                Overall Progress Summary
+              </div>
+              <div className="text-sm text-orange-600/80 font-medium">
+                Real-time career readiness tracking
+              </div>
+            </div>
           </CardTitle>
-          <CardDescription>
-            Your complete career readiness overview
-          </CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-emerald-600">
+            <div className="glass-card-success p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+              <div className="text-3xl font-bold text-emerald-600 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'positive').length}
               </div>
-              <div className="text-sm text-muted-foreground">Positive Trends</div>
+              <div className="text-sm font-medium text-emerald-700">Positive Trends</div>
             </div>
             
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-orange-600">
+            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+              <div className="text-3xl font-bold text-orange-600 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'neutral').length}
               </div>
-              <div className="text-sm text-muted-foreground">Stable Areas</div>
+              <div className="text-sm font-medium text-orange-700">Stable Areas</div>
             </div>
             
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-red-600">
+            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform border-red-200/30">
+              <div className="text-3xl font-bold text-red-600 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'negative').length}
               </div>
-              <div className="text-sm text-muted-foreground">Need Attention</div>
+              <div className="text-sm font-medium text-red-700">Need Attention</div>
             </div>
             
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-slate-700">
+            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
+              <div className="text-3xl font-bold text-slate-700 drop-shadow-sm">
                 {studentDashboardCards.length}
               </div>
-              <div className="text-sm text-muted-foreground">Total Areas</div>
+              <div className="text-sm font-medium text-slate-600">Total Areas</div>
             </div>
           </div>
           
-          <div className="mt-6 p-4 rounded-lg bg-orange-25 border border-orange-100">
-            <h4 className="font-semibold text-orange-700 mb-2">Daily Tip:</h4>
-            <p className="text-sm text-orange-600">
+          <div className="mt-6 glass-card-primary p-4 rounded-xl border-orange-200/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-orange-400/20 to-orange-200/10 rounded-full -mr-8 -mt-8"></div>
+            <h4 className="font-semibold text-orange-700 mb-2 relative z-10 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+              Daily Career Tip
+            </h4>
+            <p className="text-sm text-orange-600 relative z-10 leading-relaxed">
               Spend just 10 minutes each day on career planning. Small consistent actions create life-changing results. 
               Focus on urgent items first, then work on areas that need attention.
             </p>
@@ -514,41 +528,49 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
                 }
               }}
               className={cn(
-                "relative overflow-hidden transition-all duration-300 hover:shadow-lg",
+                "glass-dashboard-card transition-all duration-300",
                 getCardSizeClasses(),
                 allowRearrange && "cursor-grab active:cursor-grabbing",
                 !allowRearrange && "cursor-pointer",
                 isDragging && "opacity-50 scale-95",
-                isDropZone && "ring-1 ring-blue-200 bg-blue-50/30",
-                "hover-lift"
+                isDropZone && "ring-2 ring-orange-300/50 bg-orange-50/30",
+                "group hover:scale-[1.02]"
               )}
             >
-              {/* Subtle background decoration */}
-              <div className="absolute top-0 right-0 w-20 h-20 gradient-primary opacity-10 rounded-full -mr-10 -mt-10"></div>
+              {/* Enhanced layered decorative elements */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/15 to-orange-300/8 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-orange-400/10 to-orange-200/5 rounded-full -ml-8 -mb-8 group-hover:rotate-12 transition-transform duration-700"></div>
               
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm">{card.title}</CardTitle>
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  {React.createElement(card.icon, { className: "h-4 w-4 text-primary" })}
+              {/* Glass overlay effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+              
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-semibold text-slate-800 group-hover:text-orange-800 transition-colors">
+                  {card.title}
+                </CardTitle>
+                <div className="p-2.5 glass-card bg-gradient-to-br from-orange-500/20 to-orange-400/10 rounded-lg group-hover:scale-110 transition-transform duration-300">
+                  {React.createElement(card.icon, { className: "h-4 w-4 text-orange-600 group-hover:text-orange-700 transition-colors" })}
                 </div>
               </CardHeader>
 
-              <CardContent>
-                <div className="text-2xl mb-1 flex items-center gap-2">
+              <CardContent className="relative z-10">
+                <div className="text-2xl mb-1 flex items-center gap-2 font-bold text-slate-800 group-hover:text-orange-800 transition-colors">
                   {card.isDynamic && dashboardLoading && card.value === 'Loading...' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
                   ) : null}
-                  {card.value}
+                  <span className="drop-shadow-sm">{card.value}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">{card.description}</p>
-                <div className="flex items-center gap-1">
+                <p className="text-xs text-slate-600 mb-3 leading-relaxed">{card.description}</p>
+                <div className="flex items-center gap-1.5 glass-card-primary p-2 rounded-lg border-orange-200/20">
                   {changeConfig.icon}
-                  <p className={`text-xs ${changeConfig.textColor}`}>
+                  <p className={`text-xs font-medium ${changeConfig.textColor}`}>
                     {card.change}
                   </p>
                 </div>
                 {dashboardError && card.isDynamic && (
-                  <p className="text-xs text-red-500 mt-1">Failed to load latest data</p>
+                  <p className="text-xs text-red-500 mt-2 bg-red-50/80 p-1.5 rounded border border-red-200/50">
+                    Failed to load latest data
+                  </p>
                 )}
               </CardContent>
             </Card>

@@ -1,8 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
+import ParseApi, { type ParseUser } from '../lib/parseApi';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 
-// Parse Server API URL
-const API_BASE_URL = 'http://localhost:1337/parse';
+// Convert ParseUser to our User type
+const parseUserToUser = (parseUser: ParseUser): User => {
+  return {
+    id: parseUser.objectId || 'unknown',
+    email: parseUser.email || parseUser.username || '',
+    firstName: parseUser.firstName || 'User',
+    lastName: parseUser.lastName || '',
+    role: parseUser.role || 'student',
+    isActive: parseUser.isActive !== false,
+    createdAt: parseUser.createdAt || new Date().toISOString(),
+    updatedAt: parseUser.updatedAt || new Date().toISOString(),
+  };
+};
 
 // Demo users for development fallback
 const getDemoUser = (email: string): User => {
@@ -47,75 +59,95 @@ const getDemoUser = (email: string): User => {
   return user;
 };
 
-// Real authentication service connecting to Parse Server
+// Authentication service using REST ParseApi + demo fallback
+const SESSION_TOKEN_KEY = 'parse-session-token';
+
 const authService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
-    // Use Parse Server login endpoint
-    const response = await fetch(`${API_BASE_URL}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Parse-Application-Id': 'elimu-smart-local-dev',
-        'X-Parse-REST-API-Key': 'elimu-smart-master-key-dev', // Using master key for demo
-      },
-      body: JSON.stringify({
-        username: credentials.email,
-        password: credentials.password,
-      }),
-    });
-
-    if (!response.ok) {
-      // If Parse login fails, fall back to demo users for development
+    try {
+      const parseUser = await ParseApi.login({ username: credentials.email, password: credentials.password });
+      if (parseUser.sessionToken) {
+        localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
+      }
+      const user = parseUserToUser({
+        ...parseUser,
+        firstName: parseUser.firstName as string,
+        lastName: parseUser.lastName as string,
+        role: parseUser.role as string
+      } as ParseUser);
+      console.log('✅ Parse REST login successful:', user.email);
+      return user;
+    } catch (error) {
+      console.warn('Parse REST login failed, falling back to demo user:', error);
       return getDemoUser(credentials.email);
     }
-
-    const data = await response.json();
-    
-    // Convert Parse user format to frontend User type
-    return {
-      id: data.objectId || 'user',
-      email: data.username || credentials.email,
-      firstName: data.firstName || 'User',
-      lastName: data.lastName || '',
-      role: data.role || 'student',
-      isActive: true,
-      createdAt: data.createdAt || new Date().toISOString(),
-      updatedAt: data.updatedAt || new Date().toISOString(),
-    };
   },
 
   register: async (data: RegisterData): Promise<User> => {
-    // For now, keep mock registration since it's not implemented in backend
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    return {
-      id: Date.now().toString(),
-      email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      role: data.role,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const parseUser = await ParseApi.register({
+        username: data.email,
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+  role: (data.role === 'super_admin' || data.role === 'career_counselor') ? 'counselor' : data.role
+      });
+      if (parseUser.sessionToken) {
+        localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
+      }
+      const user = parseUserToUser(parseUser as ParseUser);
+      console.log('✅ Parse REST registration successful:', user.email);
+      return user;
+    } catch (error) {
+      console.warn('Parse REST registration failed, using mock fallback:', error);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return {
+        id: Date.now().toString(),
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
   },
 
   logout: async (): Promise<void> => {
-    // Simple logout - just clear local storage
-    await new Promise(resolve => setTimeout(resolve, 200));
+    try {
+      const token = localStorage.getItem(SESSION_TOKEN_KEY);
+      if (token) {
+        await ParseApi.logout(token);
+      }
+    } catch (error) {
+      console.warn('Parse REST logout failed (non-fatal):', error);
+    } finally {
+      localStorage.removeItem(SESSION_TOKEN_KEY);
+    }
   },
 
   getCurrentUser: async (): Promise<User | null> => {
-    const token = localStorage.getItem('elimu-auth-token');
-    if (!token) return null;
-
-    // Get user from local storage
-    try {
-      const userData = JSON.parse(localStorage.getItem('elimu-user') || '');
-      return userData;
-    } catch {
-      return null;
+    const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+    if (sessionToken) {
+      try {
+        const parseUser = await ParseApi.getCurrentUser(sessionToken);
+        return parseUserToUser(parseUser as ParseUser);
+      } catch (error) {
+        console.warn('Parse REST session invalid, clearing token:', error);
+        localStorage.removeItem(SESSION_TOKEN_KEY);
+      }
     }
+
+    // Demo fallback
+    try {
+      const stored = localStorage.getItem('elimu-user');
+      if (stored) {
+        return JSON.parse(stored) as User;
+      }
+    } catch {/* ignore */}
+    return null;
   },
 };
 

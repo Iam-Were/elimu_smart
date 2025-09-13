@@ -1,10 +1,6 @@
-export { LandingPage } from './LandingPage';
-export { LoginPage } from './LoginPage';
-export { RegisterPage } from './RegisterPage';
-export { ForgotPasswordPage } from './ForgotPasswordPage';
-export { DashboardPage } from './DashboardPage';
-export { ProfilePage } from './ProfilePage';
-export { FormDemoPage } from './FormDemoPage';
+export { default as RegisterPage } from './RegisterPage';
+export { default as ForgotPasswordPage } from './ForgotPasswordPage';
+export { default as ProfilePage } from './ProfilePage';
 
 // Admin pages
 export { AdminDashboardPage } from './admin/AdminDashboardPage';

@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
+import './config/parse'; // Initialize Parse SDK
 import App from './App.tsx';
 
 createRoot(document.getElementById('root')!).render(

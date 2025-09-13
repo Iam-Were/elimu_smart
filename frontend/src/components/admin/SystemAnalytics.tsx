@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Grid,
-  Stack,
-  Badge,
-  Group,
-  Button,
-  Select,
-  SimpleGrid,
-  Alert,
-  RingProgress,
-  Tabs,
-} from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   BarChartIcon,
   ArrowUpIcon,
@@ -27,8 +18,6 @@ import {
   ActivityLogIcon,
 } from '@radix-ui/react-icons';
 import {
-  BarChart,
-  Bar,
   LineChart,
   Line,
   PieChart,
@@ -101,213 +90,413 @@ const recentSystemEvents = [
   {
     id: 2,
     type: 'warning',
-    message: 'High memory usage detected on server-02',
+    message: 'High memory usage detected on server 2',
     timestamp: '15 minutes ago',
   },
   {
     id: 3,
-    type: 'success',
-    message: 'Database optimization completed',
+    type: 'error',
+    message: 'Failed login attempt from suspicious IP',
     timestamp: '1 hour ago',
   },
   {
     id: 4,
-    type: 'error',
-    message: 'Email service temporarily unavailable',
+    type: 'info',
+    message: 'New user registration: student@school.edu',
     timestamp: '2 hours ago',
   },
 ];
 
 export const SystemAnalytics: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('last-30-days');
-  const [activeTab, setActiveTab] = useState<string | null>('overview');
+  const [timeRange, setTimeRange] = useState('7d');
+  const [activeTab, setActiveTab] = useState('overview');
 
   const generateReport = (type: string) => {
     console.log(`Generating ${type} report...`);
-    // In a real app, this would generate and download a report
+    // In a real app, this would trigger report generation
   };
 
   const formatNumber = (num: number) => {
-    return num.toLocaleString();
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}k`;
+    }
+    return num.toString();
   };
 
-  const getStatusColor = (type: string) => {
+  const getEventIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return 'green';
-      case 'warning':
-        return 'yellow';
       case 'error':
-        return 'red';
-      case 'info':
-        return 'blue';
+        return <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />;
+      case 'warning':
+        return <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" />;
       default:
-        return 'gray';
+        return <ActivityLogIcon className="w-4 h-4 text-blue-500" />;
+    }
+  };
+
+  const getEventVariant = (type: string) => {
+    switch (type) {
+      case 'error':
+        return 'destructive';
+      case 'warning':
+        return 'default';
+      default:
+        return 'secondary';
     }
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container mx-auto py-6">
+      <div className="space-y-6">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
-              System Analytics & Reporting
-            </Title>
-            <Text size="lg" c="dimmed">
-              Platform performance and usage insights
-            </Text>
-          </Stack>
-          <Group gap="sm">
-            <Select
-              value={selectedPeriod}
-              onChange={(value) => setSelectedPeriod(value || 'last-30-days')}
-              data={[
-                { value: 'last-7-days', label: 'Last 7 Days' },
-                { value: 'last-30-days', label: 'Last 30 Days' },
-                { value: 'last-90-days', label: 'Last 90 Days' },
-                { value: 'last-year', label: 'Last Year' },
-              ]}
-              style={{ minWidth: 150 }}
-            />
-            <Button
-              leftSection={<DownloadIcon width={16} height={16} />}
-              variant="light"
-              onClick={() => generateReport('system-analytics')}
-              style={{
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--secondary-foreground)',
-              }}
-            >
-              Export Report
-            </Button>
-          </Group>
-        </Group>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold">System Analytics</h1>
+            <p className="text-lg text-muted-foreground">
+              Monitor system performance and user engagement
+            </p>
+          </div>
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select time range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24h">Last 24 Hours</SelectItem>
+              <SelectItem value="7d">Last 7 Days</SelectItem>
+              <SelectItem value="30d">Last 30 Days</SelectItem>
+              <SelectItem value="90d">Last 90 Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* System Health Overview */}
-        <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }} spacing="md">
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <PersonIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Total Users</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
-                {formatNumber(systemMetrics.totalUsers)}
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ArrowUpIcon width={20} height={20} style={{ color: 'var(--success)' }} />
-              <Text size="xs" c="dimmed" ta="center">Active Today</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--success)' }}>
-                {formatNumber(systemMetrics.activeUsers)}
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <TargetIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Uptime</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--success)' }}>
-                {systemMetrics.systemUptime}%
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ClockIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Response Time</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
-                {systemMetrics.averageResponseTime}ms
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ExclamationTriangleIcon width={20} height={20} style={{ color: systemMetrics.errorRate < 1 ? 'var(--success)' : 'var(--destructive)' }} />
-              <Text size="xs" c="dimmed" ta="center">Error Rate</Text>
-              <Text fw={700} size="lg" style={{ color: systemMetrics.errorRate < 1 ? 'var(--success)' : 'var(--destructive)' }}>
-                {systemMetrics.errorRate}%
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="sm" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <GlobeIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Connections</Text>
-              <Text fw={700} size="lg" style={{ color: 'var(--primary)' }}>
-                {formatNumber(systemMetrics.activeConnections)}
-              </Text>
-            </Stack>
-          </Card>
-        </SimpleGrid>
-
-        {/* Analytics Tabs */}
-        <Tabs value={activeTab} onChange={setActiveTab}>
-          <Tabs.List>
-            <Tabs.Tab value="overview" leftSection={<BarChartIcon width={14} height={14} />}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="gap-2">
+              <BarChartIcon className="w-4 h-4" />
               Overview
-            </Tabs.Tab>
-            <Tabs.Tab value="users" leftSection={<PersonIcon width={14} height={14} />}>
-              User Analytics
-            </Tabs.Tab>
-            <Tabs.Tab value="performance" leftSection={<TargetIcon width={14} height={14} />}>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <PersonIcon className="w-4 h-4" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-2">
+              <ClockIcon className="w-4 h-4" />
               Performance
-            </Tabs.Tab>
-            <Tabs.Tab value="events" leftSection={<ActivityLogIcon width={14} height={14} />}>
-              System Events
-            </Tabs.Tab>
-          </Tabs.List>
+            </TabsTrigger>
+            <TabsTrigger value="engagement" className="gap-2">
+              <TargetIcon className="w-4 h-4" />
+              Engagement
+            </TabsTrigger>
+          </TabsList>
 
           {/* Overview Tab */}
-          <Tabs.Panel value="overview" pt="lg">
-            <Grid>
-              <Grid.Col span={{ base: 12, lg: 8 }}>
-                <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                  <Stack gap="md">
-                    <Title order={4}>User Growth Trends</Title>
-                    <ResponsiveContainer width="100%" height={350}>
-                      <AreaChart data={userGrowthData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis dataKey="month" stroke="var(--muted-foreground)" />
-                        <YAxis stroke="var(--muted-foreground)" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'var(--card)', 
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px'
-                          }} 
-                        />
-                        <Legend />
-                        <Area type="monotone" dataKey="students" stackId="1" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.6} name="Students" />
-                        <Area type="monotone" dataKey="counselors" stackId="1" stroke="var(--secondary)" fill="var(--secondary)" fillOpacity={0.6} name="Counselors" />
-                        <Area type="monotone" dataKey="admins" stackId="1" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.6} name="Admins" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </Stack>
+          <TabsContent value="overview" className="mt-6">
+            <div className="space-y-6">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Total Users</p>
+                        <p className="text-2xl font-bold">{formatNumber(systemMetrics.totalUsers)}</p>
+                        <div className="flex items-center gap-1 text-xs text-green-600">
+                          <ArrowUpIcon className="w-3 h-3" />
+                          +{systemMetrics.newUsersToday} today
+                        </div>
+                      </div>
+                      <PersonIcon className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
                 </Card>
-              </Grid.Col>
 
-              <Grid.Col span={{ base: 12, lg: 4 }}>
-                <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                  <Stack gap="md">
-                    <Title order={4}>User Engagement</Title>
-                    <ResponsiveContainer width="100%" height={350}>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">System Uptime</p>
+                        <p className="text-2xl font-bold">{systemMetrics.systemUptime}%</p>
+                        <div className="flex items-center gap-1 text-xs text-green-600">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          Operational
+                        </div>
+                      </div>
+                      <GlobeIcon className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Response Time</p>
+                        <p className="text-2xl font-bold">{systemMetrics.averageResponseTime}ms</p>
+                        <div className="flex items-center gap-1 text-xs text-green-600">
+                          Excellent
+                        </div>
+                      </div>
+                      <ClockIcon className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Active Sessions</p>
+                        <p className="text-2xl font-bold">{formatNumber(systemMetrics.activeConnections)}</p>
+                        <div className="flex items-center gap-1 text-xs text-blue-600">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          Live connections
+                        </div>
+                      </div>
+                      <ActivityLogIcon className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* System Performance Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>System Performance (24h)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={systemPerformanceData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Area
+                        type="monotone"
+                        dataKey="cpu"
+                        stackId="1"
+                        stroke="#8884d8"
+                        fill="#8884d8"
+                        name="CPU %"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="memory"
+                        stackId="1"
+                        stroke="#82ca9d"
+                        fill="#82ca9d"
+                        name="Memory %"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Recent Events */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent System Events</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recentSystemEvents.map((event) => (
+                      <Alert key={event.id} variant={getEventVariant(event.type) as "default" | "destructive"}>
+                        <div className="flex items-center gap-3">
+                          {getEventIcon(event.type)}
+                          <div className="flex-1 flex justify-between items-center">
+                            <span className="text-sm">{event.message}</span>
+                            <span className="text-xs text-muted-foreground">{event.timestamp}</span>
+                          </div>
+                        </div>
+                      </Alert>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="mt-6">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Growth Trend</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={userGrowthData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="students"
+                          stroke="#2563eb"
+                          strokeWidth={2}
+                          name="Students"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="counselors"
+                          stroke="#16a34a"
+                          strokeWidth={2}
+                          name="Counselors"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="admins"
+                          stroke="#dc2626"
+                          strokeWidth={2}
+                          name="Admins"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Students</span>
+                          <span className="text-sm font-medium">2,547 (89.5%)</span>
+                        </div>
+                        <Progress value={89.5} className="h-2" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Counselors</span>
+                          <span className="text-sm font-medium">47 (1.7%)</span>
+                        </div>
+                        <Progress value={1.7} className="h-2" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Admins</span>
+                          <span className="text-sm font-medium">8 (0.3%)</span>
+                        </div>
+                        <Progress value={0.3} className="h-2" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Performance Tab */}
+          <TabsContent value="performance" className="mt-6">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Storage Used</p>
+                      <p className="text-2xl font-bold">{systemMetrics.storageUsed}%</p>
+                      <Progress value={systemMetrics.storageUsed} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Bandwidth Usage</p>
+                      <p className="text-2xl font-bold">{systemMetrics.bandwidthUsage}%</p>
+                      <Progress value={systemMetrics.bandwidthUsage} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Error Rate</p>
+                      <p className="text-2xl font-bold">{systemMetrics.errorRate}%</p>
+                      <Progress value={systemMetrics.errorRate} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Active Users</p>
+                      <p className="text-2xl font-bold">{formatNumber(systemMetrics.activeUsers)}</p>
+                      <p className="text-xs text-green-600">+12% from last week</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resource Usage Over Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <LineChart data={systemPerformanceData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="cpu"
+                        stroke="#ef4444"
+                        strokeWidth={2}
+                        name="CPU Usage %"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="memory"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        name="Memory Usage %"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="disk"
+                        stroke="#22c55e"
+                        strokeWidth={2}
+                        name="Disk Usage %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Engagement Tab */}
+          <TabsContent value="engagement" className="mt-6">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Engagement</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
                           data={engagementData}
                           cx="50%"
                           cy="50%"
-                          outerRadius={100}
+                          labelLine={false}
+                          label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                          outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                         >
                           {engagementData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -316,186 +505,109 @@ export const SystemAnalytics: React.FC = () => {
                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
-                  </Stack>
+                  </CardContent>
                 </Card>
-              </Grid.Col>
-            </Grid>
-          </Tabs.Panel>
 
-          {/* User Analytics Tab */}
-          <Tabs.Panel value="users" pt="lg">
-            <Grid>
-              <Grid.Col span={12}>
-                <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                  <Stack gap="md">
-                    <Title order={4}>Platform Feature Usage</Title>
-                    <ResponsiveContainer width="100%" height={400}>
-                      <BarChart data={platformUsageData} layout="horizontal">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis type="number" stroke="var(--muted-foreground)" />
-                        <YAxis type="category" dataKey="feature" stroke="var(--muted-foreground)" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'var(--card)', 
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px'
-                          }} 
-                        />
-                        <Bar dataKey="usage" fill="var(--primary)" name="Usage %" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Stack>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Platform Feature Usage</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {platformUsageData.map((feature, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">{feature.feature}</span>
+                            <span className="text-sm font-medium">{feature.usage}%</span>
+                          </div>
+                          <Progress value={feature.usage} className="h-2" />
+                          <p className="text-xs text-muted-foreground">
+                            {formatNumber(feature.users)} users
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
                 </Card>
-              </Grid.Col>
-            </Grid>
-          </Tabs.Panel>
+              </div>
 
-          {/* Performance Tab */}
-          <Tabs.Panel value="performance" pt="lg">
-            <Grid>
-              <Grid.Col span={{ base: 12, md: 8 }}>
-                <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                  <Stack gap="md">
-                    <Title order={4}>System Performance (Last 24 Hours)</Title>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={systemPerformanceData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis dataKey="time" stroke="var(--muted-foreground)" />
-                        <YAxis stroke="var(--muted-foreground)" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'var(--card)', 
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px'
-                          }} 
-                        />
-                        <Legend />
-                        <Line type="monotone" dataKey="cpu" stroke="var(--primary)" name="CPU %" />
-                        <Line type="monotone" dataKey="memory" stroke="var(--secondary)" name="Memory %" />
-                        <Line type="monotone" dataKey="disk" stroke="var(--accent)" name="Disk %" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </Stack>
-                </Card>
-              </Grid.Col>
-
-              <Grid.Col span={{ base: 12, md: 4 }}>
-                <Stack gap="md">
-                  <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <Stack gap="sm" align="center">
-                      <RingProgress
-                        size={120}
-                        thickness={12}
-                        sections={[{ value: systemMetrics.storageUsed, color: 'var(--primary)' }]}
-                        label={
-                          <Text ta="center" fw={700} size="lg" style={{ color: 'var(--primary)' }}>
-                            {systemMetrics.storageUsed}%
-                          </Text>
-                        }
-                      />
-                      <Text fw={500} ta="center">Storage Usage</Text>
-                      <Badge color={systemMetrics.storageUsed > 80 ? 'red' : 'green'} variant="light">
-                        {systemMetrics.storageUsed > 80 ? 'High Usage' : 'Normal'}
-                      </Badge>
-                    </Stack>
-                  </Card>
-
-                  <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <Stack gap="sm" align="center">
-                      <RingProgress
-                        size={120}
-                        thickness={12}
-                        sections={[{ value: systemMetrics.bandwidthUsage, color: 'var(--secondary)' }]}
-                        label={
-                          <Text ta="center" fw={700} size="lg" style={{ color: 'var(--secondary)' }}>
-                            {systemMetrics.bandwidthUsage}%
-                          </Text>
-                        }
-                      />
-                      <Text fw={500} ta="center">Bandwidth Usage</Text>
-                      <Badge color={systemMetrics.bandwidthUsage > 90 ? 'red' : 'green'} variant="light">
-                        {systemMetrics.bandwidthUsage > 90 ? 'High Usage' : 'Normal'}
-                      </Badge>
-                    </Stack>
-                  </Card>
-                </Stack>
-              </Grid.Col>
-            </Grid>
-          </Tabs.Panel>
-
-          {/* System Events Tab */}
-          <Tabs.Panel value="events" pt="lg">
-            <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-              <Stack gap="md">
-                <Group justify="space-between">
-                  <Title order={4}>Recent System Events</Title>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    leftSection={<ActivityLogIcon width={14} height={14} />}
-                    onClick={() => generateReport('system-events')}
-                  >
-                    Export Events
-                  </Button>
-                </Group>
-                
-                <Stack gap="sm">
-                  {recentSystemEvents.map(event => (
-                    <Alert
-                      key={event.id}
-                      icon={<ActivityLogIcon width={16} height={16} />}
-                      color={getStatusColor(event.type)}
-                      variant="light"
-                    >
-                      <Group justify="space-between">
-                        <Text size="sm">{event.message}</Text>
-                        <Text size="xs" c="dimmed">{event.timestamp}</Text>
-                      </Group>
-                    </Alert>
-                  ))}
-                </Stack>
-              </Stack>
-            </Card>
-          </Tabs.Panel>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Engagement Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center space-y-2">
+                      <p className="text-sm text-muted-foreground">Questions Answered</p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {formatNumber(systemMetrics.questionsAnswered)}
+                      </p>
+                      <Badge variant="secondary">+15% this week</Badge>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <p className="text-sm text-muted-foreground">Sessions Completed</p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {formatNumber(systemMetrics.sessionsCompleted)}
+                      </p>
+                      <Badge variant="secondary">+8% this week</Badge>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <p className="text-sm text-muted-foreground">Assessments Completed</p>
+                      <p className="text-3xl font-bold text-purple-600">
+                        {formatNumber(systemMetrics.assessmentsCompleted)}
+                      </p>
+                      <Badge variant="secondary">+22% this week</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
 
-        {/* Quick Actions */}
-        <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-          <Stack gap="md">
-            <Title order={4}>System Reports</Title>
-            <Group gap="sm">
+        {/* Reports Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>System Reports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
               <Button
-                variant="light"
-                leftSection={<DownloadIcon width={16} height={16} />}
+                variant="outline"
                 onClick={() => generateReport('user-activity')}
+                className="gap-2"
               >
+                <DownloadIcon className="w-4 h-4" />
                 User Activity Report
               </Button>
               <Button
-                variant="light"
-                leftSection={<DownloadIcon width={16} height={16} />}
+                variant="outline"
                 onClick={() => generateReport('performance-metrics')}
+                className="gap-2"
               >
+                <DownloadIcon className="w-4 h-4" />
                 Performance Report
               </Button>
               <Button
-                variant="light"
-                leftSection={<DownloadIcon width={16} height={16} />}
+                variant="outline"
                 onClick={() => generateReport('system-health')}
+                className="gap-2"
               >
+                <DownloadIcon className="w-4 h-4" />
                 System Health Report
               </Button>
               <Button
-                variant="light"
-                leftSection={<DownloadIcon width={16} height={16} />}
+                variant="outline"
                 onClick={() => generateReport('security-audit')}
+                className="gap-2"
               >
+                <DownloadIcon className="w-4 h-4" />
                 Security Audit Report
               </Button>
-            </Group>
-          </Stack>
+            </div>
+          </CardContent>
         </Card>
-      </Stack>
-    </Container>
+      </div>
+    </div>
   );
 };

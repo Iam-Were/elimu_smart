@@ -1,13 +1,7 @@
 import React, { type ReactNode } from 'react';
-import {
-  Container,
-  Paper,
-  Stack,
-  Title,
-  Text,
-  Group,
-  Switch,
-} from '@mantine/core';
+import { Card, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
 interface AuthLayoutProps {
@@ -24,73 +18,52 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   const { isDark, toggleDarkMode } = useThemeContext();
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--background)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-      }}
-      className="theme-transition"
-    >
-      <Container size="xs" w="100%">
-        <Stack gap="lg" align="center">
+    <div className="min-h-screen bg-background flex items-center justify-center p-5 theme-transition">
+      <div className="w-full max-w-xs">
+        <div className="flex flex-col items-center space-y-6">
           {/* Header */}
-          <Stack gap="sm" align="center">
-            <Title
-              order={1}
-              size="2rem"
-              fw={600}
-              style={{ color: 'var(--primary)' }}
-            >
+          <div className="flex flex-col items-center space-y-2">
+            <h1 className="text-3xl font-semibold text-primary">
               Elimu Smart
-            </Title>
-            <Text c="dimmed" ta="center" size="sm">
+            </h1>
+            <p className="text-muted-foreground text-center text-sm">
               Career Guidance Platform
-            </Text>
-          </Stack>
+            </p>
+          </div>
 
           {/* Auth Form */}
-          <Paper
-            shadow="lg"
-            p="xl"
-            radius="lg"
-            w="100%"
-            maw={400}
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-            className="theme-transition"
-          >
-            <Stack gap="md">
-              <Stack gap="xs" align="center">
-                <Title order={2} size="1.5rem" ta="center">
-                  {title}
-                </Title>
-                {subtitle && (
-                  <Text c="dimmed" ta="center" size="sm">
-                    {subtitle}
-                  </Text>
-                )}
-              </Stack>
+          <Card className="w-full max-w-md shadow-lg border border-border theme-transition">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex flex-col items-center space-y-2">
+                  <h2 className="text-xl text-center">
+                    {title}
+                  </h2>
+                  {subtitle && (
+                    <p className="text-muted-foreground text-center text-sm">
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
 
-              {children}
-            </Stack>
-          </Paper>
+                {children}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Dark Mode Toggle */}
-          <Group gap="sm">
-            <Text size="sm" c="dimmed">
+          <div className="flex items-center space-x-3">
+            <Label htmlFor="dark-mode-toggle" className="text-sm text-muted-foreground">
               Dark Mode
-            </Text>
-            <Switch checked={isDark} onChange={toggleDarkMode} size="sm" />
-          </Group>
-        </Stack>
-      </Container>
+            </Label>
+            <Switch
+              id="dark-mode-toggle"
+              checked={isDark}
+              onCheckedChange={toggleDarkMode}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

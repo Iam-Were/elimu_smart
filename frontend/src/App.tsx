@@ -8,14 +8,15 @@ import {
 import { ThemeProvider } from './components/common/ThemeProvider';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingOverlay } from './components/common/LoadingOverlay';
+import { Toaster } from './components/ui/sonner';
 import { Sprint18Layout } from './components/layouts/Sprint18Layout';
 import { useAuth } from './hooks/useAuth';
 import LandingPage from './pages/LandingPageReplication';
 import LoginPageShadcn from './pages/LoginPageShadcn';
-import { RegisterPage } from './pages/RegisterPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Sprint18DashboardPage from './pages/Sprint18DashboardPage';
-import { ProfilePage } from './pages/ProfilePage';
+import ProfilePage from './pages/ProfilePage';
 import Sprint18AssessmentPage from './pages/Sprint18AssessmentPage';
 import { AccountSettingsPage } from './pages/AccountSettingsPage';
 import Sprint18GuidancePage from './pages/Sprint18GuidancePage';
@@ -103,6 +104,7 @@ const App: React.FC = () => {
       <ThemeProvider>
         <Router>
           <AppContent />
+          <Toaster />
         </Router>
       </ThemeProvider>
     </ErrorBoundary>

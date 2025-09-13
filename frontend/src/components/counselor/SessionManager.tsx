@@ -1,35 +1,23 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Stack,
-  Group,
-  Button,
-  TextInput,
-  Select,
-  Badge,
-  Avatar,
-  Modal,
-  Textarea,
-  Alert,
-  SimpleGrid,
-  ActionIcon,
-  Tooltip,
-} from '@mantine/core';
-import { TimeInput } from '@mantine/dates';
+import { Card } from "@/components/ui/card";
+import Button from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   CalendarIcon,
   ClockIcon,
-  PersonIcon,
   PlusIcon,
   Pencil1Icon,
   TrashIcon,
   VideoIcon,
   CheckCircledIcon,
 } from '@radix-ui/react-icons';
-import { useDisclosure } from '@mantine/hooks';
 
 interface Session {
   id: string;
@@ -141,10 +129,12 @@ const mockSessions: Session[] = [
 
 export const SessionManager: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, setOpened] = useState(false);
+  const open = () => setOpened(true);
+  const close = () => setOpened(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterType, setFilterType] = useState<string>('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -164,34 +154,6 @@ export const SessionManager: React.FC = () => {
     const matchesType = !filterType || session.type === filterType;
     return matchesStatus && matchesType;
   });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return 'blue';
-      case 'in-progress':
-        return 'orange';
-      case 'completed':
-        return 'green';
-      case 'cancelled':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'virtual':
-        return <VideoIcon width={16} height={16} />;
-      case 'phone':
-        return <PersonIcon width={16} height={16} />;
-      case 'group':
-        return <PersonIcon width={16} height={16} />;
-      default:
-        return <PersonIcon width={16} height={16} />;
-    }
-  };
 
   const handleOpenForm = (session?: Session) => {
     if (session) {
@@ -322,92 +284,57 @@ export const SessionManager: React.FC = () => {
 
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
+    <div className="container mx-auto py-6 max-w-7xl">
+      <div className="space-y-6">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">
               Session Management
-            </Title>
-            <Text size="lg" c="dimmed">
+            </h1>
+            <p className="text-lg text-muted-foreground">
               Schedule and manage counseling sessions with students
-            </Text>
-          </Stack>
+            </p>
+          </div>
           <Button
-            leftSection={<PlusIcon width={16} height={16} />}
             onClick={() => handleOpenForm()}
-            style={{
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-            }}
+            className="flex items-center gap-2"
           >
+            <PlusIcon className="h-4 w-4" />
             Schedule Session
           </Button>
-        </Group>
+        </div>
 
         {/* Quick Stats */}
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-          <Card
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <Text size="xs" c="dimmed">Today's Sessions</Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-6">
+            <div className="flex flex-col items-center space-y-2">
+              <p className="text-xs text-muted-foreground">Today's Sessions</p>
+              <h2 className="text-2xl font-bold text-primary">
                 {getTodaySessions().length}
-              </Title>
-            </Stack>
+              </h2>
+            </div>
           </Card>
-          <Card
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <Text size="xs" c="dimmed">Scheduled</Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+          <Card className="p-6">
+            <div className="flex flex-col items-center space-y-2">
+              <p className="text-xs text-muted-foreground">Scheduled</p>
+              <h2 className="text-2xl font-bold text-primary">
                 {getSessionsByStatus('scheduled')}
-              </Title>
-            </Stack>
+              </h2>
+            </div>
           </Card>
-          <Card
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <Text size="xs" c="dimmed">Completed</Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+          <Card className="p-6">
+            <div className="flex flex-col items-center space-y-2">
+              <p className="text-xs text-muted-foreground">Completed</p>
+              <h2 className="text-2xl font-bold text-primary">
                 {getSessionsByStatus('completed')}
-              </Title>
-            </Stack>
+              </h2>
+            </div>
           </Card>
-          <Card
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="xs" align="center">
-              <Text size="xs" c="dimmed">This Week</Text>
-              <Title order={2} size="1.5rem" style={{ color: 'var(--primary)' }}>
+          <Card className="p-6">
+            <div className="flex flex-col items-center space-y-2">
+              <p className="text-xs text-muted-foreground">This Week</p>
+              <h2 className="text-2xl font-bold text-primary">
                 {sessions.filter(s => {
                   const sessionDate = new Date(s.scheduledAt);
                   const today = new Date();
@@ -415,354 +342,274 @@ export const SessionManager: React.FC = () => {
                   const weekEnd = new Date(today.setDate(today.getDate() + 6));
                   return sessionDate >= weekStart && sessionDate <= weekEnd;
                 }).length}
-              </Title>
-            </Stack>
+              </h2>
+            </div>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* Filters */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Group gap="md">
+        <Card className="p-6">
+          <div className="flex gap-4">
             <Select
-              placeholder="Filter by status"
               value={filterStatus}
-              onChange={setFilterStatus}
-              data={[
-                { value: 'scheduled', label: 'Scheduled' },
-                { value: 'in-progress', label: 'In Progress' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'cancelled', label: 'Cancelled' },
-              ]}
-              clearable
-              style={{ minWidth: 200 }}
-            />
+              onValueChange={setFilterStatus}
+            >
+              <SelectTrigger className="min-w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="scheduled">Scheduled</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
             <Select
-              placeholder="Filter by type"
               value={filterType}
-              onChange={setFilterType}
-              data={[
-                { value: 'individual', label: 'Individual' },
-                { value: 'group', label: 'Group' },
-                { value: 'virtual', label: 'Virtual' },
-                { value: 'phone', label: 'Phone' },
-              ]}
-              clearable
-              style={{ minWidth: 200 }}
-            />
-          </Group>
+              onValueChange={setFilterType}
+            >
+              <SelectTrigger className="min-w-[200px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="individual">Individual</SelectItem>
+                <SelectItem value="group">Group</SelectItem>
+                <SelectItem value="virtual">Virtual</SelectItem>
+                <SelectItem value="phone">Phone</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </Card>
 
         {/* Today's Sessions Alert */}
         {getTodaySessions().length > 0 && (
-          <Alert
-            icon={<CalendarIcon width={16} height={16} />}
-            title={`You have ${getTodaySessions().length} session(s) scheduled for today`}
-            color="blue"
-          >
-            <Stack gap="xs">
-              {getTodaySessions().map(session => (
-                <Text key={session.id} size="sm">
-                  • {formatTime(session.scheduledAt)} - {session.studentName} ({session.title})
-                </Text>
-              ))}
-            </Stack>
+          <Alert>
+            <CalendarIcon className="h-4 w-4" />
+            <AlertTitle>You have {getTodaySessions().length} session(s) scheduled for today</AlertTitle>
+            <AlertDescription>
+              <div className="space-y-1">
+                {getTodaySessions().map(session => (
+                  <p key={session.id} className="text-sm">
+                    • {formatTime(session.scheduledAt)} - {session.studentName} ({session.title})
+                  </p>
+                ))}
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
         {/* Sessions List */}
-        <Stack gap="md">
+        <div className="space-y-4">
           {filteredSessions.length === 0 ? (
-            <Alert
-              icon={<CalendarIcon width={16} height={16} />}
-              title="No sessions found"
-              color="blue"
-            >
-              <Text size="sm">
+            <Alert>
+              <CalendarIcon className="h-4 w-4" />
+              <AlertTitle>No sessions found</AlertTitle>
+              <AlertDescription>
                 No sessions match your current filters. Try adjusting your search criteria or schedule a new session.
-              </Text>
+              </AlertDescription>
             </Alert>
           ) : (
             filteredSessions.map(session => (
               <Card
                 key={session.id}
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                className="hover-lift theme-transition"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  borderColor: 'var(--border)',
-                  border: '1px solid var(--border)',
-                }}
+                className="hover:shadow-md transition-shadow"
               >
-                <Stack gap="sm">
+                <div className="p-6 space-y-4">
                   {/* Session Header */}
-                  <Group justify="space-between" align="flex-start">
-                    <Group gap="sm" style={{ flex: 1 }}>
-                      <Avatar
-                        size={40}
-                        radius="xl"
-                        color="yellow"
-                        style={{ backgroundColor: 'var(--primary)' }}
-                      >
-                        {session.studentName.split(' ').map(n => n[0]).join('')}
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3 flex-1">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {session.studentName.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
                       </Avatar>
-                      <Stack gap={2} style={{ flex: 1 }}>
-                        <Text fw={500}>{session.title}</Text>
-                        <Group gap="xs">
-                          <Text size="sm" c="dimmed">
-                            {session.studentName} • {session.studentGrade}
-                          </Text>
-                        </Group>
-                        <Text size="sm" c="dimmed" lineClamp={1}>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium">{session.title}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{session.studentName} • {session.studentGrade}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
                           {session.description}
-                        </Text>
-                      </Stack>
-                    </Group>
-                    <Group gap="xs">
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Badge
-                        size="sm"
-                        color={getStatusColor(session.status)}
-                        variant="light"
+                        variant={session.status === 'scheduled' ? 'default' : 'secondary'}
                       >
                         {session.status}
                       </Badge>
-                      <Tooltip label={session.type}>
-                        <Badge
-                          size="sm"
-                          variant="secondary"
-                          color="gray"
-                          leftSection={getTypeIcon(session.type)}
-                        >
-                          {session.type}
-                        </Badge>
-                      </Tooltip>
-                    </Group>
-                  </Group>
+                      <Badge variant="outline">
+                        {session.type}
+                      </Badge>
+                    </div>
+                  </div>
 
                   {/* Session Details */}
-                  <Group gap="md">
-                    <Group gap="xs">
-                      <CalendarIcon width={14} height={14} />
-                      <Text size="sm" fw={500}>
-                        {formatDate(session.scheduledAt)}
-                      </Text>
-                    </Group>
-                    <Group gap="xs">
-                      <ClockIcon width={14} height={14} />
-                      <Text size="sm" fw={500}>
-                        {formatTime(session.scheduledAt)} ({session.duration}min)
-                      </Text>
-                    </Group>
-                    {session.location && (
-                      <Group gap="xs">
-                        <PersonIcon width={14} height={14} />
-                        <Text size="sm" c="dimmed">
-                          {session.location}
-                        </Text>
-                      </Group>
-                    )}
-                  </Group>
-
-                  {/* Session Notes */}
-                  {session.notes && (
-                    <Text size="sm" c="dimmed" lineClamp={2}>
-                      {session.notes}
-                    </Text>
-                  )}
-
-                  {/* Outcomes and Next Steps (for completed sessions) */}
-                  {session.status === 'completed' && (session.outcomes.length > 0 || session.nextSteps.length > 0) && (
-                    <Card padding="sm" style={{ backgroundColor: 'var(--muted)' }}>
-                      <Stack gap="xs">
-                        {session.outcomes.length > 0 && (
-                          <Stack gap="xs">
-                            <Text size="sm" fw={500} c="green">Outcomes:</Text>
-                            {session.outcomes.map((outcome, index) => (
-                              <Text key={index} size="xs" c="dimmed">• {outcome}</Text>
-                            ))}
-                          </Stack>
-                        )}
-                        {session.nextSteps.length > 0 && (
-                          <Stack gap="xs">
-                            <Text size="sm" fw={500} c="blue">Next Steps:</Text>
-                            {session.nextSteps.map((step, index) => (
-                              <Text key={index} size="xs" c="dimmed">• {step}</Text>
-                            ))}
-                          </Stack>
-                        )}
-                      </Stack>
-                    </Card>
-                  )}
-
-                  {/* Session Actions */}
-                  <Group justify="flex-end" gap="xs">
-                    {session.status === 'scheduled' && (
-                      <>
-                        <Tooltip label="Complete Session">
-                          <ActionIcon
-                            variant="light"
-                            color="green"
-                            onClick={() => handleCompleteSession(session.id)}
-                          >
-                            <CheckCircledIcon width={16} height={16} />
-                          </ActionIcon>
-                        </Tooltip>
-                        <Tooltip label="Edit Session">
-                          <ActionIcon
-                            variant="light"
-                            onClick={() => handleOpenForm(session)}
-                          >
-                            <Pencil1Icon width={16} height={16} />
-                          </ActionIcon>
-                        </Tooltip>
-                        <Tooltip label="Cancel Session">
-                          <ActionIcon
-                            variant="light"
-                            color="red"
-                            onClick={() => handleCancelSession(session.id)}
-                          >
-                            <TrashIcon width={16} height={16} />
-                          </ActionIcon>
-                        </Tooltip>
-                      </>
-                    )}
-                    {session.status === 'completed' && (
-                      <Tooltip label="Edit Session">
-                        <ActionIcon
-                          variant="light"
-                          onClick={() => handleOpenForm(session)}
-                        >
-                          <Pencil1Icon width={16} height={16} />
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
-                  </Group>
-                </Stack>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>{formatDate(session.scheduledAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ClockIcon className="h-4 w-4" />
+                        <span>{formatTime(session.scheduledAt)} ({session.duration}min)</span>
+                      </div>
+                      {session.location && (
+                        <div className="flex items-center gap-1">
+                          <VideoIcon className="h-4 w-4" />
+                          <span className="truncate max-w-[200px]">{session.location}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {session.status === 'scheduled' && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleCompleteSession(session.id)}
+                              >
+                                <CheckCircledIcon className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Mark as Complete</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleOpenForm(session)}
+                              >
+                                <Pencil1Icon className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit Session</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleCancelSession(session.id)}
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Cancel Session</TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </Card>
             ))
           )}
-        </Stack>
+        </div>
 
         {/* Session Form Modal */}
-        <Modal
-          opened={opened}
-          onClose={close}
-          title={editingSession ? 'Edit Session' : 'Schedule New Session'}
-          size="lg"
-        >
-          <Stack gap="md">
-            <TextInput
-              label="Student Name"
-              placeholder="Enter student name"
-              value={formData.studentName}
-              onChange={e => setFormData({ ...formData, studentName: e.target.value })}
-              required
-            />
-            
-            <TextInput
-              label="Session Title"
-              placeholder="Enter session title"
-              value={formData.title}
-              onChange={e => setFormData({ ...formData, title: e.target.value })}
-              required
-            />
-            
-            <Textarea
-              label="Description"
-              placeholder="Enter session description"
-              value={formData.description}
-              onChange={e => setFormData({ ...formData, description: e.target.value })}
-              minRows={3}
-            />
-            
-            <Group grow>
-              <Select
-                label="Session Type"
-                value={formData.type}
-                onChange={value => setFormData({ ...formData, type: value || 'individual' })}
-                data={[
-                  { value: 'individual', label: 'Individual' },
-                  { value: 'group', label: 'Group' },
-                  { value: 'virtual', label: 'Virtual' },
-                  { value: 'phone', label: 'Phone' },
-                ]}
-                required
+        <Dialog open={opened} onOpenChange={(open) => !open && close()}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingSession ? 'Edit Session' : 'Schedule New Session'}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Enter student name"
+                value={formData.studentName}
+                onChange={e => setFormData({ ...formData, studentName: e.target.value })}
               />
               
-              <Select
-                label="Duration"
-                value={formData.duration.toString()}
-                onChange={value => setFormData({ ...formData, duration: parseInt(value || '60') })}
-                data={[
-                  { value: '30', label: '30 minutes' },
-                  { value: '45', label: '45 minutes' },
-                  { value: '60', label: '1 hour' },
-                  { value: '90', label: '1.5 hours' },
-                  { value: '120', label: '2 hours' },
-                ]}
-                required
-              />
-            </Group>
-            
-            <Group grow>
-              <TextInput
-                label="Date"
-                type="date"
-                value={formData.scheduledDate.toISOString().split('T')[0]}
-                onChange={(e) => setFormData({ ...formData, scheduledDate: new Date(e.target.value) })}
-                required
+              <Input
+                placeholder="Enter session title"
+                value={formData.title}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
               />
               
-              <TimeInput
-                label="Time"
-                value={formData.scheduledTime}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                required
+              <Textarea
+                placeholder="Enter session description"
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
               />
-            </Group>
-            
-            <TextInput
-              label="Location"
-              placeholder="Enter location or meeting link"
-              value={formData.location}
-              onChange={e => setFormData({ ...formData, location: e.target.value })}
-            />
-            
-            <Textarea
-              label="Notes"
-              placeholder="Enter any additional notes"
-              value={formData.notes}
-              onChange={e => setFormData({ ...formData, notes: e.target.value })}
-              minRows={3}
-            />
-            
-            <Group justify="flex-end" gap="sm">
-              <Button variant="light" onClick={close}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveSession}
-                style={{
-                  backgroundColor: 'var(--primary)',
-                  color: 'var(--primary-foreground)',
-                }}
-              >
-                {editingSession ? 'Update Session' : 'Schedule Session'}
-              </Button>
-            </Group>
-          </Stack>
-        </Modal>
-      </Stack>
-    </Container>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  value={formData.type}
+                  onValueChange={value => setFormData({ ...formData, type: value || 'individual' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Session Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="group">Group</SelectItem>
+                    <SelectItem value="virtual">Virtual</SelectItem>
+                    <SelectItem value="phone">Phone</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select
+                  value={formData.duration.toString()}
+                  onValueChange={value => setFormData({ ...formData, duration: parseInt(value || '60') })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="date"
+                  value={formData.scheduledDate.toISOString().split('T')[0]}
+                  onChange={(e) => setFormData({ ...formData, scheduledDate: new Date(e.target.value) })}
+                />
+                
+                <Input
+                  type="time"
+                  value={formData.scheduledTime}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                />
+              </div>
+              
+              <Input
+                placeholder="Enter location or meeting link"
+                value={formData.location}
+                onChange={e => setFormData({ ...formData, location: e.target.value })}
+              />
+              
+              <Textarea
+                placeholder="Enter any additional notes"
+                value={formData.notes}
+                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+              />
+              
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={close}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveSession}>
+                  {editingSession ? 'Update Session' : 'Schedule Session'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };

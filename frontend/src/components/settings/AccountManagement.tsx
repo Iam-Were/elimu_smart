@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import {
-  Stack,
-  Group,
-  Text,
-  Card,
-  Alert,
-  Button,
-  Modal,
-  TextInput,
-} from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Button from '@/components/ui/button';
 import {
   DownloadIcon,
   ExclamationTriangleIcon,
@@ -16,10 +12,10 @@ import {
 } from '@radix-ui/react-icons';
 
 interface AccountManagementProps {
-  onUnsavedChanges: (hasChanges: boolean) => void;
+  onUnsavedChanges?: (hasChanges: boolean) => void;
 }
 
-export const AccountManagement: React.FC<AccountManagementProps> = () => {
+const AccountManagement: React.FC<AccountManagementProps> = ({ onUnsavedChanges: _onUnsavedChanges }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [isExporting, setIsExporting] = useState(false);
@@ -45,155 +41,172 @@ export const AccountManagement: React.FC<AccountManagementProps> = () => {
   };
 
   return (
-    <Stack gap="xl">
+    <div className="space-y-6">
       {/* Data Export */}
       <Card>
-        <Stack gap="md">
-          <Group gap="sm">
-            <DownloadIcon width={20} height={20} style={{ color: 'var(--primary)' }} />
-            <Text size="lg" fw={600}>
-              Export Your Data
-            </Text>
-          </Group>
-          
-          <Text size="sm" c="dimmed">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <DownloadIcon width={20} height={20} className="text-primary" />
+            <span>Export Your Data</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
             Download a copy of all your data including profile information, assessment results, 
             and activity history. This may take a few minutes to prepare.
-          </Text>
+          </p>
 
-          <Alert color="blue" variant="light">
-            Your data export will include your profile, assessment results, messages, and activity logs. 
-            This information will be provided in JSON format.
+          <Alert>
+            <AlertDescription>
+              Your data export will include your profile, assessment results, messages, and activity logs. 
+              This information will be provided in JSON format.
+            </AlertDescription>
           </Alert>
 
-          <Group justify="flex-start">
+          <div className="flex justify-start">
             <Button
-              leftSection={<DownloadIcon width={16} height={16} />}
               onClick={handleExportData}
-              loading={isExporting}
+              disabled={isExporting}
+              className="flex items-center space-x-2"
             >
-              {isExporting ? 'Preparing Export...' : 'Export My Data'}
+              <DownloadIcon width={16} height={16} />
+              <span>{isExporting ? 'Preparing Export...' : 'Export My Data'}</span>
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Account Deactivation */}
       <Card>
-        <Stack gap="md">
-          <Group gap="sm">
-            <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--warning)' }} />
-            <Text size="lg" fw={600}>
-              Deactivate Account
-            </Text>
-          </Group>
-          
-          <Text size="sm" c="dimmed">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <ExclamationTriangleIcon width={20} height={20} className="text-yellow-600" />
+            <span>Deactivate Account</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
             Temporarily deactivate your account. You can reactivate it anytime by logging back in. 
             Your data will be preserved.
-          </Text>
+          </p>
 
-          <Alert color="yellow" variant="light">
-            Deactivating your account will hide your profile and prevent others from seeing your information. 
-            You can reactivate anytime by logging in again.
+          <Alert>
+            <AlertDescription>
+              Deactivating your account will hide your profile and prevent others from seeing your information. 
+              You can reactivate anytime by logging in again.
+            </AlertDescription>
           </Alert>
 
-          <Group justify="flex-start">
+          <div className="flex justify-start">
             <Button
-              variant="light"
-              color="yellow"
-              leftSection={<ExclamationTriangleIcon width={16} height={16} />}
+              variant="outline"
+              className="flex items-center space-x-2 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
             >
-              Deactivate Account
+              <ExclamationTriangleIcon width={16} height={16} />
+              <span>Deactivate Account</span>
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Account Deletion */}
-      <Card style={{ borderColor: 'var(--destructive)', borderWidth: '2px' }}>
-        <Stack gap="md">
-          <Group gap="sm">
-            <TrashIcon width={20} height={20} style={{ color: 'var(--destructive)' }} />
-            <Text size="lg" fw={600} c="red">
-              Delete Account
-            </Text>
-          </Group>
-          
-          <Text size="sm" c="dimmed">
+      <Card className="border-2 border-destructive">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-destructive">
+            <TrashIcon width={20} height={20} />
+            <span>Delete Account</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
             Permanently delete your account and all associated data. This action cannot be undone.
-          </Text>
+          </p>
 
-          <Alert color="red" variant="light">
-            <Text fw={600} mb="xs">Warning: This action is permanent!</Text>
-            <Text size="sm">
-              Deleting your account will permanently remove all your data including:
-            </Text>
-            <ul style={{ margin: '8px 0 0 16px', fontSize: '14px' }}>
-              <li>Profile information and settings</li>
-              <li>Assessment results and progress</li>
-              <li>Messages and conversation history</li>
-              <li>All activity logs and preferences</li>
-            </ul>
+          <Alert variant="destructive">
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="font-semibold">Warning: This action is permanent!</p>
+                <p className="text-sm">
+                  Deleting your account will permanently remove all your data including:
+                </p>
+                <ul className="ml-4 mt-2 text-sm list-disc space-y-1">
+                  <li>Profile information and settings</li>
+                  <li>Assessment results and progress</li>
+                  <li>Messages and conversation history</li>
+                  <li>All activity logs and preferences</li>
+                </ul>
+              </div>
+            </AlertDescription>
           </Alert>
 
-          <Group justify="flex-start">
-            <Button
-              color="red"
-              leftSection={<TrashIcon width={16} height={16} />}
-              onClick={() => setDeleteModalOpen(true)}
-            >
-              Delete My Account
-            </Button>
-          </Group>
-        </Stack>
+          <div className="flex justify-start">
+            <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="flex items-center space-x-2"
+                >
+                  <TrashIcon width={16} height={16} />
+                  <span>Delete My Account</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Delete Account</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      <div className="space-y-2">
+                        <p className="font-semibold">This action cannot be undone!</p>
+                        <p className="text-sm">
+                          All your data will be permanently deleted and cannot be recovered.
+                        </p>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-delete">Type 'DELETE' to confirm</Label>
+                    <Input
+                      id="confirm-delete"
+                      placeholder="DELETE"
+                      value={confirmText}
+                      onChange={(e) => setConfirmText(e.target.value)}
+                    />
+                    {confirmText && confirmText !== 'DELETE' && (
+                      <p className="text-sm text-destructive">Please type DELETE exactly</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDeleteModalOpen(false);
+                        setConfirmText('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAccount}
+                      disabled={confirmText !== 'DELETE'}
+                      className="flex items-center space-x-2"
+                    >
+                      <TrashIcon width={16} height={16} />
+                      <span>Delete Account</span>
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
       </Card>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        opened={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Delete Account"
-        centered
-        size="md"
-      >
-        <Stack gap="md">
-          <Alert color="red" variant="light">
-            <Text fw={600} mb="xs">This action cannot be undone!</Text>
-            <Text size="sm">
-              All your data will be permanently deleted and cannot be recovered.
-            </Text>
-          </Alert>
-
-          <TextInput
-            label="Type 'DELETE' to confirm"
-            placeholder="DELETE"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            error={confirmText && confirmText !== 'DELETE' ? 'Please type DELETE exactly' : ''}
-          />
-
-          <Group justify="flex-end" gap="sm">
-            <Button
-              variant="light"
-              onClick={() => {
-                setDeleteModalOpen(false);
-                setConfirmText('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={handleDeleteAccount}
-              disabled={confirmText !== 'DELETE'}
-              leftSection={<TrashIcon width={16} height={16} />}
-            >
-              Delete Account
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-    </Stack>
+    </div>
   );
 };
+
+export default AccountManagement;

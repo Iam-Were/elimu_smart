@@ -1414,6 +1414,287 @@ body {
   }
 }
 
+/* GLASSMORPHISM ENHANCEMENT SYSTEM - PHASE 1 */
+@layer utilities {
+  /* Core Glass System - Premium Design Patterns from Landing Page */
+  .glass-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all var(--transition-base);
+  }
+  
+  .glass-card-dark {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(26, 26, 26, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 4px 16px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Enhanced Glass Variants for Different Content Types */
+  .glass-card-primary {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      rgba(249, 115, 22, 0.1) 0%,
+      rgba(251, 146, 60, 0.05) 100%
+    );
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(249, 115, 22, 0.15),
+      0 4px 16px rgba(249, 115, 22, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  
+  .glass-card-success {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      rgba(5, 150, 105, 0.1) 0%,
+      rgba(16, 185, 129, 0.05) 100%
+    );
+    border: 1px solid rgba(5, 150, 105, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(5, 150, 105, 0.15),
+      0 4px 16px rgba(5, 150, 105, 0.1);
+  }
+  
+  /* Floating Navigation Glass Effect */
+  .glass-nav {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 4px 32px rgba(0, 0, 0, 0.08),
+      0 2px 16px rgba(0, 0, 0, 0.04);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  /* Multi-layer Glass Cards with Floating Elements */
+  .glass-card-layered {
+    position: relative;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+  }
+  
+  .glass-card-layered::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(
+      135deg,
+      rgba(249, 115, 22, 0.1) 0%,
+      rgba(251, 146, 60, 0.05) 100%
+    );
+    border-radius: 50%;
+    transform: translate(40%, -40%);
+    pointer-events: none;
+  }
+  
+  .glass-card-layered::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(
+      45deg,
+      rgba(249, 115, 22, 0.05) 0%,
+      rgba(251, 146, 60, 0.03) 100%
+    );
+    border-radius: 50%;
+    transform: translate(-30%, 30%);
+    pointer-events: none;
+  }
+  
+  /* Enhanced Hover Effects with Glass Morphism */
+  .glass-card:hover {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      0 8px 20px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(249, 115, 22, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-4px) scale(1.02);
+  }
+  
+  .glass-card-primary:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(249, 115, 22, 0.15) 0%,
+      rgba(251, 146, 60, 0.1) 100%
+    );
+    border-color: rgba(249, 115, 22, 0.4);
+    box-shadow: 
+      0 12px 40px rgba(249, 115, 22, 0.25),
+      0 8px 20px rgba(249, 115, 22, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Modal and Overlay Glass Effects */
+  .glass-modal-overlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .glass-modal-content {
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 24px 64px rgba(0, 0, 0, 0.2),
+      0 12px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+  }
+  
+  /* Dashboard Specific Glass Enhancements */
+  .glass-dashboard-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 247, 237, 0.9) 100%
+    );
+    border: 1px solid rgba(249, 115, 22, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(249, 115, 22, 0.08),
+      0 4px 16px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-dashboard-card:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 247, 237, 0.95) 100%
+    );
+    border-color: rgba(249, 115, 22, 0.2);
+    box-shadow: 
+      0 12px 40px rgba(249, 115, 22, 0.12),
+      0 8px 20px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(249, 115, 22, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  /* Assessment Flow Glass Cards */
+  .glass-assessment-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(249, 115, 22, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(249, 115, 22, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    position: relative;
+  }
+  
+  .glass-assessment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(249, 115, 22, 0.6) 0%,
+      rgba(251, 146, 60, 0.4) 50%,
+      rgba(254, 215, 170, 0.2) 100%
+    );
+    border-radius: 12px 12px 0 0;
+  }
+  
+  /* Guidance Hub Glass Effects */
+  .glass-guidance-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 251, 235, 0.88) 100%
+    );
+    border: 1px solid rgba(234, 179, 8, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(234, 179, 8, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Mobile Optimizations for Glass Effects */
+  @media (max-width: 768px) {
+    .glass-card {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.93);
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-2px) scale(1.01);
+    }
+    
+    .glass-nav {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  }
+  
+  /* Dark Mode Glass Variants */
+  .dark .glass-card {
+    background: rgba(26, 26, 26, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 4px 16px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark .glass-card:hover {
+    background: rgba(26, 26, 26, 0.95);
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(249, 115, 22, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  .dark .glass-nav {
+    background: rgba(26, 26, 26, 0.9);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
 /* SPRINT 15: Dashboard Icon Intelligence & Enhanced Components */
 @layer components {
   /* Universal Component DNA Pattern - Enhanced Dashboard Cards */
