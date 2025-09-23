@@ -1,33 +1,36 @@
-// Standard Parse import approach  
-import Parse from 'parse';
-
-// Single Parse initialization following CLAUDE.md patterns  
+// Parse SDK configuration with browser compatibility handling
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Parse: any = null;
 let parseInitialized = false;
 
-const initializeParse = () => {
-  if (!parseInitialized) {
-    Parse.initialize(
-      import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
-      import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
-    );
-    Parse.serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse';
-    
-    parseInitialized = true;
-    console.log('✅ Parse SDK initialized:', {
-      appId: Parse.applicationId,
-      serverURL: Parse.serverURL
-    });
+export const initializeParse = async () => {
+  if (!parseInitialized && !Parse) {
+    try {
+      // Dynamic import for better browser compatibility with Vite
+      Parse = (await import('parse')).default;
+
+      Parse.initialize(
+        import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
+        import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
+      );
+      Parse.serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse';
+
+      parseInitialized = true;
+      console.log('✅ Parse SDK initialized successfully:', {
+        appId: Parse.applicationId,
+        serverURL: Parse.serverURL
+      });
+    } catch (error) {
+      console.error('❌ Parse SDK initialization failed:', error);
+      throw new Error('Failed to initialize Parse SDK');
+    }
   }
   return Parse;
 };
 
-// Export function that existing hooks expect
-export const getParse = () => {
-  return initializeParse();
+export const getParse = async () => {
+  if (!Parse) {
+    await initializeParse();
+  }
+  return Parse;
 };
-
-// Export for compatibility with existing imports  
-export { initializeParse };
-
-// Initialize Parse immediately for main.tsx
-initializeParse();

@@ -546,7 +546,7 @@ export const CareerExploration: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search careers by title, skills, or keywords..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-900 placeholder:text-gray-500 bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

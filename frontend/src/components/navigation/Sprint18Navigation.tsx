@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -47,6 +47,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   className,
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { currentTheme } = useThemeContext();
 
@@ -84,6 +85,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
   };
+
 
   return (
     <>
@@ -123,8 +125,9 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           <NavigationMenuList className="gap-1">
             {/* Home Section */}
             <NavigationMenuItem>
-              <Link to={user?.role === 'counselor' ? '/counselor/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
-                <NavigationMenuLink 
+              <NavigationMenuLink asChild>
+                <Link
+                  to={user?.role === 'counselor' ? '/counselor/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                   className={cn(
                     "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
                     (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && `bg-gradient-to-r from-${getThemeColor(currentTheme).replace('#', '')}-500 to-${getThemeColor(currentTheme).replace('#', '')}-600 text-white hover:from-${getThemeColor(currentTheme).replace('#', '')}-600 hover:to-${getThemeColor(currentTheme).replace('#', '')}-700`
@@ -138,16 +141,17 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 >
                   <Home className="mr-2 h-4 w-4" />
                   {user?.role === 'counselor' ? 'Counselor Hub' : user?.role === 'admin' ? 'Admin Panel' : 'Home'}
-                </NavigationMenuLink>
-              </Link>
+                </Link>
+              </NavigationMenuLink>
             </NavigationMenuItem>
 
             {/* Role-specific navigation sections */}
             {user?.role !== 'counselor' && user?.role !== 'admin' && (
               /* Assessment Section - Students Only - Simplified Single Link */
               <NavigationMenuItem>
-                <Link to="/assessment">
-                  <NavigationMenuLink 
+                <NavigationMenuLink asChild>
+                  <Link
+                    to="/assessment"
                     className={cn(
                       "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
                       isActive("/assessment") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
@@ -155,16 +159,17 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   >
                     <GraduationCap className="mr-2 h-4 w-4" />
                     Assessment
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             )}
 
             {user?.role !== 'counselor' && user?.role !== 'admin' && (
               /* Guidance Section - Students Only */
               <NavigationMenuItem>
-                <Link to="/guidance">
-                  <NavigationMenuLink 
+                <NavigationMenuLink asChild>
+                  <Link
+                    to="/guidance"
                     className={cn(
                       "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
                       isActive("/guidance") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
@@ -172,24 +177,25 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   >
                     <Users className="mr-2 h-4 w-4" />
                     Guidance
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             )}
 
             {/* Messages Section - All Users */}
             <NavigationMenuItem>
-              <Link to="/inbox">
-                <NavigationMenuLink 
+              <NavigationMenuLink asChild>
+                <Link
+                  to="/inbox"
                   className={cn(
                     "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                    isActive("/inbox") && "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                    isActive("/inbox") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
                   )}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Messages
-                </NavigationMenuLink>
-              </Link>
+                </Link>
+              </NavigationMenuLink>
             </NavigationMenuItem>
 
 
@@ -198,8 +204,9 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             {user?.role === 'counselor' && (
               <>
                 <NavigationMenuItem>
-                  <Link to="/counselor/dashboard#students">
-                    <NavigationMenuLink 
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/counselor/dashboard#students"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                         isActive("/counselor") && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
@@ -207,13 +214,14 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     >
                       <Users className="mr-2 h-4 w-4" />
                       My Students
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
-                  <Link to="/counselor/dashboard#sessions">
-                    <NavigationMenuLink 
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/counselor/dashboard#sessions"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                         location.pathname.includes("counselor") && location.hash === "#sessions" && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
@@ -221,13 +229,14 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     >
                       <Calendar className="mr-2 h-4 w-4" />
                       Sessions
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
-                  <Link to="/counselor/dashboard#analytics">
-                    <NavigationMenuLink 
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/counselor/dashboard#analytics"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                         location.pathname.includes("counselor") && location.hash === "#analytics" && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
@@ -235,8 +244,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     >
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Analytics
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               </>
             )}
@@ -245,8 +254,9 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             {user?.role === 'admin' && (
               <>
                 <NavigationMenuItem>
-                  <Link to="/admin/users">
-                    <NavigationMenuLink 
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/admin/users"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                         isActive("/admin/users") && "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
@@ -254,13 +264,14 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     >
                       <Users className="mr-2 h-4 w-4" />
                       User Management
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
-                  <Link to="/admin/analytics">
-                    <NavigationMenuLink 
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to="/admin/analytics"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                         isActive("/admin/analytics") && "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
@@ -268,8 +279,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     >
                       <BarChart3 className="mr-2 h-4 w-4" />
                       System Analytics
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               </>
             )}
@@ -335,53 +346,41 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               <DropdownMenuSeparator />
               
               {/* Profile Button - LinkedIn Style Navigation */}
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>View Profile</span>
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>View Profile</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem asChild>
-                <Link to="/profile/edit" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Edit Profile</span>
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/profile/edit')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Edit Profile</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Account Settings</span>
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Account Settings</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem asChild>
-                <Link to="/settings/privacy" className="cursor-pointer">
-                  <Shield className="mr-2 h-4 w-4" />
-                  <span>Privacy Settings</span>
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/settings/privacy')} className="cursor-pointer">
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Privacy Settings</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               
               {/* Only show subscription for non-counselor users */}
               {user?.role !== 'counselor' && (
-                <DropdownMenuItem asChild>
-                  <Link to="/subscription" className="cursor-pointer">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Subscription Status</span>
-                  </Link>
+                <DropdownMenuItem onClick={() => navigate('/subscription')} className="cursor-pointer">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Subscription Status</span>
                 </DropdownMenuItem>
               )}
               
-              <DropdownMenuItem asChild>
-                <Link to="/help" className="cursor-pointer">
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  <span>Help & Support</span>
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Help & Support</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />

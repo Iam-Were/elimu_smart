@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import Parse from 'parse';
+import { getParse } from '../config/parse';
 
 interface UserActivity {
   activityType: string;
@@ -120,6 +120,7 @@ interface DashboardData {
   kuccpsTimeline: KuccpsTimeline | null;
   courseRecommendations: CourseRecommendations | null;
   linkedinInsights: LinkedInInsights | null;
+  assessmentProgress: Record<string, unknown>;
   loading: boolean;
   error: string | null;
 }
@@ -134,6 +135,7 @@ export const useDynamicDashboard = () => {
     kuccpsTimeline: null,
     courseRecommendations: null,
     linkedinInsights: null,
+    assessmentProgress: {},
     loading: true,
     error: null
   });
@@ -146,7 +148,14 @@ export const useDynamicDashboard = () => {
     duration?: number
   ) => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) {
+        console.warn('Cannot log activity: User not authenticated');
+        return;
+      }
+
       await Parse.Cloud.run('logUserActivity', {
         activityType,
         data,
@@ -161,7 +170,14 @@ export const useDynamicDashboard = () => {
   // Calculate career readiness score
   const calculateCareerReadiness = async (): Promise<CareerReadinessScore | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) {
+        console.warn('Cannot calculate career readiness: User not authenticated');
+        return null;
+      }
+
       const result = await Parse.Cloud.run('calculateCareerReadinessScore');
       return {
         overall: result.overall || 0,
@@ -182,7 +198,11 @@ export const useDynamicDashboard = () => {
   // Get university placement data
   const getUniversityPlacement = async (): Promise<UniversityPlacementData | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return null;
+
       const result = await Parse.Cloud.run('getUniversityPlacementData');
       return {
         eligiblePrograms: result.eligiblePrograms || [],
@@ -198,7 +218,11 @@ export const useDynamicDashboard = () => {
   // Find scholarship matches
   const findScholarshipMatches = async (): Promise<ScholarshipMatch[]> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return [];
+
       const result = await Parse.Cloud.run('findScholarshipMatches');
       return (result.matches || []).map((match: Record<string, unknown>) => ({
         name: match.name,
@@ -218,7 +242,11 @@ export const useDynamicDashboard = () => {
   // Calculate cutoff points analysis
   const getCutoffAnalysis = async (): Promise<CutoffAnalysis | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return null;
+
       const result = await Parse.Cloud.run('calculateCutoffPoints');
       return {
         currentPoints: result.currentPoints || 0,
@@ -236,7 +264,11 @@ export const useDynamicDashboard = () => {
   // Get KUCCPS timeline and deadlines
   const getKuccpsTimeline = async (): Promise<KuccpsTimeline | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return null;
+
       const result = await Parse.Cloud.run('getKuccpsTimeline');
       return {
         timeline: (result.timeline || []).map((event: Record<string, unknown>) => ({
@@ -256,7 +288,11 @@ export const useDynamicDashboard = () => {
   // Get course recommendations
   const getCourseRecommendations = async (): Promise<CourseRecommendations | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return null;
+
       const result = await Parse.Cloud.run('getCourseRecommendations');
       return {
         recommendations: result.recommendations || [],
@@ -273,7 +309,11 @@ export const useDynamicDashboard = () => {
   // Get user activities
   const getUserActivities = async (): Promise<UserActivity[]> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return [];
+
       const result = await Parse.Cloud.run('getUserActivities', { limit: 50 });
       return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
@@ -288,10 +328,30 @@ export const useDynamicDashboard = () => {
     }
   };
 
+  // Get assessment progress for all cards
+  const getAssessmentProgress = async (): Promise<Record<string, unknown>> => {
+    try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
+      
+      if (!currentUser) return {};
+
+      const result = await Parse.Cloud.run('getAssessmentProgress');
+      return result || {};
+    } catch (error) {
+      console.error('Failed to get assessment progress:', error);
+      return {};
+    }
+  };
+
   // Get LinkedIn professional insights
   const getLinkedInInsights = async (): Promise<LinkedInInsights | null> => {
     try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
       
+      if (!currentUser) return null;
+
       const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
         industry: 'technology', // Default to technology, could be dynamic based on user profile
         careerLevel: 'entry'
@@ -329,7 +389,8 @@ export const useDynamicDashboard = () => {
         cutoffAnalysis, 
         timeline, 
         courseRecs,
-        linkedinInsights
+        linkedinInsights,
+        assessmentProgress
       ] = await Promise.all([
         calculateCareerReadiness(),
         getUniversityPlacement(), 
@@ -338,7 +399,8 @@ export const useDynamicDashboard = () => {
         getCutoffAnalysis(),
         getKuccpsTimeline(),
         getCourseRecommendations(),
-        getLinkedInInsights()
+        getLinkedInInsights(),
+        getAssessmentProgress()
       ]);
 
       setDashboardData({
@@ -350,6 +412,7 @@ export const useDynamicDashboard = () => {
         kuccpsTimeline: timeline,
         courseRecommendations: courseRecs,
         linkedinInsights,
+        assessmentProgress,
         loading: false,
         error: null
       });
@@ -400,7 +463,7 @@ export const useDynamicDashboard = () => {
   useEffect(() => {
     const loadDataIfUser = async () => {
       try {
-        
+        const Parse = await getParse();
         const user = Parse.User.current();
         if (user) {
           loadDashboardData();
@@ -417,7 +480,7 @@ export const useDynamicDashboard = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        
+        const Parse = await getParse();
         const user = Parse.User.current();
         if (user) {
           loadDashboardData();

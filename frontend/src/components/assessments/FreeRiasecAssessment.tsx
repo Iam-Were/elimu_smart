@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -415,6 +416,7 @@ interface RiasecResults {
 }
 
 export const FreeRiasecAssessment: React.FC = () => {
+  const navigate = useNavigate();
   const { logActivity } = useDynamicDashboard();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<number, number>>({});
@@ -428,8 +430,14 @@ export const FreeRiasecAssessment: React.FC = () => {
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
 
   const startAssessment = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    console.log('Starting assessment...');
+    console.log('Auth token available:', !!localStorage.getItem('elimu-auth-token'));
+
     try {
-      setIsLoading(true);
+      // Try to start assessment on backend
       const response = await fetch('http://localhost:1337/parse/functions/startRiasecAssessment', {
         method: 'POST',
         headers: {
@@ -439,77 +447,97 @@ export const FreeRiasecAssessment: React.FC = () => {
         },
         body: JSON.stringify({})
       });
-      
+
+      console.log('Start assessment response status:', response.status);
       const data = await response.json();
-      
+      console.log('Start assessment response data:', data);
+
       if (data.result) {
         setAssessmentId(data.result.id);
-        logActivity('free_riasec_assessment_started', {
-          assessmentId: data.result.id,
-          totalQuestions,
-          version: 'IIP_RIASEC_Markers',
-          timestamp: new Date().toISOString()
-        });
+        console.log('Assessment started with backend:', data.result.id);
+      } else {
+        console.log('No result in response, falling back to local');
+        setAssessmentId(`local-${Date.now()}`);
       }
     } catch (error) {
-      console.error('Failed to start assessment:', error);
-      setError('Failed to start assessment. Please try again.');
-    } finally {
-      setIsLoading(false);
+      console.warn('Backend assessment start failed, continuing with local assessment:', error);
+      // Generate local assessment ID
+      setAssessmentId(`local-${Date.now()}`);
     }
-  }, [logActivity, totalQuestions]);
+
+    // Always log activity (works locally and with backend)
+    try {
+      logActivity('free_riasec_assessment_started', {
+        assessmentId: assessmentId || 'local-assessment',
+        totalQuestions,
+        version: 'IIP_RIASEC_Markers',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.warn('Failed to log assessment start:', error);
+    }
+
+    setIsLoading(false);
+  }, [logActivity, totalQuestions, assessmentId]);
 
   useEffect(() => {
     startAssessment();
   }, [startAssessment]);
 
   const handleResponse = async (questionId: number, response: number) => {
-    if (!assessmentId) return;
-
     const newResponses = { ...responses, [questionId]: response };
     setResponses(newResponses);
 
+    // Always log activity locally first (non-blocking)
     try {
-      // Save response to backend
-      await fetch('http://localhost:1337/parse/functions/saveRiasecResponse', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
-          assessmentId,
-          questionId,
-          response,
-          questionNumber: currentQuestion + 1,
-          category: iipRiasecQuestions[currentQuestion].category,
-          riasecType: iipRiasecQuestions[currentQuestion].riasecType
-        })
-      });
-
-      // Log individual question response
       logActivity('riasec_question_answered', {
-        assessmentId,
+        assessmentId: assessmentId || 'local-assessment',
         questionId,
         response,
         questionNumber: currentQuestion + 1,
         category: iipRiasecQuestions[currentQuestion].category,
         riasecType: iipRiasecQuestions[currentQuestion].riasecType
       });
-
-      // Auto-advance to next question
-      if (currentQuestion < totalQuestions - 1) {
-        setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
-      } else {
-        // Assessment complete - get results from backend
-        await completeAssessment();
-      }
     } catch (error) {
-      console.error('Failed to save response:', error);
-      // Continue with local fallback
-      if (currentQuestion < totalQuestions - 1) {
-        setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+      console.warn('Failed to log activity locally:', error);
+    }
+
+    // Try to save to backend but don't block UI
+    if (assessmentId) {
+      try {
+        await fetch('http://localhost:1337/parse/functions/saveRiasecResponse', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Parse-Application-Id': 'elimu-smart-local-dev',
+            'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
+          },
+          body: JSON.stringify({
+            assessmentId,
+            questionId,
+            response,
+            questionNumber: currentQuestion + 1,
+            category: iipRiasecQuestions[currentQuestion].category,
+            riasecType: iipRiasecQuestions[currentQuestion].riasecType
+          })
+        });
+      } catch (error) {
+        console.warn('Failed to save response to backend (continuing locally):', error);
+      }
+    }
+
+    // Always advance to next question (non-blocking)
+    if (currentQuestion < totalQuestions - 1) {
+      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+    } else {
+      // Assessment complete - try backend first, fallback to local
+      if (assessmentId) {
+        try {
+          await completeAssessment();
+        } catch (error) {
+          console.warn('Backend completion failed, using local calculation:', error);
+          calculateResults(newResponses);
+        }
       } else {
         calculateResults(newResponses);
       }
@@ -862,7 +890,40 @@ export const FreeRiasecAssessment: React.FC = () => {
           >
             Retake Assessment
           </Button>
-          <Button>
+          <Button
+            onClick={async () => {
+              if (assessmentId) {
+                try {
+                  // Update assessment as completed with 100% progress
+                  const response = await fetch('http://localhost:1337/parse/functions/updateAssessmentProgress', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-Parse-Application-Id': 'elimu-smart-local-dev',
+                      'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
+                    },
+                    body: JSON.stringify({
+                      assessmentType: 'riasec-discovery',
+                      progress: 100,
+                      status: 'completed'
+                    })
+                  });
+                  
+                  if (response.ok) {
+                    navigate('/assessment');
+                  } else {
+                    console.error('Failed to update assessment progress');
+                    navigate('/assessment');
+                  }
+                } catch (error) {
+                  console.error('Failed to update assessment progress:', error);
+                  navigate('/assessment');
+                }
+              } else {
+                navigate('/assessment');
+              }
+            }}
+          >
             Save Results & Continue
           </Button>
         </div>
@@ -1049,9 +1110,13 @@ export const FreeRiasecAssessment: React.FC = () => {
             variant="outline" 
             className="gap-2"
             onClick={async () => {
+              console.log('Save Progress clicked, assessmentId:', assessmentId);
+              console.log('Auth token:', localStorage.getItem('elimu-auth-token'));
+              
               if (assessmentId) {
                 try {
-                  const response = await fetch('http://localhost:1337/parse/functions/saveRiasecProgress', {
+                  // First save progress
+                  const saveResponse = await fetch('http://localhost:1337/parse/functions/saveRiasecProgress', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -1065,14 +1130,43 @@ export const FreeRiasecAssessment: React.FC = () => {
                     })
                   });
                   
-                  if (response.ok) {
-                    alert('Progress saved! You can continue later.');
+                  console.log('Save response status:', saveResponse.status);
+                  
+                  if (saveResponse.ok) {
+                    // Complete the assessment (mark as saved progress)
+                    const completeResponse = await fetch('http://localhost:1337/parse/functions/updateAssessmentProgress', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-Parse-Application-Id': 'elimu-smart-local-dev',
+                        'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
+                      },
+                      body: JSON.stringify({
+                        assessmentType: 'riasec-discovery',
+                        progress: Math.round((currentQuestion / totalQuestions) * 100),
+                        status: 'in-progress'
+                      })
+                    });
+                    
+                    console.log('Complete response status:', completeResponse.status);
+                    
+                    if (completeResponse.ok) {
+                      // Navigate back to assessment page
+                      navigate('/assessment');
+                    } else {
+                      alert('Progress saved but unable to update status. Please continue or try again later.');
+                    }
+                  } else {
+                    const errorText = await saveResponse.text();
+                    console.error('Save failed:', errorText);
+                    alert('Failed to save progress to backend. Please try again.');
                   }
                 } catch (error) {
                   console.error('Failed to save progress:', error);
                   alert('Unable to save progress. Please continue or try again later.');
                 }
               } else {
+                console.log('No assessmentId, saving locally');
                 // Local mode - save to localStorage
                 localStorage.setItem('riasec_progress', JSON.stringify({
                   currentQuestion,
@@ -1080,6 +1174,8 @@ export const FreeRiasecAssessment: React.FC = () => {
                   timestamp: Date.now()
                 }));
                 alert('Progress saved locally!');
+                // Navigate back to assessment page
+                navigate('/assessment');
               }
             }}
           >

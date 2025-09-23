@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getParse, initializeParse } from '../config/parse';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 import type { ParseUserLike } from '../types/shared';
-import { applyRoleTheme } from '../theme/mantineTheme';
+import { applyRoleTheme } from '../constants/theme';
 
 // Convert Parse User to our User interface
 const parseUserToUser = (parseUser: ParseUserLike): User => {

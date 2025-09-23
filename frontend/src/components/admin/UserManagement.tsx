@@ -151,8 +151,8 @@ const mockUsers: UserRecord[] = [
 
 export const UserManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [bulkOperations, setBulkOperations] = useState<BulkOperation[]>([]);
@@ -168,8 +168,8 @@ export const UserManagement: React.FC = () => {
     return mockUsers.filter((user) => {
       const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            user.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRole = !selectedRole || user.role === selectedRole;
-      const matchesStatus = !selectedStatus || user.status === selectedStatus;
+      const matchesRole = selectedRole === 'all' || user.role === selectedRole;
+      const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus;
       
       return matchesSearch && matchesRole && matchesStatus;
     });
@@ -406,7 +406,7 @@ export const UserManagement: React.FC = () => {
                     <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Roles</SelectItem>
+                    <SelectItem value="all">All Roles</SelectItem>
                     <SelectItem value="student">Students</SelectItem>
                     <SelectItem value="counselor">Counselors</SelectItem>
                     <SelectItem value="admin">Administrators</SelectItem>
@@ -420,7 +420,7 @@ export const UserManagement: React.FC = () => {
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="suspended">Suspended</SelectItem>

@@ -83,18 +83,27 @@ export class ParseApi {
   }
   
   static async register(userData: RegisterData): Promise<ParseUser> {
+    console.log('🌐 ParseApi.register called with:', userData);
+    console.log('🔗 Server URL:', `${parseConfig.serverURL}/users`);
+    
     const response = await fetch(`${parseConfig.serverURL}/users`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(userData)
     });
     
+    console.log('📡 Registration response status:', response.status);
+    console.log('📡 Registration response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       const error = await response.json();
+      console.error('❌ Registration error response:', error);
       throw new Error(error.error || 'Registration failed');
     }
     
-    return response.json();
+    const result = await response.json();
+    console.log('✅ Registration successful, received:', result);
+    return result;
   }
   
   static async getCurrentUser(sessionToken: string): Promise<ParseUser> {

@@ -1,5 +1,6 @@
 // Working Parse Server setup based on Sprint 22 commit e110a05
 const ParseServer = require('parse-server').ParseServer;
+const ParseDashboard = require('parse-dashboard');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,7 +10,7 @@ const app = express();
 
 // Enable CORS for frontend development
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5176', 'http://localhost:5177'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177'],
   credentials: true
 }));
 
@@ -19,13 +20,17 @@ async function startServer() {
     
     // Parse Server configuration - using confirmed working connection
     const parseServer = new ParseServer({
-      databaseURI: 'postgres://postgres@localhost:5432/elimu_smart_dev',
+      databaseURI: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_dev',
       cloud: path.join(__dirname, 'cloud/main.js'),
-      appId: 'elimu-smart-local-dev',
-      masterKey: 'elimu-smart-master-key-dev',
-      serverURL: 'http://localhost:1337/parse',
+      appId: process.env.APP_ID || 'elimu-smart-local-dev',
+      masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev',
+      serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
       
       verifyUserEmails: false,
+      
+      // Future-proof configuration options
+      encodeParseObjectInCloudFunction: false, // Keep current behavior, suppress warning
+      enableInsecureAuthAdapters: true, // Allow anonymous auth for development
       
       // Enable live query for real-time updates
       liveQuery: {
@@ -44,6 +49,29 @@ async function startServer() {
     // Mount Parse Server API
     app.use('/parse', parseServer.app);
     console.log('✅ Parse Server mounted at /parse');
+
+    // Parse Dashboard configuration
+    const dashboard = new ParseDashboard({
+      apps: [
+        {
+          serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
+          appId: process.env.APP_ID || 'elimu-smart-local-dev',
+          masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev',
+          appName: 'Elimu Smart',
+          iconName: 'brain'
+        }
+      ],
+      users: [
+        {
+          user: process.env.DASHBOARD_USER || 'admin',
+          pass: process.env.DASHBOARD_PASS || 'admin123'
+        }
+      ]
+    }, { allowInsecureHTTP: true }); // Allow HTTP for local development
+
+    // Mount Parse Dashboard
+    app.use('/dashboard', dashboard);
+    console.log('✅ Parse Dashboard mounted at /dashboard');
 
     // Health check endpoint
     app.get('/health', (req, res) => {
@@ -67,18 +95,41 @@ async function startServer() {
 
     // Start the server
     const port = 1337;
-    app.listen(port, () => {
+    app.listen(port, async () => {
       console.log('✅ Elimu Smart Parse Server (Working Version) Started!');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log(`🔗 Parse Server: http://localhost:${port}/parse`);
+      console.log(`📊 Parse Dashboard: http://localhost:${port}/dashboard`);
       console.log(`🏥 Health Check: http://localhost:${port}/health`);
       console.log(`🧪 Test API: http://localhost:${port}/api/test`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('📊 Database: PostgreSQL (password="password")');
       console.log('☁️ Cloud Functions: Loaded (1881+ lines)');
       console.log('🌐 CORS: Frontend ports enabled');
+      console.log(`🔐 Dashboard Login: ${process.env.DASHBOARD_USER || 'admin'} / ${process.env.DASHBOARD_PASS || 'admin123'}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('✅ Ready! Using Sprint 22 working configuration');
+
+      // Check if demo data exists, if not, suggest seeding
+      try {
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo('email', 'student@elimu.com');
+        const demoUser = await userQuery.first({ useMasterKey: true });
+        
+        if (!demoUser) {
+          console.log('');
+          console.log('🌱 No demo data found!');
+          console.log('💡 To populate with demo data, run: npm run seed');
+          console.log('📋 This will create demo users for testing the dashboard');
+        } else {
+          console.log('');
+          console.log('✅ Demo data available - Dashboard should show users and data');
+        }
+      } catch (error) {
+        console.log('');
+        console.log('⚠️  Could not check for demo data - Dashboard may appear empty');
+        console.log('💡 To populate with demo data, run: npm run seed');
+      }
     });
     
   } catch (error) {

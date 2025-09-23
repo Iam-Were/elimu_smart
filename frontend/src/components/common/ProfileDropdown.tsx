@@ -15,8 +15,6 @@ import {
   PersonIcon,
   GearIcon,
   ExitIcon,
-  BellIcon,
-  EyeOpenIcon,
   LockClosedIcon,
   ActivityLogIcon,
   DashboardIcon,
@@ -168,7 +166,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-80 bg-background/95 backdrop-blur-sm">
         {/* User Header */}
         <div className="p-4 border-b bg-muted/50">
           <div className="flex items-center gap-3">
@@ -208,32 +206,18 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         {/* Account Settings */}
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Account Settings</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => handleNavigation('/settings/account')}>
+        <DropdownMenuItem onClick={() => handleNavigation('/settings/preferences')}>
           <GearIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
-            <div className="text-sm">Account Settings</div>
-            <div className="text-xs text-muted-foreground">Privacy, security, preferences</div>
+            <div className="text-sm">Preferences</div>
+            <div className="text-xs text-muted-foreground">Language, timezone, notifications</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleNavigation('/settings/security')}>
           <LockClosedIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
-            <div className="text-sm">Security</div>
-            <div className="text-xs text-muted-foreground">Password, 2FA, sessions</div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleNavigation('/settings/privacy')}>
-          <EyeOpenIcon className="mr-2 h-4 w-4" />
-          <div className="flex-1">
-            <div className="text-sm">Privacy</div>
-            <div className="text-xs text-muted-foreground">Data and visibility settings</div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleNavigation('/settings/notifications')}>
-          <BellIcon className="mr-2 h-4 w-4" />
-          <div className="flex-1">
-            <div className="text-sm">Notifications</div>
-            <div className="text-xs text-muted-foreground">Email and push preferences</div>
+            <div className="text-sm">Privacy & Security</div>
+            <div className="text-xs text-muted-foreground">Password, 2FA, privacy settings</div>
           </div>
         </DropdownMenuItem>
 

@@ -15,7 +15,7 @@ interface AccountManagementProps {
   onUnsavedChanges?: (hasChanges: boolean) => void;
 }
 
-const AccountManagement: React.FC<AccountManagementProps> = ({ onUnsavedChanges: _onUnsavedChanges }) => {
+const AccountManagement: React.FC<AccountManagementProps> = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [isExporting, setIsExporting] = useState(false);

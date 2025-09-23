@@ -1,19 +1,14 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useCounselorDashboard } from '@/hooks/useCounselorDashboard';
-import { 
-  Users, 
-  MessageSquare, 
+import {
+  Users,
+  MessageSquare,
   Calendar,
   BarChart3,
-  Clock,
-  CheckCircle,
   AlertTriangle,
-  TrendingUp,
-  ArrowRight,
   UserCheck,
   Video,
   FileText,
@@ -47,50 +42,50 @@ interface CounselorDashboardCard {
 const counselorDashboardCards: CounselorDashboardCard[] = [
   {
     id: 'assigned-students',
-    title: 'My Assigned Students',
-    description: 'Manage and monitor progress of students under your guidance',
+    title: 'Student Roster',
+    description: 'Monitor student progress and wellbeing',
     icon: <Users className="h-6 w-6" />,
     status: 'attention',
     priority: 'high',
-    actionText: 'View Students',
+    actionText: 'View Roster',
     actionLink: '/counselor/students',
     stats: {
       primary: '34 Students',
-      secondary: '7 need immediate attention',
+      secondary: '7 urgent',
       trend: 'up'
     },
     metadata: {
       count: 34,
-      nextAction: 'Review at-risk students',
+      nextAction: 'Review urgent cases',
       urgent: true,
       lastUpdated: '2 hours ago'
     }
   },
   {
     id: 'active-chat-sessions',
-    title: 'Active Chat Sessions',
-    description: 'Ongoing conversations with students requiring your guidance',
+    title: 'Active Chats',
+    description: 'Respond to student messages',
     icon: <MessageSquare className="h-6 w-6" />,
     status: 'active',
     priority: 'high',
-    actionText: 'Join Chats',
+    actionText: 'Open Chats',
     actionLink: '/counselor/chat',
     stats: {
       primary: '8 Active',
-      secondary: 'Avg response: 3.2 mins',
+      secondary: '3.2 min avg',
       trend: 'stable'
     },
     metadata: {
       count: 8,
-      nextAction: 'Respond to urgent messages',
+      nextAction: 'Reply to waiting messages',
       urgent: true,
       lastUpdated: '5 minutes ago'
     }
   },
   {
     id: 'upcoming-appointments',
-    title: 'Today\'s Appointments',
-    description: 'Scheduled counseling sessions and meetings for today',
+    title: 'Today\'s Sessions',
+    description: 'View scheduled appointments',
     icon: <Calendar className="h-6 w-6" />,
     status: 'scheduled',
     priority: 'medium',
@@ -98,47 +93,47 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     actionLink: '/counselor/appointments',
     stats: {
       primary: '6 Sessions',
-      secondary: 'Next: 2:30 PM with Sarah M.',
+      secondary: 'Next: 2:30 PM',
       trend: 'up'
     },
     metadata: {
       count: 6,
-      nextAction: 'Prepare for next session',
+      nextAction: 'Prepare session notes',
       lastUpdated: '30 minutes ago'
     }
   },
   {
     id: 'counseling-analytics',
-    title: 'Counseling Effectiveness',
-    description: 'Track your impact and success metrics across all student interactions',
+    title: 'Performance',
+    description: 'Track counseling effectiveness',
     icon: <BarChart3 className="h-6 w-6" />,
     status: 'completed',
     priority: 'medium',
-    actionText: 'View Analytics',
+    actionText: 'View Stats',
     actionLink: '/counselor/analytics',
     stats: {
       primary: '89% Success',
-      secondary: 'Student satisfaction: 4.7/5',
+      secondary: '4.7/5 rating',
       trend: 'up'
     },
     metadata: {
       completion: 89,
-      nextAction: 'Review monthly report',
+      nextAction: 'Review monthly data',
       lastUpdated: '1 day ago'
     }
   },
   {
     id: 'pending-question-queue',
-    title: 'Question Queue',
-    description: 'Student questions awaiting your expert guidance and responses',
+    title: 'Q&A Queue',
+    description: 'Answer student questions',
     icon: <FileText className="h-6 w-6" />,
     status: 'attention',
     priority: 'high',
-    actionText: 'Answer Questions',
+    actionText: 'Answer Now',
     actionLink: '/counselor/questions',
     stats: {
       primary: '15 Pending',
-      secondary: '3 high priority',
+      secondary: '3 urgent',
       trend: 'up'
     },
     metadata: {
@@ -151,7 +146,7 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
   {
     id: 'group-sessions',
     title: 'Group Sessions',
-    description: 'Manage group counseling sessions and workshops',
+    description: 'Manage workshops and group activities',
     icon: <UserCheck className="h-6 w-6" />,
     status: 'scheduled',
     priority: 'medium',
@@ -159,86 +154,57 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     actionLink: '/counselor/group-sessions',
     stats: {
       primary: '4 Groups',
-      secondary: 'Next workshop: Tomorrow 10 AM',
+      secondary: 'Next: Tomorrow 10 AM',
       trend: 'stable'
     },
     metadata: {
       count: 4,
-      nextAction: 'Plan workshop activities',
+      nextAction: 'Plan activities',
       lastUpdated: '4 hours ago'
     }
   },
   {
     id: 'progress-tracking',
-    title: 'Student Progress Tracking',
-    description: 'Monitor academic and career development milestones',
+    title: 'Progress Tracking',
+    description: 'Monitor student milestones',
     icon: <Target className="h-6 w-6" />,
     status: 'active',
     priority: 'medium',
-    actionText: 'Track Progress',
+    actionText: 'View Progress',
     actionLink: '/counselor/progress',
     stats: {
       primary: '24 Milestones',
-      secondary: '18 completed this month',
+      secondary: '18 completed',
       trend: 'up'
     },
     metadata: {
       completion: 75,
-      nextAction: 'Update progress records',
+      nextAction: 'Update records',
       lastUpdated: '6 hours ago'
     }
   },
   {
     id: 'resource-library',
-    title: 'Counselor Resources',
-    description: 'Access professional resources, guides, and best practices',
+    title: 'Resources',
+    description: 'Access professional materials',
     icon: <Video className="h-6 w-6" />,
     status: 'active',
     priority: 'low',
-    actionText: 'Browse Resources',
+    actionText: 'Browse Library',
     actionLink: '/counselor/resources',
     stats: {
       primary: '200+ Resources',
-      secondary: '5 new this week',
+      secondary: '5 new',
       trend: 'up'
     },
     metadata: {
       count: 200,
-      nextAction: 'Review new materials',
+      nextAction: 'Check new materials',
       lastUpdated: '1 day ago'
     }
   }
 ];
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'attention':
-      return 'bg-red-50 text-red-700 border-red-200';
-    case 'active':
-      return 'bg-blue-50 text-blue-700 border-blue-200';
-    case 'scheduled':
-      return 'bg-orange-50 text-orange-700 border-orange-200';
-    case 'completed':
-      return 'bg-green-50 text-green-700 border-green-200';
-    default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'attention':
-      return <AlertTriangle className="h-4 w-4 text-red-600" />;
-    case 'active':
-      return <Clock className="h-4 w-4 text-blue-600" />;
-    case 'scheduled':
-      return <Calendar className="h-4 w-4 text-orange-600" />;
-    case 'completed':
-      return <CheckCircle className="h-4 w-4 text-green-600" />;
-    default:
-      return <Clock className="h-4 w-4 text-gray-600" />;
-  }
-};
 
 const getPriorityStyles = (priority: string) => {
   switch (priority) {
@@ -402,16 +368,16 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
     
   const displayCards = showAll ? filteredCards : filteredCards.slice(cardOffset, cardOffset + maxCards);
   
-  // Responsive card sizing with proper content space
+  // LinkedIn-style card sizing - reduced heights for cleaner look
   const getCardSizeClasses = () => {
     switch (size) {
       case 'compact':
-        return 'p-4 min-h-[130px]'; // Sufficient space for metrics
+        return 'min-h-[120px]'; // Essential metrics only
       case 'large':
-        return 'p-6 min-h-[220px]'; // Detailed information cards
+        return 'min-h-[160px]'; // Key information with breathing room
       case 'medium':
       default:
-        return 'p-5 min-h-[180px]'; // Standard information cards
+        return 'min-h-[140px]'; // Balanced content display
     }
   };
   
@@ -427,17 +393,6 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
     }
   };
   
-  const getTitleSize = () => {
-    switch (size) {
-      case 'compact':
-        return 'text-sm font-medium';
-      case 'large':
-        return 'text-lg font-semibold';
-      case 'medium':
-      default:
-        return 'text-base font-medium';
-    }
-  };
 
   // Handle card clicks with activity logging
   const handleCardClick = (card: CounselorDashboardCard) => {
@@ -564,102 +519,68 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
             key={card.id} 
             className={`hover:shadow-lg transition-all duration-200 ${getCardSizeClasses()} ${getPriorityStyles(card.priority)}`}
           >
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
+            <CardHeader className="pb-3">
+              {/* LinkedIn-style simplified header */}
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 bg-amber-600 rounded-lg flex items-center justify-center">
+                  <div className="h-8 w-8 bg-amber-600 rounded-md flex items-center justify-center">
                     <div className="text-white">
                       {card.icon}
                     </div>
                   </div>
-                  <div>
-                    <CardTitle className={`${getTitleSize()} text-slate-800`}>{card.title}</CardTitle>
-                    {card.metadata.urgent && (
-                      <Badge variant="destructive" className="text-xs mt-1">
-                        <Bell className="h-3 w-3 mr-1" />
-                        Urgent
-                      </Badge>
-                    )}
-                  </div>
+                  <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
+                    {card.title}
+                  </CardTitle>
                 </div>
-                <Badge variant="secondary" className={getStatusColor(card.status)}>
-                  {getStatusIcon(card.status)}
-                  <span className="ml-1 capitalize">{card.status}</span>
-                </Badge>
+                {/* Only show urgent badge - hide status badge to reduce clutter */}
+                {card.metadata.urgent && (
+                  <Badge variant="destructive" className="text-xs px-2 py-1">
+                    <Bell className="h-3 w-3" />
+                  </Badge>
+                )}
               </div>
-              {size !== 'compact' && (
-                <CardDescription className="text-sm leading-relaxed text-slate-600">
-                  {card.description}
-                </CardDescription>
-              )}
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-slate-700">
-                    {card.stats.primary}
-                  </span>
-                  {card.stats.trend && (
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className={`h-4 w-4 ${
-                        card.stats.trend === 'up' ? 'text-green-600' : 
-                        card.stats.trend === 'down' ? 'text-red-600' : 
-                        'text-gray-600'
-                      }`} />
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {card.stats.trend}
-                      </span>
-                    </div>
-                  )}
+            <CardContent className="space-y-3">
+              {/* LinkedIn-style primary metric emphasis */}
+              <div className="text-center py-2">
+                <div className="text-2xl font-bold text-slate-800 mb-1">
+                  {card.stats.primary}
                 </div>
                 {card.stats.secondary && (
-                  <p className="text-sm text-slate-600">{card.stats.secondary}</p>
+                  <p className="text-sm text-slate-600 leading-tight">{card.stats.secondary}</p>
                 )}
               </div>
 
-              {card.metadata.completion !== undefined && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-yellow-700">Completion</span>
-                    <span className="text-slate-700 font-medium">{card.metadata.completion}%</span>
-                  </div>
-                  <Progress value={card.metadata.completion} className="h-2" />
-                </div>
-              )}
-
-              {card.metadata.nextAction && (
-                <div className="bg-amber-25 border border-amber-100 rounded-lg p-3">
-                  <div className="flex items-start gap-2">
-                    <Target className="h-4 w-4 text-amber-600 mt-0.5" />
-                    <div>
-                      <div className="text-sm font-medium text-amber-700">Next Action</div>
-                      <div className="text-xs text-amber-600">{card.metadata.nextAction}</div>
-                    </div>
+              {/* Show only critical next action - hide completion bars for simplicity */}
+              {card.metadata.nextAction && card.metadata.urgent && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <div className="text-sm font-medium text-red-700 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    {card.metadata.nextAction}
                   </div>
                 </div>
               )}
 
-              {card.metadata.lastUpdated && (
-                <div className="text-xs text-slate-500 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Updated {card.metadata.lastUpdated}
+              {/* Show non-urgent next actions more subtly */}
+              {card.metadata.nextAction && !card.metadata.urgent && (
+                <div className="text-xs text-slate-500 text-center">
+                  {card.metadata.nextAction}
                 </div>
               )}
             </CardContent>
 
-            <CardFooter>
-              <Button 
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white" 
+            <CardFooter className="pt-3">
+              <Button
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm py-2"
                 asChild
               >
-                <a 
-                  href={card.actionLink} 
+                <a
+                  href={card.actionLink}
                   className="flex items-center justify-center"
                   onClick={() => handleCardClick(card)}
                 >
                   {card.actionText}
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             </CardFooter>

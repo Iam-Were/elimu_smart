@@ -41,7 +41,44 @@ import SubjectCareerMapper from './components/assessments/SubjectCareerMapper';
 import SkillsAssessment from './components/assessments/SkillsAssessment';
 import UniversityCourseFinder from './components/assessments/UniversityCourseFinder';
 import CareerExploration from './components/assessments/CareerExploration';
+import CounselorConnect from './components/guidance/CounselorConnect';
+import QuickQuestions from './components/guidance/QuickQuestions';
+import MentorshipMatching from './components/guidance/MentorshipMatching';
+import ScholarshipSearch from './components/guidance/ScholarshipSearch';
+import SkillsDevelopment from './components/guidance/SkillsDevelopment';
+import CounselorChat from './components/guidance/CounselorChat';
+import InboxPage from './pages/InboxPage';
 import './styles/globals.css';
+
+// Role-based default route component
+const RoleBasedDefaultRoute: React.FC = () => {
+  const { user } = useAuth();
+
+  // Apply role-based theme on first load
+  React.useEffect(() => {
+    if (user?.role && typeof document !== 'undefined') {
+      const body = document.body;
+      body.className = body.className.replace(/theme-\w+/g, '');
+
+      if (user.role === 'admin') {
+        body.classList.add('theme-admin');
+      } else if (user.role === 'counselor') {
+        body.classList.add('theme-counselor');
+      }
+      // Students use default orange theme (no class needed)
+    }
+  }, [user?.role]);
+
+  // Role-based routing
+  if (user?.role === 'counselor') {
+    return <Navigate to="/counselor/students" replace />;
+  }
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  // Default to student dashboard
+  return <Navigate to="/dashboard" replace />;
+};
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -76,6 +113,13 @@ const AppContent: React.FC = () => {
         <Route path="/assessment/explore" element={<CareerExploration />} />
         <Route path="/guidance" element={<Sprint18GuidancePage />} />
         <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
+        <Route path="/guidance/counselor-connect" element={<CounselorConnect />} />
+        <Route path="/guidance/chat-counselor" element={<CounselorChat />} />
+        <Route path="/inbox" element={<InboxPage />} />
+        <Route path="/student/quick-questions" element={<QuickQuestions />} />
+        <Route path="/student/mentorship-matching" element={<MentorshipMatching />} />
+        <Route path="/student/scholarship-search" element={<ScholarshipSearch />} />
+        <Route path="/student/skills-development" element={<SkillsDevelopment />} />
         <Route path="/admin/portal" element={<AdminPortal />} />
         <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
         <Route path="/counselor/students" element={<StudentsPage />} />
@@ -91,8 +135,9 @@ const AppContent: React.FC = () => {
         <Route path="/admin/audit-log" element={<AuditLogPage />} />
         <Route path="/admin/security-monitoring" element={<SecurityMonitoringPage />} />
         <Route path="/admin/maintenance-tools" element={<MaintenanceToolsPage />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Role-based default routing */}
+        <Route path="/" element={<RoleBasedDefaultRoute />} />
+        <Route path="*" element={<RoleBasedDefaultRoute />} />
       </Routes>
     </Sprint18Layout>
   );

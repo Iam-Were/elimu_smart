@@ -44,11 +44,46 @@ export const getRoleBadgeColor = (role: string): string => {
   switch (role.toLowerCase()) {
     case 'student':
       return 'bg-orange-100 text-orange-700';
-    case 'counselor': 
+    case 'counselor':
       return 'bg-yellow-100 text-yellow-700';
     case 'admin':
       return 'bg-purple-100 text-purple-700';
     default:
       return 'bg-gray-100 text-gray-700';
   }
+};
+
+// Migrated from mantineTheme.ts - integrated with shadcn system
+export const applyRoleTheme = (role: ThemeRole) => {
+  // Remove existing theme classes
+  document.body.className = document.body.className.replace(/theme-\w+/g, '');
+
+  // Add smooth transition
+  document.body.style.transition = 'all 0.3s ease-in-out';
+
+  // Apply role-specific theme class
+  if (role === 'admin') {
+    document.body.classList.add('theme-admin');
+  } else if (role === 'counselor') {
+    document.body.classList.add('theme-counselor');
+  }
+  // Student theme is default (no class needed)
+
+  // Update CSS custom properties to work with ThemeProvider
+  const root = document.documentElement;
+  const colors = getRoleCSSColors(role);
+  root.style.setProperty('--primary', colors.primary);
+  root.style.setProperty('--primary-foreground', '#ffffff');
+
+  // Remove transition after animation completes
+  setTimeout(() => {
+    document.body.style.transition = '';
+  }, 300);
+};
+
+// Helper function to get current theme class (migrated from mantineTheme.ts)
+export const getCurrentTheme = (): ThemeRole => {
+  if (document.body.classList.contains('theme-admin')) return 'admin';
+  if (document.body.classList.contains('theme-counselor')) return 'counselor';
+  return 'student';
 };

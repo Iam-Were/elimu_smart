@@ -694,6 +694,15 @@ Parse.Cloud.define('logUserActivity', async (request) => {
     
     await activity.save(null, { useMasterKey: true });
     
+    // Update assessment progress if this is an assessment activity
+    if (activityType.includes('assessment')) {
+      await Parse.Cloud.run('updateAssessmentProgress', { 
+        userId: user.id, 
+        cardId: data.cardId,
+        progress: data.progress
+      }, { useMasterKey: true });
+    }
+    
     // Update user's career readiness score asynchronously
     Parse.Cloud.run('updateCareerReadinessScore', { userId: user.id }, { useMasterKey: true });
     
@@ -701,6 +710,124 @@ Parse.Cloud.define('logUserActivity', async (request) => {
   } catch (error) {
     console.error('Log activity error:', error);
     throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to log user activity');
+  }
+});
+
+// Assessment Progress Tracking
+Parse.Cloud.define('updateAssessmentProgress', async (request) => {
+  const { userId, cardId, progress } = request.params;
+  
+  try {
+    const AssessmentProgress = Parse.Object.extend('AssessmentProgress');
+    const query = new Parse.Query(AssessmentProgress);
+    query.equalTo('user', { __type: 'Pointer', className: '_User', objectId: userId });
+    query.equalTo('cardId', cardId);
+    
+    let progressRecord = await query.first({ useMasterKey: true });
+    
+    if (!progressRecord) {
+      progressRecord = new AssessmentProgress();
+      progressRecord.set('user', { __type: 'Pointer', className: '_User', objectId: userId });
+      progressRecord.set('cardId', cardId);
+      progressRecord.set('progress', 0);
+      progressRecord.set('status', 'not-started');
+    }
+    
+    progressRecord.set('progress', progress);
+    progressRecord.set('lastUpdated', new Date());
+    
+    // Update status based on progress
+    if (progress === 0) {
+      progressRecord.set('status', 'not-started');
+    } else if (progress === 100) {
+      progressRecord.set('status', 'completed');
+    } else {
+      progressRecord.set('status', 'in-progress');
+    }
+    
+    await progressRecord.save(null, { useMasterKey: true });
+    
+    return { success: true, progress, status: progressRecord.get('status') };
+  } catch (error) {
+    console.error('Update assessment progress error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to update assessment progress');
+  }
+});
+
+// Get Assessment Progress for User
+Parse.Cloud.define('getAssessmentProgress', async (request) => {
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  try {
+    const AssessmentProgress = Parse.Object.extend('AssessmentProgress');
+    const query = new Parse.Query(AssessmentProgress);
+    query.equalTo('user', user);
+    
+    const progressRecords = await query.find({ useMasterKey: true });
+    
+    const progressMap = {};
+    progressRecords.forEach(record => {
+      progressMap[record.get('cardId')] = {
+        progress: record.get('progress'),
+        status: record.get('status'),
+        lastUpdated: record.get('lastUpdated')
+      };
+    });
+    
+    return progressMap;
+  } catch (error) {
+    console.error('Get assessment progress error:', error);
+    return {};
+  }
+});
+
+// Complete Assessment - Mark as 100% complete
+Parse.Cloud.define('completeAssessment', async (request) => {
+  const { cardId, assessmentData } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  try {
+    // Update assessment progress to 100%
+    await Parse.Cloud.run('updateAssessmentProgress', {
+      userId: user.id,
+      cardId,
+      progress: 100
+    }, { useMasterKey: true });
+    
+    // Store assessment results if provided
+    if (assessmentData) {
+      const AssessmentResult = Parse.Object.extend('AssessmentResult');
+      const result = new AssessmentResult();
+      result.set('user', user);
+      result.set('cardId', cardId);
+      result.set('data', assessmentData);
+      result.set('completedAt', new Date());
+      
+      await result.save(null, { useMasterKey: true });
+    }
+    
+    // Log completion activity
+    await Parse.Cloud.run('logUserActivity', {
+      activityType: 'assessment_completed',
+      data: {
+        cardId,
+        progress: 100,
+        completedAt: new Date()
+      }
+    }, { useMasterKey: true });
+    
+    return { success: true, message: 'Assessment completed successfully' };
+  } catch (error) {
+    console.error('Complete assessment error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to complete assessment');
   }
 });
 
@@ -3784,4 +3911,329 @@ function getEducationSteps(current, required) {
   return ['Continue current education path'];
 }
 
-console.log('☁️ Elimu Smart Cloud Functions loaded successfully (including RIASEC API + Subject-Career Mapper + Skills Assessment + University Course Finder + Career Exploration)');
+// ===== BADGE & CERTIFICATION TRACKING SYSTEM =====
+
+// Get user achievements and badges
+Parse.Cloud.define('getUserAchievements', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  try {
+    const UserAchievement = Parse.Object.extend('UserAchievement');
+    const query = new Parse.Query(UserAchievement);
+    query.equalTo('user', user);
+    query.descending('earnedDate');
+
+    const achievements = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      achievements: achievements.map(achievement => ({
+        id: achievement.id,
+        title: achievement.get('title'),
+        description: achievement.get('description'),
+        category: achievement.get('category'),
+        earned: achievement.get('earned'),
+        earnedDate: achievement.get('earnedDate'),
+        iconType: achievement.get('iconType') || 'Award'
+      }))
+    };
+
+  } catch (error) {
+    console.error('❌ Get user achievements error:', error);
+    throw new Error(`Failed to get achievements: ${error.message}`);
+  }
+});
+
+// Add achievement badge to user
+Parse.Cloud.define('addAchievementBadge', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const { achievementType, data } = request.params;
+
+  try {
+    const UserAchievement = Parse.Object.extend('UserAchievement');
+
+    // Check if achievement already exists
+    const existingQuery = new Parse.Query(UserAchievement);
+    existingQuery.equalTo('user', user);
+    existingQuery.equalTo('achievementType', achievementType);
+
+    const existing = await existingQuery.first({ useMasterKey: true });
+    if (existing) {
+      return { success: true, message: 'Achievement already earned' };
+    }
+
+    // Create new achievement
+    const achievement = new UserAchievement();
+    achievement.set('user', user);
+    achievement.set('achievementType', achievementType);
+    achievement.set('earned', true);
+    achievement.set('earnedDate', new Date());
+    achievement.set('data', data || {});
+
+    // Set achievement details based on type
+    const achievementDetails = getAchievementDetails(achievementType);
+    achievement.set('title', achievementDetails.title);
+    achievement.set('description', achievementDetails.description);
+    achievement.set('category', achievementDetails.category);
+    achievement.set('iconType', achievementDetails.iconType);
+
+    await achievement.save(null, { useMasterKey: true });
+
+    // Log activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'achievement_earned',
+      details: {
+        achievementType,
+        title: achievementDetails.title
+      }
+    });
+
+    return {
+      success: true,
+      achievement: {
+        id: achievement.id,
+        title: achievementDetails.title,
+        description: achievementDetails.description,
+        earnedDate: new Date()
+      }
+    };
+
+  } catch (error) {
+    console.error('❌ Add achievement badge error:', error);
+    throw new Error(`Failed to add achievement: ${error.message}`);
+  }
+});
+
+// Get user external certifications
+Parse.Cloud.define('getUserCertifications', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  try {
+    const UserCertification = Parse.Object.extend('UserCertification');
+    const query = new Parse.Query(UserCertification);
+    query.equalTo('user', user);
+    query.descending('updatedAt');
+
+    const certifications = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      certifications: certifications.map(cert => ({
+        id: cert.id,
+        name: cert.get('name'),
+        provider: cert.get('provider'),
+        status: cert.get('status'),
+        progress: cert.get('progress') || 0,
+        credentialUrl: cert.get('credentialUrl'),
+        completedDate: cert.get('completedDate'),
+        expectedCompletion: cert.get('expectedCompletion'),
+        platform: cert.get('platform'),
+        skills: cert.get('skills') || []
+      }))
+    };
+
+  } catch (error) {
+    console.error('❌ Get user certifications error:', error);
+    throw new Error(`Failed to get certifications: ${error.message}`);
+  }
+});
+
+// Sync external certification progress
+Parse.Cloud.define('syncExternalCertification', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const {
+    platform,
+    externalId,
+    name,
+    provider,
+    status,
+    progress,
+    credentialUrl,
+    completedDate
+  } = request.params;
+
+  try {
+    const UserCertification = Parse.Object.extend('UserCertification');
+
+    // Check if certification already exists
+    const existingQuery = new Parse.Query(UserCertification);
+    existingQuery.equalTo('user', user);
+    existingQuery.equalTo('externalId', externalId);
+    existingQuery.equalTo('platform', platform);
+
+    let certification = await existingQuery.first({ useMasterKey: true });
+
+    if (!certification) {
+      certification = new UserCertification();
+      certification.set('user', user);
+      certification.set('externalId', externalId);
+      certification.set('platform', platform);
+    }
+
+    // Update certification details
+    certification.set('name', name);
+    certification.set('provider', provider);
+    certification.set('status', status);
+    certification.set('progress', progress || 0);
+
+    if (credentialUrl) certification.set('credentialUrl', credentialUrl);
+    if (completedDate) certification.set('completedDate', new Date(completedDate));
+
+    await certification.save(null, { useMasterKey: true });
+
+    // If completed, check for achievement badges
+    if (status === 'Completed' && !certification.get('completionBadgeAwarded')) {
+      await checkCertificationAchievements(user, certification);
+      certification.set('completionBadgeAwarded', true);
+      await certification.save(null, { useMasterKey: true });
+    }
+
+    return { success: true, certification: certification.toJSON() };
+
+  } catch (error) {
+    console.error('❌ Sync external certification error:', error);
+    throw new Error(`Failed to sync certification: ${error.message}`);
+  }
+});
+
+// Connect external learning platform
+Parse.Cloud.define('connectLearningPlatform', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  const { platform, accessToken, refreshToken } = request.params;
+
+  try {
+    const UserPlatformConnection = Parse.Object.extend('UserPlatformConnection');
+
+    // Check if connection already exists
+    const existingQuery = new Parse.Query(UserPlatformConnection);
+    existingQuery.equalTo('user', user);
+    existingQuery.equalTo('platform', platform);
+
+    let connection = await existingQuery.first({ useMasterKey: true });
+
+    if (!connection) {
+      connection = new UserPlatformConnection();
+      connection.set('user', user);
+      connection.set('platform', platform);
+    }
+
+    connection.set('accessToken', accessToken);
+    if (refreshToken) connection.set('refreshToken', refreshToken);
+    connection.set('isActive', true);
+    connection.set('lastSync', new Date());
+
+    await connection.save(null, { useMasterKey: true });
+
+    // Trigger initial sync
+    // This would normally call the platform's API to fetch user's courses/certifications
+    // For now, we'll just log the connection
+    console.log(`✅ Connected user ${user.id} to ${platform}`);
+
+    return { success: true, platform, connected: true };
+
+  } catch (error) {
+    console.error('❌ Connect learning platform error:', error);
+    throw new Error(`Failed to connect platform: ${error.message}`);
+  }
+});
+
+// Helper function to get achievement details
+function getAchievementDetails(achievementType) {
+  const achievements = {
+    'career_explorer': {
+      title: 'Career Explorer',
+      description: 'Completed 3 career assessments',
+      category: 'assessment',
+      iconType: 'TrendingUp'
+    },
+    'riasec_master': {
+      title: 'RIASEC Master',
+      description: 'Completed personality assessment',
+      category: 'assessment',
+      iconType: 'Award'
+    },
+    'university_ready': {
+      title: 'University Ready',
+      description: 'Researched 5+ university programs',
+      category: 'planning',
+      iconType: 'GraduationCap'
+    },
+    'course_completer': {
+      title: 'Course Completer',
+      description: 'Completed first external certification',
+      category: 'learning',
+      iconType: 'BookOpen'
+    },
+    'skill_builder': {
+      title: 'Skill Builder',
+      description: 'Earned 3 professional certificates',
+      category: 'learning',
+      iconType: 'Target'
+    },
+    'counselor_connected': {
+      title: 'Counselor Connected',
+      description: 'Had first counseling session',
+      category: 'support',
+      iconType: 'Users'
+    }
+  };
+
+  return achievements[achievementType] || {
+    title: 'Achievement',
+    description: 'Unlocked achievement',
+    category: 'general',
+    iconType: 'Award'
+  };
+}
+
+// Helper function to check certification achievements
+async function checkCertificationAchievements(user, certification) {
+  try {
+    // Count completed certifications
+    const UserCertification = Parse.Object.extend('UserCertification');
+    const query = new Parse.Query(UserCertification);
+    query.equalTo('user', user);
+    query.equalTo('status', 'Completed');
+
+    const completedCount = await query.count({ useMasterKey: true });
+
+    // Award badges based on certification count
+    if (completedCount === 1) {
+      await Parse.Cloud.run('addAchievementBadge', {
+        achievementType: 'course_completer',
+        data: { certificationId: certification.id }
+      }, { user });
+    }
+
+    if (completedCount === 3) {
+      await Parse.Cloud.run('addAchievementBadge', {
+        achievementType: 'skill_builder',
+        data: { certificationCount: completedCount }
+      }, { user });
+    }
+
+  } catch (error) {
+    console.error('Error checking certification achievements:', error);
+  }
+}
+
+console.log('☁️ Elimu Smart Cloud Functions loaded successfully (including RIASEC API + Subject-Career Mapper + Skills Assessment + University Course Finder + Career Exploration + Badge & Certification Tracking)');

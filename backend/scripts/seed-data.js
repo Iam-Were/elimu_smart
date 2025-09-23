@@ -6,6 +6,9 @@ Parse.initialize('elimu-smart-local-dev');
 Parse.serverURL = 'http://localhost:1337/parse';
 Parse.masterKey = 'elimu-smart-master-key-dev';
 
+// Use Parse as master user to bypass restrictions
+Parse.Cloud.useMasterKey();
+
 // Demo users data
 const demoUsers = [
   {

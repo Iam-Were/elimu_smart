@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '../hooks/useAuth';
 import type { LoginCredentials } from '../types';
@@ -55,20 +54,22 @@ export const LoginPageShadcn: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-2">
-            <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xl">E</span>
+        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+          <CardHeader className="text-center space-y-4 pb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+              <span className="text-white font-bold text-2xl">E</span>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              Welcome Back
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Sign in to your Elimu Smart account
-            </CardDescription>
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                Welcome Back
+              </CardTitle>
+              <CardDescription className="text-gray-600 text-base">
+                Sign in to your Elimu Smart account
+              </CardDescription>
+            </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 px-8 pb-8">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -76,9 +77,9 @@ export const LoginPageShadcn: React.FC = () => {
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -87,11 +88,12 @@ export const LoginPageShadcn: React.FC = () => {
                   placeholder="Enter your email"
                   required
                   disabled={isLoading}
+                  className="h-12 px-4 text-base text-black placeholder:text-gray-500 border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -101,68 +103,96 @@ export const LoginPageShadcn: React.FC = () => {
                     placeholder="Enter your password"
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    className="h-12 px-4 pr-12 text-base text-black placeholder:text-gray-500 border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full"
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
             <div className="text-center">
-              <Link 
-                to="/forgot-password" 
-                className="text-sm text-orange-600 hover:text-orange-700 hover:underline"
+              <Link
+                to="/forgot-password"
+                className="text-sm text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors"
               >
                 Forgot your password?
               </Link>
             </div>
 
-            <Separator />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 text-gray-500 font-medium">Demo Access</span>
+              </div>
+            </div>
 
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700 text-center">
-                Demo Accounts - Quick Access
-              </p>
+            <div className="space-y-2">
               <div className="grid gap-2">
-                {demoAccounts.map((account) => (
+                {demoAccounts.slice(0, 3).map((account) => (
                   <Button
                     key={account.email}
                     variant="outline"
                     size="sm"
                     onClick={() => handleDemoLogin(account.email, account.password)}
                     disabled={isLoading}
-                    className="text-xs justify-start"
+                    className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 transition-colors"
                   >
-                    <span className="font-medium">{account.type}:</span>
-                    <span className="ml-1 text-gray-600">{account.email}</span>
+                    <span className="font-semibold text-gray-900">{account.type}</span>
+                    <span className="ml-2 text-gray-600">{account.email}</span>
                   </Button>
                 ))}
               </div>
+              <details className="text-center">
+                <summary className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer font-medium">
+                  More Demo Accounts →
+                </summary>
+                <div className="grid gap-2 mt-2">
+                  {demoAccounts.slice(3).map((account) => (
+                    <Button
+                      key={account.email}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDemoLogin(account.email, account.password)}
+                      disabled={isLoading}
+                      className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 transition-colors"
+                    >
+                      <span className="font-semibold text-gray-900">{account.type}</span>
+                      <span className="ml-2 text-gray-600">{account.email}</span>
+                    </Button>
+                  ))}
+                </div>
+              </details>
             </div>
 
-            <Separator />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+            </div>
 
             <div className="text-center text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link 
-                to="/register" 
-                className="text-orange-600 hover:text-orange-700 hover:underline font-medium"
+              <Link
+                to="/register"
+                className="text-orange-600 hover:text-orange-700 hover:underline font-semibold transition-colors"
               >
                 Sign up
               </Link>

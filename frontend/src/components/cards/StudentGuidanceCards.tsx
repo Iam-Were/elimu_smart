@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
+import { useChat } from '@/hooks/useChat';
 
 interface StudentGuidanceCard {
   id: string;
@@ -50,14 +51,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'talk-to-counselor',
     title: 'Talk to a Counselor',
-    studentDescription: 'Get one-on-one help from a real counselor who understands student life - like having an older sibling who\'s been there',
+    studentDescription: 'Get one-on-one help from a real counselor',
     icon: <Users className="h-6 w-6" />,
     status: 'available',
     priority: 'essential',
     actionText: 'Chat or Book Session',
     actionLink: '/guidance/counselor-connect',
-    studentValue: 'Someone who actually listens and helps you figure things out without judgment',
-    realTalk: 'A safe space to talk about school stress, career confusion, family pressure - whatever\'s on your mind',
+    studentValue: 'Personal guidance and support',
+    realTalk: 'Safe space for any concerns',
     whenToUse: 'When you\'re stressed, confused about your future, or need someone to talk to',
     timeNeeded: '30-45 minutes per session',
     studentWorries: [
@@ -100,14 +101,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'quick-question-help',
     title: 'Ask Quick Questions',
-    studentDescription: 'Get fast answers to specific questions about careers, subjects, or life - no appointment needed!',
+    studentDescription: 'Get fast answers to specific questions',
     icon: <MessageSquare className="h-6 w-6" />,
     status: 'available',
     priority: 'helpful',
     actionText: 'Ask a Question',
     actionLink: '/student/quick-questions',
-    studentValue: 'Immediate answers to specific questions without the pressure of a full counseling session',
-    realTalk: 'Text-based Q&A where you ask specific questions and get helpful responses within hours',
+    studentValue: 'Quick answers without appointments',
+    realTalk: 'Ask questions, get answers within hours',
     whenToUse: 'When you have specific questions but don\'t need a full counseling session',
     timeNeeded: '2-5 minutes to ask, answers within 4-6 hours',
     studentWorries: [
@@ -136,14 +137,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'career-mentorship',
     title: 'Get a Career Mentor',
-    studentDescription: 'Connect with professionals working in careers you\'re interested in - get the real inside story!',
+    studentDescription: 'Connect with professionals in your dream career',
     icon: <Compass className="h-6 w-6" />,
     status: 'available',
     priority: 'helpful',
     actionText: 'Find a Mentor',
     actionLink: '/student/mentorship-matching',
-    studentValue: 'Real insights from someone actually working in your dream career - know what you\'re getting into',
-    realTalk: 'Monthly 30-minute calls with professionals who share their actual work experience, challenges, and advice',
+    studentValue: 'Real career insights and advice',
+    realTalk: 'Monthly calls with working professionals',
     whenToUse: 'When you want to really understand what a career is like before committing to it',
     timeNeeded: '30 minutes per month, 6-month commitment',
     studentWorries: [
@@ -173,14 +174,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'scholarship-finder',
     title: 'Find Scholarships & Funding',
-    studentDescription: 'Discover scholarships you actually qualify for - don\'t let money stop your dreams!',
+    studentDescription: 'Find scholarships you qualify for',
     icon: <Award className="h-6 w-6" />,
     status: 'available',
     priority: 'essential',
     actionText: 'Search Scholarships',
     actionLink: '/student/scholarship-search',
-    studentValue: 'Real scholarship opportunities based on your specific situation, grades, and interests',
-    realTalk: 'Personalized list of scholarships you can actually win, with application tips and deadlines',
+    studentValue: 'Personalized scholarship opportunities',
+    realTalk: 'Scholarships you can win with application tips',
     whenToUse: 'As soon as you\'re in Form 3 or 4 - many scholarships have early application deadlines',
     timeNeeded: '30 minutes initial search, ongoing applications',
     studentWorries: [
@@ -210,14 +211,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'skills-building-resources',
     title: 'Build Job-Ready Skills',
-    studentDescription: 'Learn the actual skills employers want - coding, communication, leadership - get ahead of other students!',
+    studentDescription: 'Learn skills employers want',
     icon: <TrendingUp className="h-6 w-6" />,
     status: 'available',
     priority: 'helpful',
     actionText: 'Start Skill Building',
     actionLink: '/student/skills-development',
-    studentValue: 'Practical skills that make you employable and confident in your chosen career',
-    realTalk: 'Free online courses, practice projects, and certification opportunities in skills that actually matter for jobs',
+    studentValue: 'Job-ready skills and confidence',
+    realTalk: 'Free courses and certification opportunities',
     whenToUse: 'Anytime you want to get ahead and build your resume while still in school',
     timeNeeded: '2-5 hours per week, depending on the skill',
     studentWorries: [
@@ -247,14 +248,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'instant-counselor-chat',
     title: 'Chat with My Counselor',
-    studentDescription: 'Get instant answers from your assigned counselor - like texting a helpful older sibling who knows about careers',
+    studentDescription: 'Get instant answers from your counselor',
     icon: <MessageSquare className="h-6 w-6" />,
     status: 'available',
     priority: 'essential',
     actionText: 'Start Chatting',
     actionLink: '/guidance/chat-counselor',
-    studentValue: 'Immediate help without scheduling appointments - get answers when you need them most',
-    realTalk: 'Real-time messaging with your counselor when they\'re online - way faster than waiting for email replies or appointments',
+    studentValue: 'Immediate help without appointments',
+    realTalk: 'Real-time messaging with your counselor',
     whenToUse: 'When you have quick questions, need clarification, or want immediate support',
     timeNeeded: 'Usually under 5 minutes for quick questions',
     studentWorries: [
@@ -284,14 +285,14 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   {
     id: 'quick-message-mentor',
     title: 'Message My Mentor',
-    studentDescription: 'Direct messaging with your career mentor - get professional insights and career advice anytime you need them',
+    studentDescription: 'Message your career mentor directly',
     icon: <Compass className="h-6 w-6" />,
     status: 'available',
     priority: 'helpful',
     actionText: 'Message Mentor',
     actionLink: '/guidance/chat-mentor',
-    studentValue: 'Professional guidance and career insights from someone actually working in your field of interest',
-    realTalk: 'Casual messaging with working professionals who share real career experiences and advice',
+    studentValue: 'Professional career guidance',
+    realTalk: 'Message working professionals for advice',
     whenToUse: 'When you want to understand what a career is really like or need professional advice',
     timeNeeded: '5-10 minutes to send message, responses within 1-2 days',
     studentWorries: [
@@ -428,9 +429,11 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
   showAll = false,
   maxCards = 6,
 }) => {
-  const { 
-    logActivity, 
-    userActivities, 
+  const navigate = useNavigate();
+  const { createChatRoom, setCurrentRoom, rooms } = useChat();
+  const {
+    logActivity,
+    userActivities,
     careerReadinessScore,
     loading,
     error 
@@ -568,17 +571,67 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
   const dynamicCards = getDynamicGuidanceCards();
   const displayCards = showAll ? dynamicCards : dynamicCards.slice(0, maxCards);
 
-  const handleCardClick = (card: StudentGuidanceCard) => {
-    logActivity('guidance_card_click', {
-      cardId: card.id,
-      cardTitle: card.title,
-      priority: card.priority,
-      status: card.status,
-      studentValue: card.studentValue,
-      realTalk: card.realTalk,
-      careerReadinessScore: careerReadinessScore?.overall || 0,
-      totalActivities: userActivities.length
-    });
+  const handleCardClick = async (card: StudentGuidanceCard) => {
+    try {
+      // Log activity safely
+      logActivity('guidance_card_click', {
+        cardId: card.id,
+        cardTitle: card.title,
+        priority: card.priority,
+        status: card.status,
+        studentValue: card.studentValue,
+        realTalk: card.realTalk,
+        careerReadinessScore: careerReadinessScore?.overall || 0,
+        totalActivities: userActivities.length
+      });
+    } catch (error) {
+      console.warn('Failed to log activity:', error);
+    }
+
+    // Handle chat cards with LinkedIn-style behavior
+    const chatCardIds = ['talk-to-counselor', 'instant-counselor-chat', 'quick-message-mentor'];
+    if (chatCardIds.includes(card.id)) {
+      try {
+        // Find existing chat room or create new one
+        let chatRoom;
+        const roomType = card.id.includes('mentor') ? 'mentoring' : 'counseling';
+        const roomTitle = card.id.includes('mentor') ? 'Career Mentor' : 'Career Counselor';
+
+        // Look for existing room of this type
+        const existingRoom = rooms.find(room => room.type === roomType);
+
+        if (existingRoom) {
+          chatRoom = existingRoom;
+        } else {
+          // Create new chat room (with demo participant for now)
+          const participantId = card.id.includes('mentor') ? 'mentor-1' : 'counselor-1';
+          chatRoom = await createChatRoom([participantId], roomType, roomTitle);
+        }
+
+        if (chatRoom) {
+          // Set as current room (this will open the LinkedIn-style chat)
+          setCurrentRoom(chatRoom);
+
+          // Log that we opened the chat instead of navigating
+          try {
+            logActivity('chat_opened_from_card', {
+              cardId: card.id,
+              chatRoomId: chatRoom.id,
+              chatType: roomType
+            });
+          } catch (error) {
+            console.warn('Failed to log chat activity:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to open chat:', error);
+        // Fallback to navigation if chat fails
+        navigate(card.actionLink);
+      }
+    } else {
+      // Navigate to the route for non-chat cards
+      navigate(card.actionLink);
+    }
   };
 
   return (
@@ -832,26 +885,20 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
               </CardContent>
 
               <CardFooter className="glass-guidance-card-footer pt-4 relative z-10">
-                <Button 
-                  asChild
+                <Button
+                  onClick={() => handleCardClick(card)}
                   className={cn(
                     "w-full gap-2 transition-all duration-300 backdrop-blur-sm",
                     "shadow-lg hover:shadow-xl transform hover:-translate-y-0.5",
-                    card.priority === 'essential' 
-                      ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0" 
+                    card.priority === 'essential'
+                      ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0"
                       : card.status === 'urgent'
                       ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0"
                       : "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white border-0"
                   )}
                 >
-                  <Link 
-                    to={card.actionLink} 
-                    className="flex items-center justify-center gap-2 w-full"
-                    onClick={() => handleCardClick(card)}
-                  >
-                    {card.actionText}
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-                  </Link>
+                  {card.actionText}
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </Button>
               </CardFooter>
             </Card>

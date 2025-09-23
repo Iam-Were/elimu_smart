@@ -1,72 +1,151 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from 'react';
+import { getParse } from '../config/parse';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../hooks/useThemeContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// Form components not available yet
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Edit, Save, X, User, Settings, Shield, Bell } from 'lucide-react';
+import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera } from 'lucide-react';
 
-const profileSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-});
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+// Mock data for projects and portfolio (will be replaced with API calls)
+const mockProjects = [
+  {
+    id: '1',
+    title: 'School Management System',
+    description: 'A web application for managing student records, grades, and attendance built with React and Node.js',
+    type: 'Web Development',
+    status: 'Completed',
+    startDate: '2024-01-15',
+    endDate: '2024-02-28',
+    technologies: ['React', 'Node.js', 'MongoDB', 'Express'],
+    githubUrl: 'https://github.com/student/school-management',
+    liveUrl: 'https://school-mgmt-demo.netlify.app',
+    imageUrl: '/api/placeholder/400/250',
+    achievements: ['Improved efficiency by 40%', 'Used by 200+ students'],
+    isPublic: true
+  },
+  {
+    id: '2',
+    title: 'Climate Data Analysis',
+    description: 'Data analysis project examining climate patterns in Kenya using Python and visualization libraries',
+    type: 'Data Science',
+    status: 'In Progress',
+    startDate: '2024-02-01',
+    endDate: null,
+    technologies: ['Python', 'Pandas', 'Matplotlib', 'Jupyter'],
+    githubUrl: 'https://github.com/student/climate-analysis',
+    liveUrl: null,
+    imageUrl: '/api/placeholder/400/250',
+    achievements: ['Featured in school science fair'],
+    isPublic: true
+  },
+  {
+    id: '3',
+    title: 'Mobile Expense Tracker',
+    description: 'Android app for tracking personal expenses with budget management features',
+    type: 'Mobile Development',
+    status: 'Completed',
+    startDate: '2023-11-01',
+    endDate: '2023-12-15',
+    technologies: ['Java', 'Android Studio', 'SQLite'],
+    githubUrl: 'https://github.com/student/expense-tracker',
+    liveUrl: null,
+    imageUrl: '/api/placeholder/400/250',
+    achievements: ['500+ downloads on Play Store'],
+    isPublic: false
+  }
+];
+
+const mockExperience = [
+  {
+    id: '1',
+    title: 'Junior Web Developer Intern',
+    company: 'TechStart Kenya',
+    location: 'Nairobi, Kenya',
+    type: 'Internship',
+    startDate: '2024-01-15',
+    endDate: null,
+    current: true,
+    description: 'Working on client websites using React and WordPress. Gained experience in responsive design and client communication.',
+    skills: ['React', 'WordPress', 'CSS', 'Client Communication'],
+    achievements: ['Built 3 client websites', 'Improved page load speeds by 30%']
+  },
+  {
+    id: '2',
+    title: 'Computer Lab Assistant',
+    company: 'Nairobi Secondary School',
+    location: 'Nairobi, Kenya',
+    type: 'Part-time',
+    startDate: '2023-09-01',
+    endDate: '2023-12-31',
+    current: false,
+    description: 'Assisted students with computer basics and maintained lab equipment. Tutored junior students in programming fundamentals.',
+    skills: ['Teaching', 'Technical Support', 'Computer Maintenance'],
+    achievements: ['Helped 50+ students improve computer skills']
+  }
+];
+
+const mockSkills = [
+  { name: 'JavaScript', level: 85, category: 'Programming' },
+  { name: 'React', level: 80, category: 'Frontend' },
+  { name: 'Python', level: 75, category: 'Programming' },
+  { name: 'Node.js', level: 70, category: 'Backend' },
+  { name: 'Data Analysis', level: 65, category: 'Analytics' },
+  { name: 'Project Management', level: 78, category: 'Soft Skills' },
+  { name: 'Communication', level: 85, category: 'Soft Skills' },
+  { name: 'Problem Solving', level: 90, category: 'Soft Skills' }
+];
 
 export const ProfilePage: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [projects] = useState(mockProjects);
+  const [experience] = useState(mockExperience);
+  const [skills] = useState(mockSkills);
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
 
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-    },
-  });
 
-  const handleSaveProfile = async (data: ProfileFormValues) => {
-    console.log('Profile data:', data);
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  // Load user projects from backend
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getUserProjects');
+        if (result.success && result.projects.length > 0) {
+          setProjects(result.projects);
+        }
+      } catch (error) {
+        console.warn('Failed to load projects, using mock data:', error);
+        // Keep mock data as fallback
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
 
-      toast.success('Profile updated successfully!');
-      setIsEditing(false);
-    } catch {
-      toast.error('Failed to update profile. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    loadProjects();
+  }, []);
 
-  const handleCancelEdit = () => {
-    form.reset();
-    setIsEditing(false);
-  };
+  // Load user experience from backend
+  useEffect(() => {
+    const loadExperience = async () => {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getUserExperience');
+        if (result.success && result.experience.length > 0) {
+          setExperience(result.experience);
+        }
+      } catch (error) {
+        console.warn('Failed to load experience, using mock data:', error);
+        // Keep mock data as fallback
+      } finally {
+        setLoadingExperience(false);
+      }
+    };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'student': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'counselor': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+    loadExperience();
+  }, []);
+
 
   const getThemeColor = (theme: string) => {
     switch (theme) {
@@ -88,272 +167,367 @@ export const ProfilePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Profile Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
+        {/* LinkedIn-Style Header Card */}
+        <Card className="mb-8 overflow-hidden">
+          {/* Cover Photo */}
+          <div className={`h-32 bg-gradient-to-r ${getThemeColor(currentTheme)} relative`}>
+            <div className="absolute inset-0 bg-black/10"></div>
+          </div>
+
+          {/* Profile Section */}
+          <CardContent className="relative -mt-16 pb-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Profile Picture */}
+              <div className="relative">
+                <Avatar className="h-32 w-32 border-4 border-white bg-white">
                   <AvatarImage src={user?.profileImage} />
-                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-xl`}>
+                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-2xl`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
                   </AvatarFallback>
                 </Avatar>
-                
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl">
-                    {user?.firstName} {user?.lastName}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getRoleColor(user?.role || '')}>
-                      {user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'User'}
-                    </Badge>
-                    <Badge variant="outline" className="text-green-600 border-green-200">
-                      Active
-                    </Badge>
-                  </div>
-                  <CardDescription>{user?.email}</CardDescription>
-                </div>
-              </div>
-              
-              {!isEditing && (
                 <Button
-                  onClick={() => setIsEditing(true)}
+                  size="sm"
                   variant="outline"
-                  className="gap-2"
+                  className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-white"
                 >
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
+                  <Camera className="h-4 w-4" />
                 </Button>
-              )}
-            </div>
-          </CardHeader>
-        </Card>
+              </div>
 
-        {/* Tabbed Content */}
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="h-4 w-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="security" className="gap-2">
-              <Shield className="h-4 w-4" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2">
-              <Bell className="h-4 w-4" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-2">
-              <Settings className="h-4 w-4" />
-              Preferences
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Profile Tab */}
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>
-                  Update your personal details and contact information
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                {isEditing ? (
-                  <form onSubmit={form.handleSubmit(handleSaveProfile)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
-                        <Input 
-                          id="firstName"
-                          placeholder="Enter your first name" 
-                          {...form.register('firstName')}
-                          className={form.formState.errors.firstName ? 'border-red-500' : ''}
-                        />
-                        {form.formState.errors.firstName && (
-                          <p className="text-sm text-red-500">{form.formState.errors.firstName.message}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
-                        <Input 
-                          id="lastName"
-                          placeholder="Enter your last name" 
-                          {...form.register('lastName')}
-                          className={form.formState.errors.lastName ? 'border-red-500' : ''}
-                        />
-                        {form.formState.errors.lastName && (
-                          <p className="text-sm text-red-500">{form.formState.errors.lastName.message}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-                      <Input 
-                        id="email"
-                        placeholder="Enter your email" 
-                        type="email" 
-                        {...form.register('email')}
-                        className={form.formState.errors.email ? 'border-red-500' : ''}
-                      />
-                      {form.formState.errors.email && (
-                        <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
-                      )}
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90 gap-2`}
-                      >
-                        <Save className="h-4 w-4" />
-                        {isLoading ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                      
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelEdit}
-                        className="gap-2"
-                      >
-                        <X className="h-4 w-4" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">First Name</label>
-                        <p className="mt-1 text-sm">{user?.firstName}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Last Name</label>
-                        <p className="mt-1 text-sm">{user?.lastName}</p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email Address</label>
-                      <p className="mt-1 text-sm">{user?.email}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Account Created</label>
-                      <p className="mt-1 text-sm">
-                        {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Not available'}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Security Tab */}
-          <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>
-                  Manage your password and security preferences
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <Alert>
-                  <Shield className="h-4 w-4" />
-                  <AlertDescription>
-                    Security features are currently being developed. Stay tuned for password management and two-factor authentication.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Password</h4>
-                      <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
-                    </div>
-                    <Button variant="outline" disabled>
-                      Change Password
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Two-Factor Authentication</h4>
-                      <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                    </div>
-                    <Button variant="outline" disabled>
-                      Enable 2FA
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>
-                  Choose how you want to be notified about updates
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                <Alert>
-                  <Bell className="h-4 w-4" />
-                  <AlertDescription>
-                    Notification settings will be available in the next update. You'll be able to customize email and push notifications.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Preferences Tab */}
-          <TabsContent value="preferences">
-            <Card>
-              <CardHeader>
-                <CardTitle>App Preferences</CardTitle>
-                <CardDescription>
-                  Customize your app experience and theme settings
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+              {/* Profile Info */}
+              <div className="flex-1 mt-4 md:mt-16">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div>
-                    <h4 className="font-medium">Current Theme</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)} Theme
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      {user?.firstName} {user?.lastName}
+                    </h1>
+                    <p className="text-xl text-gray-600 mt-1">
+                      Aspiring Software Developer | Form 4 Student | Tech Enthusiast
+                    </p>
+                    <p className="text-gray-500 mt-2 flex items-center gap-1">
+                      <Globe className="h-4 w-4" />
+                      Nairobi, Kenya • {user?.email}
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">
+                      500+ connections
                     </p>
                   </div>
-                  <Badge className={getRoleColor(currentTheme)}>
-                    Active
-                  </Badge>
+
+                  <div className="flex gap-2">
+                    <Button className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}>
+                      Open to work
+                    </Button>
+                    <Button variant="outline" className="gap-2">
+                      <Edit className="h-4 w-4" />
+                      Edit profile
+                    </Button>
+                  </div>
                 </div>
 
-                <Alert>
-                  <Settings className="h-4 w-4" />
-                  <AlertDescription>
-                    Additional preference settings including language, timezone, and accessibility options will be added soon.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                {/* Quick Stats */}
+                <div className="flex gap-6 mt-4 pt-4 border-t">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold">3</div>
+                    <div className="text-xs text-gray-500">Projects</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-semibold">2</div>
+                    <div className="text-xs text-gray-500">Experiences</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-semibold">8</div>
+                    <div className="text-xs text-gray-500">Skills</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-semibold">82%</div>
+                    <div className="text-xs text-gray-500">Profile strength</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* About Section Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-orange-600" />
+                About
+              </CardTitle>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-relaxed text-gray-700 mb-4">
+              Aspiring software developer with hands-on experience in web development and data analysis.
+              Currently pursuing secondary education while building practical skills through internships and personal projects.
+              Passionate about using technology to solve real-world problems, particularly in education and data visualization.
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {['Software Development', 'Data Science', 'Web Development', 'Mobile Apps', 'AI/ML', 'Education Technology'].map((interest) => (
+                <Badge key={interest} variant="secondary" className="text-xs">
+                  {interest}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Projects Section Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-orange-600" />
+                Projects
+              </CardTitle>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Code className="h-4 w-4" />
+                Add project
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {projects.map((project) => (
+                <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h4 className="font-semibold text-lg">{project.title}</h4>
+                      <p className="text-sm text-gray-600">{project.type}</p>
+                    </div>
+                    <Badge className={project.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}>
+                      {project.status}
+                    </Badge>
+                  </div>
+
+                  <p className="text-sm text-gray-700 mb-3">{project.description}</p>
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {project.technologies.map((tech) => (
+                      <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    {project.githubUrl && (
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Github className="h-3 w-3" /> Code
+                      </Button>
+                    )}
+                    {project.liveUrl && (
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <ExternalLink className="h-3 w-3" /> Live Demo
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Experience Section Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-orange-600" />
+                Experience
+              </CardTitle>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Briefcase className="h-4 w-4" />
+                Add experience
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {experience.map((exp) => (
+                <div key={exp.id} className="border-b last:border-b-0 pb-6 last:pb-0">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded bg-gradient-to-r ${getThemeColor(currentTheme)} flex items-center justify-center text-white flex-shrink-0`}>
+                      <Briefcase className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-lg">{exp.title}</h4>
+                      <p className="text-gray-600">{exp.company} • {exp.type}</p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {new Date(exp.startDate).toLocaleDateString()} - {exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString()}
+                      </p>
+                      <p className="text-sm text-gray-700 mb-3">{exp.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {exp.skills.map((skill) => (
+                          <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Skills Section Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-orange-600" />
+                Skills
+              </CardTitle>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Target className="h-4 w-4" />
+                Add skill
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {skills.map((skill) => (
+                <div key={skill.name} className="p-3 border rounded-lg text-center hover:shadow-md transition-shadow">
+                  <div className="font-medium text-sm mb-2">{skill.name}</div>
+                  <div className="text-xs text-gray-500 mb-2">{skill.category}</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                    <div
+                      className={`bg-gradient-to-r ${getThemeColor(currentTheme)} h-2 rounded-full`}
+                      style={{ width: `${skill.level}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-gray-600">{skill.level}%</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Section Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-orange-600" />
+                Privacy & Security
+              </CardTitle>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Shield className="h-4 w-4" />
+                Manage
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-medium">Password</h4>
+                  <p className="text-sm text-gray-500">Last updated 30 days ago</p>
+                </div>
+                <Button variant="outline" size="sm">Change</Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-medium">Two-factor authentication</h4>
+                  <p className="text-sm text-gray-500">Add extra security to your account</p>
+                </div>
+                <Button variant="outline" size="sm">Set up</Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-medium">Profile visibility</h4>
+                  <p className="text-sm text-gray-500">Who can see your profile</p>
+                </div>
+                <Badge variant="outline">Public</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+
+
+        {/* LinkedIn-Style Sidebar Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Analytics Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Profile Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Profile views</span>
+                  <span className="font-semibold">247</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Post impressions</span>
+                  <span className="font-semibold">1,832</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Search appearances</span>
+                  <span className="font-semibold">89</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resources Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Resources</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto">
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Career Guide</div>
+                    <div className="text-xs text-gray-500">Building your professional brand</div>
+                  </div>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto">
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Interview Tips</div>
+                    <div className="text-xs text-gray-500">Ace your next interview</div>
+                  </div>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto">
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Skills Assessment</div>
+                    <div className="text-xs text-gray-500">Discover your strengths</div>
+                  </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Activity Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600">Completed Skills Assessment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-600">Updated project: School Management</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span className="text-gray-600">Connected with 5 new people</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

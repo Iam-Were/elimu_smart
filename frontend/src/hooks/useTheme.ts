@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { applyRoleTheme } from '../theme/mantineTheme';
+import { applyRoleTheme } from '../constants/theme';
 import type { ThemeRole } from '../types';
 
 interface UseThemeReturn {

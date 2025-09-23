@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
+import { LinkedInStyleChat } from '../chat/LinkedInStyleChat';
 import { cn } from '@/lib/utils';
 
 interface Sprint18LayoutProps {
@@ -117,6 +118,9 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
           </div>
         </div>
       </footer>
+
+      {/* LinkedIn-Style Chat - Only for student routes */}
+      <LinkedInStyleChat />
     </div>
   );
 };

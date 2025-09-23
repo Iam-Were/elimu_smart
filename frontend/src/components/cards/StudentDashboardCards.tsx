@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import {
-  TrendingUp,
-  TrendingDown,
   Target,
   Award,
   GraduationCap,
@@ -49,37 +47,37 @@ const studentDashboardCards: StudentDashboardCard[] = [
   // },
   {
     id: 'scholarship-tracker',
-    title: 'Scholarships & Aid',
-    description: 'Government & private funding opportunities',
+    title: 'Scholarships',
+    description: 'Available funding',
     icon: Award,
     changeType: 'positive',
     value: 'Loading...',
-    change: 'Checking new matches',
-    actionText: 'View Opportunities',
+    change: 'New matches',
+    actionText: 'View All',
     actionLink: '/placement',
     isDynamic: true
   },
   {
     id: 'university-placement',
     title: 'University Placement',
-    description: 'Your KUCCPS placement status & opportunities',
+    description: 'KUCCPS status',
     icon: GraduationCap,
     changeType: 'positive',
     value: 'Loading...',
     change: 'Checking eligibility',
-    actionText: 'Open Placement Hub',
+    actionText: 'Check Status',
     actionLink: '/placement',
     isDynamic: true
   },
   {
     id: 'career-readiness-score',
     title: 'Career Readiness',
-    description: 'Your preparation progress',
+    description: 'Progress score',
     icon: Target,
     changeType: 'positive',
     value: 'Loading...',
-    change: 'Calculating progress',
-    actionText: 'Boost Score',
+    change: 'Live tracking',
+    actionText: 'View Score',
     actionLink: '/student/readiness-plan',
     isDynamic: true
   },
@@ -98,72 +96,52 @@ const studentDashboardCards: StudentDashboardCard[] = [
   // },
   {
     id: 'career-exploration',
-    title: 'Career Exploration',
-    description: 'Careers discovered & researched',
+    title: 'Career Discovery',
+    description: 'Explore careers',
     icon: Briefcase,
     changeType: 'positive',
     value: 'Loading...',
-    change: 'Tracking progress',
-    actionText: 'Explore More',
+    change: 'New careers',
+    actionText: 'Discover',
     actionLink: '/student/career-exploration',
     isDynamic: true
   },
   {
     id: 'support-engagement',
-    title: 'Messages & Support',
-    description: 'Counselor interactions',
+    title: 'Messages',
+    description: 'Counselor chat',
     icon: MessageSquare,
     changeType: 'positive',
     value: '12',
-    change: '3 unread today',
-    actionText: 'Check Messages',
-    actionLink: '/guidance/chat-counselor'
+    change: '3 unread',
+    actionText: 'Open Chat',
+    actionLink: '/inbox'
   },
   {
     id: 'motivation-streak',
-    title: 'Daily Streak',
-    description: 'Career planning consistency',
+    title: 'Activity Streak',
+    description: 'Daily progress',
     icon: Flame,
     changeType: 'positive',
     value: '7',
-    change: '+2 days this week',
-    actionText: 'Continue Streak',
+    change: '+2 days',
+    actionText: 'Continue',
     actionLink: '/student/daily-checkin'
   },
   {
     id: 'professional-network-growth',
-    title: 'Professional Network',
-    description: 'LinkedIn connections & mentors',
+    title: 'Network Growth',
+    description: 'Build connections',
     icon: Network,
     changeType: 'positive',
     value: 'Loading...',
-    change: 'Building connections',
-    actionText: 'Expand Network',
+    change: 'Growing',
+    actionText: 'Connect',
     actionLink: '/guidance/professional-networking',
     isDynamic: true
   }
 ];
 
-// Reference design pattern - professional change indicators
-const getChangeConfig = (changeType: 'positive' | 'negative' | 'neutral') => {
-  switch (changeType) {
-    case 'positive':
-      return {
-        icon: <TrendingUp className="h-3 w-3 text-green-600" />,
-        textColor: 'text-green-600'
-      };
-    case 'negative':
-      return {
-        icon: <TrendingDown className="h-3 w-3 text-red-600" />,
-        textColor: 'text-red-600'
-      };
-    default:
-      return {
-        icon: null,
-        textColor: 'text-muted-foreground'
-      };
-  }
-};
 
 interface StudentDashboardCardsProps {
   className?: string;
@@ -372,16 +350,16 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
     setDragOverIndex(null);
   };
   
-  // Professional rectangular card sizing - non-square proportions
+  // LinkedIn-style compact card sizing - reduce information overload
   const getCardSizeClasses = () => {
     switch (size) {
       case 'compact':
-        return 'p-3 min-h-[160px] w-full'; // Professional rectangular cards
+        return 'min-h-[120px] w-full'; // Essential metrics only
       case 'large':
-        return 'p-4 min-h-[240px] w-full'; // Large feature cards  
+        return 'min-h-[160px] w-full'; // Key information focus
       case 'medium':
       default:
-        return 'p-3 min-h-[200px] w-full'; // Medium content cards
+        return 'min-h-[140px] w-full'; // Balanced content display
     }
   };
   
@@ -509,7 +487,6 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
         "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
       )}>
         {displayCards.map((card, index) => {
-          const changeConfig = getChangeConfig(card.changeType);
           const isDragging = draggedCard === card.id;
           const isDropZone = dragOverIndex === index;
           
@@ -544,32 +521,32 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
               {/* Glass overlay effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-semibold text-slate-800 group-hover:text-orange-800 transition-colors">
-                  {card.title}
-                </CardTitle>
-                <div className="p-2.5 glass-card bg-gradient-to-br from-orange-500/20 to-orange-400/10 rounded-lg group-hover:scale-110 transition-transform duration-300">
-                  {React.createElement(card.icon, { className: "h-4 w-4 text-orange-600 group-hover:text-orange-700 transition-colors" })}
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-orange-600 rounded-md">
+                    {React.createElement(card.icon, { className: "h-4 w-4 text-white" })}
+                  </div>
+                  <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
+                    {card.title}
+                  </CardTitle>
                 </div>
               </CardHeader>
 
-              <CardContent className="relative z-10">
-                <div className="text-2xl mb-1 flex items-center gap-2 font-bold text-slate-800 group-hover:text-orange-800 transition-colors">
-                  {card.isDynamic && dashboardLoading && card.value === 'Loading...' ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
-                  ) : null}
-                  <span className="drop-shadow-sm">{card.value}</span>
+              <CardContent className="relative z-10 text-center py-4">
+                {/* LinkedIn-style primary metric emphasis */}
+                <div className="mb-2">
+                  <div className="text-2xl font-bold text-slate-800 mb-1 flex items-center justify-center gap-2">
+                    {card.isDynamic && dashboardLoading && card.value === 'Loading...' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
+                    ) : null}
+                    <span>{card.value}</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-tight">{card.change}</p>
                 </div>
-                <p className="text-xs text-slate-600 mb-3 leading-relaxed">{card.description}</p>
-                <div className="flex items-center gap-1.5 glass-card-primary p-2 rounded-lg border-orange-200/20">
-                  {changeConfig.icon}
-                  <p className={`text-xs font-medium ${changeConfig.textColor}`}>
-                    {card.change}
-                  </p>
-                </div>
+
                 {dashboardError && card.isDynamic && (
-                  <p className="text-xs text-red-500 mt-2 bg-red-50/80 p-1.5 rounded border border-red-200/50">
-                    Failed to load latest data
+                  <p className="text-xs text-red-500 mt-2">
+                    Failed to load data
                   </p>
                 )}
               </CardContent>

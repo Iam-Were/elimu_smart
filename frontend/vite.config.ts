@@ -16,6 +16,15 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['parse'],
-    exclude: ['parse/node']
+  },
+  build: {
+    rollupOptions: {
+      external: ['events'],
+      output: {
+        globals: {
+          events: 'events'
+        }
+      }
+    }
   }
 });

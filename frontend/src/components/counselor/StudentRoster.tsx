@@ -123,8 +123,8 @@ const mockStudents: Student[] = [
 export const StudentRoster: React.FC = () => {
   const [students] = useState<Student[]>(mockStudents);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPriority, setFilterPriority] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
@@ -136,8 +136,8 @@ export const StudentRoster: React.FC = () => {
       student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.school.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesPriority = !filterPriority || student.priority === filterPriority;
-    const matchesStatus = !filterStatus || student.status === filterStatus;
+    const matchesPriority = filterPriority === 'all' || student.priority === filterPriority;
+    const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
     
     return matchesSearch && matchesPriority && matchesStatus;
   });
@@ -200,7 +200,7 @@ export const StudentRoster: React.FC = () => {
                   <SelectValue placeholder="Filter by priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Priorities</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
                   <SelectItem value="high">High Priority</SelectItem>
                   <SelectItem value="medium">Medium Priority</SelectItem>
                   <SelectItem value="low">Low Priority</SelectItem>
@@ -211,7 +211,7 @@ export const StudentRoster: React.FC = () => {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="on-hold">On Hold</SelectItem>

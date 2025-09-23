@@ -84,15 +84,27 @@ const authService = {
   },
 
   register: async (data: RegisterData): Promise<User> => {
+    console.log('🔄 Starting registration for:', data.email);
     try {
+      console.log('📤 Calling ParseApi.register with data:', {
+        username: data.email,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: (data.role === 'super_admin' || data.role === 'career_counselor') ? 'counselor' : data.role
+      });
+      
       const parseUser = await ParseApi.register({
         username: data.email,
         email: data.email,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
-  role: (data.role === 'super_admin' || data.role === 'career_counselor') ? 'counselor' : data.role
+        role: (data.role === 'super_admin' || data.role === 'career_counselor') ? 'counselor' : data.role
       });
+      
+      console.log('📥 ParseApi.register response:', parseUser);
+      
       if (parseUser.sessionToken) {
         localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
       }
@@ -100,7 +112,8 @@ const authService = {
       console.log('✅ Parse REST registration successful:', user.email);
       return user;
     } catch (error) {
-      console.warn('Parse REST registration failed, using mock fallback:', error);
+      console.error('❌ Parse REST registration failed with error:', error);
+      console.warn('🔄 Using mock fallback for registration');
       await new Promise(resolve => setTimeout(resolve, 300));
       return {
         id: Date.now().toString(),

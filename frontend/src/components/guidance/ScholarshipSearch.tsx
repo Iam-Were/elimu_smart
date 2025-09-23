@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { getParse } from '@/config/parse';
+import { Award, Search, Calendar, DollarSign, Star } from 'lucide-react';
+
+const ScholarshipSearch: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isApplying, setIsApplying] = useState(false);
+
+  const handleStartApplication = async (scholarshipId: string) => {
+    setIsApplying(true);
+    try {
+      const Parse = await getParse();
+      // Uses Parse function: logUserActivity
+      await Parse.Cloud.run('logUserActivity', {
+        activityType: 'scholarship_application_started',
+        details: { scholarshipId }
+      });
+    } catch (error) {
+      console.error('Application tracking failed:', error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const scholarships = [
+    {
+      id: '1',
+      name: 'Equity Wings to Fly',
+      provider: 'Equity Bank Foundation',
+      amount: 'Full Tuition + Living Allowance',
+      deadline: '2024-03-15',
+      category: 'Need-Based',
+      matchScore: 95
+    },
+    {
+      id: '2',
+      name: 'KCB Foundation Scholarship',
+      provider: 'KCB Foundation',
+      amount: 'KSh 200,000 per year',
+      deadline: '2024-04-30',
+      category: 'Academic Merit',
+      matchScore: 88
+    }
+  ];
+
+  const filteredScholarships = scholarships.filter(s =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-orange-50/30 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-orange-600 mb-2">Find Scholarships & Funding</h1>
+          <p className="text-muted-foreground">Discover opportunities that match your profile</p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="text-center p-4">
+            <Award className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-orange-600">50+</div>
+            <div className="text-sm text-muted-foreground">Scholarships</div>
+          </Card>
+          <Card className="text-center p-4">
+            <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-green-600">KSh 2.5B</div>
+            <div className="text-sm text-muted-foreground">Total Funding</div>
+          </Card>
+          <Card className="text-center p-4">
+            <div className="text-2xl font-bold text-blue-600">18,000</div>
+            <div className="text-sm text-muted-foreground">Students Funded</div>
+          </Card>
+          <Card className="text-center p-4">
+            <div className="text-2xl font-bold text-purple-600">85%</div>
+            <div className="text-sm text-muted-foreground">Success Rate</div>
+          </Card>
+        </div>
+
+        <Card className="border-orange-200">
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search scholarships..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          {filteredScholarships.map((scholarship) => (
+            <Card key={scholarship.id} className="border-orange-200">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center text-white">
+                      <Award className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">{scholarship.name}</CardTitle>
+                      <p className="text-muted-foreground">{scholarship.provider}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-green-600">
+                      {scholarship.matchScore}% Match
+                    </div>
+                    <Badge className="bg-green-100 text-green-700">Open</Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    <span className="font-semibold text-green-600">{scholarship.amount}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                    <span>Deadline: {scholarship.deadline}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{scholarship.category}</Badge>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    Learn More
+                  </Button>
+                  <Button
+                    onClick={() => handleStartApplication(scholarship.id)}
+                    disabled={isApplying}
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-700"
+                  >
+                    {isApplying ? 'Starting...' : 'Start Application'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="border-orange-200 bg-gradient-to-r from-orange-50/50 to-background">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-orange-600" />
+              Application Tips
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <h4 className="font-semibold mb-2">Start Early</h4>
+                <p className="text-muted-foreground">Begin your search in Form 3 for best chances</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Meet Requirements</h4>
+                <p className="text-muted-foreground">Ensure you qualify before applying</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Tell Your Story</h4>
+                <p className="text-muted-foreground">Personal statements are crucial for success</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default ScholarshipSearch;

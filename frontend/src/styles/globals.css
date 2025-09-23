@@ -249,6 +249,29 @@ body {
   padding: 0;
 }
 
+/* CRITICAL FIX: Ensure all input text is visible with black/dark color */
+input, textarea, select {
+  color: #1f2937 !important; /* Dark gray text - always visible */
+  background-color: #ffffff !important; /* White background for inputs */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280 !important; /* Gray placeholder text */
+}
+
+/* Dark mode input fixes */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f9fafb !important; /* Light text in dark mode */
+  background-color: #374151 !important; /* Dark background in dark mode */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af !important; /* Light gray placeholder in dark mode */
+}
+
 /* Role-based theme classes - Applied to body */
 .theme-admin {
   --primary: var(--admin-primary);
@@ -1972,4 +1995,17 @@ body {
   .flex { display: flex; }
   .relative { position: relative; }
   .z-10 { z-index: 10; }
+
+  /* Custom gradient utilities */
+  .gradient-primary {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  }
+
+  .gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
 }
