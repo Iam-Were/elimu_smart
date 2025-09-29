@@ -3728,6 +3728,124 @@ function calculateCareerMatchScore(career, studentProfile) {
   return Math.round(score);
 }
 
+// =====================================
+// CAREERJET API INTEGRATION
+// =====================================
+
+Parse.Cloud.define('getCareerJobData', async (request) => {
+  const { careerTitle, location = 'kenya' } = request.params;
+
+  try {
+    // Simulate CareerJet API call (replace with actual API when available)
+    // For now, return mock data based on career title and Kenya market
+    const mockJobData = generateMockJobData(careerTitle, location);
+
+    return {
+      success: true,
+      career: careerTitle,
+      location: location,
+      data: mockJobData
+    };
+  } catch (error) {
+    console.error('Error fetching CareerJet data:', error);
+
+    return {
+      success: false,
+      error: error.message,
+      fallbackData: {
+        totalJobs: 0,
+        demandLevel: 'Unknown',
+        salaryRange: 'Data unavailable',
+        topEmployers: [],
+        recentJobs: []
+      }
+    };
+  }
+});
+
+// Helper function to generate mock job data (replace with real CareerJet API)
+function generateMockJobData(careerTitle, location) {
+  const jobCounts = {
+    'Data Scientist': 45,
+    'Software Engineer': 120,
+    'Software Developer': 150,
+    'Medical Doctor': 80,
+    'Nurse': 200,
+    'Teacher': 300,
+    'Pharmacist': 60,
+    'Engineer': 90,
+    'Marketing Manager': 85,
+    'Business Analyst': 75,
+    'Lawyer': 40,
+    'Accountant': 110
+  };
+
+  const salaryRanges = {
+    'Data Scientist': 'KSh 120,000 - 280,000',
+    'Software Engineer': 'KSh 90,000 - 220,000',
+    'Software Developer': 'KSh 80,000 - 200,000',
+    'Medical Doctor': 'KSh 180,000 - 450,000',
+    'Nurse': 'KSh 45,000 - 90,000',
+    'Teacher': 'KSh 35,000 - 75,000',
+    'Pharmacist': 'KSh 70,000 - 140,000',
+    'Engineer': 'KSh 75,000 - 180,000',
+    'Marketing Manager': 'KSh 80,000 - 160,000',
+    'Business Analyst': 'KSh 70,000 - 150,000',
+    'Lawyer': 'KSh 90,000 - 250,000',
+    'Accountant': 'KSh 60,000 - 120,000'
+  };
+
+  const employers = {
+    'Data Scientist': ['Safaricom', 'KCB Bank', 'Equity Bank', 'NCBA', 'Deloitte'],
+    'Software Engineer': ['Safaricom', 'Microsoft Kenya', 'Google Kenya', 'iHub', 'Andela'],
+    'Software Developer': ['Craft Silicon', 'Cellulant', 'Ushahidi', 'BRCK', 'Liquid Telecom'],
+    'Medical Doctor': ['Kenyatta Hospital', 'Aga Khan Hospital', 'Nairobi Hospital', 'Moi Hospital'],
+    'Nurse': ['KNH', 'Aga Khan', 'MP Shah', 'Gertrudes Hospital', 'AAR Healthcare'],
+    'Teacher': ['Kenya High School', 'Alliance High', 'Brookhouse School', 'ISK', 'Makini Schools'],
+    'Pharmacist': ['Goodlife Pharmacy', 'Dawa Limited', 'Cosmos Limited', 'Beta Healthcare'],
+    'Engineer': ['Kenya Power', 'KenGen', 'Bamburi Cement', 'East African Portland'],
+    'Marketing Manager': ['Unilever Kenya', 'Coca-Cola', 'Tusker', 'Nation Media', 'Standard Group'],
+    'Business Analyst': ['KCB', 'Equity Bank', 'NCBA', 'Standard Chartered', 'Deloitte'],
+    'Lawyer': ['Anjarwalla & Khanna', 'Bowmans', 'Kaplan & Stratton', 'Walker Kontos'],
+    'Accountant': ['PwC Kenya', 'KPMG', 'EY', 'Deloitte', 'Grant Thornton']
+  };
+
+  const jobTitles = careerTitle.toLowerCase();
+  let matchedKey = Object.keys(jobCounts).find(key =>
+    jobTitles.includes(key.toLowerCase()) || key.toLowerCase().includes(jobTitles)
+  );
+
+  if (!matchedKey) {
+    // Default fallback
+    matchedKey = 'Software Engineer';
+  }
+
+  const totalJobs = jobCounts[matchedKey] || Math.floor(Math.random() * 50) + 10;
+  const demandLevel = totalJobs > 100 ? 'Very High' : totalJobs > 50 ? 'High' : 'Medium';
+
+  return {
+    totalJobs: totalJobs,
+    demandLevel: demandLevel,
+    salaryRange: salaryRanges[matchedKey] || 'KSh 50,000 - 120,000',
+    topEmployers: employers[matchedKey] || ['Various Companies', 'Local Employers'],
+    recentJobs: [
+      {
+        title: careerTitle,
+        company: employers[matchedKey]?.[0] || 'Leading Company',
+        location: location === 'kenya' ? 'Nairobi' : location,
+        postedDate: '2 days ago'
+      },
+      {
+        title: `Senior ${careerTitle}`,
+        company: employers[matchedKey]?.[1] || 'Major Employer',
+        location: location === 'kenya' ? 'Mombasa' : location,
+        postedDate: '5 days ago'
+      }
+    ],
+    lastUpdated: new Date().toISOString()
+  };
+}
+
 // Helper function to generate personalized insights
 function generatePersonalizedInsights(career, studentProfile) {
   const insights = [];

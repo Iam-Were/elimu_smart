@@ -3257,6 +3257,21 @@ const handleResponse = async (data) => {
 
 This implementation establishes **gold standard patterns** for navigation and form handling that ensure reliability, responsiveness, and professional user experience across all user journeys.
 
+## UX Design Rule: Single-Page > Multi-Step
+
+### RULE: Always try single-page first, multi-step only when necessary
+
+**Single-Page Pattern (PREFER):**
+- Click subject → instant career display (like SubjectCareerMapper)
+- Static data for immediate results + backend for advanced features
+- Everything visible on one page, progressive enhancement for complex features
+
+**Multi-Step Pattern (AVOID unless necessary):**
+- Step 1 → Step 2 → Step 3 with loading between screens
+- Only use when: complex data collection, legal compliance, or mobile space constraints
+
+**Key:** Provide immediate value before asking for user input.
+
 ## important-instruction-reminders
 **RULE: Always refer to CLAUDE.md before making any changes**
 Do what has been asked; nothing more, nothing less.
