@@ -103,7 +103,9 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
       case 'super_admin':
         return 'Super Admin';
       case 'career_counselor':
-        return 'Career Counselor';
+        return 'Licensed Career Counselor';
+      case 'counselor':
+        return 'Licensed Counselor';
       default:
         return role.charAt(0).toUpperCase() + role.slice(1);
     }

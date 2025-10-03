@@ -5,7 +5,14 @@
       "Bash(npm run dev:*)",
       "Bash(npm run lint)",
       "Bash(npm run build:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Read(//c/Users/c/Documents/GitHub/elimu_smart/**)",
+      "Bash(curl -X POST http://localhost:1337/parse/functions/findUniversityCourses -H \"Content-Type: application/json\" -H \"X-Parse-Application-Id: elimu-smart-local-dev\" -d '{\"\"\"\"studentProfile\"\"\"\":{\"\"\"\"subjects\"\"\"\":[\"\"\"\"Mathematics\"\"\"\",\"\"\"\"English\"\"\"\",\"\"\"\"Physics\"\"\"\",\"\"\"\"Chemistry\"\"\"\"],\"\"\"\"grades\"\"\"\":{\"\"\"\"Mathematics\"\"\"\":\"\"\"\"A\"\"\"\",\"\"\"\"English\"\"\"\":\"\"\"\"B+\"\"\"\",\"\"\"\"Physics\"\"\"\":\"\"\"\"A-\"\"\"\",\"\"\"\"Chemistry\"\"\"\":\"\"\"\"B\"\"\"\"}},\"\"\"\"academicPreferences\"\"\"\":{\"\"\"\"careerInterests\"\"\"\":[\"\"\"\"Engineering & Technology\"\"\"\"],\"\"\"\"studyDuration\"\"\"\":\"\"\"\"4 years\"\"\"\"},\"\"\"\"financialConstraints\"\"\"\":{\"\"\"\"maxAnnualFees\"\"\"\":100000}}')",
+      "Bash(ssh -o StrictHostKeyChecking=no root@145.239.42.121 \"echo ''Connection test successful''\")",
+      "Bash(powershell:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

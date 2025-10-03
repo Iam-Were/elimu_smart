@@ -5,7 +5,6 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  Target,
   ArrowRight,
   CheckCircle,
   Clock,
@@ -46,43 +45,8 @@ interface StudentAssessmentCard {
   };
 }
 
-// Student-centric assessment cards tailored to Kenyan secondary school journey
+// Student-centric assessment cards - focused on specific evaluations
 const studentAssessmentCards: StudentAssessmentCard[] = [
-  {
-    id: 'discover-my-career',
-    title: 'Career Discovery',
-    studentFocusedDescription: 'Find careers that match your personality',
-    icon: <Target className="h-6 w-6" />,
-    progress: 0,
-    status: 'not-started',
-    urgency: 'high',
-    actionText: 'Start Discovery',
-    actionLink: '/assessment/career',
-    studentBenefit: 'Personalized career matches',
-    timeCommitment: '15 minutes',
-    studentConcerns: [
-      'Which careers suit my personality?',
-      'Are there jobs available in Kenya?',
-      'What university courses lead to these careers?',
-    ],
-    nextSteps: [
-      'Complete personality assessment',
-      'Review career matches',
-      'Explore university requirements',
-    ],
-    connections: [
-      'Links to Subject Mapper',
-      'Connects to University Finder',
-    ],
-    requirements: {
-      grade: 'Form 3-4 (best timing)',
-      timing: 'Before choosing A-level subjects',
-    },
-    aiReadiness: {
-      currentData: 'Personality assessment, interests',
-      futureAI: 'AI will predict career success probability in Kenya job market',
-    },
-  },
   {
     id: 'subject-to-career-mapper',
     title: 'Subject Mapper',
@@ -426,26 +390,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
   };
 
   return (
-    <div className={cn("space-y-8", className)}>
-      {/* Student-focused Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-            Your Career Discovery Journey
-          </h1>
-          <p className="text-muted-foreground max-w-2xl">
-            Designed specifically for Kenyan students - find your perfect career path with assessments that understand your world
-          </p>
-        </div>
-        {!showAll && studentAssessmentCards.length > maxCards && (
-          <Button asChild variant="secondary" className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50">
-            <Link to="/student/assessments">
-              See All Assessments
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
-      </div>
+    <div className={cn("space-y-6", className)}>
 
       {/* Student Progress Summary - Enhanced with Glassmorphism */}
       <Card className="glass-assessment-card border-orange-200/30 relative overflow-hidden">

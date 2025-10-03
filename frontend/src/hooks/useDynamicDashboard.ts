@@ -333,7 +333,7 @@ export const useDynamicDashboard = () => {
     try {
       const Parse = await getParse();
       const currentUser = Parse.User.current();
-      
+
       if (!currentUser) return {};
 
       const result = await Parse.Cloud.run('getAssessmentProgress');
@@ -349,14 +349,14 @@ export const useDynamicDashboard = () => {
     try {
       const Parse = await getParse();
       const currentUser = Parse.User.current();
-      
+
       if (!currentUser) return null;
 
       const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
         industry: 'technology', // Default to technology, could be dynamic based on user profile
         careerLevel: 'entry'
       });
-      
+
       if (result.success) {
         return {
           industryLeaders: result.industryLeaders || [],
@@ -368,7 +368,7 @@ export const useDynamicDashboard = () => {
           networkingRecommendations: result.networkingRecommendations || []
         };
       }
-      
+
       return null;
     } catch (error) {
       console.error('Failed to get LinkedIn insights:', error);
@@ -376,31 +376,42 @@ export const useDynamicDashboard = () => {
     }
   };
 
-  // Load all dashboard data
+  // Additional data loading functions for specific features
+  const loadExtendedData = useCallback(async () => {
+    const [cutoffAnalysis, timeline, courseRecs, linkedinInsights, assessmentProgress] = await Promise.all([
+      getCutoffAnalysis(),
+      getKuccpsTimeline(),
+      getCourseRecommendations(),
+      getLinkedInInsights(),
+      getAssessmentProgress()
+    ]);
+
+    setDashboardData(prev => ({
+      ...prev,
+      cutoffAnalysis,
+      kuccpsTimeline: timeline,
+      courseRecommendations: courseRecs,
+      linkedinInsights,
+      assessmentProgress
+    }));
+  }, []);
+
+  // Load essential dashboard data only
   const loadDashboardData = useCallback(async () => {
     setDashboardData(prev => ({ ...prev, loading: true, error: null }));
 
     try {
+      // Load only essential data for dashboard cards
       const [
-        careerReadiness, 
-        universityPlacement, 
-        scholarships, 
-        activities, 
-        cutoffAnalysis, 
-        timeline, 
-        courseRecs,
-        linkedinInsights,
-        assessmentProgress
+        careerReadiness,
+        universityPlacement,
+        scholarships,
+        activities
       ] = await Promise.all([
         calculateCareerReadiness(),
-        getUniversityPlacement(), 
+        getUniversityPlacement(),
         findScholarshipMatches(),
-        getUserActivities(),
-        getCutoffAnalysis(),
-        getKuccpsTimeline(),
-        getCourseRecommendations(),
-        getLinkedInInsights(),
-        getAssessmentProgress()
+        getUserActivities()
       ]);
 
       setDashboardData({
@@ -408,11 +419,12 @@ export const useDynamicDashboard = () => {
         universityPlacement,
         scholarshipMatches: scholarships,
         userActivities: activities,
-        cutoffAnalysis,
-        kuccpsTimeline: timeline,
-        courseRecommendations: courseRecs,
-        linkedinInsights,
-        assessmentProgress,
+        // Set others to null to indicate not loaded (load on demand)
+        cutoffAnalysis: null,
+        kuccpsTimeline: null,
+        courseRecommendations: null,
+        linkedinInsights: null,
+        assessmentProgress: {},
         loading: false,
         error: null
       });
@@ -499,7 +511,8 @@ export const useDynamicDashboard = () => {
     refreshCareerReadiness,
     refreshScholarships,
     refreshUniversityPlacement,
-    loadDashboardData
+    loadDashboardData,
+    loadExtendedData
   };
 };
 

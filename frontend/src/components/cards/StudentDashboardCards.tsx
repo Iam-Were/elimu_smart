@@ -3,16 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import {
   Target,
-  Award,
   GraduationCap,
-  Trophy,
-  Flame,
   Briefcase,
   MessageSquare,
   Move,
   RotateCcw,
   Loader2,
-  Network,
+  Trophy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -30,115 +27,54 @@ interface StudentDashboardCard {
   isDynamic?: boolean;
 }
 
-// Student-centric dashboard cards in professional priority order
+// Consolidated student dashboard cards - essential metrics only
 const studentDashboardCards: StudentDashboardCard[] = [
-  // FUTURE DEVELOPMENT: KCSE Countdown
-  // Requires KNEC integration for exam registration status
-  // {
-  //   id: 'kcse-countdown',
-  //   title: 'KCSE Preparation',
-  //   description: 'Days until exam',
-  //   icon: Clock,
-  //   changeType: 'negative',
-  //   value: '147',
-  //   change: 'Exam approaching',
-  //   actionText: 'Review Prep Plan',
-  //   actionLink: '/student/kcse-preparation'
-  // },
-  {
-    id: 'scholarship-tracker',
-    title: 'Scholarships',
-    description: 'Available funding',
-    icon: Award,
-    changeType: 'positive',
-    value: 'Loading...',
-    change: 'New matches',
-    actionText: 'View All',
-    actionLink: '/placement',
-    isDynamic: true
-  },
-  {
-    id: 'university-placement',
-    title: 'University Placement',
-    description: 'KUCCPS status',
-    icon: GraduationCap,
-    changeType: 'positive',
-    value: 'Loading...',
-    change: 'Checking eligibility',
-    actionText: 'Check Status',
-    actionLink: '/placement',
-    isDynamic: true
-  },
   {
     id: 'career-readiness-score',
     title: 'Career Readiness',
-    description: 'Progress score',
+    description: 'Overall progress',
     icon: Target,
     changeType: 'positive',
     value: 'Loading...',
     change: 'Live tracking',
-    actionText: 'View Score',
-    actionLink: '/student/readiness-plan',
+    actionText: 'View Progress',
+    actionLink: '/dashboard',
     isDynamic: true
   },
-  // FUTURE DEVELOPMENT: Subject Performance
-  // Requires live grade integration from school management systems
-  // {
-  //   id: 'subject-performance',
-  //   title: 'Subject Performance',
-  //   description: 'Track your academic progress',
-  //   icon: BookOpen,
-  //   changeType: 'positive',
-  //   value: 'B+',
-  //   change: '+0.2 improvement',
-  //   actionText: 'View Progress',
-  //   actionLink: '/assessment'
-  // },
   {
-    id: 'career-exploration',
-    title: 'Career Discovery',
-    description: 'Explore careers',
+    id: 'university-placement',
+    title: 'University & Scholarships',
+    description: 'KUCCPS & funding',
+    icon: GraduationCap,
+    changeType: 'positive',
+    value: 'Loading...',
+    change: 'Checking options',
+    actionText: 'Explore Options',
+    actionLink: '/assessment/university',
+    isDynamic: true
+  },
+  {
+    id: 'assessment-progress',
+    title: 'Assessments',
+    description: 'Career discovery',
     icon: Briefcase,
     changeType: 'positive',
     value: 'Loading...',
-    change: 'New careers',
-    actionText: 'Discover',
-    actionLink: '/student/career-exploration',
+    change: 'New insights',
+    actionText: 'Take Assessment',
+    actionLink: '/assessment',
     isDynamic: true
   },
   {
-    id: 'support-engagement',
-    title: 'Messages',
-    description: 'Counselor chat',
+    id: 'guidance-support',
+    title: 'Get Support',
+    description: 'Expert guidance',
     icon: MessageSquare,
     changeType: 'positive',
-    value: '12',
-    change: '3 unread',
-    actionText: 'Open Chat',
-    actionLink: '/inbox'
-  },
-  {
-    id: 'motivation-streak',
-    title: 'Activity Streak',
-    description: 'Daily progress',
-    icon: Flame,
-    changeType: 'positive',
-    value: '7',
-    change: '+2 days',
-    actionText: 'Continue',
-    actionLink: '/student/daily-checkin'
-  },
-  {
-    id: 'professional-network-growth',
-    title: 'Network Growth',
-    description: 'Build connections',
-    icon: Network,
-    changeType: 'positive',
-    value: 'Loading...',
-    change: 'Growing',
-    actionText: 'Connect',
-    actionLink: '/guidance/professional-networking',
-    isDynamic: true
+    value: 'Available',
+    change: 'Counselors online',
+    actionText: 'Get Help',
+    actionLink: '/guidance'
   }
 ];
 
@@ -228,54 +164,33 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
           }
           break;
 
-        case 'university-placement':
-          if (universityPlacement) {
-            return {
-              ...card,
-              value: universityPlacement.eligiblePrograms.length > 0 ? 'Eligible' : 'Reviewing',
-              change: `${universityPlacement.eligiblePrograms.length} programs available`,
-              changeType: (universityPlacement.eligiblePrograms.length > 0 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
-            };
-          }
-          break;
+        case 'university-placement': {
+          // Combine university and scholarship data
+          const totalPrograms = universityPlacement?.eligiblePrograms.length || 0;
+          const totalScholarships = scholarshipMatches.length || 0;
+          const highMatches = scholarshipMatches.filter(s => s.matchScore > 0.7).length;
 
-        case 'scholarship-tracker':
-          if (scholarshipMatches.length >= 0) {
-            return {
-              ...card,
-              value: scholarshipMatches.length.toString(),
-              change: scholarshipMatches.length > 0 ? `${scholarshipMatches.filter(s => s.matchScore > 0.7).length} high matches` : 'No matches yet',
-              changeType: (scholarshipMatches.length > 0 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
-            };
-          }
-          break;
-
-        case 'career-exploration':
-          // This would be calculated from user activities
           return {
             ...card,
-            value: '8', // Placeholder - would come from activity tracking
-            change: '2 new this week',
-            changeType: 'positive' as 'positive' | 'negative' | 'neutral'
+            value: totalPrograms > 0 ? `${totalPrograms} programs` : 'Checking...',
+            change: totalScholarships > 0 ? `${highMatches} scholarship matches` : 'No scholarships yet',
+            changeType: (totalPrograms > 0 || totalScholarships > 0 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
           };
+        }
 
-        case 'professional-network-growth': {
-          // Calculate networking progress from user activities
-          const networkingActivities = userActivities.filter((a: unknown) => {
+        case 'assessment-progress': {
+          // Calculate overall assessment completion
+          const completedAssessments = userActivities.filter((a: unknown) => {
             const activity = a as { activityType?: string };
-            return activity.activityType === 'linkedin_profile_click' || 
-                   activity.activityType === 'professional_networking_view' ||
-                   activity.activityType === 'mentor_connection_click';
-          });
-          
-          const connectionCount = Math.min(networkingActivities.length * 3 + 12, 85); // Simulate growing network
-          const weeklyGrowth = Math.floor(networkingActivities.length / 3);
-          
+            return activity.activityType?.includes('assessment') ||
+                   activity.activityType?.includes('career_discovery');
+          }).length;
+
           return {
             ...card,
-            value: `${connectionCount} connections`,
-            change: weeklyGrowth > 0 ? `+${weeklyGrowth} this week` : 'Ready to start networking',
-            changeType: (connectionCount > 50 ? 'positive' : connectionCount > 20 ? 'neutral' : 'positive') as 'positive' | 'negative' | 'neutral'
+            value: completedAssessments > 0 ? `${completedAssessments} completed` : 'Start now',
+            change: completedAssessments > 3 ? 'Well done!' : 'More insights available',
+            changeType: (completedAssessments > 2 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
           };
         }
 

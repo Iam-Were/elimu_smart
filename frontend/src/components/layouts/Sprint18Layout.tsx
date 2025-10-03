@@ -87,17 +87,17 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div><a href="/assessment/career" className="hover:text-primary transition-colors">Career Assessment</a></div>
                 <div><a href="/assessment/subjects" className="hover:text-primary transition-colors">Subject Mapper</a></div>
-                <div><a href="/assessment/career-hub" className="hover:text-primary transition-colors">Career Hub</a></div>
-                <div><a href="/assessment/history" className="hover:text-primary transition-colors">Assessment History</a></div>
+                <div><a href="/assessment/skills" className="hover:text-primary transition-colors">Skills Assessment</a></div>
+                <div><a href="/assessment/university" className="hover:text-primary transition-colors">University Finder</a></div>
               </div>
             </div>
-            
+
             <div className="space-y-3">
               <h4 className="font-medium">Guidance</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <div><a href="/guidance/find" className="hover:text-primary transition-colors">Find a Coach</a></div>
-                <div><a href="/guidance/sessions" className="hover:text-primary transition-colors">My Sessions</a></div>
-                <div><a href="/guidance/ask" className="hover:text-primary transition-colors">Ask a Question</a></div>
+                <div><a href="/guidance" className="hover:text-primary transition-colors">Get Support</a></div>
+                <div><a href="/guidance/counselor-connect" className="hover:text-primary transition-colors">Find Counselor</a></div>
+                <div><a href="/guidance/professional-networking" className="hover:text-primary transition-colors">Professional Network</a></div>
                 <div><a href="/guidance/resources" className="hover:text-primary transition-colors">Resources</a></div>
               </div>
             </div>

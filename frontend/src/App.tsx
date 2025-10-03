@@ -27,6 +27,7 @@ import { QuestionsPage } from './pages/counselor/QuestionsPage';
 import { SessionsPage } from './pages/counselor/SessionsPage';
 import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
 import { GroupSessionsPage } from './pages/counselor/GroupSessionsPage';
+import CounselorDashboardPage from './pages/counselor/CounselorDashboardPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { SystemAnalyticsPage } from './pages/admin/SystemAnalyticsPage';
@@ -71,7 +72,7 @@ const RoleBasedDefaultRoute: React.FC = () => {
 
   // Role-based routing
   if (user?.role === 'counselor') {
-    return <Navigate to="/counselor/students" replace />;
+    return <Navigate to="/counselor/dashboard" replace />;
   }
   if (user?.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
@@ -121,6 +122,7 @@ const AppContent: React.FC = () => {
         <Route path="/student/scholarship-search" element={<ScholarshipSearch />} />
         <Route path="/student/skills-development" element={<SkillsDevelopment />} />
         <Route path="/admin/portal" element={<AdminPortal />} />
+        <Route path="/counselor/dashboard" element={<CounselorDashboardPage />} />
         <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
         <Route path="/counselor/students" element={<StudentsPage />} />
         <Route path="/counselor/questions" element={<QuestionsPage />} />

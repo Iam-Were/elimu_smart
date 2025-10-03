@@ -1,0 +1,5 @@
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-09-28T08:18:53.583Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-09-28T08:18:53.585Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-09-28T08:18:53.519Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-09-28T08:18:56.671Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-09-28T08:18:56.677Z"}

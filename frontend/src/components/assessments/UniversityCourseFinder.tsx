@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowLeft, 
-  ArrowRight,
+import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
@@ -13,7 +10,6 @@ import {
   BookOpen,
   DollarSign,
   Clock,
-  Star,
   Users,
   Award,
   Building,
@@ -95,20 +91,20 @@ const KENYAN_LOCATIONS = [
 ];
 
 export const UniversityCourseFinder: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
 
-  // Step 1: Academic Profile
+  // Academic Profile
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [grades, setGrades] = useState<{ [subject: string]: string }>({});
 
-  // Step 2: Preferences
+  // Preferences
   const [careerInterests, setCareerInterests] = useState<string[]>([]);
   const [studyDuration, setStudyDuration] = useState('4 years');
   const [preferredFields] = useState<string[]>([]);
 
-  // Step 3: Financial & Location
+  // Financial & Location
   const [maxAnnualFees, setMaxAnnualFees] = useState(50000);
   const [scholarshipRequired, setScholarshipRequired] = useState(false);
   const [familyIncome, setFamilyIncome] = useState('');
@@ -189,7 +185,7 @@ export const UniversityCourseFinder: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
+          'X-Parse-Session-Token': localStorage.getItem('parse-session-token') || ''
         },
         body: JSON.stringify({
           studentProfile: {
@@ -214,9 +210,18 @@ export const UniversityCourseFinder: React.FC = () => {
 
       if (data.result && data.result.success) {
         setFinderResult(data.result);
-        setCurrentStep(4);
+        setShowResults(true);
+        // Scroll to results
+        setTimeout(() => {
+          document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else if (data.error && data.error.code === 141) {
+        setError('Please log in to use the University Course Finder. Redirecting to login...');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       } else {
-        setError('Failed to find university courses. Please try again.');
+        setError(data.error?.message || 'Failed to find university courses. Please try again.');
       }
     } catch (error) {
       console.error('University Course Finder error:', error);
@@ -244,21 +249,20 @@ export const UniversityCourseFinder: React.FC = () => {
     return 'bg-gray-100 text-gray-800';
   };
 
-  const renderAcademicProfile = () => (
+  const renderForm = () => (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
           <div className="p-2 bg-orange-100 rounded-lg">
             <BookOpen className="h-6 w-6 text-orange-600" />
           </div>
-          Your Academic Profile
+          Find Your University Program
         </CardTitle>
         <CardDescription>
-          Enter your KCSE subjects and current/expected grades to find compatible programs
+          Fill in your details below and we'll find the best university programs for you
         </CardDescription>
-        <Progress value={(currentStep / 4) * 100} className="w-full h-2" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-8">
         {/* Subject Selection */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Select Your KCSE Subjects</h3>
@@ -310,45 +314,8 @@ export const UniversityCourseFinder: React.FC = () => {
           </div>
         )}
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <span className="text-red-700">{error}</span>
-          </div>
-        )}
-
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <Button 
-            onClick={() => setCurrentStep(2)}
-            disabled={selectedSubjects.length < 4 || selectedSubjects.some(s => !grades[s])}
-          >
-            Next: Preferences
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderPreferences = () => (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <Star className="h-6 w-6 text-orange-600" />
-          </div>
-          Academic Preferences
-        </CardTitle>
-        <CardDescription>
-          Tell us about your career interests and study preferences
-        </CardDescription>
-        <Progress value={(currentStep / 4) * 100} className="w-full h-2" />
-      </CardHeader>
-      <CardContent>
+        {/* Divider */}
+        <div className="border-t my-8"></div>
         {/* Career Interests */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Career Interests</h3>
@@ -395,38 +362,8 @@ export const UniversityCourseFinder: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => setCurrentStep(1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
-          <Button 
-            onClick={() => setCurrentStep(3)}
-            disabled={careerInterests.length === 0}
-          >
-            Next: Constraints
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderConstraints = () => (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <MapPin className="h-6 w-6 text-orange-600" />
-          </div>
-          Financial & Location Preferences
-        </CardTitle>
-        <CardDescription>
-          Help us find programs that fit your budget and location preferences
-        </CardDescription>
-        <Progress value={(currentStep / 4) * 100} className="w-full h-2" />
-      </CardHeader>
-      <CardContent>
+        {/* Divider */}
+        <div className="border-t my-8"></div>
         {/* Financial Constraints */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Financial Considerations</h3>
@@ -505,6 +442,10 @@ export const UniversityCourseFinder: React.FC = () => {
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="border-t my-8"></div>
+
+        {/* Error Display */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-red-600" />
@@ -512,21 +453,22 @@ export const UniversityCourseFinder: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => setCurrentStep(2)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Preferences
-          </Button>
-          <Button onClick={handleFindPrograms} disabled={isLoading}>
+        {/* Submit Button */}
+        <div className="flex justify-center">
+          <Button
+            onClick={handleFindPrograms}
+            disabled={isLoading}
+            className="px-8 py-6 text-lg bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
+          >
             {isLoading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Finding Programs...
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Finding Your Perfect Programs...
               </>
             ) : (
               <>
-                Find My Programs
-                <Calculator className="h-4 w-4 ml-2" />
+                <Calculator className="h-5 w-5 mr-2" />
+                Find My University Programs
               </>
             )}
           </Button>
@@ -539,7 +481,7 @@ export const UniversityCourseFinder: React.FC = () => {
     if (!finderResult) return null;
 
     return (
-      <div className="w-full max-w-6xl mx-auto space-y-6">
+      <div id="results-section" className="w-full max-w-6xl mx-auto space-y-6 mt-12">
         {/* Results Header */}
         <Card className="bg-gradient-to-r from-orange-50 to-blue-50 border-orange-200">
           <CardHeader className="text-center">
@@ -718,9 +660,10 @@ export const UniversityCourseFinder: React.FC = () => {
         {/* Actions */}
         <div className="flex gap-4">
           <Button variant="outline" onClick={() => {
-            setCurrentStep(1);
+            setShowResults(false);
             setFinderResult(null);
             setError(null);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}>
             Start New Search
           </Button>
@@ -734,10 +677,8 @@ export const UniversityCourseFinder: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      {currentStep === 1 && renderAcademicProfile()}
-      {currentStep === 2 && renderPreferences()}
-      {currentStep === 3 && renderConstraints()}
-      {currentStep === 4 && renderResults()}
+      {renderForm()}
+      {showResults && renderResults()}
     </div>
   );
 };

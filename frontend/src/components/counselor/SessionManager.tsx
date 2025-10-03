@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   CalendarIcon,
   ClockIcon,
@@ -466,42 +466,48 @@ export const SessionManager: React.FC = () => {
                     <div className="flex items-center gap-2">
                       {session.status === 'scheduled' && (
                         <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleCompleteSession(session.id)}
-                              >
-                                <CheckCircledIcon className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Mark as Complete</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleOpenForm(session)}
-                              >
-                                <Pencil1Icon className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit Session</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleCancelSession(session.id)}
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Cancel Session</TooltipContent>
-                          </Tooltip>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleCompleteSession(session.id)}
+                                >
+                                  <CheckCircledIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Mark as Complete</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleOpenForm(session)}
+                                >
+                                  <Pencil1Icon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit Session</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleCancelSession(session.id)}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Cancel Session</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </>
                       )}
                     </div>

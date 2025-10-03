@@ -52,37 +52,40 @@ export const useChat = () => {
 
   // Convert API response to ChatRoom
   const parseRoomToRoom = useCallback((data: Record<string, unknown>): ChatRoom => {
+    const createdBy = data.createdBy as Record<string, unknown> | string | undefined;
     return {
-      id: data.objectId || data.id || '',
-      title: data.title || '',
-      type: data.type || 'counseling',
-      participants: data.participants || [],
-      lastMessage: data.lastMessage || '',
-      lastActivity: data.lastActivity ? new Date(data.lastActivity) : new Date(),
-      messageCount: data.messageCount || 0,
+      id: (data.objectId || data.id || '') as string,
+      title: (data.title || '') as string,
+      type: (data.type || 'counseling') as 'counseling' | 'mentoring' | 'group',
+      participants: (data.participants || []) as string[],
+      lastMessage: (data.lastMessage || '') as string,
+      lastActivity: data.lastActivity ? new Date(data.lastActivity as string | number | Date) : new Date(),
+      messageCount: (data.messageCount || 0) as number,
       isActive: data.isActive !== false,
-      createdBy: data.createdBy?.objectId || data.createdBy || ''
+      createdBy: typeof createdBy === 'object' && createdBy ? (createdBy.objectId as string || '') : (createdBy as string || '')
     };
   }, []);
 
   // Convert API response to ChatMessage
   const parseMessageToMessage = useCallback((data: Record<string, unknown>): ChatMessage => {
-    const sender = data.sender || {};
+    const sender = (data.sender || {}) as Record<string, unknown>;
+    const chatRoom = data.chatRoom as Record<string, unknown> | undefined;
+
     return {
-      id: data.objectId || data.id || '',
-      chatRoomId: data.chatRoom?.objectId || data.chatRoomId || '',
+      id: (data.objectId || data.id || '') as string,
+      chatRoomId: (chatRoom?.objectId || data.chatRoomId || '') as string,
       sender: {
-        id: sender.objectId || sender.id || '',
-        firstName: sender.firstName || '',
-        lastName: sender.lastName || ''
+        id: (sender.objectId || sender.id || '') as string,
+        firstName: (sender.firstName || '') as string,
+        lastName: (sender.lastName || '') as string
       },
-      message: data.message || '',
-      messageType: data.messageType || 'text',
-      timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+      message: (data.message || '') as string,
+      messageType: (data.messageType || 'text') as 'text' | 'file' | 'image',
+      timestamp: data.timestamp ? new Date(data.timestamp as string | number | Date) : new Date(),
       isRead: data.isRead !== false,
-      fileUrl: data.fileUrl,
-      fileName: data.fileName,
-      fileSize: data.fileSize
+      fileUrl: data.fileUrl as string | undefined,
+      fileName: data.fileName as string | undefined,
+      fileSize: data.fileSize as number | undefined
     };
   }, []);
 
@@ -243,7 +246,7 @@ export const useChat = () => {
         title
       });
 
-      const newRoom = parseRoomToRoom(result);
+      const newRoom = parseRoomToRoom(result as unknown as Record<string, unknown>);
       setChatState(prev => ({
         ...prev,
         rooms: [newRoom, ...prev.rooms]

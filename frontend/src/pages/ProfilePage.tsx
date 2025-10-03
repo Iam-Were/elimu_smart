@@ -6,7 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield } from 'lucide-react';
 
 
 // Mock data for projects and portfolio (will be replaced with API calls)
@@ -99,11 +103,32 @@ const mockSkills = [
 ];
 
 export const ProfilePage: React.FC = () => {
-  const [projects] = useState(mockProjects);
-  const [experience] = useState(mockExperience);
+  const [projects, setProjects] = useState(mockProjects);
+  const [experience, setExperience] = useState(mockExperience);
   const [skills] = useState(mockSkills);
+  const [, setLoadingProjects] = useState(true);
+  const [, setLoadingExperience] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    bio: '',
+    location: '',
+  });
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
+
+  // Initialize edit form with user data
+  useEffect(() => {
+    if (user) {
+      setEditFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        bio: user.bio || '',
+        location: user.location || 'Nairobi, Kenya',
+      });
+    }
+  }, [user]);
 
 
   // Load user projects from backend
@@ -145,6 +170,27 @@ export const ProfilePage: React.FC = () => {
 
     loadExperience();
   }, []);
+
+  // Handle form input changes
+  const handleInputChange = (field: string, value: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleSaveProfile = async () => {
+    try {
+      // Here you would typically make an API call to update the profile
+      // For now, we'll just show a success message
+      console.log('Saving profile:', editFormData);
+      setIsEditDialogOpen(false);
+      // You could add a toast notification here
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+    }
+  };
 
 
   const getThemeColor = (theme: string) => {
@@ -202,54 +248,238 @@ export const ProfilePage: React.FC = () => {
                       {user?.firstName} {user?.lastName}
                     </h1>
                     <p className="text-xl text-gray-600 mt-1">
-                      Aspiring Software Developer | Form 4 Student | Tech Enthusiast
+                      {user?.role === 'counselor'
+                        ? 'Licensed Career Counselor | M.Ed Psychology | 8+ Years Experience'
+                        : 'Aspiring Software Developer | Form 4 Student | Tech Enthusiast'
+                      }
                     </p>
                     <p className="text-gray-500 mt-2 flex items-center gap-1">
                       <Globe className="h-4 w-4" />
                       Nairobi, Kenya • {user?.email}
                     </p>
                     <p className="text-sm text-blue-600 mt-1">
-                      500+ connections
+                      {user?.role === 'counselor' ? '1,200+ professional connections' : '500+ connections'}
                     </p>
                   </div>
 
                   <div className="flex gap-2">
                     <Button className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}>
-                      Open to work
+                      {user?.role === 'counselor' ? 'Available for consultation' : 'Open to work'}
                     </Button>
-                    <Button variant="outline" className="gap-2">
-                      <Edit className="h-4 w-4" />
-                      Edit profile
-                    </Button>
+                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <Edit className="h-4 w-4" />
+                          Edit profile
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit Profile</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="firstName" className="text-right">
+                              First Name
+                            </Label>
+                            <Input
+                              id="firstName"
+                              value={editFormData.firstName}
+                              onChange={(e) => handleInputChange('firstName', e.target.value)}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="lastName" className="text-right">
+                              Last Name
+                            </Label>
+                            <Input
+                              id="lastName"
+                              value={editFormData.lastName}
+                              onChange={(e) => handleInputChange('lastName', e.target.value)}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="location" className="text-right">
+                              Location
+                            </Label>
+                            <Input
+                              id="location"
+                              value={editFormData.location}
+                              onChange={(e) => handleInputChange('location', e.target.value)}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="bio" className="text-right">
+                              Bio
+                            </Label>
+                            <Textarea
+                              id="bio"
+                              value={editFormData.bio}
+                              onChange={(e) => handleInputChange('bio', e.target.value)}
+                              className="col-span-3"
+                              placeholder={user?.role === 'counselor'
+                                ? 'Share your experience and approach to career counseling...'
+                                : 'Tell us about yourself and your career goals...'}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleSaveProfile} className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}>
+                            Save Changes
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
 
                 {/* Quick Stats */}
                 <div className="flex gap-6 mt-4 pt-4 border-t">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">3</div>
-                    <div className="text-xs text-gray-500">Projects</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">2</div>
-                    <div className="text-xs text-gray-500">Experiences</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">8</div>
-                    <div className="text-xs text-gray-500">Skills</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">82%</div>
-                    <div className="text-xs text-gray-500">Profile strength</div>
-                  </div>
+                  {user?.role === 'counselor' ? (
+                    <>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">247</div>
+                        <div className="text-xs text-gray-500">Students Guided</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">8</div>
+                        <div className="text-xs text-gray-500">Years Experience</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">15</div>
+                        <div className="text-xs text-gray-500">Certifications</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">95%</div>
+                        <div className="text-xs text-gray-500">Success Rate</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">3</div>
+                        <div className="text-xs text-gray-500">Projects</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">2</div>
+                        <div className="text-xs text-gray-500">Experiences</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">8</div>
+                        <div className="text-xs text-gray-500">Skills</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">82%</div>
+                        <div className="text-xs text-gray-500">Profile strength</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* About Section Card */}
-        <Card className="mb-6">
+        {/* Counselor-specific content */}
+        {user?.role === 'counselor' ? (
+          <div className="space-y-6">
+            {/* Professional Credentials Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-yellow-600" />
+                  Professional Credentials
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <div>
+                      <p className="font-medium text-yellow-800">Licensed Career Counselor</p>
+                      <p className="text-sm text-yellow-600">Kenya Association of Professional Counselors (KAPC) - License #CC-2847</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div>
+                      <p className="font-medium text-blue-800">M.Ed. in Educational Psychology</p>
+                      <p className="text-sm text-blue-600">University of Nairobi - Graduated 2016</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div>
+                      <p className="font-medium text-green-800">Certified Career Development Facilitator</p>
+                      <p className="text-sm text-green-600">National Career Development Association - 2018</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <div>
+                      <p className="font-medium text-purple-800">Adolescent Counseling Specialist</p>
+                      <p className="text-sm text-purple-600">Kenya Institute of Professional Counselors - 2019</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Professional Performance Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-yellow-600" />
+                  Professional Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">247</div>
+                    <div className="text-sm text-gray-600">Students Guided</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">95%</div>
+                    <div className="text-sm text-gray-600">Success Rate</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">8</div>
+                    <div className="text-sm text-gray-600">Years Experience</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">15</div>
+                    <div className="text-sm text-gray-600">Certifications</div>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">University Placement Success</span>
+                    <span className="font-semibold text-yellow-600">94%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Average Response Time</span>
+                    <span className="font-semibold text-yellow-600">2.3 hours</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Client Satisfaction</span>
+                    <span className="font-semibold text-yellow-600">4.8/5.0</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <>
+            {/* Keep existing student content for non-counselor users */}
+            <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -359,7 +589,7 @@ export const ProfilePage: React.FC = () => {
                       <h4 className="font-semibold text-lg">{exp.title}</h4>
                       <p className="text-gray-600">{exp.company} • {exp.type}</p>
                       <p className="text-sm text-gray-500 mb-2">
-                        {new Date(exp.startDate).toLocaleDateString()} - {exp.current ? 'Present' : new Date(exp.endDate).toLocaleDateString()}
+                        {new Date(exp.startDate).toLocaleDateString()} - {exp.current ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
                       </p>
                       <p className="text-sm text-gray-700 mb-3">{exp.description}</p>
                       <div className="flex flex-wrap gap-2">
@@ -528,6 +758,8 @@ export const ProfilePage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import CounselorDashboardCards from '../../components/counselor/CounselorDashboardCards';
 import CounselorAnalyticsCards from '../../components/counselor/CounselorAnalyticsCards';
-import CounselorSessionCards from '../../components/counselor/CounselorSessionCards';
 import { StudentRoster } from '../../components/counselor/StudentRoster';
+import { QuestionQueue } from '../../components/counselor/QuestionQueue';
+import { SessionManager } from '../../components/counselor/SessionManager';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import Button from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { 
+import { Input } from '../../components/ui/input';
+import {
   LayoutDashboard,
   BarChart3,
   Calendar,
@@ -18,17 +20,26 @@ import {
   Settings,
   TrendingUp,
   Clock,
-  Target
+  Target,
+  Search,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 
 const CounselorDashboardPage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'urgent', message: 'Sarah Wilson needs immediate career guidance', time: '5 min ago' },
+    { id: 2, type: 'info', message: '3 new questions in Q&A queue', time: '15 min ago' },
+    { id: 3, type: 'success', message: 'John completed career assessment', time: '1 hour ago' },
+  ]);
 
   // Update active tab based on URL hash
   useEffect(() => {
     const hash = location.hash.replace('#', '');
-    if (hash && ['overview', 'analytics', 'sessions', 'students'].includes(hash)) {
+    if (hash && ['overview', 'students', 'sessions', 'messages', 'analytics'].includes(hash)) {
       setActiveTab(hash);
     }
   }, [location.hash]);
@@ -36,7 +47,6 @@ const CounselorDashboardPage: React.FC = () => {
   // Update URL hash when tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // Update URL hash without triggering page reload
     window.history.replaceState(null, '', `${location.pathname}#${value}`);
   };
 

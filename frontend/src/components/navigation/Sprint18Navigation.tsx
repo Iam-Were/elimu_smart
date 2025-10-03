@@ -55,6 +55,50 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     return getRoleColor(theme);
   };
 
+  const getActiveNavStyles = () => {
+    const baseColor = getThemeColor(currentTheme);
+    return {
+      background: `linear-gradient(to right, ${baseColor}, ${baseColor}dd)`,
+      color: 'white'
+    };
+  };
+
+  const getActiveTailwindClasses = () => {
+    // Get base color name from current theme for Tailwind classes
+    const colorMap = {
+      'student': 'orange',
+      'counselor': 'yellow',
+      'admin': 'purple'
+    } as const;
+
+    const colorName = colorMap[currentTheme] || 'orange';
+    return `bg-gradient-to-r from-${colorName}-500 to-${colorName}-600 text-white hover:from-${colorName}-600 hover:to-${colorName}-700`;
+  };
+
+  const getThemeColorName = () => {
+    const colorMap = {
+      'student': 'orange',
+      'counselor': 'yellow',
+      'admin': 'purple'
+    } as const;
+    return colorMap[currentTheme] || 'orange';
+  };
+
+  const getHeaderStyles = () => {
+    const baseColor = getThemeColor(currentTheme);
+    return {
+      borderColor: `${baseColor}33`, // 20% opacity
+      background: 'rgba(255, 255, 255, 0.8)'
+    };
+  };
+
+  const getLogoStyles = () => {
+    const baseColor = getThemeColor(currentTheme);
+    return {
+      background: `linear-gradient(to bottom right, ${baseColor}, ${baseColor}dd)`
+    };
+  };
+
   const getUserDisplayName = () => {
     if (!user) return 'User';
     return `${user.firstName} ${user.lastName}`;
@@ -63,7 +107,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const getSubscriptionStatus = () => {
     // Counselors are professional service providers, not subscription users
     if (user?.role === 'counselor') {
-      return 'Professional Coach';
+      return 'Licensed Counselor';
     }
     // Mock subscription status for students/other roles - replace with actual logic
     return (user as UserType & { subscription?: string })?.subscription || 'Free';
@@ -71,7 +115,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
   const getSubscriptionBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'professional coach':
+      case 'licensed counselor':
         return 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white';
       case 'premium':
         return 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white';
@@ -99,22 +143,41 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
         {user?.role && `Switched to ${user.role} mode`}
       </div>
       
-      <header 
-        className={cn("glass-nav sticky top-0 z-50 w-full border-b border-orange-200/30 relative overflow-hidden", className)}
+      <header
+        className={cn("glass-nav sticky top-0 z-50 w-full border-b relative overflow-hidden", className)}
+        style={getHeaderStyles()}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
       >
         {/* Subtle floating background elements */}
-        <div className="absolute top-0 left-1/4 w-32 h-32 bg-gradient-to-br from-orange-500/5 to-orange-300/3 rounded-full -mt-16 animate-pulse"></div>
-        <div className="absolute top-0 right-1/3 w-24 h-24 bg-gradient-to-bl from-orange-400/8 to-orange-200/4 rounded-full -mt-12"></div>
+        <div
+          className="absolute top-0 left-1/4 w-32 h-32 rounded-full -mt-16 animate-pulse"
+          style={{
+            background: `linear-gradient(to bottom right, ${getThemeColor(currentTheme)}0d, ${getThemeColor(currentTheme)}08)`
+          }}
+        ></div>
+        <div
+          className="absolute top-0 right-1/3 w-24 h-24 rounded-full -mt-12"
+          style={{
+            background: `linear-gradient(to bottom left, ${getThemeColor(currentTheme)}14, ${getThemeColor(currentTheme)}0a)`
+          }}
+        ></div>
         <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
         {/* Enhanced Logo with glass effects */}
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="glass-card flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <div
+              className="glass-card flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
+              style={getLogoStyles()}
+            >
               <Brain className="h-6 w-6 text-white drop-shadow-sm" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent group-hover:from-orange-800 group-hover:to-orange-600 transition-all duration-300">
+            <span
+              className="text-xl font-bold bg-clip-text text-transparent transition-all duration-300"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${getThemeColor(currentTheme)}, ${getThemeColor(currentTheme)}cc)`
+              }}
+            >
               Elimu Smart
             </span>
           </Link>
@@ -133,14 +196,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && `bg-gradient-to-r from-${getThemeColor(currentTheme).replace('#', '')}-500 to-${getThemeColor(currentTheme).replace('#', '')}-600 text-white hover:from-${getThemeColor(currentTheme).replace('#', '')}-600 hover:to-${getThemeColor(currentTheme).replace('#', '')}-700`
                   )}
                   style={
-                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) ? {
-                      background: `linear-gradient(to right, ${getThemeColor(currentTheme)}, ${getThemeColor(currentTheme)}dd)`,
-                      color: 'white'
-                    } : {}
+                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) ? getActiveNavStyles() : {}
                   }
                 >
                   <Home className="mr-2 h-4 w-4" />
-                  {user?.role === 'counselor' ? 'Counselor Hub' : user?.role === 'admin' ? 'Admin Panel' : 'Home'}
+                  {user?.role === 'admin' ? 'Admin Panel' : 'Home'}
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -154,7 +214,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     to="/assessment"
                     className={cn(
                       "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                      isActive("/assessment") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+                      isActive("/assessment") && getActiveTailwindClasses()
                     )}
                   >
                     <GraduationCap className="mr-2 h-4 w-4" />
@@ -172,7 +232,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     to="/guidance"
                     className={cn(
                       "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                      isActive("/guidance") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+                      isActive("/guidance") && getActiveTailwindClasses()
                     )}
                   >
                     <Users className="mr-2 h-4 w-4" />
@@ -189,7 +249,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   to="/inbox"
                   className={cn(
                     "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                    isActive("/inbox") && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+                    isActive("/inbox") && getActiveTailwindClasses()
                   )}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />
@@ -206,10 +266,10 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
-                      to="/counselor/dashboard#students"
+                      to="/counselor/students"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/counselor") && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
+                        isActive("/counselor") && getActiveTailwindClasses()
                       )}
                     >
                       <Users className="mr-2 h-4 w-4" />
@@ -221,10 +281,10 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
-                      to="/counselor/dashboard#sessions"
+                      to="/counselor/sessions"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#sessions" && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
+                        location.pathname.includes("counselor") && location.hash === "#sessions" && getActiveTailwindClasses()
                       )}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
@@ -236,10 +296,10 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
-                      to="/counselor/dashboard#analytics"
+                      to="/counselor/analytics"
                       className={cn(
                         "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#analytics" && "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700"
+                        location.pathname.includes("counselor") && location.hash === "#analytics" && getActiveTailwindClasses()
                       )}
                     >
                       <BarChart3 className="mr-2 h-4 w-4" />
