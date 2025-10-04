@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
-  ArrowLeft,
+  // ArrowLeft, // TODO: Re-enable when implementing Card 3
   CheckCircle,
   AlertCircle,
   TrendingUp,
@@ -28,30 +27,26 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface SubjectGrades {
-  [subject: string]: string;
+// TODO: Re-enable when implementing Card 3 (grade analyzer)
+// interface SubjectGrades {
+//   [subject: string]: string;
+// }
+
+interface JobPosting {
+  company: string;
+  location: string;
+  salary?: string;
 }
 
-interface CareerMatch {
-  career: string;
-  eligible: boolean;
-  clusterPointsRequired: number;
-  studentClusterPoints: number;
-  gap: number;
-  competitiveness: number;
-  employmentRate: number;
-  averageSalary: number;
-  kuccpsCode: string;
-}
-
-interface AnalysisResult {
-  clusterPoints: number;
-  careers: CareerMatch[];
-  alternativePathways: string[];
-  recommendations: Array<{
-    type: string;
-    message: string;
-  }>;
+interface LiveJobData {
+  jobs?: number;
+  avgSalary?: string;
+  recentJobs?: JobPosting[];
+  totalJobs?: number;
+  salaryRange?: string;
+  demandLevel?: string;
+  topEmployers?: string[];
+  error?: string;
 }
 
 const KENYAN_SUBJECTS = [
@@ -73,7 +68,8 @@ const KENYAN_SUBJECTS = [
   { name: 'German', icon: Globe, emoji: '🇩🇪', description: 'Foreign language, cultural understanding' }
 ];
 
-const GRADES = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
+// TODO: Re-enable when implementing Card 3 grade analyzer
+// const GRADES = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
 
 // Complete KCSE subjects with career data
 const SUBJECT_CAREERS = {
@@ -545,79 +541,71 @@ const SUBJECT_CAREERS = {
 
 export const SubjectCareerMapper: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  const [grades, setGrades] = useState<SubjectGrades>({});
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // TODO: Uncomment when implementing Card 3 (grade analyzer)
+  // const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  // const [grades, setGrades] = useState<SubjectGrades>({});
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
-  const [liveJobData, setLiveJobData] = useState<Record<string, any>>({});
+  const [liveJobData, setLiveJobData] = useState<Record<string, LiveJobData>>({});
+  const [liveJobsLoading, setLiveJobsLoading] = useState<string | null>(null);
 
-  // Function to get live job data from CareerJet via our backend
-  const loadLiveJobData = async (subject: string) => {
+  // Opt-in function to load live job data for a specific career (not auto-loading)
+  const loadLiveJobsForCareer = async (careerTitle: string) => {
+    setLiveJobsLoading(careerTitle);
+
     try {
-      const careers = SUBJECT_CAREERS[subject as keyof typeof SUBJECT_CAREERS] || [];
-
-      // Get live job data for each career from our Parse backend
-      const liveDataPromises = careers.map(async (career) => {
-        try {
-          const response = await fetch('http://localhost:1337/parse/functions/getCareerJobData', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Parse-Application-Id': 'elimu-smart-local-dev',
-              'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-            },
-            body: JSON.stringify({
-              careerTitle: career.title,
-              location: 'kenya'
-            })
-          });
-
-          const data = await response.json();
-          return {
-            career: career.title,
-            liveData: data.result?.data || null
-          };
-        } catch (error) {
-          console.warn(`Failed to load live data for ${career.title}:`, error);
-          return {
-            career: career.title,
-            liveData: null
-          };
-        }
+      const response = await fetch('http://localhost:1337/parse/functions/getCareerJobData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Parse-Application-Id': 'elimu-smart-local-dev',
+          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
+        },
+        body: JSON.stringify({
+          careerTitle,
+          location: 'kenya'
+        })
       });
 
-      const results = await Promise.all(liveDataPromises);
-      const liveDataMap = results.reduce((acc, result) => {
-        if (result.liveData) {
-          acc[result.career] = result.liveData;
-        }
-        return acc;
-      }, {} as Record<string, any>);
+      const data = await response.json();
 
-      setLiveJobData(prev => ({ ...prev, [subject]: liveDataMap }));
+      if (data.result?.data) {
+        setLiveJobData(prev => ({
+          ...prev,
+          [careerTitle]: data.result.data
+        }));
+      } else {
+        // Handle error case
+        setLiveJobData(prev => ({
+          ...prev,
+          [careerTitle]: { error: 'Unable to load live jobs. Please try again later.' }
+        }));
+      }
     } catch (error) {
-      console.warn('Failed to load live job data:', error);
+      console.error(`Failed to load live data for ${careerTitle}:`, error);
+      setLiveJobData(prev => ({
+        ...prev,
+        [careerTitle]: { error: 'Connection failed. Please check your network and try again.' }
+      }));
+    } finally {
+      setLiveJobsLoading(null);
     }
   };
 
-  // Load live job data when subject changes
-  React.useEffect(() => {
-    if (selectedSubject && SUBJECT_CAREERS[selectedSubject as keyof typeof SUBJECT_CAREERS]) {
-      loadLiveJobData(selectedSubject);
-    }
-  }, [selectedSubject]);
-
+  // TODO: Re-implement these functions when building Card 3 (grade analyzer)
+  /*
   const handleSubjectToggle = (subjectName: string) => {
     setSelectedSubjects(prev => {
       if (prev.includes(subjectName)) {
+        // Remove subject and its grade
         const newSubjects = prev.filter(s => s !== subjectName);
         const newGrades = { ...grades };
         delete newGrades[subjectName];
         setGrades(newGrades);
         return newSubjects;
       } else if (prev.length < 8) {
+        // Add subject (max 8 subjects)
         return [...prev, subjectName];
       }
       return prev;
@@ -630,7 +618,10 @@ export const SubjectCareerMapper: React.FC = () => {
       [subject]: grade
     }));
   };
+  */
 
+  // TODO: Implement this function when Card 3 (grade analyzer) is ready
+  /*
   const handleAnalyze = async () => {
     if (selectedSubjects.length < 3) {
       setError('Please select at least 3 subjects to analyze career compatibility.');
@@ -663,8 +654,7 @@ export const SubjectCareerMapper: React.FC = () => {
       const data = await response.json();
 
       if (data.result) {
-        setAnalysisResult(data.result);
-        setCurrentStep(3);
+        // Analysis completed successfully
       } else {
         setError('Failed to analyze career compatibility. Please try again.');
       }
@@ -675,107 +665,10 @@ export const SubjectCareerMapper: React.FC = () => {
       setIsLoading(false);
     }
   };
+  */
 
-  const renderSubjectSelection = () => (
-    <Card className="w-full max-w-6xl mx-auto">
-      <CardHeader className="text-center">
-        <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <BookOpen className="h-8 w-8 text-orange-600" />
-        </div>
-        <CardTitle className="text-2xl text-orange-800 mb-2">
-          Select Your KCSE Subjects
-        </CardTitle>
-        <CardDescription className="text-lg text-gray-600 mb-4">
-          Tell us which subjects you're taking in Form 3 or 4. We'll show you exactly which careers match your combination and help you plan for KUCCPS.
-        </CardDescription>
-        <div className="flex items-center justify-center gap-4 mb-6">
-          <Badge variant="secondary" className="text-sm px-4 py-2">
-            Selected: {selectedSubjects.length}/8 subjects
-          </Badge>
-          <div className="w-32">
-            <Progress value={(selectedSubjects.length / 8) * 100} className="h-3" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {KENYAN_SUBJECTS.map(subject => {
-            const IconComponent = subject.icon;
-            const isSelected = selectedSubjects.includes(subject.name);
-            const isDisabled = selectedSubjects.length >= 8 && !isSelected;
-
-            return (
-              <Card
-                key={subject.name}
-                className={cn(
-                  "cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
-                  isSelected
-                    ? "ring-2 ring-orange-500 bg-orange-50 border-orange-200"
-                    : "hover:border-orange-300 hover:bg-orange-50/50",
-                  isDisabled && "opacity-50 cursor-not-allowed hover:shadow-none hover:translate-y-0"
-                )}
-                onClick={() => !isDisabled && handleSubjectToggle(subject.name)}
-              >
-                <CardContent className="p-4 text-center space-y-3">
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center mx-auto transition-colors",
-                    isSelected
-                      ? "bg-orange-200 text-orange-700"
-                      : "bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-600"
-                  )}>
-                    <IconComponent className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="text-lg">{subject.emoji}</span>
-                      <h3 className={cn(
-                        "font-semibold text-sm",
-                        isSelected ? "text-orange-800" : "text-gray-800"
-                      )}>
-                        {subject.name}
-                      </h3>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-tight">
-                      {subject.description}
-                    </p>
-                  </div>
-                  {isSelected && (
-                    <div className="flex justify-center">
-                      <CheckCircle className="h-5 w-5 text-orange-600" />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="flex justify-between items-center">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Assessment Hub
-          </Button>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              {selectedSubjects.length < 3
-                ? `Select ${3 - selectedSubjects.length} more subjects to continue`
-                : "Ready to analyze your career compatibility!"
-              }
-            </p>
-            <Button
-              onClick={() => setCurrentStep(2)}
-              disabled={selectedSubjects.length < 3}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              Next: Enter Your Grades
-              <TrendingUp className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
+  // TODO: Re-implement this function for Card 3 (grade analyzer) when ready
+  /*
   const renderGradeEntry = () => (
     <Card className="w-full max-w-5xl mx-auto">
       <CardHeader className="text-center">
@@ -843,9 +736,9 @@ export const SubjectCareerMapper: React.FC = () => {
         )}
 
         <div className="flex justify-between items-center">
-          <Button variant="outline" onClick={() => setCurrentStep(1)}>
+          <Button variant="outline" onClick={() => window.history.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Subject Selection
+            Back to Assessment Hub
           </Button>
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
@@ -876,192 +769,7 @@ export const SubjectCareerMapper: React.FC = () => {
       </CardContent>
     </Card>
   );
-
-  const renderResults = () => {
-    if (!analysisResult) return null;
-
-    return (
-      <div className="w-full max-w-6xl mx-auto space-y-6">
-        {/* Results Header */}
-        <Card className="bg-gradient-to-r from-orange-50 to-blue-50 border-orange-200">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-orange-800">
-              Your KCSE Career Analysis Results 🎯
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Your Cluster Points: <Badge className="text-lg px-3 py-1 bg-orange-600">{analysisResult.clusterPoints}/84</Badge>
-            </CardDescription>
-            <p className="text-sm text-gray-600 mt-2">
-              Based on your subject combination and expected grades - perfect for KUCCPS planning!
-            </p>
-          </CardHeader>
-        </Card>
-
-        {/* Recommendations */}
-        {analysisResult.recommendations.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Insights</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {analysisResult.recommendations.map((rec, index) => (
-                  <div key={index} className={cn(
-                    "p-4 rounded-lg border-l-4",
-                    rec.type === 'eligible' ? "bg-green-50 border-green-500" : "bg-blue-50 border-blue-500"
-                  )}>
-                    <p className="text-sm font-medium">{rec.message}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Career Matches */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl text-center">Your Career Matches 🎯</CardTitle>
-            <CardDescription className="text-center">
-              Here are the careers that match your subjects - see which ones you qualify for and which you can work towards!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {analysisResult.careers.map((career, index) => (
-                <Card key={index} className={cn(
-                  "border-2 transition-all duration-200 hover:shadow-lg",
-                  career.eligible
-                    ? "border-green-200 bg-gradient-to-r from-green-50 to-emerald-50"
-                    : "border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50"
-                )}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-12 h-12 rounded-full flex items-center justify-center",
-                          career.eligible ? "bg-green-100" : "bg-orange-100"
-                        )}>
-                          {career.eligible ? (
-                            <CheckCircle className="h-6 w-6 text-green-600" />
-                          ) : (
-                            <AlertCircle className="h-6 w-6 text-orange-600" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-800">
-                            {career.career}
-                          </h3>
-                          <p className="text-sm text-gray-600">KUCCPS Code: {career.kuccpsCode}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className={cn(
-                          "px-4 py-2 text-sm font-semibold",
-                          career.eligible
-                            ? "bg-green-600 text-white"
-                            : "bg-orange-600 text-white"
-                        )}>
-                          {career.competitiveness}% Match
-                        </Badge>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {career.eligible ? "You Qualify!" : "Needs Improvement"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Target className="h-4 w-4" />
-                          <span className="text-sm font-medium">Cluster Points</span>
-                        </div>
-                        <p className="text-lg font-bold">
-                          {career.clusterPointsRequired} required
-                        </p>
-                        {career.gap > 0 && (
-                          <p className="text-sm text-red-600 font-medium">
-                            Gap: {career.gap} points needed
-                          </p>
-                        )}
-                        {career.eligible && (
-                          <p className="text-sm text-green-600 font-medium">
-                            ✓ You meet requirements
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <TrendingUp className="h-4 w-4" />
-                          <span className="text-sm font-medium">Job Market</span>
-                        </div>
-                        <p className="text-lg font-bold">
-                          {Math.round(career.employmentRate * 100)}% employed
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          {career.employmentRate > 0.8 ? "Excellent" : career.employmentRate > 0.6 ? "Good" : "Moderate"} job prospects
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="text-sm font-medium">Average Salary</span>
-                        </div>
-                        <p className="text-lg font-bold">
-                          KSh {career.averageSalary.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-600">per month</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Alternative Pathways */}
-        {analysisResult.alternativePathways.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Alternative Education Pathways</CardTitle>
-              <CardDescription>
-                Other routes to your target careers if direct university admission isn't available
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {analysisResult.alternativePathways.map((pathway, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                    <MapPin className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm">{pathway}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-4">
-          <Button variant="outline" onClick={() => {
-            setCurrentStep(1);
-            setSelectedSubjects([]);
-            setGrades({});
-            setAnalysisResult(null);
-            setError(null);
-          }}>
-            Start New Analysis
-          </Button>
-          <Button>
-            Save Results & Continue
-          </Button>
-        </div>
-      </div>
-    );
-  };
+  */
 
   // Get currently selected subject data
   const currentSubject = KENYAN_SUBJECTS.find(s => s.name === selectedSubject);
@@ -1115,7 +823,6 @@ export const SubjectCareerMapper: React.FC = () => {
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5">
             {KENYAN_SUBJECTS.slice(0, 10).map((subject) => {
-              const IconComponent = subject.icon;
               const isSelected = selectedSubject === subject.name;
               const hasCareerData = SUBJECT_CAREERS[subject.name as keyof typeof SUBJECT_CAREERS];
 
@@ -1171,7 +878,10 @@ export const SubjectCareerMapper: React.FC = () => {
 
             <div className="grid gap-6 lg:grid-cols-2">
               {currentCareers.map((career, index) => {
-                const careerLiveData = liveJobData[selectedSubject]?.[career.title];
+                const careerLiveData = liveJobData[career.title];
+                const isLoadingLiveJobs = liveJobsLoading === career.title;
+                const hasLiveData = careerLiveData && !careerLiveData.error;
+                const hasError = careerLiveData?.error;
 
                 return (
                   <Card key={index} className="hover:shadow-lg transition-all duration-300">
@@ -1183,7 +893,7 @@ export const SubjectCareerMapper: React.FC = () => {
                             <Badge className="bg-orange-600 text-white text-xs">
                               {career.match}% Match
                             </Badge>
-                            {careerLiveData?.totalJobs && (
+                            {hasLiveData && careerLiveData.totalJobs && (
                               <Badge className="bg-green-600 text-white text-xs">
                                 {careerLiveData.totalJobs} jobs live
                               </Badge>
@@ -1200,8 +910,8 @@ export const SubjectCareerMapper: React.FC = () => {
                         <div className="space-y-1">
                           <div className="text-xs text-gray-500">Salary Range</div>
                           <div className="text-sm font-medium">
-                            {careerLiveData?.salaryRange || career.salary}
-                            {careerLiveData?.salaryRange && (
+                            {hasLiveData && careerLiveData.salaryRange ? careerLiveData.salaryRange : career.salary}
+                            {hasLiveData && careerLiveData.salaryRange && (
                               <span className="text-xs text-green-600 ml-1">(Live)</span>
                             )}
                           </div>
@@ -1209,22 +919,67 @@ export const SubjectCareerMapper: React.FC = () => {
                         <div className="space-y-1">
                           <div className="text-xs text-gray-500">Job Demand</div>
                           <Badge className={cn('text-xs', getDemandColor(
-                            careerLiveData?.demandLevel || career.demand
+                            hasLiveData && careerLiveData.demandLevel ? careerLiveData.demandLevel : career.demand
                           ))}>
-                            {careerLiveData?.demandLevel || career.demand}
-                            {careerLiveData?.demandLevel && (
+                            {hasLiveData && careerLiveData.demandLevel ? careerLiveData.demandLevel : career.demand}
+                            {hasLiveData && careerLiveData.demandLevel && (
                               <span className="ml-1">📈</span>
                             )}
                           </Badge>
                         </div>
                       </div>
 
+                      {/* Live Jobs Button or Data */}
+                      {!hasLiveData && !isLoadingLiveJobs && !hasError && (
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <Button
+                            size="sm"
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                            onClick={() => loadLiveJobsForCareer(career.title)}
+                          >
+                            <TrendingUp className="mr-2 h-3 w-3" />
+                            Check Live Job Market
+                          </Button>
+                          <p className="text-xs text-blue-700 mt-2 text-center">
+                            See real job openings and current market demand
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Loading State */}
+                      {isLoadingLiveJobs && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex items-center justify-center gap-3">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                            <span className="text-sm text-gray-600">Loading live job data...</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Error State */}
+                      {hasError && (
+                        <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertCircle className="h-4 w-4 text-red-600" />
+                            <p className="text-sm text-red-700">{careerLiveData.error}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full border-red-300 text-red-700 hover:bg-red-50"
+                            onClick={() => loadLiveJobsForCareer(career.title)}
+                          >
+                            Try Again
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Live Job Opportunities */}
-                      {careerLiveData?.recentJobs && careerLiveData.recentJobs.length > 0 && (
+                      {hasLiveData && careerLiveData.recentJobs && careerLiveData.recentJobs.length > 0 && (
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Recent Job Openings</div>
                           <div className="space-y-1">
-                            {careerLiveData.recentJobs.slice(0, 2).map((job: any, jobIndex: number) => (
+                            {careerLiveData.recentJobs.slice(0, 2).map((job: JobPosting, jobIndex: number) => (
                               <div key={jobIndex} className="text-xs p-2 bg-blue-50 rounded border-l-2 border-blue-400">
                                 <div className="font-medium">{job.company}</div>
                                 <div className="text-gray-600">{job.location}</div>
@@ -1235,7 +990,7 @@ export const SubjectCareerMapper: React.FC = () => {
                       )}
 
                       {/* Top Employers */}
-                      {careerLiveData?.topEmployers && careerLiveData.topEmployers.length > 0 && (
+                      {hasLiveData && careerLiveData.topEmployers && careerLiveData.topEmployers.length > 0 && (
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Top Employers Hiring</div>
                           <div className="flex flex-wrap gap-1">
@@ -1321,7 +1076,7 @@ export const SubjectCareerMapper: React.FC = () => {
         </div>
       )}
 
-      {/* Advanced Analysis Modal/Section */}
+      {/* Advanced Analysis Modal/Section - TODO: Re-implement for Card 3 */}
       {showAdvancedAnalysis && (
         <Card className="border-2 border-orange-300">
           <CardHeader>
@@ -1329,11 +1084,13 @@ export const SubjectCareerMapper: React.FC = () => {
               Advanced KCSE Career Analysis 📊
             </CardTitle>
             <CardDescription>
-              Enter your grades for personalized university placement analysis
+              Coming soon: Enter your grades for personalized university placement analysis
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {renderGradeEntry()}
+            <div className="p-8 text-center">
+              <p className="text-gray-600">This feature will be available soon in the Grade Analyzer card.</p>
+            </div>
           </CardContent>
         </Card>
       )}
