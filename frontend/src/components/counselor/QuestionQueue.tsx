@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,18 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getParse } from '@/config/parse';
 import {
   MagnifyingGlassIcon,
   ChatBubbleIcon,
   ClockIcon,
   CheckCircledIcon,
-  BookmarkIcon,
   PersonIcon,
   ExclamationTriangleIcon,
+  BookmarkIcon,
 } from '@radix-ui/react-icons';
 
 interface Question {
@@ -154,17 +156,75 @@ const responseTemplates = [
 ];
 
 export const QuestionQueue: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [opened, setOpened] = useState(false);
+  const [answerText, setAnswerText] = useState('');
   const open = () => setOpened(true);
   const close = () => setOpened(false);
 
-  const editor = null; // Simplified editor removed
+  // Fetch questions from backend
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getStudentQuestions');
+
+        if (result.success) {
+          // Transform backend data to match UI interface
+          const transformedQuestions = result.questions.map((q: {
+            id: string;
+            studentId: string;
+            studentName: string;
+            studentEmail: string;
+            question: string;
+            answer?: string;
+            category: string;
+            status: string;
+            priority: string;
+            askedAt: string;
+          }) => ({
+            id: q.id,
+            studentId: q.studentId,
+            studentName: q.studentName,
+            studentEmail: q.studentEmail,
+            studentGrade: 'Form 4',
+            title: q.question.length > 60 ? q.question.substring(0, 60) + '...' : q.question,
+            content: q.question,
+            category: q.category,
+            tags: [q.category],
+            priority: q.priority as 'high' | 'medium' | 'low',
+            status: q.status as 'pending' | 'answered' | 'resolved',
+            createdAt: q.askedAt,
+            updatedAt: q.askedAt,
+            responses: q.answer ? [{
+              id: '1',
+              counselorId: 'current',
+              counselorName: 'Counselor',
+              content: q.answer,
+              createdAt: new Date().toISOString(),
+              helpful: true
+            }] : [],
+            views: 0,
+            upvotes: 0,
+          }));
+          setQuestions(transformedQuestions);
+        } else {
+          console.warn('Failed to fetch questions:', result.error);
+          setQuestions(mockQuestions);
+        }
+      } catch (error) {
+        console.warn('Error fetching questions, using mock data:', error);
+        setQuestions(mockQuestions);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   const filteredQuestions = questions.filter(question => {
     const matchesSearch = 
@@ -182,53 +242,73 @@ export const QuestionQueue: React.FC = () => {
 
   const handleViewQuestion = (question: Question) => {
     setSelectedQuestion(question);
-    // Load existing response if editing
-    if (question.responses.length > 0 && editor) {
-      // editor.commands.setContent(question.responses[question.responses.length - 1].content);
-    } else if (editor) {
-      // editor.commands.clearContent();
-    }
+    setAnswerText('');
     open();
   };
 
-  const handleSendResponse = () => {
-    if (selectedQuestion && editor) {
-      const content = "";
-      if (content.trim()) {
-        const newResponse: Response = {
-          id: Date.now().toString(),
-          counselorId: 'current-counselor',
-          counselorName: 'Current Counselor',
-          content,
-          createdAt: new Date().toISOString(),
-          helpful: false,
-        };
-
-        const updatedQuestions = questions.map(q => {
-          if (q.id === selectedQuestion.id) {
-            return {
-              ...q,
-              responses: [...q.responses, newResponse],
-              status: 'answered' as const,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return q;
+  const handleSendResponse = async () => {
+    if (selectedQuestion && answerText.trim()) {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('answerQuestion', {
+          questionId: selectedQuestion.id,
+          answer: answerText
         });
 
-        setQuestions(updatedQuestions);
-        // editor.commands.clearContent();
-        close();
+        if (result.success) {
+          // Reload questions to show updated answer
+          const updated = await Parse.Cloud.run('getStudentQuestions');
+          if (updated.success) {
+            const transformedQuestions = updated.questions.map((q: {
+              id: string;
+              studentId: string;
+              studentName: string;
+              studentEmail: string;
+              question: string;
+              answer?: string;
+              category: string;
+              priority: string;
+              status: string;
+              askedAt: { iso: string };
+              answeredAt?: { iso: string };
+            }) => ({
+              id: q.id,
+              studentId: q.studentId,
+              studentName: q.studentName,
+              studentEmail: q.studentEmail,
+              studentGrade: 'Form 4',
+              title: q.question.length > 60 ? q.question.substring(0, 60) + '...' : q.question,
+              content: q.question,
+              category: q.category,
+              tags: [q.category],
+              priority: q.priority as 'high' | 'medium' | 'low',
+              status: q.status as 'pending' | 'answered' | 'resolved',
+              createdAt: q.askedAt.iso,
+              updatedAt: q.answeredAt?.iso || q.askedAt.iso,
+              responses: q.answer ? [{
+                id: '1',
+                counselorId: 'current',
+                counselorName: 'Career Counselor',
+                content: q.answer,
+                createdAt: q.answeredAt?.iso || new Date().toISOString(),
+                helpful: false
+              }] : []
+            }));
+            setQuestions(transformedQuestions);
+          }
+          setAnswerText('');
+          close();
+        }
+      } catch (error) {
+        console.error('Error answering question:', error);
       }
     }
   };
 
   const handleUseTemplate = React.useCallback(() => {
-    if (editor) {
-      // Future implementation: template content insertion
-      console.log('Template feature not yet implemented');
-    }
-  }, [editor]);
+    // Future implementation: template content insertion
+    console.log('Template feature not yet implemented');
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -531,7 +611,9 @@ export const QuestionQueue: React.FC = () => {
                 {/* Response Editor */}
                 <div className="space-y-3">
                   <h3 className="font-medium">Your Response</h3>
-                  <Input
+                  <Textarea
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
                     placeholder="Type your response here..."
                     className="min-h-[100px]"
                   />
