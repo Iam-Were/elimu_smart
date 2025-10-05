@@ -1,6 +1,7 @@
 // Working Parse Server setup based on Sprint 22 commit e110a05
 const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
+const RedisCacheAdapter = require('parse-server').RedisCacheAdapter;
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -18,6 +19,14 @@ async function startServer() {
   try {
     console.log('🚀 Starting Elimu Smart Parse Server (Working Version)...');
     
+    // Redis Cache Adapter configuration
+    const cacheAdapter = process.env.NODE_ENV === 'production'
+      ? new RedisCacheAdapter({
+          url: process.env.REDIS_URL || 'redis://localhost:6379',
+          ttl: 300, // Default 5 minutes TTL
+        })
+      : null; // No cache in development for easier debugging
+
     // Parse Server configuration - using confirmed working connection
     const parseServer = new ParseServer({
       databaseURI: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_dev',
@@ -25,21 +34,24 @@ async function startServer() {
       appId: process.env.APP_ID || 'elimu-smart-local-dev',
       masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev',
       serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
-      
+
+      // Redis caching (production only)
+      cacheAdapter: cacheAdapter,
+
       verifyUserEmails: false,
-      
+
       // Future-proof configuration options
       encodeParseObjectInCloudFunction: false, // Keep current behavior, suppress warning
       enableInsecureAuthAdapters: true, // Allow anonymous auth for development
-      
+
       // Enable live query for real-time updates
       liveQuery: {
-        classNames: ['User', 'StudentProgress', 'UniversityPlacement', 'CareerProgress']
+        classNames: ['User', 'StudentProgress', 'UniversityPlacement', 'CareerProgress', 'ChatMessage', 'CounselorSession']
       },
-      
+
       sessionLength: 31536000, // 1 year in seconds
       maxLimit: 100,
-      logLevel: 'info',
+      logLevel: process.env.LOG_LEVEL || 'info',
     });
 
     // Start Parse Server properly

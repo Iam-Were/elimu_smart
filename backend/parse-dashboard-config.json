@@ -1,0 +1,26 @@
+{
+  "apps": [
+    {
+      "serverURL": "http://localhost:1337/parse",
+      "appId": "elimu_smart_app_2024",
+      "masterKey": "o^60Vo2vj9tU!Oyxi4395Z#!",
+      "appName": "Elimu Smart Production",
+      "iconName": "elimu-icon.png",
+      "primaryBackgroundColor": "#f97316",
+      "secondaryBackgroundColor": "#ea580c",
+      "production": true,
+      "supportedPushLocales": ["en"]
+    }
+  ],
+  "users": [
+    {
+      "user": "admin",
+      "pass": "$2a$10$REPLACE_WITH_BCRYPT_HASH"
+    }
+  ],
+  "useEncryptedPasswords": true,
+  "trustProxy": 1,
+  "PARSE_DASHBOARD_TRUST_PROXY": 1,
+  "PARSE_DASHBOARD_ALLOW_INSECURE_HTTP": 1,
+  "PARSE_DASHBOARD_COOKIE_SESSION_SECRET": "GENERATE_RANDOM_SECRET_HERE"
+}

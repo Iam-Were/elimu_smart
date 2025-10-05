@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowLeft, 
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import {
+  ArrowLeft,
   Save,
   Brain,
   Wrench,
@@ -17,7 +19,9 @@ import {
   Star,
   CheckCircle,
   Clock,
-  MapPin
+  MapPin,
+  Trophy,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -272,44 +276,44 @@ interface RiasecQuestion {
 
 const iipRiasecQuestions: RiasecQuestion[] = [
   // REALISTIC Activities
-  { id: 1, category: 'activities', statement: 'Test the quality of parts before shipment', riasecType: 'R' },
-  { id: 2, category: 'activities', statement: 'Lay brick or tile', riasecType: 'R' },
-  { id: 3, category: 'activities', statement: 'Work on an offshore oil-drilling rig', riasecType: 'R' },
-  { id: 4, category: 'activities', statement: 'Assemble electronic parts', riasecType: 'R' },
-  { id: 5, category: 'activities', statement: 'Drive a truck to deliver packages to offices and homes', riasecType: 'R' },
-  { id: 6, category: 'activities', statement: 'Repair household appliances', riasecType: 'R' },
-  { id: 7, category: 'activities', statement: 'Raise fish in a fish hatchery', riasecType: 'R' },
-  { id: 8, category: 'activities', statement: 'Build kitchen cabinets', riasecType: 'R' },
+  { id: 1, category: 'activities', statement: 'Test the quality of parts before shipment', riasecType: 'R', kenyaContext: 'Quality control in Kenya manufacturing' },
+  { id: 2, category: 'activities', statement: 'Lay brick or tile for building construction', riasecType: 'R', kenyaContext: 'Construction boom in Nairobi and major towns' },
+  { id: 3, category: 'activities', statement: 'Work in geothermal or renewable energy installations', riasecType: 'R', kenyaContext: 'Olkaria geothermal project and solar farms' },
+  { id: 4, category: 'activities', statement: 'Assemble or repair mobile phones and electronics', riasecType: 'R', kenyaContext: 'Growing tech repair sector in Kenya' },
+  { id: 5, category: 'activities', statement: 'Drive a matatu, truck, or delivery vehicle', riasecType: 'R', kenyaContext: 'Transport and logistics sector' },
+  { id: 6, category: 'activities', statement: 'Repair household appliances and electronics', riasecType: 'R', kenyaContext: 'Jua Kali technicians in high demand' },
+  { id: 7, category: 'activities', statement: 'Manage fish farming or aquaculture operations', riasecType: 'R', kenyaContext: 'Growing aquaculture in Lake Victoria region' },
+  { id: 8, category: 'activities', statement: 'Build furniture or kitchen cabinets', riasecType: 'R', kenyaContext: 'Carpentry is a well-established trade' },
 
   // REALISTIC Occupations
-  { id: 9, category: 'occupations', statement: 'Mechanical Engineer', riasecType: 'R' },
-  { id: 10, category: 'occupations', statement: 'Race Car Driver', riasecType: 'R' },
-  { id: 11, category: 'occupations', statement: 'Aircraft Mechanic', riasecType: 'R' },
-  { id: 12, category: 'occupations', statement: 'Carpenter', riasecType: 'R' },
-  { id: 13, category: 'occupations', statement: 'Auto Mechanic', riasecType: 'R' },
-  { id: 14, category: 'occupations', statement: 'Commercial Airline Pilot', riasecType: 'R' },
-  { id: 15, category: 'occupations', statement: 'Electrician', riasecType: 'R' },
-  { id: 16, category: 'occupations', statement: 'Farmer', riasecType: 'R', kenyaContext: 'Agricultural sector is vital in Kenya' },
+  { id: 9, category: 'occupations', statement: 'Mechanical Engineer', riasecType: 'R', kenyaContext: 'High demand in manufacturing and construction' },
+  { id: 10, category: 'occupations', statement: 'Matatu Owner/Operator or Transport Manager', riasecType: 'R', kenyaContext: 'Profitable business in Kenya transport sector' },
+  { id: 11, category: 'occupations', statement: 'Aircraft Mechanic', riasecType: 'R', kenyaContext: 'JKIA and Wilson Airport opportunities' },
+  { id: 12, category: 'occupations', statement: 'Carpenter or Furniture Maker', riasecType: 'R', kenyaContext: 'Thriving furniture industry' },
+  { id: 13, category: 'occupations', statement: 'Auto Mechanic', riasecType: 'R', kenyaContext: 'Essential trade with steady income' },
+  { id: 14, category: 'occupations', statement: 'Commercial Airline Pilot', riasecType: 'R', kenyaContext: 'Kenya Airways and regional airlines' },
+  { id: 15, category: 'occupations', statement: 'Electrician', riasecType: 'R', kenyaContext: 'High demand with KPLC projects' },
+  { id: 16, category: 'occupations', statement: 'Commercial Farmer or Agribusiness Manager', riasecType: 'R', kenyaContext: 'Modern agriculture is highly profitable' },
 
   // INVESTIGATIVE Activities
-  { id: 17, category: 'activities', statement: 'Study ways to reduce water pollution', riasecType: 'I' },
-  { id: 18, category: 'activities', statement: 'Develop a new medicine', riasecType: 'I' },
-  { id: 19, category: 'activities', statement: 'Plan a research study', riasecType: 'I' },
-  { id: 20, category: 'activities', statement: 'Study the history of past civilizations', riasecType: 'I' },
-  { id: 21, category: 'activities', statement: 'Study animal behavior', riasecType: 'I' },
-  { id: 22, category: 'activities', statement: 'Do research on plants or animals', riasecType: 'I' },
-  { id: 23, category: 'activities', statement: 'Do laboratory tests to identify diseases', riasecType: 'I' },
-  { id: 24, category: 'activities', statement: 'Study weather conditions', riasecType: 'I' },
+  { id: 17, category: 'activities', statement: 'Study ways to reduce water pollution in rivers and lakes', riasecType: 'I', kenyaContext: 'Important for Lake Victoria and Nairobi River' },
+  { id: 18, category: 'activities', statement: 'Develop new medicines or medical treatments', riasecType: 'I', kenyaContext: 'KEMRI research opportunities' },
+  { id: 19, category: 'activities', statement: 'Plan and conduct research studies', riasecType: 'I', kenyaContext: 'Universities and research institutions' },
+  { id: 20, category: 'activities', statement: 'Study Kenyan history and archaeological sites', riasecType: 'I', kenyaContext: 'National Museums of Kenya' },
+  { id: 21, category: 'activities', statement: 'Study animal behavior in national parks', riasecType: 'I', kenyaContext: 'Wildlife conservation research' },
+  { id: 22, category: 'activities', statement: 'Do research on plants, crops, or wildlife', riasecType: 'I', kenyaContext: 'Agricultural and conservation research' },
+  { id: 23, category: 'activities', statement: 'Do laboratory tests to identify diseases', riasecType: 'I', kenyaContext: 'KNH, KEMRI, and hospital labs' },
+  { id: 24, category: 'activities', statement: 'Study weather patterns and climate change', riasecType: 'I', kenyaContext: 'Kenya Meteorological Department' },
 
   // INVESTIGATIVE Occupations
-  { id: 25, category: 'occupations', statement: 'Psychologist', riasecType: 'I' },
-  { id: 26, category: 'occupations', statement: 'Research Scientist', riasecType: 'I' },
-  { id: 27, category: 'occupations', statement: 'Medical Doctor', riasecType: 'I' },
-  { id: 28, category: 'occupations', statement: 'Anthropologist', riasecType: 'I' },
-  { id: 29, category: 'occupations', statement: 'Chemist', riasecType: 'I' },
-  { id: 30, category: 'occupations', statement: 'Mathematician', riasecType: 'I' },
-  { id: 31, category: 'occupations', statement: 'Biologist', riasecType: 'I' },
-  { id: 32, category: 'occupations', statement: 'Astronomer', riasecType: 'I' },
+  { id: 25, category: 'occupations', statement: 'Psychologist or Mental Health Counselor', riasecType: 'I', kenyaContext: 'Growing mental health awareness' },
+  { id: 26, category: 'occupations', statement: 'Research Scientist at KEMRI or Universities', riasecType: 'I', kenyaContext: 'Medical and agricultural research' },
+  { id: 27, category: 'occupations', statement: 'Medical Doctor', riasecType: 'I', kenyaContext: 'High demand, competitive KUCCPS cutoff ~10.5 pts' },
+  { id: 28, category: 'occupations', statement: 'Data Analyst or Data Scientist', riasecType: 'I', kenyaContext: 'Booming tech sector in Nairobi' },
+  { id: 29, category: 'occupations', statement: 'Chemist or Pharmaceutical Researcher', riasecType: 'I', kenyaContext: 'Pharmaceutical industry growing' },
+  { id: 30, category: 'occupations', statement: 'Mathematician or Statistician', riasecType: 'I', kenyaContext: 'KNBS and research institutions' },
+  { id: 31, category: 'occupations', statement: 'Biologist or Environmental Scientist', riasecType: 'I', kenyaContext: 'Conservation and environmental projects' },
+  { id: 32, category: 'occupations', statement: 'IT Systems Analyst or Software Developer', riasecType: 'I', kenyaContext: 'Silicon Savannah tech hub' },
 
   // ARTISTIC Activities
   { id: 33, category: 'activities', statement: 'Conduct a musical choir', riasecType: 'A' },
@@ -322,14 +326,14 @@ const iipRiasecQuestions: RiasecQuestion[] = [
   { id: 40, category: 'activities', statement: 'Create special effects for movies', riasecType: 'A' },
 
   // ARTISTIC Occupations
-  { id: 41, category: 'occupations', statement: 'Poet', riasecType: 'A' },
-  { id: 42, category: 'occupations', statement: 'Actor', riasecType: 'A' },
-  { id: 43, category: 'occupations', statement: 'Musician', riasecType: 'A' },
-  { id: 44, category: 'occupations', statement: 'Film Editor', riasecType: 'A' },
-  { id: 45, category: 'occupations', statement: 'Artist', riasecType: 'A' },
-  { id: 46, category: 'occupations', statement: 'Singer', riasecType: 'A' },
-  { id: 47, category: 'occupations', statement: 'Graphic Designer', riasecType: 'A' },
-  { id: 48, category: 'occupations', statement: 'Journalist', riasecType: 'A', kenyaContext: 'Media industry is growing in Kenya' },
+  { id: 41, category: 'occupations', statement: 'Poet or Creative Writer', riasecType: 'A', kenyaContext: 'Kenyan literature and poetry scene' },
+  { id: 42, category: 'occupations', statement: 'Actor or Film Producer', riasecType: 'A', kenyaContext: 'Riverwood and theatre industry' },
+  { id: 43, category: 'occupations', statement: 'Musician or Music Producer', riasecType: 'A', kenyaContext: 'Vibrant Kenyan music industry' },
+  { id: 44, category: 'occupations', statement: 'Film Editor or Video Content Creator', riasecType: 'A', kenyaContext: 'YouTube and Riverwood opportunities' },
+  { id: 45, category: 'occupations', statement: 'Artist or Visual Designer', riasecType: 'A', kenyaContext: 'Growing arts scene in Nairobi' },
+  { id: 46, category: 'occupations', statement: 'Singer or Performer', riasecType: 'A', kenyaContext: 'Gospel and secular music markets' },
+  { id: 47, category: 'occupations', statement: 'Graphic Designer or UI/UX Designer', riasecType: 'A', kenyaContext: 'Tech startups need designers' },
+  { id: 48, category: 'occupations', statement: 'Journalist or Media Personality', riasecType: 'A', kenyaContext: 'Nation, Standard, Citizen TV opportunities' },
 
   // SOCIAL Activities
   { id: 49, category: 'activities', statement: 'Give career guidance to people', riasecType: 'S' },
@@ -372,24 +376,24 @@ const iipRiasecQuestions: RiasecQuestion[] = [
   { id: 80, category: 'occupations', statement: 'Political Campaign Manager', riasecType: 'E' },
 
   // CONVENTIONAL Activities
-  { id: 81, category: 'activities', statement: 'Develop a spreadsheet using computer software', riasecType: 'C' },
-  { id: 82, category: 'activities', statement: 'Proofread records or forms', riasecType: 'C' },
-  { id: 83, category: 'activities', statement: 'Use a computer program to generate customer bills', riasecType: 'C' },
-  { id: 84, category: 'activities', statement: 'Maintain employee records', riasecType: 'C' },
-  { id: 85, category: 'activities', statement: 'Compute and record statistical and other numerical data', riasecType: 'C' },
-  { id: 86, category: 'activities', statement: 'Operate a calculator', riasecType: 'C' },
-  { id: 87, category: 'activities', statement: 'Handle customers bank transactions', riasecType: 'C' },
-  { id: 88, category: 'activities', statement: 'Keep shipping and receiving records', riasecType: 'C' },
+  { id: 81, category: 'activities', statement: 'Create Excel spreadsheets for financial analysis', riasecType: 'C', kenyaContext: 'Essential skill for business and accounting' },
+  { id: 82, category: 'activities', statement: 'Review and proofread official documents', riasecType: 'C', kenyaContext: 'Quality assurance in offices' },
+  { id: 83, category: 'activities', statement: 'Use accounting software like QuickBooks or Sage', riasecType: 'C', kenyaContext: 'Standard in Kenyan businesses' },
+  { id: 84, category: 'activities', statement: 'Maintain employee records and HR databases', riasecType: 'C', kenyaContext: 'HR departments in companies' },
+  { id: 85, category: 'activities', statement: 'Analyze data and create statistical reports', riasecType: 'C', kenyaContext: 'Data analysis for decision-making' },
+  { id: 86, category: 'activities', statement: 'Manage financial records and reconciliations', riasecType: 'C', kenyaContext: 'Banking and accounting work' },
+  { id: 87, category: 'activities', statement: 'Process customer M-Pesa or bank transactions', riasecType: 'C', kenyaContext: 'Mobile money and banking services' },
+  { id: 88, category: 'activities', statement: 'Track inventory and supply chain records', riasecType: 'C', kenyaContext: 'Logistics and retail management' },
 
   // CONVENTIONAL Occupations
-  { id: 89, category: 'occupations', statement: 'Accountant', riasecType: 'C' },
-  { id: 90, category: 'occupations', statement: 'Payroll Clerk', riasecType: 'C' },
-  { id: 91, category: 'occupations', statement: 'Secretary', riasecType: 'C' },
-  { id: 92, category: 'occupations', statement: 'Budget Analyst', riasecType: 'C' },
-  { id: 93, category: 'occupations', statement: 'Billing Clerk', riasecType: 'C' },
-  { id: 94, category: 'occupations', statement: 'Treasurer', riasecType: 'C' },
-  { id: 95, category: 'occupations', statement: 'Credit Manager', riasecType: 'C' },
-  { id: 96, category: 'occupations', statement: 'Store Manager', riasecType: 'C' }
+  { id: 89, category: 'occupations', statement: 'Accountant (CPA-K)', riasecType: 'C', kenyaContext: 'High demand, salary KSh 50K-200K' },
+  { id: 90, category: 'occupations', statement: 'Payroll or HR Administrator', riasecType: 'C', kenyaContext: 'Essential in all companies' },
+  { id: 91, category: 'occupations', statement: 'Executive Assistant or Office Manager', riasecType: 'C', kenyaContext: 'Professional administrative roles' },
+  { id: 92, category: 'occupations', statement: 'Budget Analyst or Financial Planner', riasecType: 'C', kenyaContext: 'Government and corporate sectors' },
+  { id: 93, category: 'occupations', statement: 'Accounts Clerk or Bookkeeper', riasecType: 'C', kenyaContext: 'Entry-level accounting positions' },
+  { id: 94, category: 'occupations', statement: 'Bank Manager or Loan Officer', riasecType: 'C', kenyaContext: 'Banking sector opportunities' },
+  { id: 95, category: 'occupations', statement: 'Credit Manager or Risk Analyst', riasecType: 'C', kenyaContext: 'Financial services sector' },
+  { id: 96, category: 'occupations', statement: 'Retail or Supermarket Manager', riasecType: 'C', kenyaContext: 'Naivas, Carrefour, Quickmart chains' }
 ];
 
 interface RiasecScores {
@@ -415,6 +419,39 @@ interface RiasecResults {
   nextSteps: string[];
 }
 
+// Interleave questions across R/I/A/S/E/C dimensions to prevent pattern gaming
+const interleaveQuestions = (questions: RiasecQuestion[]): RiasecQuestion[] => {
+  // Group questions by RIASEC type
+  const grouped: Record<string, RiasecQuestion[]> = {
+    R: [],
+    I: [],
+    A: [],
+    S: [],
+    E: [],
+    C: []
+  };
+
+  questions.forEach(q => grouped[q.riasecType].push(q));
+
+  // Interleave questions (R, I, A, S, E, C, R, I, A, ...)
+  const interleaved: RiasecQuestion[] = [];
+  const types: (keyof typeof riasecTypes)[] = ['R', 'I', 'A', 'S', 'E', 'C'];
+  const maxPerType = Math.max(...Object.values(grouped).map(arr => arr.length));
+
+  for (let i = 0; i < maxPerType; i++) {
+    for (const type of types) {
+      if (grouped[type][i]) {
+        interleaved.push(grouped[type][i]);
+      }
+    }
+  }
+
+  return interleaved;
+};
+
+// Create interleaved question set
+const interleavedIipQuestions = interleaveQuestions(iipRiasecQuestions);
+
 export const FreeRiasecAssessment: React.FC = () => {
   const navigate = useNavigate();
   const { logActivity } = useDynamicDashboard();
@@ -425,9 +462,21 @@ export const FreeRiasecAssessment: React.FC = () => {
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMilestone, setShowMilestone] = useState(false);
+  const [milestoneNumber, setMilestoneNumber] = useState(0);
 
-  const totalQuestions = iipRiasecQuestions.length;
+  const totalQuestions = interleavedIipQuestions.length;
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
+
+  // Milestone checkpoints: every 16 questions (at 16, 32, 48, 64, 80)
+  const getMilestone = (questionNum: number) => {
+    if (questionNum === 16) return 1;
+    if (questionNum === 32) return 2;
+    if (questionNum === 48) return 3;
+    if (questionNum === 64) return 4;
+    if (questionNum === 80) return 5;
+    return 0;
+  };
 
   const startAssessment = useCallback(async () => {
     setIsLoading(true);
@@ -495,8 +544,8 @@ export const FreeRiasecAssessment: React.FC = () => {
         questionId,
         response,
         questionNumber: currentQuestion + 1,
-        category: iipRiasecQuestions[currentQuestion].category,
-        riasecType: iipRiasecQuestions[currentQuestion].riasecType
+        category: interleavedIipQuestions[currentQuestion].category,
+        riasecType: interleavedIipQuestions[currentQuestion].riasecType
       });
     } catch (error) {
       console.warn('Failed to log activity locally:', error);
@@ -517,8 +566,8 @@ export const FreeRiasecAssessment: React.FC = () => {
             questionId,
             response,
             questionNumber: currentQuestion + 1,
-            category: iipRiasecQuestions[currentQuestion].category,
-            riasecType: iipRiasecQuestions[currentQuestion].riasecType
+            category: interleavedIipQuestions[currentQuestion].category,
+            riasecType: interleavedIipQuestions[currentQuestion].riasecType
           })
         });
       } catch (error) {
@@ -528,7 +577,20 @@ export const FreeRiasecAssessment: React.FC = () => {
 
     // Always advance to next question (non-blocking)
     if (currentQuestion < totalQuestions - 1) {
-      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+      const nextQuestionNum = currentQuestion + 2; // +2 because currentQuestion is 0-indexed but we display 1-indexed
+      const milestone = getMilestone(nextQuestionNum);
+
+      if (milestone > 0) {
+        // Show milestone celebration
+        setMilestoneNumber(milestone);
+        setShowMilestone(true);
+        setTimeout(() => {
+          setShowMilestone(false);
+          setCurrentQuestion(prev => prev + 1);
+        }, 2500); // Show celebration for 2.5 seconds
+      } else {
+        setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+      }
     } else {
       // Assessment complete - try backend first, fallback to local
       if (assessmentId) {
@@ -729,7 +791,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
   };
 
-  const getCurrentQuestion = () => iipRiasecQuestions[currentQuestion];
+  const getCurrentQuestion = () => interleavedIipQuestions[currentQuestion];
   const currentResponse = responses[getCurrentQuestion()?.id];
 
   if (showResults && results) {
@@ -1005,6 +1067,47 @@ export const FreeRiasecAssessment: React.FC = () => {
   const question = getCurrentQuestion();
   if (!question) return null;
 
+  // Show milestone celebration
+  if (showMilestone) {
+    const milestoneMessages = [
+      { title: "Great Start!", message: "You're 1/6 through! Keep going!" },
+      { title: "One Third Complete!", message: "You're building momentum!" },
+      { title: "Halfway There!", message: "Amazing progress! You're doing great!" },
+      { title: "Two Thirds Done!", message: "The finish line is in sight!" },
+      { title: "Almost There!", message: "Just 16 more questions to go!" }
+    ];
+    const milestone = milestoneMessages[milestoneNumber - 1];
+
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card className="bg-gradient-to-br from-green-50 via-yellow-50 to-orange-50 border-green-300 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-500">
+          <CardContent className="pt-12 pb-12 text-center">
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-yellow-400 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                <Trophy className="h-24 w-24 text-yellow-600 relative z-10 animate-bounce" />
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-4xl font-bold text-green-800 flex items-center justify-center gap-3">
+                  <Sparkles className="h-8 w-8 text-yellow-600" />
+                  {milestone.title}
+                  <Sparkles className="h-8 w-8 text-yellow-600" />
+                </h2>
+                <p className="text-2xl text-green-700 font-medium">{milestone.message}</p>
+                <div className="flex flex-col items-center gap-2 mt-6">
+                  <Progress value={progressPercentage} className="h-4 w-full max-w-md" />
+                  <Badge className="text-lg px-4 py-2 bg-green-600">
+                    {currentQuestion + 1} of {totalQuestions} complete
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Progress Header */}
@@ -1065,31 +1168,39 @@ export const FreeRiasecAssessment: React.FC = () => {
           </div>
 
           {/* Response Options */}
-          <div className="grid gap-3">
+          <RadioGroup
+            value={currentResponse?.toString()}
+            onValueChange={(value) => handleResponse(question.id, parseInt(value))}
+            className="space-y-3"
+          >
             {[
-              { value: 4, label: 'Love it! Extremely interested', color: 'bg-green-500' },
-              { value: 3, label: 'Like it - Very interested', color: 'bg-blue-500' },
-              { value: 2, label: 'Somewhat interested', color: 'bg-yellow-500' },
-              { value: 1, label: 'Slightly interested', color: 'bg-orange-500' },
-              { value: 0, label: 'Not interested at all', color: 'bg-red-500' }
+              { value: 4, label: 'Love it! Extremely interested', color: 'bg-green-500', emoji: '😍' },
+              { value: 3, label: 'Like it - Very interested', color: 'bg-blue-500', emoji: '👍' },
+              { value: 2, label: 'Somewhat interested', color: 'bg-yellow-500', emoji: '😐' },
+              { value: 1, label: 'Slightly interested', color: 'bg-orange-500', emoji: '🤔' },
+              { value: 0, label: 'Not interested at all', color: 'bg-red-500', emoji: '👎' }
             ].map((option) => (
-              <button
+              <div
                 key={option.value}
-                onClick={() => handleResponse(question.id, option.value)}
                 className={cn(
-                  "p-4 rounded-lg border-2 transition-all duration-200 text-left",
+                  "flex items-center gap-4 p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-md",
                   currentResponse === option.value
-                    ? "border-orange-500 bg-orange-50"
+                    ? "border-orange-500 bg-orange-50 shadow-lg"
                     : "border-gray-200 hover:border-orange-300 hover:bg-gray-50"
                 )}
+                onClick={() => handleResponse(question.id, option.value)}
               >
-                <div className="flex items-center gap-3">
-                  <div className={cn("w-4 h-4 rounded-full", option.color)}></div>
-                  <span className="font-medium">{option.label}</span>
-                </div>
-              </button>
+                <RadioGroupItem value={option.value.toString()} id={`option-${option.value}`} className="mt-1" />
+                <Label htmlFor={`option-${option.value}`} className="flex-1 flex items-center gap-3 cursor-pointer">
+                  <span className="text-2xl">{option.emoji}</span>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={cn("w-3 h-3 rounded-full", option.color)}></div>
+                    <span className="font-medium text-base">{option.label}</span>
+                  </div>
+                </Label>
+              </div>
             ))}
-          </div>
+          </RadioGroup>
         </CardContent>
       </Card>
 

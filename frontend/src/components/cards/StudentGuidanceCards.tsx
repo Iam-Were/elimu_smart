@@ -7,7 +7,9 @@ import {
   Users,
   MessageSquare,
   Heart,
-  Compass,
+  BookOpen,
+  Calendar,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -17,68 +19,97 @@ interface StudentGuidanceCard {
   title: string;
   description: string;
   icon: React.ReactNode;
-  status: 'available' | 'active' | 'urgent';
+  iconGradient: string;
+  status: 'available' | 'active' | 'urgent' | 'premium';
   actionText: string;
   actionLink: string;
   value?: string;
   change?: string;
   isDynamic?: boolean;
+  isPremium?: boolean;
 }
 
-// Clean, essential guidance cards
+// Freemium guidance cards - Free tier + Premium tier
 const studentGuidanceCards: StudentGuidanceCard[] = [
+  // FREE TIER (3 cards)
   {
-    id: 'counselor-support',
-    title: 'Talk to Counselor',
-    description: 'Professional guidance & support',
+    id: 'community-qa',
+    title: 'Ask Community',
+    description: 'Get answers from counselors & peers',
     icon: <Users className="h-6 w-6" />,
+    iconGradient: 'from-purple-500 to-purple-600',
     status: 'available',
-    actionText: 'Get Help',
-    actionLink: '/guidance',
-    value: 'Available',
-    change: 'Counselors online',
-    isDynamic: true
+    actionText: 'Ask Question',
+    actionLink: '/guidance/community-qa',
+    value: 'Free',
+    change: '200+ questions answered',
+    isDynamic: false,
+    isPremium: false
   },
   {
-    id: 'quick-questions',
-    title: 'Ask Questions',
-    description: 'Get quick expert answers',
-    icon: <MessageSquare className="h-6 w-6" />,
+    id: 'career-resources',
+    title: 'Career Resources',
+    description: 'Guides, videos, and planning tools',
+    icon: <BookOpen className="h-6 w-6" />,
+    iconGradient: 'from-blue-500 to-blue-600',
     status: 'available',
-    actionText: 'Ask Now',
-    actionLink: '/guidance',
+    actionText: 'Browse Resources',
+    actionLink: '/guidance/resources',
     value: 'Free',
-    change: '2-4 hour response',
-    isDynamic: true
-  },
-  {
-    id: 'career-mentorship',
-    title: 'Find Mentor',
-    description: 'Connect with professionals',
-    icon: <Compass className="h-6 w-6" />,
-    status: 'available',
-    actionText: 'Get Mentor',
-    actionLink: '/guidance',
-    value: 'Free',
-    change: 'Monthly meetings',
-    isDynamic: true
+    change: '50+ resources available',
+    isDynamic: false,
+    isPremium: false
   },
   {
     id: 'crisis-support',
-    title: 'Crisis Support',
-    description: '24/7 emergency help',
+    title: 'Crisis Resources',
+    description: 'Verified 24/7 helplines',
     icon: <Heart className="h-6 w-6" />,
+    iconGradient: 'from-red-500 to-red-600',
     status: 'urgent',
     actionText: 'Get Help Now',
-    actionLink: '/guidance',
-    value: 'Available',
-    change: 'Always online'
+    actionLink: '/guidance/crisis',
+    value: 'Free',
+    change: 'Childline Kenya, NACADA',
+    isDynamic: false,
+    isPremium: false
+  },
+
+  // PREMIUM TIER (2 cards)
+  {
+    id: 'counselor-inbox',
+    title: 'Message Counselor',
+    description: 'Private 1-on-1 guidance',
+    icon: <MessageSquare className="h-6 w-6" />,
+    iconGradient: 'from-green-500 to-green-600',
+    status: 'premium',
+    actionText: 'Upgrade to Message',
+    actionLink: '/inbox',
+    value: 'Premium',
+    change: '24hr response guaranteed',
+    isDynamic: true,
+    isPremium: true
+  },
+  {
+    id: 'book-session',
+    title: 'Book Session',
+    description: 'Schedule video/phone meeting',
+    icon: <Calendar className="h-6 w-6" />,
+    iconGradient: 'from-amber-500 to-amber-600',
+    status: 'premium',
+    actionText: 'View Pricing',
+    actionLink: '/guidance/book-session',
+    value: 'Premium',
+    change: 'From KES 1,500/session',
+    isDynamic: false,
+    isPremium: true
   },
 ];
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'urgent': return 'text-red-600';
+    case 'premium': return 'text-amber-600';
     case 'active': return 'text-blue-600';
     default: return 'text-green-600';
   }
@@ -142,19 +173,31 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  {card.icon}
+                <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110",
+                  `bg-gradient-to-br ${card.iconGradient}`
+                )}>
+                  {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
                 </div>
                 <div>
-                  <CardTitle className="text-base font-semibold text-slate-800">
+                  <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
                     {card.title}
+                    {card.isPremium && (
+                      <Lock className="h-4 w-4 text-amber-500" />
+                    )}
                   </CardTitle>
                   <p className="text-sm text-slate-600">{card.description}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end space-y-1">
-                <Badge variant="outline" className={getStatusColor(card.status)}>
-                  {card.status}
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    getStatusColor(card.status),
+                    card.isPremium && "bg-amber-50 border-amber-300"
+                  )}
+                >
+                  {card.isPremium ? 'Premium' : card.status}
                 </Badge>
               </div>
             </CardHeader>

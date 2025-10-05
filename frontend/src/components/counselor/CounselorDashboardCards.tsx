@@ -8,12 +8,9 @@ import {
   MessageSquare,
   Calendar,
   BarChart3,
-  AlertTriangle,
-  UserCheck,
-  Video,
   FileText,
-  Target,
-  Bell
+  AlertTriangle,
+  Bell,
 } from 'lucide-react';
 
 interface CounselorDashboardCard {
@@ -21,6 +18,7 @@ interface CounselorDashboardCard {
   title: string;
   description: string;
   icon: React.ReactNode;
+  iconGradient: string;
   status: 'active' | 'attention' | 'completed' | 'scheduled';
   priority: 'high' | 'medium' | 'low';
   actionText: string;
@@ -41,168 +39,113 @@ interface CounselorDashboardCard {
 
 const counselorDashboardCards: CounselorDashboardCard[] = [
   {
-    id: 'assigned-students',
-    title: 'Student Roster',
-    description: 'Monitor student progress and wellbeing',
+    id: 'premium-students',
+    title: 'Premium Students',
+    description: 'Active paying clients',
     icon: <Users className="h-6 w-6" />,
+    iconGradient: 'from-yellow-500 to-yellow-600',
     status: 'attention',
     priority: 'high',
-    actionText: 'View Roster',
-    actionLink: '/counselor/students',
+    actionText: 'View Students',
+    actionLink: '/counselor/students?filter=premium',
     stats: {
-      primary: '34 Students',
-      secondary: '7 urgent',
+      primary: '12 Premium',
+      secondary: 'KES 45,000/month',
       trend: 'up'
     },
     metadata: {
-      count: 34,
-      nextAction: 'Review urgent cases',
+      count: 12,
+      nextAction: 'Check pending messages',
       urgent: true,
       lastUpdated: '2 hours ago'
     }
   },
   {
-    id: 'active-chat-sessions',
-    title: 'Active Chats',
-    description: 'Respond to student messages',
+    id: 'premium-inbox',
+    title: 'Premium Inbox',
+    description: 'Messages from paid students',
     icon: <MessageSquare className="h-6 w-6" />,
+    iconGradient: 'from-green-500 to-green-600',
     status: 'active',
     priority: 'high',
-    actionText: 'Open Chats',
-    actionLink: '/counselor/chat',
+    actionText: 'Open Inbox',
+    actionLink: '/inbox?filter=premium',
     stats: {
-      primary: '8 Active',
-      secondary: '3.2 min avg',
+      primary: '8 Unread',
+      secondary: '3 require response',
       trend: 'stable'
     },
     metadata: {
       count: 8,
-      nextAction: 'Reply to waiting messages',
+      nextAction: 'Reply to messages',
       urgent: true,
       lastUpdated: '5 minutes ago'
     }
   },
   {
-    id: 'upcoming-appointments',
-    title: 'Today\'s Sessions',
-    description: 'View scheduled appointments',
+    id: 'paid-sessions',
+    title: 'Booked Sessions',
+    description: 'Scheduled paid counseling sessions',
     icon: <Calendar className="h-6 w-6" />,
+    iconGradient: 'from-blue-500 to-blue-600',
     status: 'scheduled',
-    priority: 'medium',
-    actionText: 'View Schedule',
-    actionLink: '/counselor/appointments',
+    priority: 'high',
+    actionText: 'View Sessions',
+    actionLink: '/counselor/sessions',
     stats: {
-      primary: '6 Sessions',
-      secondary: 'Next: 2:30 PM',
+      primary: '6 Today',
+      secondary: 'KES 9,000 earnings',
       trend: 'up'
     },
     metadata: {
       count: 6,
-      nextAction: 'Prepare session notes',
+      nextAction: 'Prepare for 2:30 PM session',
       lastUpdated: '30 minutes ago'
+    }
+  },
+  {
+    id: 'community-qa',
+    title: 'Community Q&A',
+    description: 'Answer free tier questions (optional)',
+    icon: <FileText className="h-6 w-6" />,
+    iconGradient: 'from-purple-500 to-purple-600',
+    status: 'active',
+    priority: 'medium',
+    actionText: 'Browse Questions',
+    actionLink: '/counselor/questions',
+    stats: {
+      primary: '15 Pending',
+      secondary: 'Build reputation',
+      trend: 'stable'
+    },
+    metadata: {
+      count: 15,
+      nextAction: 'Answer when available',
+      urgent: false,
+      lastUpdated: '15 minutes ago'
     }
   },
   {
     id: 'counseling-analytics',
     title: 'Performance',
-    description: 'Track counseling effectiveness',
+    description: 'Track effectiveness & retention',
     icon: <BarChart3 className="h-6 w-6" />,
+    iconGradient: 'from-amber-500 to-amber-600',
     status: 'completed',
     priority: 'medium',
     actionText: 'View Stats',
     actionLink: '/counselor/analytics',
     stats: {
-      primary: '89% Success',
-      secondary: '4.7/5 rating',
+      primary: '4.8/5 Rating',
+      secondary: '92% retention',
       trend: 'up'
     },
     metadata: {
-      completion: 89,
-      nextAction: 'Review monthly data',
+      completion: 92,
+      nextAction: 'Review monthly metrics',
       lastUpdated: '1 day ago'
     }
   },
-  {
-    id: 'pending-question-queue',
-    title: 'Q&A Queue',
-    description: 'Answer student questions',
-    icon: <FileText className="h-6 w-6" />,
-    status: 'attention',
-    priority: 'high',
-    actionText: 'Answer Now',
-    actionLink: '/counselor/questions',
-    stats: {
-      primary: '15 Pending',
-      secondary: '3 urgent',
-      trend: 'up'
-    },
-    metadata: {
-      count: 15,
-      nextAction: 'Answer urgent questions',
-      urgent: true,
-      lastUpdated: '15 minutes ago'
-    }
-  },
-  {
-    id: 'group-sessions',
-    title: 'Group Sessions',
-    description: 'Manage workshops and group activities',
-    icon: <UserCheck className="h-6 w-6" />,
-    status: 'scheduled',
-    priority: 'medium',
-    actionText: 'Manage Groups',
-    actionLink: '/counselor/group-sessions',
-    stats: {
-      primary: '4 Groups',
-      secondary: 'Next: Tomorrow 10 AM',
-      trend: 'stable'
-    },
-    metadata: {
-      count: 4,
-      nextAction: 'Plan activities',
-      lastUpdated: '4 hours ago'
-    }
-  },
-  {
-    id: 'progress-tracking',
-    title: 'Progress Tracking',
-    description: 'Monitor student milestones',
-    icon: <Target className="h-6 w-6" />,
-    status: 'active',
-    priority: 'medium',
-    actionText: 'View Progress',
-    actionLink: '/counselor/progress',
-    stats: {
-      primary: '24 Milestones',
-      secondary: '18 completed',
-      trend: 'up'
-    },
-    metadata: {
-      completion: 75,
-      nextAction: 'Update records',
-      lastUpdated: '6 hours ago'
-    }
-  },
-  {
-    id: 'resource-library',
-    title: 'Resources',
-    description: 'Access professional materials',
-    icon: <Video className="h-6 w-6" />,
-    status: 'active',
-    priority: 'low',
-    actionText: 'Browse Library',
-    actionLink: '/counselor/resources',
-    stats: {
-      primary: '200+ Resources',
-      secondary: '5 new',
-      trend: 'up'
-    },
-    metadata: {
-      count: 200,
-      nextAction: 'Check new materials',
-      lastUpdated: '1 day ago'
-    }
-  }
 ];
 
 
@@ -523,10 +466,8 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               {/* LinkedIn-style simplified header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="h-8 w-8 bg-amber-600 rounded-md flex items-center justify-center">
-                    <div className="text-white">
-                      {card.icon}
-                    </div>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110 bg-gradient-to-br ${card.iconGradient}`}>
+                    {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "h-5 w-5 text-white" })}
                   </div>
                   <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
                     {card.title}

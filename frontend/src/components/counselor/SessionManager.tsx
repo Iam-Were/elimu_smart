@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getParse } from '@/config/parse';
 import {
   CalendarIcon,
   ClockIcon,
@@ -128,14 +129,15 @@ const mockSessions: Session[] = [
 ];
 
 export const SessionManager: React.FC = () => {
-  const [sessions, setSessions] = useState<Session[]>(mockSessions);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
   const [opened, setOpened] = useState(false);
   const open = () => setOpened(true);
   const close = () => setOpened(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
-  
+
   // Form state
   const [formData, setFormData] = useState({
     studentName: '',
@@ -148,6 +150,59 @@ export const SessionManager: React.FC = () => {
     location: '',
     notes: '',
   });
+
+  // Fetch sessions from database
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getPendingSessionRequests');
+
+        if (result.success) {
+          // Transform backend data to match frontend interface
+          const transformedSessions = result.sessions.map((s: {
+            id: string;
+            studentId: string;
+            studentName: string;
+            sessionType: string;
+            status: string;
+            scheduledAt: string;
+            topic: string;
+            duration: number;
+          }) => ({
+            id: s.id,
+            studentId: s.studentId,
+            studentName: s.studentName,
+            studentEmail: `${s.studentName.toLowerCase().replace(' ', '.')}@school.edu`,
+            studentGrade: 'Form 4',
+            title: s.topic || 'Career Counseling Session',
+            description: s.topic || 'Counseling session',
+            type: s.sessionType === 'career' ? 'individual' : s.sessionType as Session['type'],
+            status: s.status as Session['status'],
+            scheduledAt: new Date(s.scheduledAt),
+            duration: s.duration || 60,
+            location: 'Counseling Office',
+            notes: '',
+            outcomes: [],
+            nextSteps: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }));
+          setSessions(transformedSessions);
+        } else {
+          console.warn('Failed to fetch sessions:', result.error);
+          setSessions(mockSessions);
+        }
+      } catch (error) {
+        console.warn('Error fetching sessions, using mock data:', error);
+        setSessions(mockSessions);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessions();
+  }, []);
 
   const filteredSessions = sessions.filter(session => {
     const matchesStatus = !filterStatus || session.status === filterStatus;
@@ -398,18 +453,28 @@ export const SessionManager: React.FC = () => {
           </Alert>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <Card className="p-6 text-center">
+            <p className="text-muted-foreground">Loading sessions...</p>
+          </Card>
+        )}
+
         {/* Sessions List */}
-        <div className="space-y-4">
-          {filteredSessions.length === 0 ? (
-            <Alert>
-              <CalendarIcon className="h-4 w-4" />
-              <AlertTitle>No sessions found</AlertTitle>
-              <AlertDescription>
-                No sessions match your current filters. Try adjusting your search criteria or schedule a new session.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            filteredSessions.map(session => (
+        {!loading && (
+          <div className="space-y-4">
+            {filteredSessions.length === 0 ? (
+              <Alert>
+                <CalendarIcon className="h-4 w-4" />
+                <AlertTitle>No sessions found</AlertTitle>
+                <AlertDescription>
+                  {sessions.length === 0
+                    ? 'No sessions scheduled yet. Click "Schedule Session" to create one.'
+                    : 'No sessions match your current filters. Try adjusting your search criteria.'}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              filteredSessions.map(session => (
               <Card
                 key={session.id}
                 className="hover:shadow-md transition-shadow"
@@ -515,8 +580,9 @@ export const SessionManager: React.FC = () => {
                 </div>
               </Card>
             ))
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Session Form Modal */}
         <Dialog open={opened} onOpenChange={(open) => !open && close()}>

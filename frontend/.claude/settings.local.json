@@ -12,7 +12,16 @@
       "Bash(powershell:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(npx shadcn:*)",
+      "Bash(npx shadcn@latest search:*)",
+      "Bash(npx:*)",
+      "Read(//c/Users/c/Documents/GitHub/**)",
+      "Bash(npm install:*)",
+      "Read(//c/Users/c/Downloads/elimusmart_platform2.0/**)",
+      "Bash(find:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

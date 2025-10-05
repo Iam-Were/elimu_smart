@@ -124,8 +124,8 @@ export const ProfilePage: React.FC = () => {
       setEditFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        bio: user.bio || '',
-        location: user.location || 'Nairobi, Kenya',
+        bio: '',
+        location: 'Nairobi, Kenya',
       });
     }
   }, [user]);

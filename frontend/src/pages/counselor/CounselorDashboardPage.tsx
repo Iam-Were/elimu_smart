@@ -3,13 +3,11 @@ import { useLocation } from 'react-router-dom';
 import CounselorDashboardCards from '../../components/counselor/CounselorDashboardCards';
 import CounselorAnalyticsCards from '../../components/counselor/CounselorAnalyticsCards';
 import { StudentRoster } from '../../components/counselor/StudentRoster';
-import { QuestionQueue } from '../../components/counselor/QuestionQueue';
 import { SessionManager } from '../../components/counselor/SessionManager';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import Button from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Input } from '../../components/ui/input';
 import {
   LayoutDashboard,
   BarChart3,
@@ -20,21 +18,12 @@ import {
   Settings,
   TrendingUp,
   Clock,
-  Target,
-  Search,
-  AlertCircle,
-  CheckCircle2
+  Target
 } from 'lucide-react';
 
 const CounselorDashboardPage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
-  const [globalSearch, setGlobalSearch] = useState('');
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'urgent', message: 'Sarah Wilson needs immediate career guidance', time: '5 min ago' },
-    { id: 2, type: 'info', message: '3 new questions in Q&A queue', time: '15 min ago' },
-    { id: 3, type: 'success', message: 'John completed career assessment', time: '1 hour ago' },
-  ]);
 
   // Update active tab based on URL hash
   useEffect(() => {
@@ -162,7 +151,7 @@ const CounselorDashboardPage: React.FC = () => {
 
             {/* Sessions Tab */}
             <TabsContent value="sessions" className="space-y-6">
-              <CounselorSessionCards className="mt-6" />
+              <SessionManager />
             </TabsContent>
 
             {/* Students Tab */}

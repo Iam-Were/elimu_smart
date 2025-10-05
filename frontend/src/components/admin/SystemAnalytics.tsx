@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +23,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -32,6 +34,10 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+import { DollarSign, TrendingUp, CreditCard, Users } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { getParse } from '@/config/parse';
+import { ADMIN_ROLE_PERMISSIONS } from '@/utils/adminPermissions';
 
 // Mock data for system analytics
 const userGrowthData = [
@@ -107,9 +113,65 @@ const recentSystemEvents = [
   },
 ];
 
+interface BillingAnalytics {
+  metrics: {
+    totalRevenue: number;
+    monthlyRevenue: number;
+    mrr: number;
+    activeSubscriptionsCount: number;
+    totalInvoicesCount: number;
+    mpesaSuccessRate: number;
+    churnRate: number;
+    arpu: number;
+  };
+  subscriptionsByPlan: Record<string, number>;
+  recentInvoices: Array<{
+    id: string;
+    invoiceNumber: string;
+    userName: string;
+    planName: string;
+    amount: number;
+    status: string;
+    issueDate: Date;
+    mpesaReceiptNumber: string;
+  }>;
+  revenueTrend: Array<{
+    month: string;
+    revenue: number;
+    invoices: number;
+  }>;
+}
+
 export const SystemAnalytics: React.FC = () => {
   const [timeRange, setTimeRange] = useState('7d');
   const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();
+  const [billingData, setBillingData] = useState<BillingAnalytics | null>(null);
+  const [loadingBilling, setLoadingBilling] = useState(false);
+
+  // Check if user has revenue viewing permission
+  const userAdminRole = user?.adminRoleType;
+  const canViewRevenue = userAdminRole ? ADMIN_ROLE_PERMISSIONS[userAdminRole]?.viewRevenue : false;
+
+  // Load billing analytics for Platform admins
+  useEffect(() => {
+    if (canViewRevenue && activeTab === 'billing') {
+      loadBillingAnalytics();
+    }
+  }, [canViewRevenue, activeTab]);
+
+  const loadBillingAnalytics = async () => {
+    setLoadingBilling(true);
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getAdminBillingAnalytics');
+      setBillingData(result);
+    } catch (error) {
+      console.error('Failed to load billing analytics:', error);
+    } finally {
+      setLoadingBilling(false);
+    }
+  };
 
   const generateReport = (type: string) => {
     console.log(`Generating ${type} report...`);
@@ -170,7 +232,7 @@ export const SystemAnalytics: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={`grid w-full ${canViewRevenue ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="overview" className="gap-2">
               <BarChartIcon className="w-4 h-4" />
               Overview
@@ -187,6 +249,12 @@ export const SystemAnalytics: React.FC = () => {
               <TargetIcon className="w-4 h-4" />
               Engagement
             </TabsTrigger>
+            {canViewRevenue && (
+              <TabsTrigger value="billing" className="gap-2">
+                <DollarSign className="w-4 h-4" />
+                Revenue & Billing
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Overview Tab */}
@@ -563,6 +631,190 @@ export const SystemAnalytics: React.FC = () => {
               </Card>
             </div>
           </TabsContent>
+
+          {/* Revenue & Billing Tab (Platform Admin only) */}
+          {canViewRevenue && (
+            <TabsContent value="billing" className="mt-6">
+              {loadingBilling ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                </div>
+              ) : billingData ? (
+                <div className="space-y-6">
+                  {/* Key Financial Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Total Revenue</p>
+                            <p className="text-2xl font-bold">
+                              KES {billingData.metrics.totalRevenue.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-green-600">All-time earnings</p>
+                          </div>
+                          <DollarSign className="w-8 h-8 text-green-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+                            <p className="text-2xl font-bold">
+                              KES {billingData.metrics.monthlyRevenue.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-blue-600">Current month</p>
+                          </div>
+                          <TrendingUp className="w-8 h-8 text-blue-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">MRR</p>
+                            <p className="text-2xl font-bold">
+                              KES {Math.round(billingData.metrics.mrr).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-purple-600">Monthly Recurring Revenue</p>
+                          </div>
+                          <CreditCard className="w-8 h-8 text-purple-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Active Subscriptions</p>
+                            <p className="text-2xl font-bold">
+                              {billingData.metrics.activeSubscriptionsCount}
+                            </p>
+                            <p className="text-xs text-orange-600">Paying customers</p>
+                          </div>
+                          <Users className="w-8 h-8 text-orange-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Additional Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">M-Pesa Success Rate</p>
+                          <p className="text-2xl font-bold">{billingData.metrics.mpesaSuccessRate}%</p>
+                          <Progress value={billingData.metrics.mpesaSuccessRate} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Churn Rate</p>
+                          <p className="text-2xl font-bold">{billingData.metrics.churnRate}%</p>
+                          <Progress value={billingData.metrics.churnRate} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">ARPU</p>
+                          <p className="text-2xl font-bold">KES {billingData.metrics.arpu.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Average Revenue Per User</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Revenue Trend Chart */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Trend (Last 6 Months)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={billingData.revenueTrend}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="revenue" fill="#8b5cf6" name="Revenue (KES)" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  {/* Subscription Distribution */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Subscription Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {Object.entries(billingData.subscriptionsByPlan).map(([planId, count]) => (
+                            <div key={planId} className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm capitalize">{planId}</span>
+                                <span className="text-sm font-medium">{count} subscribers</span>
+                              </div>
+                              <Progress
+                                value={(count / billingData.metrics.activeSubscriptionsCount) * 100}
+                                className="h-2"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Recent Invoices */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Recent Invoices</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {billingData.recentInvoices.slice(0, 5).map((invoice) => (
+                            <div key={invoice.id} className="flex justify-between items-center border-b pb-2">
+                              <div>
+                                <p className="text-sm font-medium">{invoice.invoiceNumber}</p>
+                                <p className="text-xs text-muted-foreground">{invoice.userName}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-bold">KES {invoice.amount.toLocaleString()}</p>
+                                <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                                  {invoice.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-center text-muted-foreground">No billing data available</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
 
         {/* Reports Section */}

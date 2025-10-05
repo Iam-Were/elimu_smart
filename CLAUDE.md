@@ -159,6 +159,56 @@ const handleResponse = async (data: FormData) => {
 
 **Key Principle**: Provide immediate value BEFORE asking for user input.
 
+### 6. Card Content & Icon System Standards (2025 Best Practices)
+
+**Minimal Card Content (REQUIRED)**
+- **Maximum 6 Elements Per Card**: Icon, Title, Badge, Description, Benefit/Metric, CTA
+- **Text Length**: Under 100 characters for descriptions
+- **No Verbose Sections**: Remove "Common Questions", "What You'll Do", bullet point lists
+- **Benefits**: Single plain text line (no boxes/containers)
+- **Cognitive Load**: 4-6 scannable elements only
+
+**Gradient Icon Containers (REQUIRED)**
+```typescript
+// ✅ CORRECT: Professional gradient icon system
+<div className={cn(
+  "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+  `bg-gradient-to-br ${card.iconGradient}`
+)}>
+  {React.cloneElement(card.icon as React.ReactElement, { className: "w-6 h-6 text-white" })}
+</div>
+
+// ❌ NEVER: Flat backgrounds (outdated pattern)
+<div className="p-2 rounded-lg bg-orange-100 text-orange-600">
+  {card.icon}
+</div>
+```
+
+**Card Type Color Mapping**
+- **Assessment/Discovery**: Purple gradient (`from-purple-500 to-purple-600`)
+- **Subject/Academic**: Blue gradient (`from-blue-500 to-blue-600`)
+- **Skills/Development**: Green gradient (`from-green-500 to-green-600`)
+- **University/Placement**: Indigo gradient (`from-indigo-500 to-indigo-600`)
+- **Career/Exploration**: Amber gradient (`from-amber-500 to-amber-600`)
+- **Results/Dashboard**: Orange gradient (`from-orange-500 to-orange-600`)
+
+**60-30-10 Color Rule**
+- **60% Base**: White/neutral backgrounds
+- **30% Theme**: Primary user journey color (orange for students)
+- **10% Accent**: Card type specific gradients
+
+**Bento Grid Layout Standards**
+- **Tall Cards** (`row-span-2`): High complexity content (detailed results, multi-step processes)
+- **Standard Cards** (`row-span-1`): Medium complexity (balanced info + action)
+- **Compact Cards** (`row-span-1`): Low complexity (metrics, quick actions)
+- **Grid Definition**: `auto-rows-[minmax(280px,auto)]` for flexible heights
+
+**Icon Best Practices**
+- **Professional Platforms**: Use icons (NOT emojis)
+- **Size Hierarchy**: Larger icons (w-12 h-12) for primary actions, smaller (w-6 h-6) for secondary
+- **Hover Effects**: Scale transform on hover (`group-hover:scale-110`)
+- **Shadow Depth**: `shadow-lg` for gradient containers
+
 ## Key Technical Patterns
 
 ### Type Safety (NEVER use `any`)
@@ -230,6 +280,9 @@ try {
 }
 ```
 
+### Bento Grid Layout Pattern
+Variable card heights communicate information importance (see Card Content section above for complete implementation).
+
 ## Kenya Educational Context Integration
 
 ### KCSE System (Kenya Certificate of Secondary Education)
@@ -265,72 +318,18 @@ try {
 
 ## Implementation History (Key Milestones)
 
-### Sprint 18: shadcn Migration ✅
-**What:** Complete UI library migration from Mantine to shadcn
-**Why:** Modern component library, better performance, cleaner API
-**Impact:**
-- Student interface: 100% shadcn (AssessmentCards, GuidanceCards, Dashboard)
-- Counselor interface: 100% shadcn (StudentRoster, QuestionQueue, SessionManager, unified tabbed dashboard)
-- Admin interface: Hybrid functional (migration optional)
-- 30% faster build times, smaller bundle size
-**Key Files:** `StudentAssessmentCards.tsx`, `StudentGuidanceCards.tsx`, `CounselorDashboardPage.tsx`
+- **Sprint 18 (shadcn Migration)**: Complete UI migration → 100% shadcn for Student/Counselor, 30% faster builds
+- **Sprint 22 (Assessment System)**: 5 complete assessments with backend APIs → RIASEC, Skills, University Finder, Career Explorer, Subject Mapper
+- **Sprint 25 (Code Quality)**: Achieved 100% lint compliance → Zero `any` types, all TypeScript errors fixed, comprehensive type system
+- **Sprint 26 (Navigation Fix)**: Critical pattern fixes → Button + navigate (no asChild conflicts), non-blocking API calls (UI first, backend secondary)
+- **Sprint 29 (Dashboard UX)**: Hero KPI + Urgent Actions + Quick Wins → 3-second rule compliance, progressive disclosure, KUCCPS deadline integration
+- **Dynamic Dashboard**: Real-time data integration → Career Readiness Score algorithm, live KUCCPS data, scholarship matching, activity analytics
+- **Code Cleanup**: Consolidated experiences → Single student account, removed legacy flows, simplified demo environment
 
-### Sprint 22: Assessment System ✅
-**What:** Implemented 5 complete assessment systems with backend APIs
-**Why:** Transform static cards into functional career guidance tools
-**Impact:**
-- RIASEC Assessment: 60-question personality profiling
-- Skills Assessment: 36-question evaluation (6 categories)
-- University Finder: Kenya universities + KUCCPS integration
-- Career Explorer: Searchable Kenya careers database
-- Subject Mapper: KCSE to career/university matching
-**Key Files:** `backend/cloud/main.js` (+1,900 lines), assessment page components
-**Backend:** Parse Cloud Functions with Kenya-specific algorithms
-
-### Sprint 25: Code Quality ✅
-**What:** Achieved 100% lint compliance (64 problems → 0)
-**Why:** Professional code standards, eliminate technical debt
-**Impact:**
-- Zero TypeScript errors, zero lint warnings
-- Eliminated all `any` types with proper interfaces
-- Fixed all React hooks dependency issues
-- Removed 15+ unused imports across codebase
-- 25% faster TypeScript compilation
-**Key Files:** `src/types/shared.ts` (comprehensive type system), all card components cleaned
-**Learning:** Type safety catches errors early, faster IDE performance
-
-### Sprint 26: Navigation Reliability ✅
-**What:** Fixed card navigation failures and form blocking issues
-**Why:** Cards weren't navigating, forms were hanging on responses
-**Impact:**
-- Navigation pattern: Button + navigate (no asChild + Link conflicts)
-- Form pattern: Non-blocking API calls (UI first, backend secondary)
-- All 13 assessment/guidance cards now reliably navigate
-- Form responses no longer freeze UI
-**Key Files:** `StudentAssessmentCards.tsx`, `StudentGuidanceCards.tsx`, `FreeRiasecAssessment.tsx`
-**Critical Learning:** Never block UI with API calls in user interactions
-
-### Dynamic Dashboard Implementation ✅
-**What:** Transformed static cards into dynamic data-driven system
-**Why:** Students need real-time, personalized guidance
-**Impact:**
-- Real KUCCPS data via GitHub API integration
-- Career Readiness Score: Live algorithmic calculation (0-100%)
-- University Placement: Dynamic cutoff points and probability
-- Scholarship Matching: Active opportunity tracking with deadlines
-- User Activity Analytics: Comprehensive interaction tracking
-**Key Files:** `useDynamicDashboard.ts`, `backend/cloud/main.js` (dashboard functions)
-**Backend:** Activity logging, readiness algorithms, placement engine
-
-### Code Cleanup & Standards ✅
-**What:** Consolidated user experiences, removed legacy code
-**Why:** Multiple student types causing confusion, violating standards
-**Impact:**
-- Single student experience: `student@elimu.com` (no Form 4, KCSE subtypes)
-- Removed duplicate/legacy authentication flows
-- Cleaner demo environment with clear role separation
-- Professional backup accounts clearly labeled
-**Key Learning:** Simplicity > Options in user experience design
+**Critical Learnings:**
+- Never block UI with API calls in user interactions
+- Type safety catches errors early, improves IDE performance
+- Simplicity > Options in user experience design
 
 ## Production Status
 
@@ -371,27 +370,12 @@ try {
 - `linda.operations@elimu.com` / `operations2024` (Operations Admin - technical focus)
 - `peter.safety@elimu.com` / `safety2024` (Provider Safety Manager - compliance focus)
 
-## Common Issues & Solutions
-
-### Build Errors
-1. **Case Sensitivity (Windows)**: Always use lowercase for shadcn imports
-2. **Missing Routes**: Ensure all button navigation targets exist in App.tsx
-3. **Unused Imports**: Remove immediately (will cause lint failures)
-4. **TypeScript Errors**: Fix ALL errors before committing (zero tolerance)
-
-### Runtime Errors
-1. **MantineProvider Errors**: Check for Mantine components without provider context
-2. **Parse SDK Errors**: Use dynamic import pattern (`getParse()`)
-3. **Navigation Failures**: Use Button + navigate pattern (NOT asChild + Link)
-4. **Form Blocking**: Use non-blocking API pattern (UI first, backend secondary)
-
-### Performance Issues
-1. **Build Time**: Remove unused imports, clean dependencies
-2. **Bundle Size**: Proper tree-shaking with specific imports
-3. **Runtime Performance**: Use useCallback/useMemo for expensive operations
-4. **HMR Slow**: Separate utility functions from component files
-
 ## Development Workflow
+
+**Troubleshooting Quick Reference:**
+- Build errors: Check shadcn import case (lowercase), missing routes, unused imports
+- Runtime errors: MantineProvider context, Parse SDK dynamic imports, navigation pattern
+- Performance: Remove unused imports, tree-shaking, useCallback/useMemo, separate utilities
 
 ### Before Starting Work
 1. ✅ Read CLAUDE.md for current standards and patterns
@@ -415,23 +399,9 @@ try {
 
 ## Future Development Plans
 
-### Phase 1: Platform Enhancement (Next 1-2 months)
-- Real-time notifications for counselors
-- Advanced analytics and outcome tracking
-- Mobile app (React Native companion)
-- Performance optimization and caching
-
-### Phase 2: Content Expansion (3-6 months)
-- Expand career database to 20+ detailed profiles
-- Include all Kenya universities and colleges
-- Add subject-specific skills assessments
-- Enhanced scholarship matching algorithms
-
-### Phase 3: AI Integration (6-12 months)
-- Machine learning career recommendations
-- Predictive analytics for student success
-- Natural language chat support (AI counselor)
-- Continuous learning from student outcomes
+- **Platform Enhancement**: Real-time notifications, advanced analytics, mobile app, caching
+- **Content Expansion**: 20+ career profiles, all Kenya universities, subject-specific assessments
+- **AI Integration**: ML recommendations, predictive analytics, NLP chat support
 
 ## Critical Reminders
 
@@ -446,9 +416,184 @@ try {
 9. **Single-page UX > Multi-step flows (try simple first)**
 10. **Non-blocking API calls in all user interactions**
 
+## Student Guidance System (Freemium Architecture)
+
+### **Communication Channels Strategy**
+
+Elimu Smart uses a **3-channel freemium model** based on industry best practices from Kuder, PathwayU, and Scoir platforms:
+
+#### **FREE TIER (Self-Service)**
+1. **Community Q&A** (`/guidance/community-qa`) - Asynchronous knowledge base
+   - Students submit questions (public/anonymous options)
+   - Counselors answer when available (builds reputation)
+   - Searchable archive (200+ answered questions)
+   - Peer responses encouraged
+   - Backend: `submitQuestion`, `answerQuestion` cloud functions
+
+2. **Career Resources** (`/guidance/resources`) - Self-help library
+   - Career guides, PDFs, videos
+   - University comparison tools
+   - KUCCPS timeline tracker
+   - Scholarship database
+
+3. **Crisis Resources** (`/guidance/crisis`) - Verified external hotlines
+   - **NOT platform-provided support** (liability)
+   - Links to Childline Kenya, NACADA, Befrienders Kenya
+   - Free emergency resources
+
+#### **PREMIUM TIER (Paid Services)**
+4. **Premium Inbox** (`/inbox`) - Real-time 1-on-1 messaging
+   - Private conversations with assigned counselor
+   - Guaranteed 24-hour response time
+   - Read receipts, online status
+   - **Requires subscription** or pay-per-use
+   - Backend: Existing `useChat` hook + Parse Cloud Functions
+
+5. **Session Booking** (`/guidance/book-session`) - Scheduled counseling
+   - 30/60/90 minute video/phone/in-person sessions
+   - Pre-session questionnaire
+   - Post-session notes + action items
+   - **Pricing**: Included in Premium or pay-per-session (KES 1,500+)
+   - Backend: `bookCounselorSession` cloud function
+
+### **Card Implementation (Card-First Development)**
+
+**StudentGuidanceCards** (5 cards):
+- 3 Free cards: Community Q&A, Career Resources, Crisis Resources
+- 2 Premium cards: Message Counselor 🔒, Book Session 🔒
+- Premium cards show lock icon + "Premium" badge
+- Clicking premium cards shows paywall if not subscribed
+
+**CounselorDashboardCards** (5 cards):
+- Premium Students (12 active, KES 45,000/month revenue)
+- Premium Inbox (8 unread messages from paid students)
+- Booked Sessions (6 today, KES 9,000 earnings)
+- Community Q&A (15 pending, optional - builds reputation)
+- Performance (4.8/5 rating, 92% retention)
+
+### **Monetization Strategy**
+- **Free Users**: Access assessments + community Q&A
+- **Premium Users**: Direct counselor access + session booking
+- **Counselor Incentive**: Q&A builds reputation → Drives premium conversions
+- **Revenue Focus**: Counselor cards prioritize paid student metrics
+
+### **Research-Based Design Principles**
+- **Hybrid Approach**: Synchronous (inbox) + Asynchronous (Q&A) per 2025 best practices
+- **Conversational > Broadcast**: Direct messaging preferred over mass emails (54% students ignore university emails)
+- **Multi-Channel Access**: Students prefer online individual sessions with flexible scheduling
+- **Industry Standard**: Follows Scoir (direct messaging + counselor chat), PathwayU (AI + staff guidance), Kuder (individual + group sessions)
+
 ---
 
-**Last Updated**: 2025-10-04
+## 🚀 VPS Deployment Guide (TrueHosts)
+
+### **CRITICAL: Read This First on VPS!**
+
+When you (Claude) are logged into the VPS, follow this workflow:
+
+1. **ALWAYS Read CLAUDE.md First**
+   ```bash
+   cd ~/elimu_smart
+   cat CLAUDE.md
+   ```
+
+2. **Check Current Context**
+   ```bash
+   git status
+   git log -5
+   pm2 status
+   ```
+
+3. **VPS Deployment Checklist**
+   - [ ] Run `bash backend/setup-vps.sh` (one-time automated setup)
+   - [ ] Configure `backend/.env.production` with real credentials (template exists)
+   - [ ] Point DNS to VPS IP (elimu-smart.co.ke)
+   - [ ] Run SSL setup: `sudo certbot --nginx -d elimu-smart.co.ke -d dashboard.elimu-smart.co.ke`
+   - [ ] Build frontend: `cd frontend && npm run build`
+   - [ ] Deploy frontend: `sudo mkdir -p /var/www/elimu-smart && sudo cp -r dist/* /var/www/elimu-smart/`
+   - [ ] Start Parse Server: `cd backend && pm2 start ecosystem.config.js`
+   - [ ] Test Parse API: `curl https://elimu-smart.co.ke/parse/health`
+
+### **Production Environment Variables**
+
+All credentials are in `backend/.env` (already configured):
+- **M-Pesa Production**: Consumer Key/Secret, Shortcode 5482596, Passkey ready ✅
+- **ZeptoMail**: API token configured for emails ✅
+- **Parse Server**: App ID `elimu_smart_app_2024`, Master Key set ✅
+- **PostgreSQL**: User `elimu`, Database `elimu_smart_prod` ✅
+- **Redis**: `redis://localhost:6379` ✅
+
+### **External APIs & Caching Status**
+
+**Caching Implementation**: ✅ COMPLETE
+- Redis cache adapter configured in `server-working.js`
+- Cache utility module: `backend/utils/cache.js`
+- TTL configuration for all data types
+- Development: In-memory cache | Production: Redis
+
+**Active APIs**:
+
+1. **M-Pesa Daraja API** ✅ PRODUCTION READY
+   - Shortcode: 5482596, Environment: Production
+   - **CACHING: NO** (TTL: 0s) - Real-time payments only
+
+2. **ZeptoMail API** ✅ CONFIGURED
+   - From: noreply@elimu-smart.co.ke
+   - **CACHING: NO** (TTL: 0s) - Emails send immediately
+
+3. **CareerJet API** ✅ LIVE DATA
+   - Real API integrated in: `backend/cloud/main.js:4140`
+   - Public API (free, no key required)
+   - **CACHING: YES** (TTL: 24 hours) - Job listings cached
+
+4. **LinkedIn Insights** ✅ LIVE DATA
+   - Real verified LinkedIn profiles: John Walubengo, Juliana Rotich, Sam Gichuru, James Mwangi, Betty Maina
+   - Implementation: `backend/cloud/linkedin-professional-insights.js`
+   - **CACHING: YES** (TTL: 7 days) - Cached via `getCached()` wrapper
+
+**Data Sources (No External API)**:
+- KUCCPS Data: 7-day cache (weekly updates during admission season)
+- Universities: 24-hour cache (manual yearly updates)
+- Scholarships: 24-hour cache (manual/scraped data)
+- Kenya Careers: 24-hour cache (static database)
+
+**See**: `CACHING_IMPLEMENTATION.md` for complete details
+
+### **What Still Needs Backend Migration**
+
+1. **Assessment Data** (4,500 lines) → Create Parse migration script
+   - RiasecQuestion, SkillQuestion, KenyaCareer, KenyanUniversity classes
+   - Migration script: `backend/migrations/seed-assessment-data.js` (TODO)
+
+2. **LocalStorage** (64 instances) → Move to Parse Objects
+   - UserPreferences, AssessmentProgress, SavedCareers (TODO)
+
+3. **Scoring Algorithms** (500 lines) → Move to Cloud Functions
+   - Currently in frontend assessment components (TODO)
+
+### **Monitoring URLs After Deployment**
+
+- **Main Site**: https://elimu-smart.co.ke
+- **Parse API**: https://elimu-smart.co.ke/parse
+- **Parse Dashboard**: https://dashboard.elimu-smart.co.ke (admin/[set-password])
+- **PM2 Monitoring**: `pm2 monit` (CLI) or https://app.pm2.io (after signup)
+- **UptimeRobot**: Configure after deployment (free tier)
+
+### **Daily Backup Schedule**
+
+Automated cron job runs at 2 AM daily:
+```bash
+/home/user/elimu_smart/backend/scripts/backup-database.sh
+```
+
+Backups stored in: `~/elimu_smart_backups/` (30-day retention)
+
+---
+
+**Last Updated**: 2025-10-05
 **Platform Status**: Production Ready (Frontend), Backend Operational
 **Code Quality**: 100% Lint Compliance, Zero TypeScript Errors
 **Migration Status**: shadcn Complete (Student/Counselor), Admin Hybrid Functional
+**Monetization**: Freemium model (Free assessments + Paid counselor services)
+**External APIs**: All live with caching (CareerJet, LinkedIn, M-Pesa, ZeptoMail)
+**VPS Deployment**: Ready for GitHub push + deployment

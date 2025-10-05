@@ -1,22 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Title,
-  Text,
-  Card,
-  Stack,
-  Group,
-  Button,
-  Badge,
-  SimpleGrid,
-  Table,
-  Progress,
-  Alert,
-  Select,
-  ActionIcon,
-  ScrollArea,
-  Pagination,
-} from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   ExclamationTriangleIcon,
   EyeOpenIcon,
@@ -128,20 +117,20 @@ export const SecurityMonitoring: React.FC = () => {
 
   const getAlertColor = (type: string) => {
     switch (type) {
-      case 'critical': return 'red';
-      case 'high': return 'orange';
-      case 'medium': return 'yellow';
-      case 'low': return 'blue';
-      default: return 'gray';
+      case 'critical': return 'destructive';
+      case 'high': return 'default';
+      case 'medium': return 'secondary';
+      case 'low': return 'outline';
+      default: return 'outline';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'red';
-      case 'investigating': return 'orange';
-      case 'resolved': return 'green';
-      default: return 'gray';
+      case 'active': return 'destructive';
+      case 'investigating': return 'default';
+      case 'resolved': return 'outline';
+      default: return 'outline';
     }
   };
 
@@ -153,12 +142,12 @@ export const SecurityMonitoring: React.FC = () => {
     }
   };
 
-  const getMetricColor = (status: string) => {
+  const getMetricBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'good': return 'green';
-      case 'warning': return 'yellow';
-      case 'critical': return 'red';
-      default: return 'gray';
+      case 'good': return 'outline';
+      case 'warning': return 'secondary';
+      case 'critical': return 'destructive';
+      default: return 'default';
     }
   };
 
@@ -167,364 +156,306 @@ export const SecurityMonitoring: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setRefreshing(false);
     toast.success("Action Completed", {
-      // title: 'Data Refreshed',
       description: 'Security monitoring data has been updated',
-      // color: 'green',
     });
   };
 
   const exportReport = () => {
     toast.success("Action Completed", {
-      // title: 'Report Generated',
       description: 'Security report has been exported successfully',
-      // color: 'green',
     });
   };
 
   const resolveAlert = () => {
     toast.success("Action Completed", {
-      // title: 'Alert Resolved',
       description: 'Security alert has been marked as resolved',
-      // color: 'green',
     });
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="lg">
-        {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Title order={1} size="2rem">
-              Security Monitoring
-            </Title>
-            <Text size="lg" c="dimmed">
-              Real-time security monitoring and threat detection
-            </Text>
-          </Stack>
-          <Group gap="sm">
-            <Select
-              data={[
-                { value: '1h', label: 'Last Hour' },
-                { value: '24h', label: 'Last 24 Hours' },
-                { value: '7d', label: 'Last 7 Days' },
-                { value: '30d', label: 'Last 30 Days' },
-              ]}
-              value={selectedTimeframe}
-              onChange={(value) => setSelectedTimeframe(value || '24h')}
-            />
-            <Button
-              leftSection={<ReloadIcon width={16} height={16} />}
-              onClick={refreshData}
-              loading={refreshing}
-              style={{
-                backgroundColor: 'var(--primary)',
-                // color: 'var(--primary-foreground)',
-              }}
-            >
-              Refresh
-            </Button>
-            <Button
-              leftSection={<DownloadIcon width={16} height={16} />}
-              variant="light"
-              onClick={exportReport}
-            >
-              Export Report
-            </Button>
-          </Group>
-        </Group>
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Security Monitoring</h1>
+          <p className="text-lg text-muted-foreground">
+            Real-time security monitoring and threat detection
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1h">Last Hour</SelectItem>
+              <SelectItem value="24h">Last 24 Hours</SelectItem>
+              <SelectItem value="7d">Last 7 Days</SelectItem>
+              <SelectItem value="30d">Last 30 Days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={refreshData} disabled={refreshing}>
+            <ReloadIcon className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+          <Button variant="outline" onClick={exportReport}>
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+        </div>
+      </div>
 
-        {/* Security Overview Cards */}
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-          {securityMetrics.map((metric, index) => (
-            <Card
-              key={index}
-              padding="lg"
-              radius="md"
-              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-            >
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">{metric.name}</Text>
-                  <Badge
-                    size="xs"
-                    color={getMetricColor(metric.status)}
-                    variant="filled"
-                  >
+      {/* Security Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {securityMetrics.map((metric, index) => (
+          <Card key={index}>
+            <CardContent className="pt-6">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-muted-foreground">{metric.name}</p>
+                  <Badge variant={getMetricBadgeVariant(metric.status)}>
                     {metric.status.toUpperCase()}
                   </Badge>
-                </Group>
-                <Group justify="space-between" align="flex-end">
-                  <Stack gap={0}>
-                    <Text fw={700} size="xl" style={{ color: 'var(--primary)' }}>
-                      {metric.value}
-                    </Text>
-                    <Text size="xs" c="dimmed">{metric.unit}</Text>
-                  </Stack>
-                  <Text
-                    size="sm"
-                    c={metric.trend === 'up' ? 'red' : metric.trend === 'down' ? 'green' : 'dimmed'}
-                  >
+                </div>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600">{metric.value}</p>
+                    <p className="text-xs text-muted-foreground">{metric.unit}</p>
+                  </div>
+                  <p className={`text-sm ${metric.trend === 'up' ? 'text-red-500' : metric.trend === 'down' ? 'text-green-500' : 'text-muted-foreground'}`}>
                     {getTrendIcon(metric.trend)}
-                  </Text>
-                </Group>
-              </Stack>
-            </Card>
-          ))}
-        </SimpleGrid>
-
-        {/* Security Status Overview */}
-        <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md">
-          <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <ExclamationTriangleIcon width={32} height={32} style={{ color: 'var(--success)' }} />
-              <Text size="xs" c="dimmed" ta="center">Security Score</Text>
-              <Text fw={700} size="xl" style={{ color: 'var(--success)' }}>
-                94%
-              </Text>
-              <Badge size="sm" color="green" variant="filled">Excellent</Badge>
-            </Stack>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
           </Card>
+        ))}
+      </div>
 
-          <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <LockClosedIcon width={32} height={32} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Active Sessions</Text>
-              <Text fw={700} size="xl" style={{ color: 'var(--primary)' }}>
-                127
-              </Text>
-              <Badge size="sm" color="blue" variant="filled">Normal</Badge>
-            </Stack>
-          </Card>
-
-          <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <GlobeIcon width={32} height={32} style={{ color: 'var(--secondary)' }} />
-              <Text size="xs" c="dimmed" ta="center">Network Events</Text>
-              <Text fw={700} size="xl" style={{ color: 'var(--secondary)' }}>
-                1,247
-              </Text>
-              <Badge size="sm" color="yellow" variant="filled">Monitoring</Badge>
-            </Stack>
-          </Card>
-
-          <Card padding="lg" radius="md" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Stack gap="xs" align="center">
-              <PersonIcon width={32} height={32} style={{ color: 'var(--primary)' }} />
-              <Text size="xs" c="dimmed" ta="center">User Anomalies</Text>
-              <Text fw={700} size="xl" style={{ color: 'var(--primary)' }}>
-                3
-              </Text>
-              <Badge size="sm" color="blue" variant="filled">Low Risk</Badge>
-            </Stack>
-          </Card>
-        </SimpleGrid>
-
-        {/* Security Alerts */}
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor: 'var(--card)',
-            borderColor: 'var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Title order={3}>Security Alerts</Title>
-              <Group gap="sm">
-                <Select
-                  placeholder="Filter alerts"
-                  data={[
-                    { value: 'all', label: 'All Alerts' },
-                    { value: 'active', label: 'Active Only' },
-                    { value: 'critical', label: 'Critical Only' },
-                    { value: 'high', label: 'High Priority' },
-                    { value: 'medium', label: 'Medium Priority' },
-                    { value: 'low', label: 'Low Priority' },
-                  ]}
-                  value={alertFilter}
-                  onChange={(value) => setAlertFilter(value || 'all')}
-                  style={{ minWidth: 150 }}
-                />
-              </Group>
-            </Group>
-
-            <ScrollArea>
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Priority</Table.Th>
-                    <Table.Th>Alert</Table.Th>
-                    <Table.Th>Source</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.Th>Time</Table.Th>
-                    <Table.Th>Actions</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {paginatedAlerts.map((alert) => (
-                    <Table.Tr key={alert.id}>
-                      <Table.Td>
-                        <Badge
-                          size="sm"
-                          color={getAlertColor(alert.type)}
-                          variant="filled"
-                        >
-                          {alert.type.toUpperCase()}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td>
-                        <Stack gap={2}>
-                          <Text fw={500} size="sm">{alert.title}</Text>
-                          <Text size="xs" c="dimmed">{alert.description}</Text>
-                          {alert.affectedUsers && alert.affectedUsers > 0 && (
-                            <Text size="xs" c="orange">
-                              Affects {alert.affectedUsers} user(s)
-                            </Text>
-                          )}
-                        </Stack>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm">{alert.source}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Badge
-                          size="sm"
-                          color={getStatusColor(alert.status)}
-                          variant="secondary"
-                        >
-                          {alert.status}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="xs" c="dimmed">
-                          {alert.timestamp.toLocaleString()}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Group gap={4}>
-                          <ActionIcon
-                            size="sm"
-                            variant="subtle"
-                            color="blue"
-                            onClick={() => {
-                              toast.success("Action Completed", {
-                                // title: 'Alert Details',
-                                description: alert.description,
-                                // color: 'blue',
-                              });
-                            }}
-                          >
-                            <EyeOpenIcon width={14} height={14} />
-                          </ActionIcon>
-                          {alert.status !== 'resolved' && (
-                            <ActionIcon
-                              size="sm"
-                              variant="subtle"
-                              color="green"
-                              onClick={() => resolveAlert()}
-                            >
-                              <CheckCircledIcon width={14} height={14} />
-                            </ActionIcon>
-                          )}
-                        </Group>
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-
-            {totalPages > 1 && (
-              <Group justify="center">
-                <Pagination
-                  total={totalPages}
-                  value={currentPage}
-                  onChange={setCurrentPage}
-                  size="sm"
-                />
-              </Group>
-            )}
-          </Stack>
+      {/* Security Status Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-2">
+              <ExclamationTriangleIcon className="h-8 w-8 text-green-500" />
+              <p className="text-xs text-muted-foreground text-center">Security Score</p>
+              <p className="text-2xl font-bold text-green-500">94%</p>
+              <Badge variant="outline" className="bg-green-50">Excellent</Badge>
+            </div>
+          </CardContent>
         </Card>
 
-        {/* Real-time Security Status */}
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-          <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="md">
-              <Title order={4}>Firewall Status</Title>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm">Incoming Traffic</Text>
-                  <Badge color="green" variant="filled">Protected</Badge>
-                </Group>
-                <Progress value={85} color="green" />
-                <Text size="xs" c="dimmed">85% of traffic allowed, 15% blocked</Text>
-              </Stack>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm">Outgoing Traffic</Text>
-                  <Badge color="green" variant="filled">Monitored</Badge>
-                </Group>
-                <Progress value={92} color="green" />
-                <Text size="xs" c="dimmed">92% normal traffic patterns</Text>
-              </Stack>
-            </Stack>
-          </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-2">
+              <LockClosedIcon className="h-8 w-8 text-purple-600" />
+              <p className="text-xs text-muted-foreground text-center">Active Sessions</p>
+              <p className="text-2xl font-bold text-purple-600">127</p>
+              <Badge variant="outline" className="bg-blue-50">Normal</Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--card)',
-              borderColor: 'var(--border)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Stack gap="md">
-              <Title order={4}>Authentication Security</Title>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm">Two-Factor Authentication</Text>
-                  <Badge color="green" variant="filled">87% Adoption</Badge>
-                </Group>
-                <Progress value={87} color="green" />
-              </Stack>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm">Password Strength</Text>
-                  <Badge color="yellow" variant="filled">Good</Badge>
-                </Group>
-                <Progress value={73} color="yellow" />
-                <Text size="xs" c="dimmed">73% of users have strong passwords</Text>
-              </Stack>
-            </Stack>
-          </Card>
-        </SimpleGrid>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-2">
+              <GlobeIcon className="h-8 w-8 text-purple-500" />
+              <p className="text-xs text-muted-foreground text-center">Network Events</p>
+              <p className="text-2xl font-bold text-purple-500">1,247</p>
+              <Badge variant="secondary">Monitoring</Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* System Alerts */}
-        <Alert
-          icon={<ExclamationTriangleIcon width={16} height={16} />}
-          title="Security Notice"
-          color="blue"
-        >
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-2">
+              <PersonIcon className="h-8 w-8 text-purple-600" />
+              <p className="text-xs text-muted-foreground text-center">User Anomalies</p>
+              <p className="text-2xl font-bold text-purple-600">3</p>
+              <Badge variant="outline" className="bg-blue-50">Low Risk</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Alerts */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Security Alerts</CardTitle>
+            <Select value={alertFilter} onValueChange={setAlertFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter alerts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Alerts</SelectItem>
+                <SelectItem value="active">Active Only</SelectItem>
+                <SelectItem value="critical">Critical Only</SelectItem>
+                <SelectItem value="high">High Priority</SelectItem>
+                <SelectItem value="medium">Medium Priority</SelectItem>
+                <SelectItem value="low">Low Priority</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Priority</TableHead>
+                <TableHead>Alert</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedAlerts.map((alert) => (
+                <TableRow key={alert.id}>
+                  <TableCell>
+                    <Badge variant={getAlertColor(alert.type)}>
+                      {alert.type.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <p className="font-medium text-sm">{alert.title}</p>
+                      <p className="text-xs text-muted-foreground">{alert.description}</p>
+                      {alert.affectedUsers && alert.affectedUsers > 0 && (
+                        <p className="text-xs text-orange-500">
+                          Affects {alert.affectedUsers} user(s)
+                        </p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm">{alert.source}</p>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusColor(alert.status)}>
+                      {alert.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-xs text-muted-foreground">
+                      {alert.timestamp.toLocaleString()}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          toast.success("Action Completed", {
+                            description: alert.description,
+                          });
+                        }}
+                      >
+                        <EyeOpenIcon className="h-4 w-4" />
+                      </Button>
+                      {alert.status !== 'resolved' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => resolveAlert()}
+                        >
+                          <CheckCircledIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="py-2 px-4 text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Real-time Security Status */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Firewall Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Incoming Traffic</p>
+                <Badge variant="outline" className="bg-green-50">Protected</Badge>
+              </div>
+              <Progress value={85} className="h-2" />
+              <p className="text-xs text-muted-foreground">85% of traffic allowed, 15% blocked</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Outgoing Traffic</p>
+                <Badge variant="outline" className="bg-green-50">Monitored</Badge>
+              </div>
+              <Progress value={92} className="h-2" />
+              <p className="text-xs text-muted-foreground">92% normal traffic patterns</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Authentication Security</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Two-Factor Authentication</p>
+                <Badge variant="outline" className="bg-green-50">87% Adoption</Badge>
+              </div>
+              <Progress value={87} className="h-2" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Password Strength</p>
+                <Badge variant="secondary">Good</Badge>
+              </div>
+              <Progress value={73} className="h-2" />
+              <p className="text-xs text-muted-foreground">73% of users have strong passwords</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* System Alerts */}
+      <Alert>
+        <ExclamationTriangleIcon className="h-4 w-4" />
+        <AlertDescription>
           All systems are operating normally. Security monitoring is active and all protective measures are in place.
           Last security scan completed: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}.
-        </Alert>
-      </Stack>
-    </Container>
+        </AlertDescription>
+      </Alert>
+    </div>
   );
 };

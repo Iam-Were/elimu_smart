@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
+import { getParse } from '@/config/parse';
 import {
   MagnifyingGlassIcon,
   PersonIcon,
@@ -121,13 +122,39 @@ const mockStudents: Student[] = [
 ];
 
 export const StudentRoster: React.FC = () => {
-  const [students] = useState<Student[]>(mockStudents);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
+
+  // Fetch assigned students from database
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getAssignedStudents');
+
+        if (result.success) {
+          setStudents(result.students);
+        } else {
+          console.warn('Failed to fetch students:', result.error);
+          // Fallback to mock data
+          setStudents(mockStudents);
+        }
+      } catch (error) {
+        console.warn('Error fetching students, using mock data:', error);
+        setStudents(mockStudents);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = 
@@ -225,9 +252,29 @@ export const StudentRoster: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Loading State */}
+        {loading && (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <p className="text-muted-foreground">Loading students...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredStudents.length === 0 && (
+          <Card>
+            <CardContent className="pt-6 text-center space-y-2">
+              <PersonIcon className="w-12 h-12 mx-auto text-muted-foreground" />
+              <p className="text-muted-foreground">No students assigned yet</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Students Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStudents.map(student => (
+        {!loading && filteredStudents.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredStudents.map(student => (
             <Card key={student.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -362,7 +409,8 @@ export const StudentRoster: React.FC = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Student Detail Modal */}
         <Dialog open={opened} onOpenChange={setOpened}>

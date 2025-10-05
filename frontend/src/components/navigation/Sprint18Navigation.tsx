@@ -75,15 +75,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     return `bg-gradient-to-r from-${colorName}-500 to-${colorName}-600 text-white hover:from-${colorName}-600 hover:to-${colorName}-700`;
   };
 
-  const getThemeColorName = () => {
-    const colorMap = {
-      'student': 'orange',
-      'counselor': 'yellow',
-      'admin': 'purple'
-    } as const;
-    return colorMap[currentTheme] || 'orange';
-  };
-
   const getHeaderStyles = () => {
     const baseColor = getThemeColor(currentTheme);
     return {

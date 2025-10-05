@@ -38,6 +38,7 @@ import { SecurityMonitoringPage } from './pages/admin/SecurityMonitoringPage';
 import { MaintenanceToolsPage } from './pages/admin/MaintenanceToolsPage';
 import { ProfessionalNetworkingHub } from './components/professional/ProfessionalNetworkingHub';
 import FreeRiasecAssessment from './components/assessments/FreeRiasecAssessment';
+import { SubscriptionPage } from './pages/SubscriptionPage';
 import SubjectCareerMapper from './components/assessments/SubjectCareerMapper';
 import SkillsAssessment from './components/assessments/SkillsAssessment';
 import UniversityCourseFinder from './components/assessments/UniversityCourseFinder';
@@ -105,6 +106,7 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/dashboard" element={<Sprint18DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/settings/*" element={<AccountSettingsPage />} />
         <Route path="/assessment" element={<Sprint18AssessmentPage />} />
         <Route path="/assessment/career" element={<FreeRiasecAssessment />} />

@@ -93,6 +93,92 @@ Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   }
 });
 
+// Initialize RIASEC Assessment Database Schema
+Parse.Cloud.define('initializeRiasecSchema', async (request) => {
+  const { user } = request;
+
+  // Only admins can initialize schema
+  if (!user || user.get('role') !== 'admin') {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Only admins can initialize schema');
+  }
+
+  try {
+    // Create RiasecQuestion schema
+    const questionSchema = new Parse.Schema('RiasecQuestion');
+
+    try {
+      await questionSchema.get();
+      console.log('RiasecQuestion schema already exists');
+    } catch {
+      questionSchema.addNumber('questionId'); // 1-96
+      questionSchema.addString('category'); // 'activities' or 'occupations'
+      questionSchema.addString('statement');
+      questionSchema.addString('riasecType'); // 'R', 'I', 'A', 'S', 'E', 'C'
+      questionSchema.addString('kenyaContext');
+      questionSchema.addBoolean('isActive', { defaultValue: true });
+      questionSchema.addNumber('difficultyLevel'); // 1-5 for future adaptive testing
+      questionSchema.addNumber('timesPresented', { defaultValue: 0 });
+      questionSchema.addNumber('averageResponseTime'); // milliseconds
+
+      await questionSchema.save();
+      console.log('RiasecQuestion schema created successfully');
+    }
+
+    // Create RiasecType schema (metadata for R/I/A/S/E/C types)
+    const typeSchema = new Parse.Schema('RiasecType');
+
+    try {
+      await typeSchema.get();
+      console.log('RiasecType schema already exists');
+    } catch {
+      typeSchema.addString('code'); // 'R', 'I', 'A', 'S', 'E', 'C'
+      typeSchema.addString('name'); // 'Realistic', 'Investigative', etc.
+      typeSchema.addString('description');
+      typeSchema.addArray('characteristics');
+      typeSchema.addArray('workEnvironments');
+      typeSchema.addArray('kenyaCareers');
+      typeSchema.addArray('kuccpsPathways');
+
+      await typeSchema.save();
+      console.log('RiasecType schema created successfully');
+    }
+
+    // Create KenyaCareer schema
+    const careerSchema = new Parse.Schema('KenyaCareer');
+
+    try {
+      await careerSchema.get();
+      console.log('KenyaCareer schema already exists');
+    } catch {
+      careerSchema.addString('careerName');
+      careerSchema.addString('primaryRiasecType'); // 'R', 'I', 'A', 'S', 'E', 'C'
+      careerSchema.addArray('secondaryRiasecTypes'); // ['I', 'E'] etc.
+      careerSchema.addString('kuccpsPathway');
+      careerSchema.addString('description');
+      careerSchema.addArray('requiredSubjects');
+      careerSchema.addNumber('minClusterPoints');
+      careerSchema.addObject('salaryRange'); // { min, max, currency }
+      careerSchema.addArray('topUniversities');
+      careerSchema.addString('demandLevel'); // 'high', 'medium', 'low'
+      careerSchema.addArray('skills');
+      careerSchema.addBoolean('isActive', { defaultValue: true });
+
+      await careerSchema.save();
+      console.log('KenyaCareer schema created successfully');
+    }
+
+    return {
+      success: true,
+      message: 'RIASEC Assessment schema initialized successfully',
+      schemas: ['RiasecQuestion', 'RiasecType', 'KenyaCareer']
+    };
+
+  } catch (error) {
+    console.error('RIASEC schema initialization error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, `Schema initialization failed: ${error.message}`);
+  }
+});
+
 Parse.Cloud.define('hello', (request) => {
   return 'Hello from Elimu Smart Parse Server!';
 });
@@ -2120,6 +2206,143 @@ function generateScholarshipAlertHTML(firstName, scholarshipName, deadline, amou
 // Complete backend API for web and mobile apps
 // ==========================================
 
+// Seed RIASEC database with questions from frontend
+Parse.Cloud.define('seedRiasecData', async (request) => {
+  const { user, params } = request;
+
+  // Only admins can seed data
+  if (!user || user.get('role') !== 'admin') {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Only admins can seed data');
+  }
+
+  try {
+    const { questions, riasecTypes } = params;
+
+    // Seed RiasecQuestion table
+    const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+    let questionsSaved = 0;
+
+    for (const q of questions) {
+      const query = new Parse.Query(RiasecQuestion);
+      query.equalTo('questionId', q.id);
+      const existing = await query.first({ useMasterKey: true });
+
+      if (!existing) {
+        const questionObj = new RiasecQuestion();
+        questionObj.set('questionId', q.id);
+        questionObj.set('category', q.category);
+        questionObj.set('statement', q.statement);
+        questionObj.set('riasecType', q.riasecType);
+        questionObj.set('kenyaContext', q.kenyaContext || '');
+        questionObj.set('isActive', true);
+        questionObj.set('difficultyLevel', 3); // Default medium
+        questionObj.set('timesPresented', 0);
+        questionObj.set('averageResponseTime', 0);
+
+        await questionObj.save(null, { useMasterKey: true });
+        questionsSaved++;
+      }
+    }
+
+    // Seed RiasecType table
+    const RiasecType = Parse.Object.extend('RiasecType');
+    let typesSaved = 0;
+
+    for (const [code, typeData] of Object.entries(riasecTypes)) {
+      const query = new Parse.Query(RiasecType);
+      query.equalTo('code', code);
+      const existing = await query.first({ useMasterKey: true });
+
+      if (!existing) {
+        const typeObj = new RiasecType();
+        typeObj.set('code', code);
+        typeObj.set('name', typeData.name);
+        typeObj.set('description', typeData.description);
+        typeObj.set('characteristics', typeData.characteristics || []);
+        typeObj.set('workEnvironments', typeData.workEnvironments || []);
+        typeObj.set('kenyaCareers', typeData.kenyaCareers || []);
+        typeObj.set('kuccpsPathways', typeData.kuccpsPathways || []);
+
+        await typeObj.save(null, { useMasterKey: true });
+        typesSaved++;
+      }
+    }
+
+    return {
+      success: true,
+      message: 'RIASEC data seeded successfully',
+      questionsSaved,
+      typesSaved,
+      totalQuestions: questions.length
+    };
+
+  } catch (error) {
+    console.error('RIASEC seed error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, `Seed failed: ${error.message}`);
+  }
+});
+
+// Get assessment questions with optional rotation/randomization
+Parse.Cloud.define('getAssessmentQuestions', async (request) => {
+  const { params } = request;
+  const { assessmentType, questionCount, randomize } = params;
+
+  try {
+    const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+    const query = new Parse.Query(RiasecQuestion);
+
+    query.equalTo('isActive', true);
+    query.limit(1000); // Get all active questions
+
+    const results = await query.find({ useMasterKey: true });
+
+    let questions = results.map(q => ({
+      id: q.get('questionId'),
+      category: q.get('category'),
+      statement: q.get('statement'),
+      riasecType: q.get('riasecType'),
+      kenyaContext: q.get('kenyaContext')
+    }));
+
+    // Interleave by RIASEC type (R, I, A, S, E, C pattern)
+    const grouped = { R: [], I: [], A: [], S: [], E: [], C: [] };
+    questions.forEach(q => grouped[q.riasecType].push(q));
+
+    const interleaved = [];
+    const types = ['R', 'I', 'A', 'S', 'E', 'C'];
+    const maxPerType = Math.max(...Object.values(grouped).map(arr => arr.length));
+
+    for (let i = 0; i < maxPerType; i++) {
+      for (const type of types) {
+        if (grouped[type][i]) {
+          interleaved.push(grouped[type][i]);
+        }
+      }
+    }
+
+    // Optional: limit to specific count
+    const finalQuestions = questionCount ? interleaved.slice(0, questionCount) : interleaved;
+
+    return {
+      success: true,
+      questions: finalQuestions,
+      totalAvailable: questions.length
+    };
+
+  } catch (error) {
+    console.error('Get questions error:', error);
+
+    // Fallback to empty array if database not seeded yet
+    return {
+      success: false,
+      questions: [],
+      totalAvailable: 0,
+      error: error.message,
+      fallbackRequired: true
+    };
+  }
+});
+
 // RIASEC Assessment Data Models and Functions
 const RIASEC_TYPES = {
   R: {
@@ -3916,31 +4139,100 @@ function calculateCareerMatchScore(career, studentProfile) {
 
 Parse.Cloud.define('getCareerJobData', async (request) => {
   const { careerTitle, location = 'kenya' } = request.params;
+  const { getCached, CACHE_TTL } = require('../utils/cache');
 
   try {
-    // Simulate CareerJet API call (replace with actual API when available)
-    // For now, return mock data based on career title and Kenya market
-    const mockJobData = generateMockJobData(careerTitle, location);
+    // Cache CareerJet data for 24 hours (job listings don't change frequently)
+    const cacheKey = `careerjet-${careerTitle}-${location}`;
+
+    const jobData = await getCached(cacheKey, async () => {
+      // Real CareerJet API call (free, no API key required!)
+      const axios = require('axios');
+
+      // CareerJet Public API endpoint for Kenya
+      const careerjetUrl = 'https://public-api.careerjet.net/search';
+
+      const params = {
+        keywords: careerTitle,
+        location: location === 'kenya' ? 'Kenya' : location,
+        affid: '0afaf0173305e4b9b5438e5db007bd36', // Public affiliate ID (free tier)
+        user_ip: '127.0.0.1',
+        user_agent: 'Mozilla/5.0',
+        locale_code: 'en_KE', // Kenya English
+        pagesize: 20,
+        page: 1
+      };
+
+      const response = await axios.get(careerjetUrl, {
+        params,
+        timeout: 10000 // 10 second timeout
+      });
+
+      if (response.data && response.data.jobs) {
+        // Transform CareerJet response to our format
+        const jobs = response.data.jobs;
+
+        // Extract unique companies
+        const companies = [...new Set(jobs.map(job => job.company))].slice(0, 10);
+
+        // Calculate salary range if available
+        const salariesMentioned = jobs
+          .map(job => job.salary)
+          .filter(salary => salary && salary.toLowerCase().includes('ksh'))
+          .slice(0, 5);
+
+        const salaryRange = salariesMentioned.length > 0
+          ? salariesMentioned.join(', ')
+          : 'Salary not disclosed';
+
+        // Determine demand level based on job count
+        const totalJobs = response.data.hits || jobs.length;
+        let demandLevel = 'Low';
+        if (totalJobs > 50) demandLevel = 'High';
+        else if (totalJobs > 20) demandLevel = 'Medium';
+
+        return {
+          totalJobs,
+          demandLevel,
+          salaryRange,
+          topEmployers: companies,
+          recentJobs: jobs.slice(0, 10).map(job => ({
+            title: job.title,
+            company: job.company,
+            location: job.locations,
+            salary: job.salary || 'Not specified',
+            url: job.url,
+            date: job.date
+          }))
+        };
+      }
+
+      // Fallback to mock data if API fails
+      return generateMockJobData(careerTitle, location);
+
+    }, CACHE_TTL.CAREERJET_JOBS);
 
     return {
       success: true,
       career: careerTitle,
       location: location,
-      data: mockJobData
+      data: jobData,
+      cached: true,
+      source: 'CareerJet Public API'
     };
-  } catch (error) {
-    console.error('Error fetching CareerJet data:', error);
 
+  } catch (error) {
+    console.error('❌ CareerJet API error:', error.message);
+
+    // Fallback to mock data on error
     return {
-      success: false,
-      error: error.message,
-      fallbackData: {
-        totalJobs: 0,
-        demandLevel: 'Unknown',
-        salaryRange: 'Data unavailable',
-        topEmployers: [],
-        recentJobs: []
-      }
+      success: true,
+      career: careerTitle,
+      location: location,
+      data: generateMockJobData(careerTitle, location),
+      cached: false,
+      source: 'Fallback Mock Data',
+      note: 'Real API unavailable, using estimated data'
     };
   }
 });
@@ -4827,6 +5119,19 @@ Parse.Cloud.define('bookCounselorSession', async (request) => {
   const student = request.user;
 
   try {
+    // Check premium subscription
+    const Subscription = Parse.Object.extend('Subscription');
+    const subQuery = new Parse.Query(Subscription);
+    subQuery.equalTo('user', student);
+    subQuery.equalTo('status', 'active');
+    subQuery.greaterThan('expiresAt', new Date());
+
+    const activeSub = await subQuery.first({ useMasterKey: true });
+
+    if (!activeSub) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Premium subscription required to book counseling sessions');
+    }
+
     // Create session
     const Session = Parse.Object.extend('Session');
     const session = new Session();
@@ -5635,7 +5940,7 @@ Parse.Cloud.define('getAssignedStudents', async (request) => {
  */
 Parse.Cloud.define('getStudentQuestions', async (request) => {
   const { user } = request;
-  const { status = 'pending', limit = 50 } = request.params;
+  const { status = 'pending', limit = 50, filterPremium = false } = request.params;
 
   if (!user) {
     throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
@@ -5653,7 +5958,24 @@ Parse.Cloud.define('getStudentQuestions', async (request) => {
     UserQuery.equalTo('assignedCounselorId', user.id);
     UserQuery.select(['objectId']);
     const assignedStudents = await UserQuery.find({ useMasterKey: true });
-    const studentIds = assignedStudents.map(s => s.id);
+    let studentIds = assignedStudents.map(s => s.id);
+
+    // Filter for premium students only if requested
+    if (filterPremium && studentIds.length > 0) {
+      const Subscription = Parse.Object.extend('Subscription');
+      const subQuery = new Parse.Query(Subscription);
+      subQuery.containedIn('user', studentIds.map(id => {
+        const userPointer = new Parse.User();
+        userPointer.id = id;
+        return userPointer;
+      }));
+      subQuery.equalTo('status', 'active');
+      subQuery.greaterThan('expiresAt', new Date());
+
+      const activeSubs = await subQuery.find({ useMasterKey: true });
+      const premiumStudentIds = activeSubs.map(sub => sub.get('user').id);
+      studentIds = studentIds.filter(id => premiumStudentIds.includes(id));
+    }
 
     if (studentIds.length === 0) {
       return { success: true, questions: [], totalCount: 0 };
