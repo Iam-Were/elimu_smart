@@ -6,10 +6,10 @@ module.exports = {
       script: 'server-working.js',
       instances: 2,  // Cluster mode - 2 instances
       exec_mode: 'cluster',
+      cwd: '/root/elimu_smart/backend',
       env: {
         NODE_ENV: 'production'
       },
-      env_file: '.env',  // Production env file
       error_file: './logs/prod-parse-error.log',
       out_file: './logs/prod-parse-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
@@ -34,10 +34,13 @@ module.exports = {
       script: 'server-working.js',
       instances: 1,  // Single instance for staging
       exec_mode: 'fork',
+      cwd: '/root/elimu_smart/backend',
+      interpreter: 'node',
+      interpreter_args: '-r dotenv/config',
       env: {
-        NODE_ENV: 'staging'
+        NODE_ENV: 'staging',
+        DOTENV_CONFIG_PATH: '.env.staging'
       },
-      env_file: '.env.staging',  // Staging env file
       error_file: './logs/staging-parse-error.log',
       out_file: './logs/staging-parse-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
