@@ -1,0 +1,26 @@
+{
+  "apps": [
+    {
+      "serverURL": "http://localhost:1338/parse",
+      "appId": "elimu-smart-staging",
+      "masterKey": "ElImuSmartStagingMasterKey2024Secure",
+      "appName": "Elimu Smart Staging",
+      "iconName": "elimu-icon.png",
+      "primaryBackgroundColor": "#eab308",
+      "secondaryBackgroundColor": "#ca8a04",
+      "production": false,
+      "supportedPushLocales": ["en"]
+    }
+  ],
+  "users": [
+    {
+      "user": "admin",
+      "pass": "$2a$10$REPLACE_WITH_BCRYPT_HASH"
+    }
+  ],
+  "useEncryptedPasswords": true,
+  "trustProxy": 1,
+  "PARSE_DASHBOARD_TRUST_PROXY": 1,
+  "PARSE_DASHBOARD_ALLOW_INSECURE_HTTP": 1,
+  "PARSE_DASHBOARD_COOKIE_SESSION_SECRET": "STAGING_SECRET_GENERATE_RANDOM"
+}
