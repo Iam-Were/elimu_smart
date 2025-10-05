@@ -31,15 +31,12 @@ module.exports = {
     // STAGING Parse Server
     {
       name: 'parse-server-staging',
-      script: 'server-working.js',
+      script: 'server-staging.js',  // Uses dedicated staging loader
       instances: 1,  // Single instance for staging
       exec_mode: 'fork',
       cwd: '/root/elimu_smart/backend',
-      interpreter: 'node',
-      interpreter_args: '-r dotenv/config',
       env: {
-        NODE_ENV: 'staging',
-        DOTENV_CONFIG_PATH: '.env.staging'
+        NODE_ENV: 'staging'
       },
       error_file: './logs/staging-parse-error.log',
       out_file: './logs/staging-parse-out.log',
