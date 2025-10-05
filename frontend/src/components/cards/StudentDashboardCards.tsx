@@ -5,7 +5,6 @@ import {
   Target,
   GraduationCap,
   Briefcase,
-  MessageSquare,
   Move,
   RotateCcw,
   Loader2,
@@ -19,6 +18,7 @@ interface StudentDashboardCard {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
+  iconGradient: string;
   changeType: 'positive' | 'negative' | 'neutral';
   value: string | number;
   change: string;
@@ -34,6 +34,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'Career Readiness',
     description: 'Overall progress',
     icon: Target,
+    iconGradient: 'from-orange-500 to-orange-600',
     changeType: 'positive',
     value: 'Loading...',
     change: 'Live tracking',
@@ -46,6 +47,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'University & Scholarships',
     description: 'KUCCPS & funding',
     icon: GraduationCap,
+    iconGradient: 'from-indigo-500 to-indigo-600',
     changeType: 'positive',
     value: 'Loading...',
     change: 'Checking options',
@@ -58,24 +60,15 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'Assessments',
     description: 'Career discovery',
     icon: Briefcase,
+    iconGradient: 'from-purple-500 to-purple-600',
     changeType: 'positive',
     value: 'Loading...',
     change: 'New insights',
     actionText: 'Take Assessment',
     actionLink: '/assessment',
     isDynamic: true
-  },
-  {
-    id: 'guidance-support',
-    title: 'Get Support',
-    description: 'Expert guidance',
-    icon: MessageSquare,
-    changeType: 'positive',
-    value: 'Available',
-    change: 'Counselors online',
-    actionText: 'Get Help',
-    actionLink: '/guidance'
   }
+  // Removed 'Get Support' card - redundant with Guidance section
 ];
 
 
@@ -438,8 +431,11 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
               
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-600 rounded-md">
-                    {React.createElement(card.icon, { className: "h-4 w-4 text-white" })}
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                    `bg-gradient-to-br ${card.iconGradient}`
+                  )}>
+                    {React.createElement(card.icon, { className: "h-5 w-5 text-white" })}
                   </div>
                   <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
                     {card.title}

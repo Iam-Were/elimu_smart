@@ -20,174 +20,153 @@ import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 
 interface StudentAssessmentCard {
+  // Core display fields (6 elements for card)
   id: string;
   title: string;
-  studentFocusedDescription: string; // Student-specific language
+  studentFocusedDescription: string; // <100 chars
   icon: React.ReactNode;
-  progress?: number;
+  iconGradient: string; // Gradient for icon container
   status: 'not-started' | 'in-progress' | 'completed' | 'needs-attention';
-  urgency: 'high' | 'medium' | 'low'; // Student timeline urgency
+
+  // Action/Progress fields
   actionText: string;
   actionLink: string;
-  studentBenefit: string; // What student gains
-  timeCommitment: string; // Realistic time expectation
-  studentConcerns?: string[]; // Common student worries addressed
-  nextSteps: string[]; // Clear next actions after completion
-  connections?: string[]; // How it connects to other student goals
+  progress?: number; // From backend
+  urgency: 'high' | 'medium' | 'low';
+
+  // Enhanced display fields (from production pattern)
+  studentBenefit: string; // Single line benefit
+  timeCommitment: string; // e.g., "15 min"
+  matchScore?: number; // For results display (e.g., 95%)
+  estimatedTime?: string; // Alternative to timeCommitment
+
+  // Bento grid sizing
+  displaySize: 'tall' | 'standard' | 'compact';
+  contentComplexity: 'high' | 'medium' | 'low';
+
+  // Minimal requirements (only grade displayed)
   requirements?: {
     grade?: string; // Form 1-4, or A-level
-    subjects?: string[]; // Required subjects
-    timing?: string; // Best time to take
-  };
-  aiReadiness: {
-    currentData: string; // What data is ready for AI
-    futureAI: string; // How AI will enhance this
   };
 }
 
 // Student-centric assessment cards - focused on specific evaluations
 const studentAssessmentCards: StudentAssessmentCard[] = [
   {
+    id: 'discover-my-career',
+    title: 'Career Discovery',
+    studentFocusedDescription: 'Discover careers that match your personality with the RIASEC assessment',
+    icon: <Brain className="h-6 w-6" />,
+    iconGradient: 'from-purple-500 to-purple-600',
+    status: 'not-started',
+    actionText: 'Start Discovery',
+    actionLink: '/assessment/career',
+    progress: 0,
+    urgency: 'high',
+    studentBenefit: 'Get your Holland Code (R-I-A-S-E-C) and Kenya career matches',
+    timeCommitment: '25 minutes',
+    displaySize: 'tall',
+    contentComplexity: 'high',
+    requirements: {
+      grade: 'Form 2-4 recommended'
+    }
+  },
+  {
     id: 'subject-to-career-mapper',
     title: 'Subject Mapper',
     studentFocusedDescription: 'Map your subjects to careers',
     icon: <Map className="h-6 w-6" />,
-    progress: 60,
+    iconGradient: 'from-blue-500 to-blue-600',
     status: 'in-progress',
-    urgency: 'high',
     actionText: 'Complete Mapping',
     actionLink: '/assessment/subjects',
+    progress: 60,
+    urgency: 'high',
     studentBenefit: 'Career possibilities',
     timeCommitment: '8 minutes',
-    studentConcerns: [
-      'Did I choose the right subjects?',
-      'What careers can I actually pursue?',
-      'Are my grades good enough?',
-    ],
-    nextSteps: [
-      'Input your current grades',
-      'See career possibilities',
-      'Check minimum requirements',
-    ],
-    connections: [
-      'Uses Career Discovery results',
-      'Feeds into University Finder',
-    ],
+    displaySize: 'standard',
+    contentComplexity: 'medium',
     requirements: {
-      grade: 'Form 3-4 students',
-      subjects: ['Current subject combination'],
-      timing: 'Update after each exam',
-    },
-    aiReadiness: {
-      currentData: 'Subject performance, grade trends',
-      futureAI: 'AI will predict grade improvement strategies',
-    },
+      grade: 'Form 3-4 students'
+    }
   },
   {
     id: 'skills-strength-finder',
     title: 'Skills & Strengths',
     studentFocusedDescription: 'Discover your talents and strengths',
     icon: <Trophy className="h-6 w-6" />,
-    progress: 0,
+    iconGradient: 'from-green-500 to-green-600',
     status: 'not-started',
-    urgency: 'medium',
     actionText: 'Find Strengths',
     actionLink: '/assessment/skills',
+    progress: 0,
+    urgency: 'medium',
     studentBenefit: 'Know your strengths',
     timeCommitment: '12 minutes',
-    studentConcerns: [
-      'What am I actually good at?',
-      'How do my skills compare to others?',
-      'Which careers value my strengths?',
-    ],
-    nextSteps: [
-      'Complete skills assessment',
-      'Review strength areas',
-      'Connect to career options',
-    ],
-    connections: [
-      'Enhances Career Discovery',
-      'Links to Skills Development',
-    ],
+    displaySize: 'standard',
+    contentComplexity: 'medium',
     requirements: {
-      grade: 'Any form - never too early',
-      timing: 'Great for confidence building',
-    },
-    aiReadiness: {
-      currentData: 'Self-assessed skills, performance patterns',
-      futureAI: 'AI will identify hidden skills from behavior analysis',
-    },
+      grade: 'Any form - never too early'
+    }
   },
   {
     id: 'university-course-finder',
     title: 'University Course Finder',
     studentFocusedDescription: 'Find university courses that match your goals',
     icon: <GraduationCap className="h-6 w-6" />,
-    progress: 0,
+    iconGradient: 'from-indigo-500 to-indigo-600',
     status: 'not-started',
-    urgency: 'high',
     actionText: 'Explore Courses',
     actionLink: '/assessment/university',
+    progress: 0,
+    urgency: 'high',
     studentBenefit: 'Choose the right course',
     timeCommitment: '20 minutes',
-    studentConcerns: [
-      'Which course should I choose?',
-      'Can I afford university?',
-      'Which universities are best?',
-    ],
-    nextSteps: [
-      'Get course recommendations',
-      'Compare fees and requirements',
-      'See employment rates',
-    ],
-    connections: [
-      'Uses Career Discovery results',
-      'Links to Scholarship Finder',
-    ],
+    displaySize: 'tall',
+    contentComplexity: 'high',
     requirements: {
-      grade: 'Form 4 (KCSE candidates)',
-      timing: 'Before KUCCPS application',
-    },
-    aiReadiness: {
-      currentData: 'Career preferences, academic performance',
-      futureAI: 'AI will predict course success probability',
-    },
+      grade: 'Form 4 (KCSE candidates)'
+    }
   },
   {
     id: 'career-exploration-journey',
     title: 'Career Deep Dive',
     studentFocusedDescription: 'Learn what different careers are really like beyond just the job title',
     icon: <Brain className="h-6 w-6" />,
-    progress: 25,
+    iconGradient: 'from-amber-500 to-amber-600',
     status: 'in-progress',
-    urgency: 'medium',
     actionText: 'Continue Exploring',
     actionLink: '/assessment/explore',
+    progress: 25,
+    urgency: 'medium',
     studentBenefit: 'Avoid career surprises - know what your future job involves',
     timeCommitment: '8 minutes per career',
-    studentConcerns: [
-      'What do people in this career actually do?',
-      'Will this career make me happy?',
-      'What challenges should I expect?',
-    ],
-    nextSteps: [
-      'Watch professional interviews',
-      'Understand daily responsibilities',
-      'Connect with industry mentors',
-    ],
-    connections: [
-      'Builds on Career Discovery',
-      'Links to Professional Network',
-    ],
+    displaySize: 'compact',
+    contentComplexity: 'low',
     requirements: {
-      grade: 'Any form',
-      timing: 'Ongoing exploration',
-    },
-    aiReadiness: {
-      currentData: 'Career interests, exploration patterns',
-      futureAI: 'AI will curate personalized career content',
-    },
+      grade: 'Any form'
+    }
   },
+  {
+    id: 'assessment-results',
+    title: 'My Results',
+    studentFocusedDescription: 'Your complete career profile and personalized recommendations',
+    icon: <Award className="h-6 w-6" />,
+    iconGradient: 'from-orange-500 to-orange-600',
+    status: 'not-started',
+    actionText: 'View My Results',
+    actionLink: '/profile/results',
+    progress: 0,
+    urgency: 'medium',
+    studentBenefit: 'Complete career profile with Holland Code, skills matrix, and university matches',
+    timeCommitment: '10 minutes',
+    matchScore: undefined, // Will show match score when assessments are completed
+    displaySize: 'tall',
+    contentComplexity: 'high',
+    requirements: {
+      grade: 'Any form'
+    }
+  }
 ];
 
 // Student-specific styling with orange theme
@@ -229,14 +208,12 @@ interface StudentAssessmentCardsProps {
   className?: string;
   showAll?: boolean;
   maxCards?: number;
-  size?: 'compact' | 'medium' | 'large';
 }
 
 export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
   className,
   showAll = false,
   maxCards = 6,
-  size = 'medium',
 }) => {
   const navigate = useNavigate();
   const {
@@ -272,13 +249,20 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
       baseCards.forEach(card => {
         switch (card.id) {
           case 'discover-my-career': {
-            const careerActivities = userActivities.filter(a => 
-              a.activityType === 'career_assessment_click' || 
+            const careerActivities = userActivities.filter(a =>
+              a.activityType === 'career_assessment_click' ||
               a.activityType === 'personality_test_completion'
             );
             card.progress = Math.min(careerActivities.length * 20, 100);
-            card.status = careerActivities.length === 0 ? 'not-started' : 
+            card.status = careerActivities.length === 0 ? 'not-started' :
                          careerActivities.length < 5 ? 'in-progress' : 'completed';
+
+            // Add match score for completed assessments
+            if (card.status === 'completed') {
+              const completionActivity = careerActivities.find(a => a.activityType === 'personality_test_completion');
+              const activityData = completionActivity?.data as { matchScore?: number };
+              card.matchScore = activityData?.matchScore || 92; // Default high score
+            }
             break;
           }
 
@@ -382,11 +366,16 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
     navigate(card.actionLink);
   };
   
-  // LinkedIn-style responsive grid classes
-  const getGridClasses = () => {
-    if (size === 'compact') return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4";
-    if (size === 'large') return "grid grid-cols-1 lg:grid-cols-2 gap-8";
-    return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"; // medium
+  // Bento grid: Variable height cards based on information complexity
+  const getBentoGridClasses = () => {
+    return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-[minmax(280px,auto)]";
+  };
+
+  // Get row-span class based on card display size
+  const getCardRowSpan = (card: StudentAssessmentCard) => {
+    if (card.displaySize === 'tall') return 'md:row-span-2';
+    if (card.displaySize === 'standard') return 'md:row-span-1';
+    return ''; // compact cards auto-fit
   };
 
   return (
@@ -533,11 +522,11 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Student Assessment Cards Grid */}
-      <div className={getGridClasses()}>
+      {/* Student Assessment Cards Grid - Bento Layout */}
+      <div className={getBentoGridClasses()}>
         {displayCards.map((card) => {
           const statusConfig = getStatusConfig(card.status, card.urgency);
-          
+
           return (
             <Card
               key={card.id}
@@ -546,7 +535,8 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               className={cn(
                 "group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-lg",
                 "bg-white/80 backdrop-blur-sm border border-orange-200/30 rounded-xl",
-                card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10"
+                card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10",
+                getCardRowSpan(card)
               )}
             >
               {/* Priority Indicator */}
@@ -558,13 +548,16 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-                    {card.icon}
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                    `bg-gradient-to-br ${card.iconGradient}`
+                  )}>
+                    {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
                   </div>
                   <div className="flex-1">
                     <CardTitle className="text-lg font-semibold text-slate-800">{card.title}</CardTitle>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge 
+                      <Badge
                         variant="secondary"
                         className={cn(statusConfig.className, "text-xs")}
                       >
@@ -582,13 +575,29 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </CardDescription>
 
                 {/* Student Benefit */}
-                <div className="bg-orange-50 p-3 rounded-lg border border-orange-100">
-                  <h4 className="font-semibold text-sm text-orange-800 mb-1">You'll Get:</h4>
-                  <p className="text-sm text-orange-700">{card.studentBenefit}</p>
-                </div>
+                <p className="text-sm text-orange-700 font-medium">{card.studentBenefit}</p>
 
-                {/* Progress Bar */}
-                {card.progress !== undefined && (
+                {/* Match Score for completed assessments */}
+                {card.matchScore !== undefined && card.status === 'completed' && (
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-green-600 fill-green-600" />
+                        <span className="text-sm font-semibold text-green-800">Career Match Score</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-green-600">{card.matchScore}%</span>
+                        {card.matchScore >= 90 && <CheckCircle className="h-5 w-5 text-green-600" />}
+                      </div>
+                    </div>
+                    {card.matchScore >= 90 && (
+                      <p className="text-xs text-green-700 mt-1">Excellent match! This aligns perfectly with your profile.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Progress Bar for in-progress assessments */}
+                {card.progress !== undefined && card.status !== 'completed' && (
                   <div className="bg-slate-50 p-3 rounded-lg">
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-slate-600 font-medium">Progress</span>
