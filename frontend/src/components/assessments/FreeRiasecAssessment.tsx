@@ -631,7 +631,7 @@ export const FreeRiasecAssessment: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:1337/parse/functions/completeRiasecAssessment', {
+      const response = await fetch('http://localhost:1337/parse/functions/calculateRiasecScores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -639,6 +639,7 @@ export const FreeRiasecAssessment: React.FC = () => {
           'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
         },
         body: JSON.stringify({
+          responses,
           assessmentId
         })
       });
