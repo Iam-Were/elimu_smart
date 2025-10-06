@@ -721,17 +721,29 @@ curl https://elimu-smart.co.ke/health
 
 **See**: `DEPLOYMENT_GUIDE.md` for complete VPS setup, SSL certificates, troubleshooting
 
-### **What Still Needs Backend Migration**
+### **Recent Backend Migrations (2025-10-06)**
 
-1. **Assessment Data** (4,500 lines) → Create Parse migration script
-   - RiasecQuestion, SkillQuestion, KenyaCareer, KenyanUniversity classes
-   - Migration script: `backend/migrations/seed-assessment-data.js` (TODO)
+1. **✅ Assessment Data** - COMPLETED
+   - RiasecQuestion, SkillQuestion classes with 132 questions
+   - Migration: `backend/migrations/seed-assessments.js` (21KB, seeded)
 
-2. **LocalStorage** (64 instances) → Move to Parse Objects
-   - UserPreferences, AssessmentProgress, SavedCareers (TODO)
+2. **✅ LocalStorage → Parse Objects** - COMPLETED
+   - UserPreferences class with Cloud Functions (theme, darkMode, onboarding, cardOrder)
+   - Migration: `backend/migrations/create-user-preferences-schema.js`
+   - Reduced from 56+ localStorage calls to ~17 (auth tokens only)
 
-3. **Scoring Algorithms** (500 lines) → Move to Cloud Functions
-   - Currently in frontend assessment components (TODO)
+3. **✅ RIASEC Scoring Algorithms** - COMPLETED
+   - Moved 275 lines from frontend to Cloud Functions
+   - File: `backend/cloud/riasecScoringFunctions.js`
+   - Functions: calculateRiasecScores, generateCareerMatches, generateDevelopmentAreas, generateNextSteps
+
+4. **✅ Parse SDK Code-Splitting** - COMPLETED
+   - Converted all static imports to dynamic `getParse()`
+   - Files: useCounselorDashboard.ts, useEmailService.ts, useAdminDashboard.ts (27 functions)
+
+5. **✅ Route-Based Lazy Loading** - COMPLETED
+   - 35 routes converted to React.lazy()
+   - Initial bundle reduced from 1,051 KB to 525 KB (50% reduction)
 
 ### **Monitoring URLs After Deployment**
 
@@ -759,6 +771,29 @@ Automated cron job runs at 2 AM daily:
 ```
 
 Backups stored in: `~/elimu_smart_backups/` (30-day retention)
+
+---
+
+## Quick Deployment Reference
+
+**For detailed VPS deployment steps, see: `VPS_DEPLOYMENT.md`**
+
+**Quick Deploy to Production**:
+```bash
+cd /root/elimu_smart && git pull origin main
+cd backend && npm install && pm2 restart parse-server-prod
+cd ../frontend && npm install && npm run build -- --mode production
+sudo cp -r dist/* /var/www/elimu-smart/
+curl https://elimu-smart.co.ke/parse/health
+```
+
+**Migrations to Run** (if not already run):
+```bash
+cd /root/elimu_smart/backend
+node migrations/create-user-preferences-schema.js  # NEW
+node migrations/schema-assessments.js
+node migrations/seed-assessments.js
+```
 
 ---
 
