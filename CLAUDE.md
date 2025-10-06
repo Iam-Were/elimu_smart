@@ -559,6 +559,146 @@ All credentials are in `backend/.env` (already configured):
 
 **See**: `CACHING_IMPLEMENTATION.md` for complete details
 
+## Multi-Environment Deployment Architecture
+
+### **Environment Strategy**
+
+Elimu Smart uses a **3-tier environment** for safe, reliable deployments:
+
+| Environment | URL | Port | Database | Redis DB | Purpose |
+|-------------|-----|------|----------|----------|---------|
+| **Development** | http://localhost:5173 | 1337 | `elimu_smart_dev` | - | Local development |
+| **Staging** | https://staging.elimu-smart.co.ke | 1338 | `elimu_smart_staging` | 1 | Pre-production testing |
+| **Production** | https://elimu-smart.co.ke | 1337 | `elimu_smart_production` | 0 | Live user-facing app |
+
+### **Critical Deployment Fixes (2025-10-06)**
+
+**Problem 1: Hardcoded Port Issue**
+```javascript
+// ❌ WRONG: Line 113 in server-working.js had hardcoded port
+const port = 1337;
+
+// ✅ FIXED: Use environment variable with fallback
+const port = process.env.PORT || 1337;
+```
+- **Impact**: Staging can now run on port 1338, production on 1337
+- **File**: `backend/server-working.js:113`
+
+**Problem 2: Double Dotenv Loading**
+```javascript
+// ❌ WRONG: server-working.js always loaded .env, overriding staging vars
+require('dotenv').config();
+
+// ✅ FIXED: Conditional loading with flag check
+if (!process.env.DOTENV_LOADED) {
+  require('dotenv').config();
+}
+```
+- **Impact**: Staging environment variables no longer overridden by production .env
+- **File**: `backend/server-working.js:10-12`
+
+**Problem 3: Staging Environment Loader**
+```javascript
+// backend/server-staging.js (NEW FILE)
+// Set flag to prevent server-working.js from loading .env
+process.env.DOTENV_LOADED = 'true';
+
+// Load staging environment
+require('dotenv').config({ path: '.env.staging' });
+
+// Then start the regular server
+require('./server-working.js');
+```
+- **Why**: PM2's `env_file` feature is unreliable across versions
+- **Pattern**: Dedicated loader scripts for each environment
+- **Impact**: Clean environment isolation without PM2 workarounds
+
+### **PM2 Configuration (Dual Environment)**
+
+```javascript
+// backend/ecosystem.config.js
+module.exports = {
+  apps: [
+    // PRODUCTION Parse Server
+    {
+      name: 'parse-server-prod',
+      script: 'server-working.js',
+      instances: 2,  // Cluster mode
+      exec_mode: 'cluster',
+      env: { NODE_ENV: 'production' },
+      cron_restart: '0 3 * * *'  // Restart at 3 AM daily
+    },
+
+    // STAGING Parse Server
+    {
+      name: 'parse-server-staging',
+      script: 'server-staging.js',  // Uses dedicated loader
+      instances: 1,  // Single instance
+      exec_mode: 'fork',
+      env: { NODE_ENV: 'staging' }
+    }
+    // ... dashboards
+  ]
+};
+```
+
+**PM2 Commands**:
+```bash
+pm2 start ecosystem.config.js   # Start all services
+pm2 restart parse-server-prod    # Restart production only
+pm2 restart parse-server-staging # Restart staging only
+pm2 logs parse-server-staging    # View staging logs
+pm2 monit                        # Monitor all processes
+```
+
+### **Environment Files Structure**
+
+**Backend**:
+- `.env` → Production (port 1337, `elimu_smart_production`, Redis DB 0)
+- `.env.staging` → Staging (port 1338, `elimu_smart_staging`, Redis DB 1)
+
+**Frontend**:
+- `.env.production` → `VITE_PARSE_SERVER_URL=https://elimu-smart.co.ke/parse`
+- `.env.staging` → `VITE_PARSE_SERVER_URL=https://staging.elimu-smart.co.ke/parse`
+
+**Build Commands**:
+```bash
+cd frontend
+
+# Build for production
+npm run build -- --mode production
+sudo cp -r dist/* /var/www/elimu-smart/
+
+# Build for staging
+npm run build -- --mode staging
+sudo cp -r dist/* /var/www/elimu-smart-staging/
+```
+
+### **Deployment Workflow**
+
+**To Staging (Test Changes)**:
+```bash
+git push origin main
+ssh root@145.239.42.121
+cd /root/elimu_smart
+git pull origin main
+pm2 restart parse-server-staging
+cd frontend && npm run build -- --mode staging
+sudo cp -r dist/* /var/www/elimu-smart-staging/
+curl https://staging.elimu-smart.co.ke/health
+```
+
+**To Production (After Staging Tests Pass)**:
+```bash
+pm2 restart parse-server-prod
+cd /root/elimu_smart/frontend
+npm run build -- --mode production
+sudo cp -r dist/* /var/www/elimu-smart/
+curl https://elimu-smart.co.ke/health
+```
+
+**See**: `DEPLOYMENT_GUIDE.md` for complete VPS setup, SSL certificates, troubleshooting
+
 ### **What Still Needs Backend Migration**
 
 1. **Assessment Data** (4,500 lines) → Create Parse migration script
@@ -573,9 +713,19 @@ All credentials are in `backend/.env` (already configured):
 
 ### **Monitoring URLs After Deployment**
 
+**Production**:
 - **Main Site**: https://elimu-smart.co.ke
 - **Parse API**: https://elimu-smart.co.ke/parse
-- **Parse Dashboard**: https://dashboard.elimu-smart.co.ke (admin/[set-password])
+- **Health Check**: https://elimu-smart.co.ke/health
+- **Parse Dashboard**: https://elimu-smart.co.ke/dashboard (admin/[set-password])
+
+**Staging**:
+- **Main Site**: https://staging.elimu-smart.co.ke
+- **Parse API**: https://staging.elimu-smart.co.ke/parse
+- **Health Check**: https://staging.elimu-smart.co.ke/health
+- **Parse Dashboard**: https://staging.elimu-smart.co.ke/dashboard (admin/[set-password])
+
+**Monitoring Tools**:
 - **PM2 Monitoring**: `pm2 monit` (CLI) or https://app.pm2.io (after signup)
 - **UptimeRobot**: Configure after deployment (free tier)
 
@@ -590,10 +740,10 @@ Backups stored in: `~/elimu_smart_backups/` (30-day retention)
 
 ---
 
-**Last Updated**: 2025-10-05
+**Last Updated**: 2025-10-06
 **Platform Status**: Production Ready (Frontend), Backend Operational
 **Code Quality**: 100% Lint Compliance, Zero TypeScript Errors
 **Migration Status**: shadcn Complete (Student/Counselor), Admin Hybrid Functional
 **Monetization**: Freemium model (Free assessments + Paid counselor services)
 **External APIs**: All live with caching (CareerJet, LinkedIn, M-Pesa, ZeptoMail)
-**VPS Deployment**: Ready for GitHub push + deployment
+**VPS Deployment**: Live (Production + Staging environments running on TrueHosts VPS)
