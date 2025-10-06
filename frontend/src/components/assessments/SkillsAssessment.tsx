@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   ArrowRight,
   Trophy,
   TrendingUp,
@@ -14,9 +14,11 @@ import {
   Lightbulb,
   Settings,
   Target,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getSkillsQuestions } from '@/lib/assessmentApi';
 
 interface SkillCategory {
   name: string;
@@ -93,72 +95,42 @@ const SKILL_CATEGORIES: Record<string, SkillCategory> = {
   }
 };
 
-// 36 Skills Assessment Questions based on the backend framework
-const SKILLS_QUESTIONS: SkillQuestion[] = [
-  // Critical Thinking (Questions 1, 5, 9, 13, 17, 21)
-  { id: 1, text: "I can analyze complex problems and break them into smaller, manageable parts", category: "Critical Thinking" },
-  { id: 5, text: "I evaluate information from multiple sources before making decisions", category: "Critical Thinking" },
-  { id: 9, text: "I can identify logical flaws in arguments or reasoning", category: "Critical Thinking" },
-  { id: 13, text: "I enjoy solving puzzles and complex mental challenges", category: "Critical Thinking" },
-  { id: 17, text: "I can synthesize information from different areas to create new understanding", category: "Critical Thinking" },
-  { id: 21, text: "I question assumptions and look for evidence before accepting ideas", category: "Critical Thinking" },
-
-  // Communication (Questions 2, 6, 10, 14, 18, 22)
-  { id: 2, text: "I can explain complex ideas in simple terms that others understand", category: "Communication" },
-  { id: 6, text: "I listen actively and ask clarifying questions in conversations", category: "Communication" },
-  { id: 10, text: "I feel confident giving presentations to groups", category: "Communication" },
-  { id: 14, text: "I can write clearly and persuasively for different audiences", category: "Communication" },
-  { id: 18, text: "I adapt my communication style based on who I'm speaking with", category: "Communication" },
-  { id: 22, text: "I can handle difficult conversations with tact and diplomacy", category: "Communication" },
-
-  // Leadership (Questions 3, 7, 11, 15, 19, 23)
-  { id: 3, text: "I naturally take charge when working on group projects", category: "Leadership" },
-  { id: 7, text: "Others often come to me for guidance or advice", category: "Leadership" },
-  { id: 11, text: "I can motivate others to work towards common goals", category: "Leadership" },
-  { id: 15, text: "I'm comfortable making decisions when others are uncertain", category: "Leadership" },
-  { id: 19, text: "I take responsibility for outcomes, both positive and negative", category: "Leadership" },
-  { id: 23, text: "I can delegate tasks effectively and trust others to complete them", category: "Leadership" },
-
-  // Technical Skills (Questions 4, 8, 12, 16, 20, 24)
-  { id: 4, text: "I learn new software and technology tools quickly", category: "Technical Skills" },
-  { id: 8, text: "I enjoy working with computers, gadgets, and technical equipment", category: "Technical Skills" },
-  { id: 12, text: "I can troubleshoot technical problems systematically", category: "Technical Skills" },
-  { id: 16, text: "I understand how to use data and statistics to support arguments", category: "Technical Skills" },
-  { id: 20, text: "I'm skilled at using digital tools to organize and present information", category: "Technical Skills" },
-  { id: 24, text: "I can follow technical instructions and procedures accurately", category: "Technical Skills" },
-
-  // Creativity (Questions 25-30)
-  { id: 25, text: "I often come up with unique solutions to problems", category: "Creativity" },
-  { id: 26, text: "I enjoy brainstorming and generating new ideas", category: "Creativity" },
-  { id: 27, text: "I can see connections between seemingly unrelated concepts", category: "Creativity" },
-  { id: 28, text: "I like to experiment with different approaches to tasks", category: "Creativity" },
-  { id: 29, text: "I'm comfortable with ambiguity and uncertain situations", category: "Creativity" },
-  { id: 30, text: "I can think of multiple ways to approach the same challenge", category: "Creativity" },
-
-  // Teamwork (Questions 31-36)
-  { id: 31, text: "I work well with people from diverse backgrounds and perspectives", category: "Teamwork" },
-  { id: 32, text: "I'm willing to compromise to reach group consensus", category: "Teamwork" },
-  { id: 33, text: "I contribute actively to group discussions and activities", category: "Teamwork" },
-  { id: 34, text: "I support team members when they're struggling", category: "Teamwork" },
-  { id: 35, text: "I can manage conflicts within a team constructively", category: "Teamwork" },
-  { id: 36, text: "I celebrate others' successes and achievements", category: "Teamwork" }
-];
-
 export const SkillsAssessment: React.FC = () => {
+  const [questions, setQuestions] = useState<SkillQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [results, setResults] = useState<AssessmentResult | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const totalQuestions = SKILLS_QUESTIONS.length;
-  const progressPercentage = ((currentQuestion + 1) / totalQuestions) * 100;
+  const totalQuestions = questions.length;
+  const progressPercentage = totalQuestions > 0 ? ((currentQuestion + 1) / totalQuestions) * 100 : 0;
+
+  // Load questions from API on mount
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setIsLoading(true);
+        const apiQuestions = await getSkillsQuestions();
+        setQuestions(apiQuestions);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load Skills questions. Please refresh the page.');
+        console.error('Failed to load questions:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadQuestions();
+  }, []);
 
   useEffect(() => {
-    startAssessment();
-  }, []);
+    if (questions.length > 0 && !assessmentId) {
+      startAssessment();
+    }
+  }, [questions]);
 
   const startAssessment = async () => {
     try {
@@ -256,15 +228,15 @@ export const SkillsAssessment: React.FC = () => {
     }
   };
 
-  if (isLoading && !assessmentId) {
+  if (isLoading && questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-              <h3 className="text-lg font-semibold">Starting Your Skills Assessment...</h3>
-              <p className="text-gray-600">This will help identify your unique strengths and talents.</p>
+              <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
+              <h3 className="text-lg font-semibold">Loading Skills Assessment...</h3>
+              <p className="text-gray-600">Fetching 36 questions from database...</p>
             </div>
           </CardContent>
         </Card>
@@ -272,7 +244,7 @@ export const SkillsAssessment: React.FC = () => {
     );
   }
 
-  if (error && !assessmentId) {
+  if (error && questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
@@ -281,10 +253,10 @@ export const SkillsAssessment: React.FC = () => {
               <div className="bg-red-100 p-3 rounded-full">
                 <Trophy className="h-8 w-8 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-red-800">Assessment Error</h3>
+              <h3 className="text-lg font-semibold text-red-800">Failed to Load Assessment</h3>
               <p className="text-red-600">{error}</p>
-              <Button onClick={startAssessment} className="mt-2">
-                Try Again
+              <Button onClick={() => window.location.reload()} className="mt-2">
+                Refresh Page
               </Button>
             </div>
           </CardContent>
@@ -511,7 +483,12 @@ export const SkillsAssessment: React.FC = () => {
     );
   }
 
-  const currentQuestionData = SKILLS_QUESTIONS[currentQuestion];
+  // Return early if no questions loaded yet
+  if (questions.length === 0) {
+    return null;
+  }
+
+  const currentQuestionData = questions[currentQuestion];
   const category = SKILL_CATEGORIES[currentQuestionData.category];
   const currentResponse = responses[currentQuestionData.id];
 
@@ -535,7 +512,7 @@ export const SkillsAssessment: React.FC = () => {
             <div className="flex items-center justify-between text-xs text-gray-600">
               <span>Discovering your unique talents and abilities</span>
               <Badge variant="outline" className="text-xs">
-                ✅ Backend Connected
+                ✅ {questions.length} questions loaded from API
               </Badge>
             </div>
           </CardHeader>
