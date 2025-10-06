@@ -23,8 +23,14 @@ export default defineConfig({
       output: {
         globals: {
           events: 'events'
+        },
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'parse-sdk': ['parse'],
+          'ui-vendor': ['lucide-react', 'recharts']
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000
   }
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Parse from 'parse';
+import { getParse } from '@/config/parse';
 import type { ParseLike, ScholarshipData, ActivityData, AssessmentResults } from '../types/shared';
 
 interface EmailRequest {
@@ -65,8 +65,9 @@ export const useEmailService = () => {
   const sendWelcomeEmail = async ({ email, firstName, userRole }: WelcomeEmailRequest) => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('sendWelcomeEmail', {
         email,
         firstName,
@@ -84,16 +85,17 @@ export const useEmailService = () => {
     }
   };
 
-  const sendAssessmentCompletionEmail = async ({ 
-    email, 
-    firstName, 
-    assessmentName, 
-    results 
+  const sendAssessmentCompletionEmail = async ({
+    email,
+    firstName,
+    assessmentName,
+    results
   }: AssessmentEmailRequest) => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('sendAssessmentCompletionEmail', {
         email,
         firstName,
@@ -112,16 +114,17 @@ export const useEmailService = () => {
     }
   };
 
-  const sendKuccpsDeadlineReminder = async ({ 
-    email, 
-    firstName, 
-    deadlineName, 
-    daysRemaining 
+  const sendKuccpsDeadlineReminder = async ({
+    email,
+    firstName,
+    deadlineName,
+    daysRemaining
   }: KuccpsReminderRequest) => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('sendKuccpsDeadlineReminder', {
         email,
         firstName,
@@ -151,8 +154,9 @@ export const useEmailService = () => {
   }: SessionBookingRequest) => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('sendSessionBookingConfirmation', {
         studentEmail,
         counselorEmail,
@@ -188,8 +192,9 @@ export const useEmailService = () => {
   }: ScholarshipAlertRequest) => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('sendScholarshipAlert', {
         email,
         firstName,
@@ -213,8 +218,9 @@ export const useEmailService = () => {
   const getEmailStatistics = async (): Promise<EmailStatistics | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getEmailStatistics');
       
       // Convert date strings back to Date objects

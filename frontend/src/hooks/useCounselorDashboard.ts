@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import Parse from 'parse';
+import { getParse } from '@/config/parse';
 
 interface StudentAssignment {
   studentId: string;
@@ -99,7 +99,7 @@ export const useCounselorDashboard = () => {
     duration?: number
   ) => {
     try {
-      
+      const Parse = await getParse();
       await Parse.Cloud.run('logCounselorActivity', {
         activityType,
         data,
@@ -115,7 +115,7 @@ export const useCounselorDashboard = () => {
   // Get assigned students with dynamic status
   const getAssignedStudents = async (): Promise<StudentAssignment[]> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselorAssignedStudents');
       return (result.students || []).map((student: Record<string, unknown>) => ({
         studentId: student.id,
@@ -136,7 +136,7 @@ export const useCounselorDashboard = () => {
   // Get active chat sessions
   const getActiveChatSessions = async (): Promise<ChatSession[]> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselorActiveChatSessions');
       return (result.sessions || []).map((session: Record<string, unknown>) => ({
         sessionId: session.id,
@@ -156,7 +156,7 @@ export const useCounselorDashboard = () => {
   // Get today's appointments
   const getTodaysAppointments = async (): Promise<Appointment[]> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselorTodaysAppointments');
       return (result.appointments || []).map((appointment: Record<string, unknown>) => ({
         appointmentId: appointment.id,
@@ -176,7 +176,7 @@ export const useCounselorDashboard = () => {
   // Get pending questions
   const getPendingQuestions = async (): Promise<PendingQuestion[]> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselorPendingQuestions');
       return (result.questions || []).map((question: Record<string, unknown>) => ({
         questionId: question.id,
@@ -196,7 +196,7 @@ export const useCounselorDashboard = () => {
   // Get counseling analytics
   const getCounselingAnalytics = async (): Promise<CounselingAnalytics | null> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselingAnalytics');
       return {
         totalStudents: result.totalStudents || 0,
@@ -222,7 +222,7 @@ export const useCounselorDashboard = () => {
   // Get recent counselor activities
   const getRecentActivities = async (): Promise<CounselorActivity[]> => {
     try {
-      
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getCounselorRecentActivities', { limit: 20 });
       return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
@@ -308,7 +308,7 @@ export const useCounselorDashboard = () => {
   useEffect(() => {
     const loadDataIfCounselor = async () => {
       try {
-        
+        const Parse = await getParse();
         const user = Parse.User.current();
         if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
           loadCounselorDashboard();
@@ -317,7 +317,7 @@ export const useCounselorDashboard = () => {
         console.error('Failed to check counselor session:', error);
       }
     };
-    
+
     loadDataIfCounselor();
   }, [loadCounselorDashboard]);
 
@@ -325,7 +325,7 @@ export const useCounselorDashboard = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        
+        const Parse = await getParse();
         const user = Parse.User.current();
         if (user && (user.get('role') === 'counselor' || user.get('role') === 'career_counselor')) {
           loadCounselorDashboard();
