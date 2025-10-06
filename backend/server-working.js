@@ -110,7 +110,7 @@ async function startServer() {
     });
 
     // Start the server
-    const port = 1337;
+    const port = process.env.PORT || 1337;
     app.listen(port, async () => {
       console.log('✅ Elimu Smart Parse Server (Working Version) Started!');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
