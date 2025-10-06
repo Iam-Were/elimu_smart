@@ -5,7 +5,11 @@ const RedisCacheAdapter = require('parse-server').RedisCacheAdapter;
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+
+// Load environment variables (unless already loaded by server-staging.js)
+if (!process.env.DOTENV_LOADED) {
+  require('dotenv').config();
+}
 
 const app = express();
 
