@@ -14,6 +14,9 @@ require('./assessmentFunctions');
 // Import seed users function (auto-registers cloud functions)
 require('./seedUsers');
 
+// Import user preferences functions (auto-registers cloud functions)
+require('./userPreferencesFunctions');
+
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   const { user } = request;

@@ -105,39 +105,57 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Load saved arrangement from localStorage
+  // Load saved arrangement from Parse backend
   useEffect(() => {
-    const savedOrder = localStorage.getItem('student-dashboard-card-order');
-    if (savedOrder && allowRearrange) {
+    const loadCardOrder = async () => {
+      if (!allowRearrange) return;
+
       try {
-        const savedIds = JSON.parse(savedOrder);
-        const reorderedCards = savedIds
-          .map((id: string) => studentDashboardCards.find(card => card.id === id))
-          .filter(Boolean);
-        
-        // Add any new cards that weren't in saved order
-        const existingIds = reorderedCards.map((card: StudentDashboardCard) => card.id);
-        const newCards = studentDashboardCards.filter(card => !existingIds.includes(card.id));
-        
-        setCards([...reorderedCards, ...newCards]);
+        const { getDashboardCardOrder } = await import('@/lib/userPreferences');
+        const savedIds = await getDashboardCardOrder();
+
+        if (savedIds.length > 0) {
+          const reorderedCards = savedIds
+            .map((id: string) => studentDashboardCards.find(card => card.id === id))
+            .filter((card): card is StudentDashboardCard => card !== undefined);
+
+          // Add any new cards that weren't in saved order
+          const existingIds = reorderedCards.map(card => card.id);
+          const newCards = studentDashboardCards.filter(card => !existingIds.includes(card.id));
+
+          setCards([...reorderedCards, ...newCards]);
+        }
       } catch (error) {
-        console.warn('Failed to load saved card order:', error);
+        console.warn('Failed to load saved card order, using default:', error);
         setCards(studentDashboardCards);
       }
-    }
+    };
+
+    loadCardOrder();
   }, [allowRearrange]);
 
-  // Save arrangement to localStorage
-  const saveCardOrder = (newCards: typeof studentDashboardCards) => {
+  // Save arrangement to Parse backend
+  const saveCardOrder = async (newCards: typeof studentDashboardCards) => {
     if (allowRearrange) {
-      localStorage.setItem('student-dashboard-card-order', JSON.stringify(newCards.map(card => card.id)));
+      try {
+        const { setDashboardCardOrder } = await import('@/lib/userPreferences');
+        const cardIds = newCards.map(card => card.id);
+        await setDashboardCardOrder(cardIds);
+      } catch (error) {
+        console.warn('Failed to save card order, saved locally only:', error);
+      }
     }
   };
 
   // Reset to default order
-  const resetToDefault = () => {
+  const resetToDefault = async () => {
     setCards(studentDashboardCards);
-    localStorage.removeItem('student-dashboard-card-order');
+    try {
+      const { setDashboardCardOrder } = await import('@/lib/userPreferences');
+      await setDashboardCardOrder([]);
+    } catch (error) {
+      console.warn('Failed to reset card order on backend, reset locally only:', error);
+    }
   };
 
   // Update cards with dynamic data

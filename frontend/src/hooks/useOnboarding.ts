@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { getOnboardingCompleted, setOnboardingCompleted } from '@/lib/userPreferences';
 
 export const useOnboarding = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
@@ -13,28 +14,47 @@ export const useOnboarding = () => {
       return;
     }
 
-    // Check if user is a new student who hasn't completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
-    const isNewStudent = user.role === 'student' && !hasCompletedOnboarding;
-    
-    // For demo purposes, new students show onboarding unless they've completed it
-    setNeedsOnboarding(isNewStudent);
-    setIsLoading(false);
+    // Check if user has completed onboarding (from Parse backend)
+    const checkOnboarding = async () => {
+      try {
+        const hasCompletedOnboarding = await getOnboardingCompleted();
+        const isNewStudent = user.role === 'student' && !hasCompletedOnboarding;
+        setNeedsOnboarding(isNewStudent);
+      } catch {
+        // Fallback to localStorage on error
+        const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
+        const isNewStudent = user.role === 'student' && !hasCompletedOnboarding;
+        setNeedsOnboarding(isNewStudent);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkOnboarding();
   }, [isAuthenticated, user]);
 
   const completeOnboarding = () => {
-    localStorage.setItem('onboarding_completed', 'true');
     setNeedsOnboarding(false);
+    // Save to Parse backend (non-blocking)
+    setOnboardingCompleted(true).catch(() => {
+      console.warn('Onboarding status saved locally, will sync to backend when online');
+    });
   };
 
   const skipOnboarding = () => {
-    localStorage.setItem('onboarding_completed', 'true');
     setNeedsOnboarding(false);
+    // Save to Parse backend (non-blocking)
+    setOnboardingCompleted(true).catch(() => {
+      console.warn('Onboarding status saved locally, will sync to backend when online');
+    });
   };
 
   const resetOnboarding = () => {
-    localStorage.removeItem('onboarding_completed');
     setNeedsOnboarding(true);
+    // Save to Parse backend (non-blocking)
+    setOnboardingCompleted(false).catch(() => {
+      console.warn('Onboarding reset saved locally, will sync to backend when online');
+    });
   };
 
   return {
