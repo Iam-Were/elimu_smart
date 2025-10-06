@@ -13,14 +13,14 @@ const configs = {
     masterKey: 'elimu-smart-master-key-dev'
   },
   production: {
-    appId: process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
-    serverURL: process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse',
-    masterKey: process.env.PARSE_MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
+    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
+    masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   },
   staging: {
-    appId: process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
-    serverURL: process.env.PARSE_SERVER_URL || 'http://localhost:1338/parse',
-    masterKey: process.env.PARSE_MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
+    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    serverURL: process.env.SERVER_URL || 'http://localhost:1338/parse',
+    masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   }
 };
 
