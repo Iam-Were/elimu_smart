@@ -21,10 +21,12 @@ import {
   Clock,
   MapPin,
   Trophy,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
+import { getRiasecQuestions } from '@/lib/assessmentApi';
 
 // IIP RIASEC Markers - Free for non-commercial use
 // Citation: Armstrong, P. I., Allison, W., & Rounds, J. (2008). 
@@ -449,24 +451,42 @@ const interleaveQuestions = (questions: RiasecQuestion[]): RiasecQuestion[] => {
   return interleaved;
 };
 
-// Create interleaved question set
-const interleavedIipQuestions = interleaveQuestions(iipRiasecQuestions);
-
 export const FreeRiasecAssessment: React.FC = () => {
   const navigate = useNavigate();
   const { logActivity } = useDynamicDashboard();
+  const [questions, setQuestions] = useState<RiasecQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [results, setResults] = useState<RiasecResults | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMilestone, setShowMilestone] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
 
-  const totalQuestions = interleavedIipQuestions.length;
-  const progressPercentage = (currentQuestion / totalQuestions) * 100;
+  // Load questions from API on mount
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setIsLoading(true);
+        const apiQuestions = await getRiasecQuestions();
+        const interleavedQuestions = interleaveQuestions(apiQuestions as RiasecQuestion[]);
+        setQuestions(interleavedQuestions);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load RIASEC questions:', err);
+        setError('Failed to load assessment questions. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, []);
+
+  const totalQuestions = questions.length;
+  const progressPercentage = totalQuestions > 0 ? (currentQuestion / totalQuestions) * 100 : 0;
 
   // Milestone checkpoints: every 16 questions (at 16, 32, 48, 64, 80)
   const getMilestone = (questionNum: number) => {
@@ -544,8 +564,8 @@ export const FreeRiasecAssessment: React.FC = () => {
         questionId,
         response,
         questionNumber: currentQuestion + 1,
-        category: interleavedIipQuestions[currentQuestion].category,
-        riasecType: interleavedIipQuestions[currentQuestion].riasecType
+        category: questions[currentQuestion]?.category || 'activities',
+        riasecType: questions[currentQuestion]?.riasecType || 'R'
       });
     } catch (error) {
       console.warn('Failed to log activity locally:', error);
@@ -566,8 +586,8 @@ export const FreeRiasecAssessment: React.FC = () => {
             questionId,
             response,
             questionNumber: currentQuestion + 1,
-            category: interleavedIipQuestions[currentQuestion].category,
-            riasecType: interleavedIipQuestions[currentQuestion].riasecType
+            category: questions[currentQuestion]?.category || 'activities',
+            riasecType: questions[currentQuestion]?.riasecType || 'R'
           })
         });
       } catch (error) {
@@ -791,8 +811,52 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
   };
 
-  const getCurrentQuestion = () => interleavedIipQuestions[currentQuestion];
+  const getCurrentQuestion = () => questions[currentQuestion];
   const currentResponse = responses[getCurrentQuestion()?.id];
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mb-4" />
+            <p className="text-lg text-gray-600">Loading RIASEC Career Assessment...</p>
+            <p className="text-sm text-gray-500 mt-2">Fetching 96 questions from database</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-12 text-center">
+            <p className="text-red-600 font-semibold mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Refresh Page
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // No questions loaded
+  if (questions.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-gray-600">No questions available. Please try again later.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (showResults && results) {
     return (
