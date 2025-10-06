@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,45 +11,60 @@ import { LoadingOverlay } from './components/common/LoadingOverlay';
 import { Toaster } from './components/ui/sonner';
 import { Sprint18Layout } from './components/layouts/Sprint18Layout';
 import { useAuth } from './hooks/useAuth';
+
+// Critical auth pages (synchronous - loaded immediately)
 import LandingPage from './pages/LandingPageReplication';
 import LoginPageShadcn from './pages/LoginPageShadcn';
 import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import Sprint18DashboardPage from './pages/Sprint18DashboardPage';
-import ProfilePage from './pages/ProfilePage';
-import Sprint18AssessmentPage from './pages/Sprint18AssessmentPage';
-import { AccountSettingsPage } from './pages/AccountSettingsPage';
-import Sprint18GuidancePage from './pages/Sprint18GuidancePage';
-import AdminPortal from './pages/admin/AdminPortal';
-import CounselorToolkit from './pages/counselor/CounselorToolkit';
-import { StudentsPage } from './pages/counselor/StudentsPage';
-import { QuestionsPage } from './pages/counselor/QuestionsPage';
-import { SessionsPage } from './pages/counselor/SessionsPage';
-import { AnalyticsPage } from './pages/counselor/AnalyticsPage';
-import { GroupSessionsPage } from './pages/counselor/GroupSessionsPage';
-import CounselorDashboardPage from './pages/counselor/CounselorDashboardPage';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { UserManagementPage } from './pages/admin/UserManagementPage';
-import { SystemAnalyticsPage } from './pages/admin/SystemAnalyticsPage';
-import { ContentModerationPage } from './pages/admin/ContentModerationPage';
-import { SystemConfigurationPage } from './pages/admin/SystemConfigurationPage';
-import { AuditLogPage } from './pages/admin/AuditLogPage';
-import { SecurityMonitoringPage } from './pages/admin/SecurityMonitoringPage';
-import { MaintenanceToolsPage } from './pages/admin/MaintenanceToolsPage';
-import { ProfessionalNetworkingHub } from './components/professional/ProfessionalNetworkingHub';
-import FreeRiasecAssessment from './components/assessments/FreeRiasecAssessment';
-import { SubscriptionPage } from './pages/SubscriptionPage';
-import SubjectCareerMapper from './components/assessments/SubjectCareerMapper';
-import SkillsAssessment from './components/assessments/SkillsAssessment';
-import UniversityCourseFinder from './components/assessments/UniversityCourseFinder';
-import CareerExploration from './components/assessments/CareerExploration';
-import CounselorConnect from './components/guidance/CounselorConnect';
-import QuickQuestions from './components/guidance/QuickQuestions';
-import MentorshipMatching from './components/guidance/MentorshipMatching';
-import ScholarshipSearch from './components/guidance/ScholarshipSearch';
-import SkillsDevelopment from './components/guidance/SkillsDevelopment';
-import CounselorChat from './components/guidance/CounselorChat';
-import InboxPage from './pages/InboxPage';
+
+// Lazy-loaded pages (code-split by route)
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+
+// Student pages
+const Sprint18DashboardPage = lazy(() => import('./pages/Sprint18DashboardPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const Sprint18AssessmentPage = lazy(() => import('./pages/Sprint18AssessmentPage'));
+const AccountSettingsPage = lazy(() => import('./pages/AccountSettingsPage').then(m => ({ default: m.AccountSettingsPage })));
+const Sprint18GuidancePage = lazy(() => import('./pages/Sprint18GuidancePage'));
+const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
+const InboxPage = lazy(() => import('./pages/InboxPage'));
+
+// Assessment pages
+const FreeRiasecAssessment = lazy(() => import('./components/assessments/FreeRiasecAssessment'));
+const SubjectCareerMapper = lazy(() => import('./components/assessments/SubjectCareerMapper'));
+const SkillsAssessment = lazy(() => import('./components/assessments/SkillsAssessment'));
+const UniversityCourseFinder = lazy(() => import('./components/assessments/UniversityCourseFinder'));
+const CareerExploration = lazy(() => import('./components/assessments/CareerExploration'));
+
+// Guidance pages
+const CounselorConnect = lazy(() => import('./components/guidance/CounselorConnect'));
+const CounselorChat = lazy(() => import('./components/guidance/CounselorChat'));
+const QuickQuestions = lazy(() => import('./components/guidance/QuickQuestions'));
+const MentorshipMatching = lazy(() => import('./components/guidance/MentorshipMatching'));
+const ScholarshipSearch = lazy(() => import('./components/guidance/ScholarshipSearch'));
+const SkillsDevelopment = lazy(() => import('./components/guidance/SkillsDevelopment'));
+const ProfessionalNetworkingHub = lazy(() => import('./components/professional/ProfessionalNetworkingHub').then(m => ({ default: m.ProfessionalNetworkingHub })));
+
+// Counselor pages
+const CounselorDashboardPage = lazy(() => import('./pages/counselor/CounselorDashboardPage'));
+const CounselorToolkit = lazy(() => import('./pages/counselor/CounselorToolkit'));
+const StudentsPage = lazy(() => import('./pages/counselor/StudentsPage').then(m => ({ default: m.StudentsPage })));
+const QuestionsPage = lazy(() => import('./pages/counselor/QuestionsPage').then(m => ({ default: m.QuestionsPage })));
+const SessionsPage = lazy(() => import('./pages/counselor/SessionsPage').then(m => ({ default: m.SessionsPage })));
+const GroupSessionsPage = lazy(() => import('./pages/counselor/GroupSessionsPage').then(m => ({ default: m.GroupSessionsPage })));
+const AnalyticsPage = lazy(() => import('./pages/counselor/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
+
+// Admin pages
+const AdminPortal = lazy(() => import('./pages/admin/AdminPortal'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage').then(m => ({ default: m.UserManagementPage })));
+const SystemAnalyticsPage = lazy(() => import('./pages/admin/SystemAnalyticsPage').then(m => ({ default: m.SystemAnalyticsPage })));
+const ContentModerationPage = lazy(() => import('./pages/admin/ContentModerationPage').then(m => ({ default: m.ContentModerationPage })));
+const SystemConfigurationPage = lazy(() => import('./pages/admin/SystemConfigurationPage').then(m => ({ default: m.SystemConfigurationPage })));
+const AuditLogPage = lazy(() => import('./pages/admin/AuditLogPage').then(m => ({ default: m.AuditLogPage })));
+const SecurityMonitoringPage = lazy(() => import('./pages/admin/SecurityMonitoringPage').then(m => ({ default: m.SecurityMonitoringPage })));
+const MaintenanceToolsPage = lazy(() => import('./pages/admin/MaintenanceToolsPage').then(m => ({ default: m.MaintenanceToolsPage })));
+
 import './styles/globals.css';
 
 // Role-based default route component
@@ -91,20 +106,23 @@ const AppContent: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPageShadcn />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPageShadcn />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     );
   }
 
   return (
     <Sprint18Layout>
-      <Routes>
-        <Route path="/dashboard" element={<Sprint18DashboardPage />} />
+      <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
+        <Routes>
+          <Route path="/dashboard" element={<Sprint18DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/settings/*" element={<AccountSettingsPage />} />
@@ -142,7 +160,8 @@ const AppContent: React.FC = () => {
         {/* Role-based default routing */}
         <Route path="/" element={<RoleBasedDefaultRoute />} />
         <Route path="*" element={<RoleBasedDefaultRoute />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </Sprint18Layout>
   );
 };
