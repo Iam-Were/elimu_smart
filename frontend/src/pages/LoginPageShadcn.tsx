@@ -25,8 +25,16 @@ export const LoginPageShadcn: React.FC = () => {
     setError('');
 
     try {
-      await login(formData);
-      navigate('/dashboard');
+      const user = await login(formData);
+
+      // Navigate based on user role
+      if (user.role === 'counselor') {
+        navigate('/counselor/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -47,8 +55,24 @@ export const LoginPageShadcn: React.FC = () => {
     { type: 'Safety Manager', email: 'peter.safety@elimu.com', password: 'safety2024' }
   ];
 
-  const handleDemoLogin = (email: string, password: string) => {
+  const handleDemoLogin = async (email: string, password: string) => {
     setFormData({ email, password });
+    setError('');
+
+    try {
+      const user = await login({ email, password });
+
+      // Navigate based on user role
+      if (user.role === 'counselor') {
+        navigate('/counselor/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    }
   };
 
   return (
