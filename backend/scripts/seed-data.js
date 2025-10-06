@@ -1,10 +1,44 @@
 // Seed data script for Elimu Smart Parse Server
 const Parse = require('parse/node');
+require('dotenv').config();
+
+// Get environment from command line arg or default to development
+const environment = process.argv[2] || 'development';
+
+// Environment-specific configuration
+const configs = {
+  development: {
+    appId: 'elimu-smart-local-dev',
+    serverURL: 'http://localhost:1337/parse',
+    masterKey: 'elimu-smart-master-key-dev'
+  },
+  production: {
+    appId: process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
+    serverURL: process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse',
+    masterKey: process.env.PARSE_MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
+  },
+  staging: {
+    appId: process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
+    serverURL: process.env.PARSE_SERVER_URL || 'http://localhost:1338/parse',
+    masterKey: process.env.PARSE_MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
+  }
+};
+
+const config = configs[environment];
+
+if (!config) {
+  console.error(`❌ Invalid environment: ${environment}`);
+  console.log('Usage: node seed-data.js [development|staging|production]');
+  process.exit(1);
+}
+
+console.log(`🌍 Environment: ${environment}`);
+console.log(`🔗 Server URL: ${config.serverURL}`);
 
 // Initialize Parse with master key
-Parse.initialize('elimu-smart-local-dev');
-Parse.serverURL = 'http://localhost:1337/parse';
-Parse.masterKey = 'elimu-smart-master-key-dev';
+Parse.initialize(config.appId);
+Parse.serverURL = config.serverURL;
+Parse.masterKey = config.masterKey;
 
 // Use Parse as master user to bypass restrictions
 Parse.Cloud.useMasterKey();
