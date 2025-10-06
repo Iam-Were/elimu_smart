@@ -44,6 +44,10 @@ const MentorshipMatching = lazy(() => import('./components/guidance/MentorshipMa
 const ScholarshipSearch = lazy(() => import('./components/guidance/ScholarshipSearch'));
 const SkillsDevelopment = lazy(() => import('./components/guidance/SkillsDevelopment'));
 const ProfessionalNetworkingHub = lazy(() => import('./components/professional/ProfessionalNetworkingHub').then(m => ({ default: m.ProfessionalNetworkingHub })));
+const CommunityQA = lazy(() => import('./components/guidance/CommunityQA'));
+const CareerResources = lazy(() => import('./components/guidance/CareerResources'));
+const CrisisSupport = lazy(() => import('./components/guidance/CrisisSupport'));
+const BookSession = lazy(() => import('./components/guidance/BookSession'));
 
 // Counselor pages
 const CounselorDashboardPage = lazy(() => import('./pages/counselor/CounselorDashboardPage'));
@@ -136,6 +140,10 @@ const AppContent: React.FC = () => {
         <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
         <Route path="/guidance/counselor-connect" element={<CounselorConnect />} />
         <Route path="/guidance/chat-counselor" element={<CounselorChat />} />
+        <Route path="/guidance/community-qa" element={<CommunityQA />} />
+        <Route path="/guidance/resources" element={<CareerResources />} />
+        <Route path="/guidance/crisis" element={<CrisisSupport />} />
+        <Route path="/guidance/book-session" element={<BookSession />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/student/quick-questions" element={<QuickQuestions />} />
         <Route path="/student/mentorship-matching" element={<MentorshipMatching />} />
