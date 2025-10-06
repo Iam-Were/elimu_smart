@@ -24,6 +24,28 @@ cd backend
 node server-working.js  # Parse Server (http://localhost:1337)
 ```
 
+### Production Demo Accounts (https://elimu-smart.co.ke)
+
+**Quick Access:**
+- Student: `student@elimu.com` / `student`
+- Counselor: `counselor@elimu.com` / `counselor`
+- Admin: `admin@elimu.com` / `admin`
+
+**Professional Accounts:**
+- Sarah Njeri (Counselor): `sarah.counselor@elimu.com` / `counselor2024`
+- James Mutua (Career Coach): `james.coach@elimu.com` / `coach2024`
+- Mike Kamau (Platform Admin): `mike.platform@elimu.com` / `platform2024`
+- Linda Wambui (Operations Admin): `linda.operations@elimu.com` / `operations2024`
+- Peter Otieno (Safety Manager): `peter.safety@elimu.com` / `safety2024`
+
+**Login Testing:**
+```bash
+# On VPS
+cd /root/elimu_smart/backend
+node scripts/test-login.js production
+# Expected: ✅ All 3 logins successful (student/counselor/admin)
+```
+
 ## Architecture & User Journeys
 
 ### User Roles & Themes
@@ -741,9 +763,13 @@ Backups stored in: `~/elimu_smart_backups/` (30-day retention)
 ---
 
 **Last Updated**: 2025-10-06
-**Platform Status**: Production Ready (Frontend), Backend Operational
+**Platform Status**: ✅ PRODUCTION LIVE (https://elimu-smart.co.ke)
 **Code Quality**: 100% Lint Compliance, Zero TypeScript Errors
 **Migration Status**: shadcn Complete (Student/Counselor), Admin Hybrid Functional
+**Assessment Data**: ✅ MIGRATED (132 questions API-driven)
+**Demo Users**: ✅ 8 accounts seeded and tested (student/counselor/admin)
 **Monetization**: Freemium model (Free assessments + Paid counselor services)
 **External APIs**: All live with caching (CareerJet, LinkedIn, M-Pesa, ZeptoMail)
-**VPS Deployment**: Live (Production + Staging environments running on TrueHosts VPS)
+**VPS Deployment**: ✅ Production (2 cluster instances) + Staging on TrueHosts VPS
+**Database**: PostgreSQL 17.6 with custom user fields and assessment tables
+**SSL Certificates**: Valid until 2026-01-04 (auto-renewing)
