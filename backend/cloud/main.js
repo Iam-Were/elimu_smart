@@ -8,6 +8,9 @@ const { cache, cacheKeys } = require('../utils/cache');
 // Import billing functions (auto-registers cloud functions)
 require('./billingFunctions');
 
+// Import assessment functions (auto-registers cloud functions)
+require('./assessmentFunctions');
+
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   const { user } = request;

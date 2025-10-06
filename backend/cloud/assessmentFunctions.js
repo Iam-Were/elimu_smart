@@ -1,0 +1,120 @@
+/**
+ * Assessment Cloud Functions
+ * Functions to fetch assessment questions from Parse database
+ */
+
+Parse.Cloud.define('getRiasecQuestions', async (request) => {
+  try {
+    const query = new Parse.Query('RiasecQuestion');
+    query.equalTo('isActive', true);
+    query.ascending('questionId');
+    query.limit(1000); // Get all questions
+
+    const questions = await query.find();
+
+    return questions.map(q => ({
+      id: q.get('questionId'),
+      category: q.get('category'),
+      statement: q.get('statement'),
+      riasecType: q.get('riasecType'),
+      kenyaContext: q.get('kenyaContext') || null
+    }));
+  } catch (error) {
+    console.error('Error fetching RIASEC questions:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch RIASEC questions');
+  }
+});
+
+Parse.Cloud.define('getSkillsQuestions', async (request) => {
+  try {
+    const query = new Parse.Query('SkillQuestion');
+    query.equalTo('isActive', true);
+    query.ascending('questionId');
+    query.limit(1000); // Get all questions
+
+    const questions = await query.find();
+
+    return questions.map(q => ({
+      id: q.get('questionId'),
+      text: q.get('text'),
+      category: q.get('category')
+    }));
+  } catch (error) {
+    console.error('Error fetching Skills questions:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch Skills questions');
+  }
+});
+
+// Save assessment results
+Parse.Cloud.define('saveAssessmentResult', async (request) => {
+  const { user, assessmentType, responses, scores, results } = request.params;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User must be authenticated');
+  }
+
+  if (!assessmentType || !responses || !scores || !results) {
+    throw new Parse.Error(Parse.Error.VALIDATION_ERROR, 'Missing required parameters');
+  }
+
+  try {
+    const AssessmentResult = Parse.Object.extend('AssessmentResult');
+    const result = new AssessmentResult();
+
+    result.set('user', request.user);
+    result.set('assessmentType', assessmentType);
+    result.set('responses', responses);
+    result.set('scores', scores);
+    result.set('results', results);
+    result.set('completedAt', new Date());
+    result.set('isActive', true);
+
+    await result.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      resultId: result.id,
+      message: 'Assessment result saved successfully'
+    };
+  } catch (error) {
+    console.error('Error saving assessment result:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to save assessment result');
+  }
+});
+
+// Get user's assessment history
+Parse.Cloud.define('getUserAssessments', async (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User must be authenticated');
+  }
+
+  const { assessmentType } = request.params;
+
+  try {
+    const query = new Parse.Query('AssessmentResult');
+    query.equalTo('user', request.user);
+    query.equalTo('isActive', true);
+
+    if (assessmentType) {
+      query.equalTo('assessmentType', assessmentType);
+    }
+
+    query.descending('completedAt');
+    query.limit(10); // Get last 10 assessments
+
+    const results = await query.find();
+
+    return results.map(r => ({
+      id: r.id,
+      assessmentType: r.get('assessmentType'),
+      completedAt: r.get('completedAt'),
+      scores: r.get('scores'),
+      results: r.get('results')
+    }));
+  } catch (error) {
+    console.error('Error fetching user assessments:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch user assessments');
+  }
+});
+
+console.log('✓ Assessment Cloud Functions loaded');
