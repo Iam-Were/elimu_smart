@@ -1,13 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart log -1 --oneline)",
-      "Bash(sshpass -p 'El1musmart' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@145.239.42.121 'echo \"\"SSH connection successful\"\" && uname -a && cat /etc/os-release | head -n 2')",
-      "Read(//c/Users/c/.ssh/**)",
-      "Bash(ssh-keygen:*)",
-      "Bash(ssh:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(find:*)",
+      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart status --short)",
+      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart add backend/cloud/)",
+      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart commit -m \"$(cat <<''EOF''\nBackend: Assessment Cloud Functions\n\nCreated Cloud Functions to fetch assessment questions from Parse database,\nreplacing hardcoded frontend data with scalable API endpoints.\n\nNew File:\n- backend/cloud/assessmentFunctions.js: 4 Cloud Functions\n  1. getRiasecQuestions - Fetch all 96 RIASEC questions\n  2. getSkillsQuestions - Fetch all 36 Skills questions\n  3. saveAssessmentResult - Save user''s assessment completion\n  4. getUserAssessments - Get user''s assessment history\n\nModified:\n- backend/cloud/main.js: Import assessment functions\n\nFeatures:\n- Auto-registers functions on Parse Server startup\n- Returns questions sorted by questionId\n- Filters active questions only (isActive=true)\n- Error handling with Parse.Error codes\n- Public read access for questions\n- Authenticated write access for results\n\nAPI Usage:\nParse.Cloud.run(''getRiasecQuestions'')  // Returns all RIASEC questions\nParse.Cloud.run(''getSkillsQuestions'')  // Returns all Skills questions\n\nNext: Update frontend to use these Cloud Functions instead of hardcoded data.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart add frontend/src/lib/assessmentApi.ts frontend/src/components/assessments/FreeRiasecAssessment.tsx)",
+      "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart commit -m \"$(cat <<''EOF''\nFrontend: RIASEC Assessment API Integration\n\nUpdated RIASEC assessment to fetch questions from Parse Cloud Functions\ninstead of using hardcoded data.\n\nNew File:\n- frontend/src/lib/assessmentApi.ts: Assessment API service with type-safe\n  functions for getRiasecQuestions, getSkillsQuestions, saveAssessmentResult,\n  and getUserAssessments\n\nModified:\n- frontend/src/components/assessments/FreeRiasecAssessment.tsx:\n  - Added useEffect hook to load questions from API on mount\n  - Added loading state with spinner (Loader2 icon)\n  - Added error state with refresh button\n  - Replaced hardcoded iipRiasecQuestions array with dynamic questions state\n  - Maintains same interleaving logic for question order\n  - Updated all references from interleavedIipQuestions to questions state\n\nFeatures:\n- API-first: Questions loaded from database via Cloud Functions\n- Loading UX: Shows \"Fetching 96 questions from database\" message\n- Error handling: Graceful fallback with user-friendly error messages\n- Type-safe: Full TypeScript interfaces for API responses\n- Backward compatible: Same user experience, better data management\n\nImpact: Reduces frontend bundle size, enables centralized question updates\nwithout redeployment.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git add:*)",
+      "Bash(nslookup:*)"
     ],
     "deny": [],
     "ask": [],
