@@ -132,38 +132,57 @@ async function seedUsers() {
         // Hash password with bcrypt (Parse Server uses bcrypt)
         const passwordHash = await bcrypt.hash(userData.password, 10);
 
-        // Prepare user data
+        // Prepare user data (Parse Server standard columns only)
         const now = new Date();
-        const userRecord = {
+
+        // Insert into _User table with standard Parse columns
+        const sql = `
+          INSERT INTO "_User" (
+            "objectId",
+            "username",
+            "email",
+            "_hashed_password",
+            "emailVerified",
+            "createdAt",
+            "updatedAt"
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `;
+
+        const values = [
           objectId,
-          username: userData.username,
-          email: userData.email,
-          password: passwordHash,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          role: userData.role,
-          isActive: true,
-          createdAt: now,
-          updatedAt: now,
-          _created_at: now,
-          _updated_at: now,
-          emailVerified: false
-        };
-
-        // Build SQL query
-        const columns = Object.keys(userRecord).map(k => `"${k}"`).join(', ');
-        const values = Object.values(userRecord);
-        const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
-
-        // Add adminRoleType if admin
-        let sql = `INSERT INTO "_User" (${columns}) VALUES (${placeholders})`;
-
-        if (userData.adminRoleType) {
-          sql = `INSERT INTO "_User" (${columns}, "adminRoleType") VALUES (${placeholders}, $${values.length + 1})`;
-          values.push(userData.adminRoleType);
-        }
+          userData.username,
+          userData.email,
+          passwordHash,
+          false,  // emailVerified
+          now,    // createdAt
+          now     // updatedAt
+        ];
 
         await client.query(sql, values);
+
+        // Update with custom fields (if columns exist)
+        const updateSql = `
+          UPDATE "_User"
+          SET
+            "firstName" = $1,
+            "lastName" = $2,
+            "role" = $3,
+            "isActive" = $4
+          WHERE "objectId" = $5
+        `;
+
+        try {
+          await client.query(updateSql, [
+            userData.firstName,
+            userData.lastName,
+            userData.role,
+            true,
+            objectId
+          ]);
+        } catch (updateError) {
+          // Custom columns might not exist yet - that's okay
+          console.log(`   ⚠️  Custom fields not added (columns may not exist yet)`);
+        }
         console.log(`✅ Created user: ${userData.email}`);
         created++;
 
