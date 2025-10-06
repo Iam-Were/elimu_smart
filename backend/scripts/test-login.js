@@ -4,10 +4,18 @@
  */
 
 const Parse = require('parse/node');
-require('dotenv').config();
 
 // Get environment from command line arg or default to development
 const environment = process.argv[2] || 'development';
+
+// Load correct .env file based on environment
+if (environment === 'staging') {
+  require('dotenv').config({ path: require('path').join(__dirname, '../.env.staging') });
+} else if (environment === 'production') {
+  require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+} else {
+  require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+}
 
 const configs = {
   development: {
@@ -16,9 +24,9 @@ const configs = {
     masterKey: 'elimu-smart-master-key-dev'
   },
   staging: {
-    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    appId: process.env.APP_ID || 'elimu-smart-staging',
     serverURL: 'http://localhost:1338/parse',
-    masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
+    masterKey: process.env.MASTER_KEY || 'ElImuSmartStagingMasterKey2024Secure'
   },
   production: {
     appId: process.env.APP_ID || 'elimu_smart_app_2024',
