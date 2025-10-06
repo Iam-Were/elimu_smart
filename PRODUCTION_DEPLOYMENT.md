@@ -140,6 +140,20 @@ pm2 logs parse-server-prod --lines 50
 pm2 monit
 ```
 
+### Web Server Architecture
+
+**Apache2** (Primary Web Server):
+- Handles HTTP (port 80) and HTTPS (port 443)
+- Serves static frontend files
+- Reverse proxies to Parse Server instances
+- SSL termination with Let's Encrypt certificates
+
+**Parse Server Instances:**
+- Production: Port 1337 (2 cluster instances via PM2)
+- Staging: Port 1338 (1 instance via PM2)
+
+**Note:** Nginx is installed but not in use. Apache2 handles all web traffic.
+
 ### File Locations
 
 ```
@@ -162,7 +176,15 @@ pm2 monit
 │       └── backup-database.sh     # Daily backups (2 AM)
 ├── frontend/
 │   └── dist/                      # Production build
-└── /var/www/elimu-smart/          # Nginx web root
+└── /var/www/
+    ├── elimu-smart/               # Production web root
+    └── elimu-smart-staging/       # Staging web root
+
+/etc/apache2/sites-available/
+├── elimu-smart.conf               # Production HTTP config
+├── elimu-smart-ssl.conf           # Production HTTPS config
+├── staging-elimu-smart.conf       # Staging HTTP config
+└── staging-elimu-smart-ssl.conf   # Staging HTTPS config
 ```
 
 ---
@@ -259,17 +281,23 @@ gunzip < ~/elimu_smart_backups/prod_2025-10-06_02-00.sql.gz | \
 ### Frontend Not Loading
 
 ```bash
-# Check Nginx status
-sudo systemctl status nginx
+# Check Apache status
+sudo systemctl status apache2
 
 # Check web root files exist
 ls -lh /var/www/elimu-smart/
 
-# Check Nginx error logs
-sudo tail -f /var/log/nginx/error.log
+# Check Apache error logs
+sudo tail -f /var/log/apache2/error.log
+
+# Check Apache access logs
+sudo tail -f /var/log/apache2/elimu-smart-access.log
 
 # Verify SSL certificates
 sudo certbot certificates
+
+# Test virtual host configuration
+apache2ctl -S
 ```
 
 ### Parse Server Not Responding
@@ -339,6 +367,49 @@ curl -X POST http://localhost:1337/parse/functions/getRiasecQuestions \
 
 # Check for errors in Parse Server logs
 pm2 logs parse-server-prod --err
+```
+
+### Apache Configuration Issues
+
+```bash
+# Test Apache configuration syntax
+apache2ctl configtest
+# Expected: Syntax OK
+
+# List all enabled virtual hosts
+apache2ctl -S
+
+# Check Apache modules
+apache2ctl -M | grep -E "proxy|ssl|rewrite"
+
+# Reload Apache after config changes
+systemctl reload apache2
+
+# Restart Apache (if reload doesn't work)
+systemctl restart apache2
+
+# View enabled sites
+ls -la /etc/apache2/sites-enabled/
+
+# Enable required modules
+a2enmod proxy proxy_http ssl rewrite headers
+```
+
+### SSL Certificate Issues
+
+```bash
+# Check all certificates
+certbot certificates
+
+# Renew certificates manually
+certbot renew --dry-run
+
+# Force renew specific certificate
+certbot renew --cert-name elimu-smart.co.ke --force-renewal
+
+# Check certificate expiry
+echo | openssl s_client -connect elimu-smart.co.ke:443 2>/dev/null | \
+  openssl x509 -noout -dates
 ```
 
 ---
