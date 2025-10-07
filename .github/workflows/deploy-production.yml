@@ -1,0 +1,37 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual only - safety for production
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS Production
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /root/elimu_smart
+
+            # Pull latest changes
+            git pull origin main
+
+            # Build frontend for production
+            cd frontend
+            npm run build -- --mode production
+
+            # Deploy to production directory
+            sudo cp -r dist/* /var/www/elimu-smart/
+
+            # Restart production servers (graceful restart)
+            pm2 reload parse-server-prod
+
+            # Health check
+            sleep 5
+            curl -f https://elimu-smart.co.ke/parse/health || exit 1
+
+            echo "✅ Production deployment complete!"

@@ -1,0 +1,40 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main  # Auto-deploy when you push to main
+  workflow_dispatch:  # Manual trigger button in GitHub
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS Staging
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /root/elimu_smart
+
+            # Pull latest changes
+            git pull origin main
+
+            # Build frontend for staging
+            cd frontend
+            npm run build -- --mode staging
+
+            # Deploy to staging directory
+            sudo cp -r dist/* /var/www/elimu-smart-staging/
+
+            # Restart staging server
+            pm2 restart parse-server-staging
+
+            # Health check
+            sleep 3
+            curl -f https://staging.elimu-smart.co.ke/parse/health || exit 1
+
+            echo "✅ Staging deployment complete!"
