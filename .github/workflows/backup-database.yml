@@ -1,0 +1,37 @@
+name: Backup Database
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Backup PostgreSQL Database
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Create backup directory
+            mkdir -p ~/elimu_smart_backups
+
+            # Backup production database
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            PGPASSWORD=password pg_dump -h localhost -U elimu -d elimu_smart_production > ~/elimu_smart_backups/prod_backup_$TIMESTAMP.sql
+
+            # Backup staging database
+            PGPASSWORD=password pg_dump -h localhost -U elimu -d elimu_smart_staging > ~/elimu_smart_backups/staging_backup_$TIMESTAMP.sql
+
+            # Compress backups
+            gzip ~/elimu_smart_backups/prod_backup_$TIMESTAMP.sql
+            gzip ~/elimu_smart_backups/staging_backup_$TIMESTAMP.sql
+
+            # Keep only last 30 days of backups
+            find ~/elimu_smart_backups -name "*.sql.gz" -mtime +30 -delete
+
+            echo "✅ Database backup completed: $TIMESTAMP"

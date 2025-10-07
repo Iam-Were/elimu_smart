@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "elimu-vps": {
+      "command": "ssh",
+      "args": [
+        "elimu-vps",
+        "-o",
+        "StrictHostKeyChecking=no"
+      ],
+      "env": {},
+      "description": "Direct SSH access to Elimu Smart VPS"
+    },
+    "github-actions": {
+      "command": "gh",
+      "args": ["api"],
+      "env": {},
+      "description": "GitHub Actions API access"
+    }
+  }
+}
