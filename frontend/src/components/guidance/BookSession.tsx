@@ -110,7 +110,7 @@ const BookSession: React.FC = () => {
           <AlertDescription className="text-orange-900">
             <strong>Premium Feature:</strong> Session booking requires an active subscription or pay-per-session.
             <Button
-              variant="link"
+              variant="ghost"
               className="ml-2 p-0 h-auto text-orange-700 underline"
               onClick={() => window.location.href = '/subscription'}
             >

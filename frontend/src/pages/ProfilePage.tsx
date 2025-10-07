@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield } from 'lucide-react';
+import { ImageUploader } from '../components/common/ImageUploader';
 
 
 // Mock data for projects and portfolio (will be replaced with API calls)
@@ -189,6 +190,19 @@ export const ProfilePage: React.FC = () => {
       // You could add a toast notification here
     } catch (error) {
       console.error('Failed to save profile:', error);
+    }
+  };
+
+  // Handle profile image upload
+  const handleImageUpload = async (imageUrl: string) => {
+    try {
+      console.log('Profile image uploaded:', imageUrl);
+      // The ImageUploader component already handles the upload to backend
+      // The user avatar will be updated automatically on next page load
+      // For immediate UI update, we could refresh user data here
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to handle image upload:', error);
     }
   };
 
@@ -479,6 +493,24 @@ export const ProfilePage: React.FC = () => {
         ) : (
           <>
             {/* Keep existing student content for non-counselor users */}
+
+            {/* Profile Picture Card */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-orange-600" />
+                  Profile Picture
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ImageUploader
+                  currentImage={user?.profileImage}
+                  userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
+                  onUploadSuccess={handleImageUpload}
+                />
+              </CardContent>
+            </Card>
+
             <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">

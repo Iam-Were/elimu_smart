@@ -13,7 +13,9 @@ import {
   Users,
   Award,
   Building,
-  Calculator
+  Calculator,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -94,6 +96,7 @@ export const UniversityCourseFinder: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [showPointsBreakdown, setShowPointsBreakdown] = useState(false);
 
   // Academic Profile
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -247,6 +250,14 @@ export const UniversityCourseFinder: React.FC = () => {
     if (score >= 65) return 'bg-blue-100 text-blue-800';
     if (score >= 50) return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
+  };
+
+  const getGradePoints = (grade: string): number => {
+    const gradeMap: { [key: string]: number } = {
+      'A': 12, 'A-': 11, 'B+': 10, 'B': 9, 'B-': 8, 'C+': 7,
+      'C': 6, 'C-': 5, 'D+': 4, 'D': 3, 'D-': 2, 'E': 1
+    };
+    return gradeMap[grade] || 0;
   };
 
   const renderForm = () => (
@@ -506,6 +517,94 @@ export const UniversityCourseFinder: React.FC = () => {
               </div>
             </div>
           </CardHeader>
+        </Card>
+
+        {/* KUCCPS Points Breakdown */}
+        <Card className="border-blue-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-blue-600" />
+                KUCCPS Points Breakdown
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPointsBreakdown(!showPointsBreakdown)}
+                className="gap-2"
+              >
+                {showPointsBreakdown ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Hide Details
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Show Details
+                  </>
+                )}
+              </Button>
+            </div>
+            <CardDescription>
+              Your total cluster points: <strong>{finderResult.clusterPoints}/84</strong> (based on best {selectedSubjects.length >= 7 ? '7' : selectedSubjects.length} subjects)
+            </CardDescription>
+          </CardHeader>
+          {showPointsBreakdown && (
+            <CardContent>
+              <div className="space-y-4">
+                {/* Subject-wise points */}
+                <div>
+                  <h4 className="font-semibold mb-3 text-sm text-gray-700">Subject Grades & Points</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedSubjects.map(subject => {
+                      const grade = grades[subject];
+                      const points = getGradePoints(grade);
+                      return (
+                        <div key={subject} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{subject}</div>
+                            <div className="text-xs text-gray-600">Grade: {grade}</div>
+                          </div>
+                          <Badge className="bg-blue-100 text-blue-800 font-bold">
+                            {points} pts
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Calculation explanation */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold mb-2 text-sm">How KUCCPS Points Are Calculated</h4>
+                  <ul className="text-xs text-gray-700 space-y-1">
+                    <li>• Your best 7 subjects (excluding Religious Education) are counted</li>
+                    <li>• Must include English, Kiswahili, Mathematics, and one science subject</li>
+                    <li>• Each grade is worth points: A=12, A-=11, B+=10, B=9, etc.</li>
+                    <li>• Maximum possible cluster points: 84 (7 subjects × 12 points)</li>
+                    <li>• Higher cluster points = More university program options</li>
+                  </ul>
+                </div>
+
+                {/* Eligibility indicator */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-xs text-gray-600 mb-1">Programs You Qualify For</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {finderResult.summary.eligiblePrograms}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="text-xs text-gray-600 mb-1">Total Programs Found</div>
+                    <div className="text-2xl font-bold text-orange-600">
+                      {finderResult.summary.totalMatches}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Recommendations */}

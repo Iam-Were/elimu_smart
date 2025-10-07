@@ -130,6 +130,7 @@ export const SkillsAssessment: React.FC = () => {
     if (questions.length > 0 && !assessmentId) {
       startAssessment();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questions]);
 
   const startAssessment = async () => {

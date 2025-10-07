@@ -306,22 +306,22 @@ const CareerResources: React.FC = () => {
           <CardContent>
             <ul className="space-y-2">
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   KUCCPS Application Guide
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   University Comparison Tool
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Scholarship Opportunities
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Accommodation Guide
                 </Button>
               </li>
@@ -339,22 +339,22 @@ const CareerResources: React.FC = () => {
           <CardContent>
             <ul className="space-y-2">
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Kenya Careers Database
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Subject-Career Mapper
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Skills Development Guide
                 </Button>
               </li>
               <li>
-                <Button variant="link" className="p-0 h-auto text-left">
+                <Button variant="ghost" className="p-0 h-auto text-left">
                   Career Success Stories
                 </Button>
               </li>
