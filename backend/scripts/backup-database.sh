@@ -1,45 +1,53 @@
-#!/bin/bash
-# Daily PostgreSQL Backup Script for Elimu Smart
-# Configured to run via cron at 2 AM daily
+#\!/bin/bash
 
-set -e
+# Elimu Smart Database Backup Script
+# Backs up production and staging PostgreSQL databases
 
 # Configuration
-DB_NAME="elimu_smart_prod"
-BACKUP_DIR="$HOME/elimu_smart_backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/elimu_smart_${DATE}.sql"
-DAYS_TO_KEEP=30  # Keep backups for 30 days
+BACKUP_DIR="/root/elimu_smart_backups"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+RETENTION_DAYS=30
+DB_USER="postgres"
+DB_PASSWORD="El1musmart2024"
 
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
 
-# Dump PostgreSQL database
-echo "[$(date)] Starting database backup..."
-pg_dump -U elimu $DB_NAME > "$BACKUP_FILE"
+# Export password for pg_dump
+export PGPASSWORD="$DB_PASSWORD"
 
-# Compress backup
-echo "[$(date)] Compressing backup..."
-gzip "$BACKUP_FILE"
-BACKUP_FILE="${BACKUP_FILE}.gz"
+echo "=== Elimu Smart Database Backup - $TIMESTAMP ==="
 
-# Upload to Backblaze B2 (if configured)
-if [ ! -z "$B2_APPLICATION_KEY_ID" ]; then
-    echo "[$(date)] Uploading to Backblaze B2..."
-    b2 upload-file elimu-smart-backups "$BACKUP_FILE" "backups/$(basename $BACKUP_FILE)"
-    echo "[$(date)] Upload complete"
+# Backup production database
+echo "Backing up production database..."
+pg_dump -U "$DB_USER" -h localhost elimu_smart_production | gzip > "$BACKUP_DIR/prod_${TIMESTAMP}.sql.gz"
+if [ $? -eq 0 ]; then
+    echo "✓ Production backup completed: prod_${TIMESTAMP}.sql.gz"
+else
+    echo "✗ Production backup failed\!"
 fi
 
-# Alternative: Upload to GitHub as encrypted release asset
-# if [ ! -z "$GITHUB_TOKEN" ]; then
-#     echo "[$(date)] Encrypting and uploading to GitHub..."
-#     openssl enc -aes-256-cbc -salt -in "$BACKUP_FILE" -out "${BACKUP_FILE}.enc" -k "$BACKUP_ENCRYPTION_KEY"
-#     # Use GitHub API to upload as release asset
-# fi
+# Backup staging database
+echo "Backing up staging database..."
+pg_dump -U "$DB_USER" -h localhost elimu_smart_staging | gzip > "$BACKUP_DIR/staging_${TIMESTAMP}.sql.gz"
+if [ $? -eq 0 ]; then
+    echo "✓ Staging backup completed: staging_${TIMESTAMP}.sql.gz"
+else
+    echo "✗ Staging backup failed\!"
+fi
 
-# Delete old backups (keep last 30 days)
-echo "[$(date)] Cleaning up old backups..."
-find "$BACKUP_DIR" -name "elimu_smart_*.sql.gz" -mtime +$DAYS_TO_KEEP -delete
+# Cleanup old backups (older than RETENTION_DAYS)
+echo "Cleaning up backups older than $RETENTION_DAYS days..."
+find "$BACKUP_DIR" -name "*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
+echo "✓ Cleanup completed"
 
-echo "[$(date)] Backup complete: $BACKUP_FILE"
-echo "[$(date)] Backup size: $(du -h $BACKUP_FILE | cut -f1)"
+# Show backup summary
+echo ""
+echo "=== Backup Summary ==="
+du -sh "$BACKUP_DIR"
+ls -lh "$BACKUP_DIR" | tail -5
+
+# Unset password
+unset PGPASSWORD
+
+echo "=== Backup completed at $(date) ==="

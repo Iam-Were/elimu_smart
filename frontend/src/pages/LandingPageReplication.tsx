@@ -13,7 +13,7 @@ import Button from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import DarkModeToggle from '../components/ui/DarkModeToggle';
+import DarkModeToggle from '../components/ui/dark-mode-toggle';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
