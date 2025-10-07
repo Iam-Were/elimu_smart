@@ -237,7 +237,7 @@ app.get('/health', (req, res) => {
 });
 
 // Deploy endpoint (called by GitHub Actions, no SSH needed)
-app.post('/deploy/:environment', async (req, res) => {
+app.post('/webhooks/deploy/:environment', async (req, res) => {
   const { environment } = req.params;
   const authHeader = req.headers.authorization;
 
