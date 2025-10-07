@@ -11,30 +11,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS Staging
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /root/elimu_smart
+      - name: Trigger VPS Staging Deployment
+        run: |
+          RESPONSE=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+            -w "\n%{http_code}" \
+            https://elimu-smart.co.ke/webhooks/deploy/staging)
 
-            # Pull latest changes
-            git pull origin main
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
 
-            # Build frontend for staging
-            cd frontend
-            npm run build -- --mode staging
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Deployment trigger failed: HTTP $HTTP_CODE"
+            echo "$BODY"
+            exit 1
+          fi
 
-            # Deploy to staging directory
-            sudo cp -r dist/* /var/www/elimu-smart-staging/
+          echo "✅ Deployment triggered successfully"
+          echo "$BODY"
 
-            # Restart staging server
-            pm2 restart parse-server-staging
+      - name: Wait for Deployment
+        run: sleep 45
 
-            # Health check
-            sleep 3
-            curl -f https://staging.elimu-smart.co.ke/parse/health || exit 1
-
-            echo "✅ Staging deployment complete!"
+      - name: Verify Staging Deployment
+        run: |
+          STAGING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://staging.elimu-smart.co.ke/parse/health)
+          if [ "$STAGING_STATUS" != "200" ]; then
+            echo "❌ Staging health check failed: $STAGING_STATUS"
+            exit 1
+          fi
+          echo "✅ Staging deployment verified: $STAGING_STATUS"

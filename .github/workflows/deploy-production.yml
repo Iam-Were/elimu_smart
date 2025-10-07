@@ -8,30 +8,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS Production
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /root/elimu_smart
+      - name: Trigger VPS Production Deployment
+        run: |
+          RESPONSE=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+            -w "\n%{http_code}" \
+            https://elimu-smart.co.ke/webhooks/deploy/production)
 
-            # Pull latest changes
-            git pull origin main
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
 
-            # Build frontend for production
-            cd frontend
-            npm run build -- --mode production
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Deployment trigger failed: HTTP $HTTP_CODE"
+            echo "$BODY"
+            exit 1
+          fi
 
-            # Deploy to production directory
-            sudo cp -r dist/* /var/www/elimu-smart/
+          echo "✅ Deployment triggered successfully"
+          echo "$BODY"
 
-            # Restart production servers (graceful restart)
-            pm2 reload parse-server-prod
+      - name: Wait for Deployment
+        run: sleep 60
 
-            # Health check
-            sleep 5
-            curl -f https://elimu-smart.co.ke/parse/health || exit 1
-
-            echo "✅ Production deployment complete!"
+      - name: Verify Production Deployment
+        run: |
+          PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
+          if [ "$PROD_STATUS" != "200" ]; then
+            echo "❌ Production health check failed: $PROD_STATUS"
+            exit 1
+          fi
+          echo "✅ Production deployment verified: $PROD_STATUS"

@@ -29,16 +29,11 @@ jobs:
             echo "✅ Staging healthy: $STAGING_STATUS"
           fi
 
-      - name: Check VPS Resources
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            echo "=== VPS Health Status ==="
-            echo "Uptime: $(uptime)"
-            echo "Memory: $(free -h | grep Mem | awk '{print $3"/"$2}')"
-            echo "Disk: $(df -h / | tail -1 | awk '{print $3"/"$2" ("$5" used)"}')"
-            echo "PM2 Status:"
-            pm2 status
+      - name: Check Webhook Agent
+        run: |
+          WEBHOOK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/webhooks/health)
+          if [ "$WEBHOOK_STATUS" != "200" ]; then
+            echo "⚠️ Webhook agent health check failed: $WEBHOOK_STATUS"
+          else
+            echo "✅ Webhook agent healthy: $WEBHOOK_STATUS"
+          fi
