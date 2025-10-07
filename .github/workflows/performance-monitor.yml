@@ -1,4 +1,6 @@
 name: Performance & Security Monitor
+permissions:
+  contents: read
 
 on:
   schedule:
