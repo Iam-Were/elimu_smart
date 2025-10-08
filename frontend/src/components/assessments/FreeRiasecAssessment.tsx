@@ -413,6 +413,12 @@ interface RiasecScores {
   C: number;
 }
 
+interface DevelopmentArea {
+  type: string;
+  score: number;
+  recommendations: string[];
+}
+
 interface RiasecResults {
   scores: RiasecScores;
   hollandCode: string;
@@ -423,7 +429,7 @@ interface RiasecResults {
     kuccpsPathway: string;
     reasonsForMatch: string[];
   }>;
-  developmentAreas: string[];
+  developmentAreas: DevelopmentArea[] | string[];
   nextSteps: string[];
 }
 
