@@ -5,8 +5,6 @@
  * Replaces hardcoded SubjectCareerMapper data
  */
 
-const Parse = require('parse/node');
-
 /**
  * Get careers by subject
  * Replaces frontend SUBJECT_CAREERS lookup
