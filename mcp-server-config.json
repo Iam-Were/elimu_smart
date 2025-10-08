@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "elimu-intelligence": {
+      "command": "node",
+      "args": ["/root/elimu_smart/.mcp/server.js"],
+      "env": {},
+      "description": "Elimu Smart project intelligence - instant function mapping, mobile readiness, architecture queries (saves 85-95% tokens)"
+    },
     "elimu-vps": {
       "command": "ssh",
       "args": [
