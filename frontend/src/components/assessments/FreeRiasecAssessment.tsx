@@ -27,6 +27,12 @@ import {
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { getRiasecQuestions } from '@/lib/assessmentApi';
+import {
+  startRiasecAssessment,
+  saveRiasecResponse,
+  completeRiasecAssessment,
+  resumeRiasecAssessment
+} from '@/lib/assessmentProgress';
 
 // IIP RIASEC Markers - Free for non-commercial use
 // Citation: Armstrong, P. I., Allison, W., & Rounds, J. (2008). 
@@ -502,48 +508,39 @@ export const FreeRiasecAssessment: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    console.log('Starting assessment...');
-    console.log('Auth token available:', !!localStorage.getItem('elimu-auth-token'));
-
     try {
-      // Try to start assessment on backend
-      const response = await fetch('http://localhost:1337/parse/functions/startRiasecAssessment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({})
-      });
+      // Check for incomplete assessment first
+      const resumeResult = await resumeRiasecAssessment();
 
-      console.log('Start assessment response status:', response.status);
-      const data = await response.json();
-      console.log('Start assessment response data:', data);
-
-      if (data.result) {
-        setAssessmentId(data.result.id);
-        console.log('Assessment started with backend:', data.result.id);
+      if (resumeResult.assessment) {
+        // Resume incomplete assessment
+        setAssessmentId(resumeResult.assessment.id);
+        setCurrentQuestion(resumeResult.assessment.currentQuestion);
+        // Reconstruct responses from backend
+        const resumedResponses: Record<number, number> = {};
+        resumeResult.assessment.responses.forEach((qId: string, index: number) => {
+          resumedResponses[parseInt(qId)] = index;
+        });
+        setResponses(resumedResponses);
+        console.log('Resumed incomplete assessment:', resumeResult.assessment.id);
       } else {
-        console.log('No result in response, falling back to local');
-        setAssessmentId(`local-${Date.now()}`);
+        // Start new assessment
+        const result = await startRiasecAssessment();
+        setAssessmentId(result.assessmentId);
+        console.log('Started new assessment:', result.assessmentId);
       }
-    } catch (error) {
-      console.warn('Backend assessment start failed, continuing with local assessment:', error);
-      // Generate local assessment ID
-      setAssessmentId(`local-${Date.now()}`);
-    }
 
-    // Always log activity (works locally and with backend)
-    try {
+      // Log activity
       logActivity('free_riasec_assessment_started', {
-        assessmentId: assessmentId || 'local-assessment',
+        assessmentId: assessmentId || 'new-assessment',
         totalQuestions,
         version: 'IIP_RIASEC_Markers',
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.warn('Failed to log assessment start:', error);
+      console.warn('Failed to start/resume assessment, continuing with local:', error);
+      // Fallback to local assessment
+      setAssessmentId(`local-${Date.now()}`);
     }
 
     setIsLoading(false);
@@ -571,25 +568,19 @@ export const FreeRiasecAssessment: React.FC = () => {
       console.warn('Failed to log activity locally:', error);
     }
 
-    // Try to save to backend but don't block UI
-    if (assessmentId) {
+    // Save to backend but don't block UI
+    if (assessmentId && !assessmentId.startsWith('local-')) {
       try {
-        await fetch('http://localhost:1337/parse/functions/saveRiasecResponse', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Parse-Application-Id': 'elimu-smart-local-dev',
-            'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-          },
-          body: JSON.stringify({
-            assessmentId,
-            questionId,
-            response,
+        await saveRiasecResponse(
+          assessmentId,
+          questionId.toString(),
+          response,
+          {
             questionNumber: currentQuestion + 1,
             category: questions[currentQuestion]?.category || 'activities',
             riasecType: questions[currentQuestion]?.riasecType || 'R'
-          })
-        });
+          }
+        );
       } catch (error) {
         console.warn('Failed to save response to backend (continuing locally):', error);
       }
@@ -627,52 +618,38 @@ export const FreeRiasecAssessment: React.FC = () => {
   };
 
   const completeAssessment = async () => {
-    if (!assessmentId) return;
+    if (!assessmentId || assessmentId.startsWith('local-')) {
+      calculateResults(responses);
+      return;
+    }
 
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:1337/parse/functions/calculateRiasecScores', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
-          responses,
-          assessmentId
-        })
+      const result = await completeRiasecAssessment(assessmentId);
+
+      // Transform backend results to match frontend interface
+      const results: RiasecResults = {
+        scores: result.results.scores,
+        hollandCode: result.results.hollandCode,
+        primaryType: result.results.primaryType,
+        careerMatches: result.results.careerMatches,
+        developmentAreas: result.results.developmentAreas,
+        nextSteps: [] // Backend doesn't return nextSteps
+      };
+
+      setResults(results);
+      setShowResults(true);
+
+      // Log assessment completion
+      logActivity('free_riasec_assessment_completed', {
+        assessmentId,
+        hollandCode: results.hollandCode,
+        primaryType: results.primaryType,
+        scores: results.scores,
+        careerMatchesCount: results.careerMatches.length,
+        source: 'Parse_Server_Backend',
+        timestamp: new Date().toISOString()
       });
-      
-      const data = await response.json();
-      
-      if (data.result) {
-        const backendResults = data.result;
-        
-        // Transform backend results to match frontend interface
-        const results: RiasecResults = {
-          scores: backendResults.scores,
-          hollandCode: backendResults.hollandCode,
-          primaryType: backendResults.primaryType,
-          careerMatches: backendResults.careerMatches,
-          developmentAreas: backendResults.developmentAreas,
-          nextSteps: backendResults.nextSteps
-        };
-
-        setResults(results);
-        setShowResults(true);
-
-        // Log assessment completion
-        logActivity('free_riasec_assessment_completed', {
-          assessmentId,
-          hollandCode: results.hollandCode,
-          primaryType: results.primaryType,
-          scores: results.scores,
-          careerMatchesCount: results.careerMatches.length,
-          source: 'Parse_Server_Backend',
-          timestamp: new Date().toISOString()
-        });
-      }
     } catch (error) {
       console.error('Failed to complete assessment on backend:', error);
       // Fallback to local calculation
