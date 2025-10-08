@@ -31,7 +31,7 @@ app.post('/webhooks/deploy/production', verifyToken, async (req, res) => {
       'git pull origin main',
       'cd backend && npm install',
       'pm2 restart parse-server-prod',
-      'cd ../frontend && npm install',
+      'cd ../frontend && npm install --include=dev',
       'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode production',
       'sudo cp -r dist/* /var/www/elimu-smart/'
     ].join(' && ');
@@ -59,7 +59,7 @@ app.post('/webhooks/deploy/staging', verifyToken, async (req, res) => {
       'git pull origin main',
       'cd backend && npm install',
       'pm2 restart parse-server-staging',
-      'cd ../frontend && npm install',
+      'cd ../frontend && npm install --include=dev',
       'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode staging',
       'sudo cp -r dist/* /var/www/elimu-smart-staging/'
     ].join(' && ');
