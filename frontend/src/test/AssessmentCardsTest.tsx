@@ -11,8 +11,7 @@ const AssessmentCardsTest: React.FC = () => {
         {/* Test the redesigned assessment cards */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Redesigned Assessment Cards</h2>
-          <StudentAssessmentCards 
-            size="medium"
+          <StudentAssessmentCards
             maxCards={5}
             showAll={true}
           />
@@ -21,8 +20,7 @@ const AssessmentCardsTest: React.FC = () => {
         {/* Test compact version */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Compact Version</h2>
-          <StudentAssessmentCards 
-            size="compact"
+          <StudentAssessmentCards
             maxCards={3}
             showAll={false}
           />

@@ -25,7 +25,8 @@ Parse.Cloud.define('getCareersBySubject', async (request) => {
     query.descending('matchScore');
     query.limit(10); // Top 10 careers per subject
 
-    const results = await query.find();
+    // Use master key to bypass ACL (public data)
+    const results = await query.find({ useMasterKey: true });
 
     return results.map(career => ({
       id: career.id,
@@ -80,7 +81,7 @@ Parse.Cloud.define('searchCareers', async (request) => {
     query.descending('matchScore');
     query.limit(20);
 
-    const results = await query.find();
+    const results = await query.find({ useMasterKey: true });
 
     return results.map(career => ({
       id: career.id,
@@ -111,7 +112,7 @@ Parse.Cloud.define('getCareerCategories', async () => {
     query.equalTo('isActive', true);
     query.select('category');
 
-    const results = await query.find();
+    const results = await query.find({ useMasterKey: true });
     const categories = [...new Set(results.map(c => c.get('category')))];
 
     return categories.filter(Boolean);
@@ -136,7 +137,7 @@ Parse.Cloud.define('getCareerById', async (request) => {
     const Career = Parse.Object.extend('Career');
     const query = new Parse.Query(Career);
 
-    const career = await query.get(careerId);
+    const career = await query.get(careerId, { useMasterKey: true });
 
     if (!career) {
       throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Career not found');
@@ -187,7 +188,7 @@ Parse.Cloud.define('getTopCareers', async (request) => {
     query.descending('avgSalary');
     query.limit(limit);
 
-    const results = await query.find();
+    const results = await query.find({ useMasterKey: true });
 
     return results.map(career => ({
       id: career.id,

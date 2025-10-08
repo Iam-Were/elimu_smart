@@ -86,14 +86,14 @@ async function createCareerSchema() {
     }
 
     // Set default CLPs (Class Level Permissions)
-    const Career = Parse.Object.extend('Career');
-    const clp = {
+    CareerSchema.setCLP({
       find: { '*': true }, // Everyone can query
       get: { '*': true },  // Everyone can get
       create: { 'role:admin': true }, // Only admins can create
       update: { 'role:admin': true }, // Only admins can update
       delete: { 'role:admin': true }  // Only admins can delete
-    };
+    });
+    await CareerSchema.update();
 
     console.log('\n📋 Schema Details:');
     console.log('- Fields: 16 (title, category, subjects, salary, etc.)');
