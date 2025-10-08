@@ -32,11 +32,11 @@ app.post('/webhooks/deploy/production', verifyToken, async (req, res) => {
       'cd backend && npm install',
       'pm2 restart parse-server-prod',
       'cd ../frontend && npm install',
-      'npm run build -- --mode production',
+      'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode production',
       'sudo cp -r dist/* /var/www/elimu-smart/'
     ].join(' && ');
 
-    execSync(commands, { stdio: 'inherit' });
+    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=768' } });
 
     res.json({
       status: 'success',
@@ -60,11 +60,11 @@ app.post('/webhooks/deploy/staging', verifyToken, async (req, res) => {
       'cd backend && npm install',
       'pm2 restart parse-server-staging',
       'cd ../frontend && npm install',
-      'npm run build -- --mode staging',
+      'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode staging',
       'sudo cp -r dist/* /var/www/elimu-smart-staging/'
     ].join(' && ');
 
-    execSync(commands, { stdio: 'inherit' });
+    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=768' } });
 
     res.json({
       status: 'success',
