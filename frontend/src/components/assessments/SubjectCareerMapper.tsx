@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
+import { getParse } from '@/config/parse';
 import {
   // ArrowLeft, // TODO: Re-enable when implementing Card 3
   CheckCircle,
@@ -27,10 +29,32 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// TODO: Re-enable when implementing Card 3 (grade analyzer)
-// interface SubjectGrades {
-//   [subject: string]: string;
-// }
+// Career from backend database
+interface Career {
+  id: string;
+  title: string;
+  category: string;
+  matchScore: number;
+  description: string;
+  salaryRange: string;
+  demand: string;
+  kuccpsPathway: string;
+  skills: string[];
+  minClusterPoints?: number;
+  employmentRate?: number;
+  avgSalary?: number;
+}
+
+// Legacy interface for compatibility
+interface LegacyCareer {
+  title: string;
+  match: number;
+  description: string;
+  salary: string;
+  demand: string;
+  pathway: string;
+  skills: string[];
+}
 
 interface JobPosting {
   company: string;
@@ -71,484 +95,43 @@ const KENYAN_SUBJECTS = [
 // TODO: Re-enable when implementing Card 3 grade analyzer
 // const GRADES = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
 
-// Complete KCSE subjects with career data
-const SUBJECT_CAREERS = {
-  'Mathematics': [
-    {
-      title: 'Data Scientist',
-      match: 95,
-      description: 'Use mathematical models to analyze complex data for businesses',
-      salary: 'KSh 90,000 - 250,000',
-      demand: 'Very High',
-      pathway: 'Statistics/Computer Science degree',
-      skills: ['Statistics', 'Programming', 'Research']
-    },
-    {
-      title: 'Software Engineer',
-      match: 88,
-      description: 'Design and develop software applications and systems',
-      salary: 'KSh 80,000 - 200,000',
-      demand: 'Very High',
-      pathway: 'Computer Science degree',
-      skills: ['Programming', 'Logic', 'Problem Solving']
-    },
-    {
-      title: 'Actuary',
-      match: 92,
-      description: 'Assess financial risks using mathematics and statistics',
-      salary: 'KSh 80,000 - 200,000',
-      demand: 'High',
-      pathway: 'Actuarial Science degree',
-      skills: ['Risk Analysis', 'Statistics', 'Financial Modeling']
-    }
-  ],
-  'English': [
-    {
-      title: 'Digital Marketing Manager',
-      match: 90,
-      description: 'Create and manage online marketing campaigns',
-      salary: 'KSh 60,000 - 150,000',
-      demand: 'Very High',
-      pathway: 'Marketing/Communications degree',
-      skills: ['Content Creation', 'Social Media', 'Analytics']
-    },
-    {
-      title: 'Journalist',
-      match: 88,
-      description: 'Research and report news and stories for media outlets',
-      salary: 'KSh 45,000 - 120,000',
-      demand: 'Medium',
-      pathway: 'Journalism/Communications degree',
-      skills: ['Writing', 'Research', 'Interviewing']
-    },
-    {
-      title: 'Content Creator',
-      match: 85,
-      description: 'Develop engaging content for various digital platforms',
-      salary: 'KSh 40,000 - 100,000',
-      demand: 'High',
-      pathway: 'Communications/Media Studies degree',
-      skills: ['Creativity', 'Writing', 'Video Production']
-    }
-  ],
-  'Kiswahili': [
-    {
-      title: 'Translator/Interpreter',
-      match: 95,
-      description: 'Translate documents and interpret spoken language',
-      salary: 'KSh 45,000 - 85,000',
-      demand: 'Medium',
-      pathway: 'Languages/Translation Studies degree',
-      skills: ['Language Proficiency', 'Cultural Knowledge', 'Communication']
-    },
-    {
-      title: 'Tourism Guide',
-      match: 88,
-      description: 'Guide tourists and showcase Kenyan culture and heritage',
-      salary: 'KSh 35,000 - 70,000',
-      demand: 'Medium',
-      pathway: 'Tourism/Hospitality degree',
-      skills: ['Cultural Knowledge', 'Communication', 'Customer Service']
-    },
-    {
-      title: 'Teacher (Language)',
-      match: 85,
-      description: 'Teach Kiswahili language and literature in schools',
-      salary: 'KSh 35,000 - 70,000',
-      demand: 'High',
-      pathway: 'Education degree (Language specialization)',
-      skills: ['Teaching', 'Language Skills', 'Curriculum Development']
-    }
-  ],
-  'Physics': [
-    {
-      title: 'Electrical Engineer',
-      match: 93,
-      description: 'Design and maintain electrical systems and infrastructure',
-      salary: 'KSh 75,000 - 190,000',
-      demand: 'High',
-      pathway: 'Electrical Engineering degree',
-      skills: ['Circuit Design', 'Problem Solving', 'Technical Skills']
-    },
-    {
-      title: 'Renewable Energy Specialist',
-      match: 90,
-      description: 'Develop sustainable energy solutions for the future',
-      salary: 'KSh 70,000 - 170,000',
-      demand: 'Very High',
-      pathway: 'Engineering/Environmental Science degree',
-      skills: ['Solar/Wind Technology', 'Sustainability', 'Project Management']
-    },
-    {
-      title: 'Telecommunications Engineer',
-      match: 88,
-      description: 'Design and maintain communication networks',
-      salary: 'KSh 80,000 - 150,000',
-      demand: 'High',
-      pathway: 'Telecommunications Engineering degree',
-      skills: ['Network Design', 'Signal Processing', 'Technical Problem Solving']
-    }
-  ],
-  'Chemistry': [
-    {
-      title: 'Pharmacist',
-      match: 95,
-      description: 'Dispense medications and provide pharmaceutical care',
-      salary: 'KSh 80,000 - 150,000',
-      demand: 'High',
-      pathway: 'Pharmacy degree (4 years)',
-      skills: ['Drug Knowledge', 'Patient Care', 'Chemistry']
-    },
-    {
-      title: 'Chemical Engineer',
-      match: 92,
-      description: 'Design processes for manufacturing chemicals and materials',
-      salary: 'KSh 80,000 - 200,000',
-      demand: 'High',
-      pathway: 'Chemical Engineering degree',
-      skills: ['Process Design', 'Safety Management', 'Quality Control']
-    },
-    {
-      title: 'Laboratory Technician',
-      match: 85,
-      description: 'Conduct chemical analysis and laboratory tests',
-      salary: 'KSh 40,000 - 80,000',
-      demand: 'High',
-      pathway: 'Laboratory Technology diploma/degree',
-      skills: ['Laboratory Skills', 'Analysis', 'Attention to Detail']
-    }
-  ],
-  'Biology': [
-    {
-      title: 'Medical Doctor',
-      match: 98,
-      description: 'Diagnose and treat illnesses and injuries to save lives',
-      salary: 'KSh 150,000 - 400,000',
-      demand: 'High',
-      pathway: 'Medicine degree (6 years)',
-      skills: ['Diagnosis', 'Patient Care', 'Medical Knowledge']
-    },
-    {
-      title: 'Nurse',
-      match: 95,
-      description: 'Provide patient care and support in healthcare settings',
-      salary: 'KSh 40,000 - 80,000',
-      demand: 'Very High',
-      pathway: 'Nursing degree (4 years)',
-      skills: ['Patient Care', 'Medical Procedures', 'Compassion']
-    },
-    {
-      title: 'Veterinarian',
-      match: 90,
-      description: 'Diagnose and treat diseases in animals',
-      salary: 'KSh 80,000 - 150,000',
-      demand: 'Medium',
-      pathway: 'Veterinary Medicine degree (5 years)',
-      skills: ['Animal Care', 'Diagnosis', 'Surgery']
-    }
-  ],
-  'Geography': [
-    {
-      title: 'Urban Planner',
-      match: 90,
-      description: 'Plan and design urban development projects',
-      salary: 'KSh 70,000 - 130,000',
-      demand: 'Medium',
-      pathway: 'Urban Planning degree',
-      skills: ['Spatial Analysis', 'Project Management', 'Environmental Planning']
-    },
-    {
-      title: 'GIS Specialist',
-      match: 88,
-      description: 'Analyze geographic data using mapping technology',
-      salary: 'KSh 60,000 - 120,000',
-      demand: 'Medium',
-      pathway: 'Geography/GIS degree',
-      skills: ['GIS Software', 'Data Analysis', 'Mapping']
-    },
-    {
-      title: 'Environmental Consultant',
-      match: 85,
-      description: 'Assess environmental impact and provide solutions',
-      salary: 'KSh 65,000 - 125,000',
-      demand: 'Medium',
-      pathway: 'Environmental Science degree',
-      skills: ['Environmental Assessment', 'Research', 'Report Writing']
-    }
-  ],
-  'History': [
-    {
-      title: 'Lawyer',
-      match: 88,
-      description: 'Represent clients and provide legal advice',
-      salary: 'KSh 80,000 - 200,000',
-      demand: 'Medium',
-      pathway: 'Law degree (LLB)',
-      skills: ['Legal Research', 'Critical Thinking', 'Communication']
-    },
-    {
-      title: 'Museum Curator',
-      match: 85,
-      description: 'Manage museum collections and educational programs',
-      salary: 'KSh 50,000 - 100,000',
-      demand: 'Low',
-      pathway: 'History/Museum Studies degree',
-      skills: ['Research', 'Cultural Knowledge', 'Education']
-    },
-    {
-      title: 'Archivist',
-      match: 80,
-      description: 'Preserve and organize historical documents and records',
-      salary: 'KSh 40,000 - 80,000',
-      demand: 'Low',
-      pathway: 'History/Information Science degree',
-      skills: ['Organization', 'Research', 'Preservation']
-    }
-  ],
-  'Business Studies': [
-    {
-      title: 'Business Analyst',
-      match: 92,
-      description: 'Analyze business processes and recommend improvements',
-      salary: 'KSh 70,000 - 150,000',
-      demand: 'High',
-      pathway: 'Business Administration degree',
-      skills: ['Analysis', 'Problem Solving', 'Communication']
-    },
-    {
-      title: 'Marketing Manager',
-      match: 88,
-      description: 'Develop and implement marketing strategies',
-      salary: 'KSh 80,000 - 180,000',
-      demand: 'High',
-      pathway: 'Marketing/Business degree',
-      skills: ['Marketing Strategy', 'Creativity', 'Project Management']
-    },
-    {
-      title: 'Human Resources Manager',
-      match: 85,
-      description: 'Manage employee relations and organizational development',
-      salary: 'KSh 70,000 - 140,000',
-      demand: 'Medium',
-      pathway: 'Human Resources/Business degree',
-      skills: ['People Management', 'Communication', 'Conflict Resolution']
-    }
-  ],
-  'Economics': [
-    {
-      title: 'Financial Analyst',
-      match: 92,
-      description: 'Analyze financial data and market trends',
-      salary: 'KSh 80,000 - 160,000',
-      demand: 'High',
-      pathway: 'Economics/Finance degree',
-      skills: ['Financial Analysis', 'Data Interpretation', 'Research']
-    },
-    {
-      title: 'Bank Manager',
-      match: 88,
-      description: 'Manage banking operations and client relationships',
-      salary: 'KSh 100,000 - 200,000',
-      demand: 'Medium',
-      pathway: 'Economics/Banking degree',
-      skills: ['Financial Management', 'Leadership', 'Customer Service']
-    },
-    {
-      title: 'Policy Analyst',
-      match: 85,
-      description: 'Research and analyze government and organizational policies',
-      salary: 'KSh 70,000 - 130,000',
-      demand: 'Medium',
-      pathway: 'Economics/Public Policy degree',
-      skills: ['Policy Research', 'Critical Thinking', 'Writing']
-    }
-  ],
-  'Agriculture': [
-    {
-      title: 'Agricultural Extension Officer',
-      match: 90,
-      description: 'Provide farming advice and support to rural communities',
-      salary: 'KSh 45,000 - 80,000',
-      demand: 'High',
-      pathway: 'Agricultural Science degree',
-      skills: ['Farming Knowledge', 'Community Engagement', 'Training']
-    },
-    {
-      title: 'Food Scientist',
-      match: 88,
-      description: 'Develop and improve food products and safety',
-      salary: 'KSh 60,000 - 120,000',
-      demand: 'Medium',
-      pathway: 'Food Science/Technology degree',
-      skills: ['Food Safety', 'Research', 'Quality Control']
-    },
-    {
-      title: 'Agricultural Engineer',
-      match: 85,
-      description: 'Design farming equipment and irrigation systems',
-      salary: 'KSh 70,000 - 130,000',
-      demand: 'Medium',
-      pathway: 'Agricultural Engineering degree',
-      skills: ['Engineering Design', 'Problem Solving', 'Technology']
-    }
-  ],
-  'Computer Studies': [
-    {
-      title: 'Software Developer',
-      match: 98,
-      description: 'Create software applications and systems',
-      salary: 'KSh 80,000 - 160,000',
-      demand: 'Very High',
-      pathway: 'Computer Science degree',
-      skills: ['Programming', 'Problem Solving', 'System Design']
-    },
-    {
-      title: 'Cybersecurity Analyst',
-      match: 95,
-      description: 'Protect computer systems from security threats',
-      salary: 'KSh 90,000 - 180,000',
-      demand: 'Very High',
-      pathway: 'Computer Science/Cybersecurity degree',
-      skills: ['Security Analysis', 'Network Protection', 'Risk Assessment']
-    },
-    {
-      title: 'Database Administrator',
-      match: 90,
-      description: 'Manage and maintain database systems',
-      salary: 'KSh 70,000 - 140,000',
-      demand: 'High',
-      pathway: 'Computer Science/Information Systems degree',
-      skills: ['Database Management', 'System Administration', 'Problem Solving']
-    }
-  ],
-  'Art & Design': [
-    {
-      title: 'Graphic Designer',
-      match: 95,
-      description: 'Create visual designs for print and digital media',
-      salary: 'KSh 40,000 - 100,000',
-      demand: 'High',
-      pathway: 'Graphic Design degree',
-      skills: ['Design Software', 'Creativity', 'Visual Communication']
-    },
-    {
-      title: 'Interior Designer',
-      match: 88,
-      description: 'Design and plan interior spaces for buildings',
-      salary: 'KSh 50,000 - 120,000',
-      demand: 'Medium',
-      pathway: 'Interior Design degree',
-      skills: ['Space Planning', 'Creativity', 'Project Management']
-    },
-    {
-      title: 'Fashion Designer',
-      match: 85,
-      description: 'Design clothing and fashion accessories',
-      salary: 'KSh 35,000 - 90,000',
-      demand: 'Medium',
-      pathway: 'Fashion Design degree',
-      skills: ['Fashion Design', 'Creativity', 'Sewing']
-    }
-  ],
-  'Music': [
-    {
-      title: 'Music Producer',
-      match: 90,
-      description: 'Produce and record music for artists and media',
-      salary: 'KSh 50,000 - 150,000',
-      demand: 'Medium',
-      pathway: 'Music Production degree',
-      skills: ['Music Production', 'Audio Engineering', 'Creativity']
-    },
-    {
-      title: 'Music Teacher',
-      match: 88,
-      description: 'Teach music in schools and private institutions',
-      salary: 'KSh 35,000 - 70,000',
-      demand: 'Medium',
-      pathway: 'Music Education degree',
-      skills: ['Music Theory', 'Teaching', 'Performance']
-    },
-    {
-      title: 'Sound Engineer',
-      match: 85,
-      description: 'Manage audio equipment and sound recording',
-      salary: 'KSh 45,000 - 100,000',
-      demand: 'Medium',
-      pathway: 'Audio Engineering degree',
-      skills: ['Audio Engineering', 'Technical Skills', 'Attention to Detail']
-    }
-  ],
-  'French': [
-    {
-      title: 'French Translator',
-      match: 95,
-      description: 'Translate French documents and interpret conversations',
-      salary: 'KSh 50,000 - 100,000',
-      demand: 'Medium',
-      pathway: 'French/Translation Studies degree',
-      skills: ['French Fluency', 'Translation', 'Cultural Knowledge']
-    },
-    {
-      title: 'International Relations Officer',
-      match: 88,
-      description: 'Manage diplomatic and international business relations',
-      salary: 'KSh 80,000 - 160,000',
-      demand: 'Low',
-      pathway: 'International Relations degree',
-      skills: ['Diplomacy', 'Communication', 'Cultural Sensitivity']
-    },
-    {
-      title: 'Tourism Coordinator',
-      match: 85,
-      description: 'Coordinate tourism activities for French-speaking visitors',
-      salary: 'KSh 45,000 - 90,000',
-      demand: 'Medium',
-      pathway: 'Tourism/Hospitality degree',
-      skills: ['Customer Service', 'Cultural Knowledge', 'Organization']
-    }
-  ],
-  'German': [
-    {
-      title: 'German Translator',
-      match: 95,
-      description: 'Translate German documents and provide interpretation services',
-      salary: 'KSh 55,000 - 110,000',
-      demand: 'Low',
-      pathway: 'German/Translation Studies degree',
-      skills: ['German Fluency', 'Translation', 'Cultural Knowledge']
-    },
-    {
-      title: 'Export-Import Manager',
-      match: 88,
-      description: 'Manage trade relationships with German-speaking countries',
-      salary: 'KSh 90,000 - 180,000',
-      demand: 'Low',
-      pathway: 'International Business degree',
-      skills: ['Business Development', 'Negotiation', 'Cultural Understanding']
-    },
-    {
-      title: 'Technical Translator',
-      match: 85,
-      description: 'Translate technical documents and manuals from German',
-      salary: 'KSh 60,000 - 120,000',
-      demand: 'Low',
-      pathway: 'Technical Communication degree',
-      skills: ['Technical Writing', 'German Language', 'Subject Matter Expertise']
-    }
-  ]
-};
+// Career data now fetched from backend via getCareersBySubject Cloud Function
+// Previously: 466 lines of hardcoded data (SUBJECT_CAREERS object)
+// Now: Dynamic backend API integration with Parse Career Class
 
 export const SubjectCareerMapper: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
-  // TODO: Uncomment when implementing Card 3 (grade analyzer)
-  // const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  // const [grades, setGrades] = useState<SubjectGrades>({});
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [isLoadingCareers, setIsLoadingCareers] = useState(false);
+  const [careerError, setCareerError] = useState<string | null>(null);
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
   const [liveJobData, setLiveJobData] = useState<Record<string, LiveJobData>>({});
   const [liveJobsLoading, setLiveJobsLoading] = useState<string | null>(null);
+
+  // Fetch careers from backend when subject changes
+  useEffect(() => {
+    const fetchCareers = async () => {
+      setIsLoadingCareers(true);
+      setCareerError(null);
+
+      try {
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getCareersBySubject', {
+          subject: selectedSubject
+        });
+
+        setCareers(result || []);
+      } catch (error) {
+        console.error('Failed to fetch careers:', error);
+        setCareerError('Failed to load careers. Please try again.');
+        setCareers([]);
+      } finally {
+        setIsLoadingCareers(false);
+      }
+    };
+
+    fetchCareers();
+  }, [selectedSubject]);
 
   // Opt-in function to load live job data for a specific career (not auto-loading)
   const loadLiveJobsForCareer = async (careerTitle: string) => {
@@ -773,7 +356,17 @@ export const SubjectCareerMapper: React.FC = () => {
 
   // Get currently selected subject data
   const currentSubject = KENYAN_SUBJECTS.find(s => s.name === selectedSubject);
-  const currentCareers = SUBJECT_CAREERS[selectedSubject as keyof typeof SUBJECT_CAREERS] || [];
+
+  // Convert backend Career format to legacy format for compatibility
+  const currentCareers: LegacyCareer[] = careers.map(career => ({
+    title: career.title,
+    match: career.matchScore,
+    description: career.description,
+    salary: career.salaryRange,
+    demand: career.demand,
+    pathway: career.kuccpsPathway,
+    skills: career.skills
+  }));
 
   const getDemandColor = (demand: string) => {
     switch (demand) {
@@ -824,7 +417,6 @@ export const SubjectCareerMapper: React.FC = () => {
           <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5">
             {KENYAN_SUBJECTS.slice(0, 10).map((subject) => {
               const isSelected = selectedSubject === subject.name;
-              const hasCareerData = SUBJECT_CAREERS[subject.name as keyof typeof SUBJECT_CAREERS];
 
               return (
                 <Card
@@ -833,17 +425,13 @@ export const SubjectCareerMapper: React.FC = () => {
                     "cursor-pointer transition-all duration-300 hover:shadow-md",
                     isSelected
                       ? "ring-2 ring-orange-500 bg-orange-50"
-                      : "hover:bg-gray-50",
-                    !hasCareerData && "opacity-60"
+                      : "hover:bg-gray-50"
                   )}
                   onClick={() => setSelectedSubject(subject.name)}
                 >
                   <CardContent className="p-4 text-center space-y-2">
                     <div className="text-2xl">{subject.emoji}</div>
                     <div className="text-sm font-medium">{subject.name}</div>
-                    {!hasCareerData && (
-                      <div className="text-xs text-gray-500">Coming Soon</div>
-                    )}
                   </CardContent>
                 </Card>
               );
@@ -853,8 +441,41 @@ export const SubjectCareerMapper: React.FC = () => {
       </Card>
 
       {/* Career Connections */}
-      {currentSubject && currentCareers.length > 0 && (
+      {currentSubject && (
         <div className="space-y-6">
+          {/* Loading State */}
+          {isLoadingCareers && (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-orange-500" />
+                <p className="text-lg font-medium text-gray-700">Loading careers for {currentSubject.name}...</p>
+                <p className="text-sm text-gray-500 mt-2">This will take just a moment</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Error State */}
+          {careerError && !isLoadingCareers && (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                <p className="text-lg font-medium text-gray-700 mb-2">{careerError}</p>
+                <Button
+                  onClick={() => {
+                    setSelectedSubject(currentSubject.name);
+                  }}
+                  variant="outline"
+                  className="mt-4"
+                >
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Career Data */}
+          {!isLoadingCareers && !careerError && currentCareers.length > 0 && (
+            <div className="space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -1073,6 +694,8 @@ export const SubjectCareerMapper: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+            </div>
+          )}
         </div>
       )}
 
