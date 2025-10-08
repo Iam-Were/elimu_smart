@@ -1,0 +1,234 @@
+{
+  "description": "Quick function name to file location mapping for elimu_smart project",
+  "lastUpdated": "2025-10-08",
+  "backendFunctions": {
+    "getRiasecQuestions": "backend/cloud/assessmentFunctions.js",
+    "getSkillsQuestions": "backend/cloud/assessmentFunctions.js",
+    "saveAssessmentResult": "backend/cloud/assessmentFunctions.js",
+    "getUserAssessments": "backend/cloud/assessmentFunctions.js",
+    "calculateRiasecScores": "backend/cloud/riasecScoringFunctions.js",
+    "getUserPreferences": "backend/cloud/userPreferencesFunctions.js",
+    "saveUserPreferences": "backend/cloud/userPreferencesFunctions.js",
+    "updateUserPreference": "backend/cloud/userPreferencesFunctions.js",
+    "getLinkedInProfessionalInsights": "backend/cloud/linkedin-professional-insights.js",
+    "getSubscriptionPlans": "backend/cloud/billingFunctions.js",
+    "getUserSubscription": "backend/cloud/billingFunctions.js",
+    "initiateSubscriptionPayment": "backend/cloud/billingFunctions.js",
+    "checkSubscriptionPaymentStatus": "backend/cloud/billingFunctions.js",
+    "cancelSubscription": "backend/cloud/billingFunctions.js",
+    "getBillingHistory": "backend/cloud/billingFunctions.js",
+    "generateInvoice": "backend/cloud/billingFunctions.js",
+    "analyzeSubjectCareerFit": "backend/cloud/main.js:2964",
+    "calculateKUCCPSPoints": "backend/cloud/main.js:246",
+    "matchUniversityCourses": "backend/cloud/main.js:336",
+    "findUniversityCourses": "backend/cloud/main.js:1377",
+    "calculateCutoffPoints": "backend/cloud/main.js:1259",
+    "getKuccpsTimeline": "backend/cloud/main.js:1320",
+    "getCourseRecommendations": "backend/cloud/main.js:1377",
+    "createChatRoom": "backend/cloud/main.js:365",
+    "sendMessage": "backend/cloud/main.js:397",
+    "getChatRooms": "backend/cloud/main.js:437",
+    "getChatMessages": "backend/cloud/main.js:457",
+    "markMessagesAsRead": "backend/cloud/main.js:486",
+    "getInboxConversations": "backend/cloud/main.js:705",
+    "searchConversations": "backend/cloud/main.js:753",
+    "archiveConversation": "backend/cloud/main.js:778",
+    "sendMultimediaMessage": "backend/cloud/main.js:810",
+    "createNotification": "backend/cloud/main.js:519",
+    "getNotifications": "backend/cloud/main.js:548",
+    "uploadFile": "backend/cloud/main.js:616",
+    "uploadProfileImage": "backend/cloud/main.js:676",
+    "logUserActivity": "backend/cloud/main.js:866",
+    "updateAssessmentProgress": "backend/cloud/main.js:907",
+    "getAssessmentProgress": "backend/cloud/main.js:948",
+    "completeAssessment": "backend/cloud/main.js:979",
+    "calculateCareerReadinessScore": "backend/cloud/main.js:1025",
+    "getCareerExplorationData": "backend/cloud/main.js:1121",
+    "getScholarshipMatches": "backend/cloud/main.js:1169",
+    "getUniversityPlacementData": "backend/cloud/main.js:1215",
+    "exploreCareers": "backend/cloud/main.js:4085",
+    "getCareerDetails": "backend/cloud/main.js:4133",
+    "getCareerJobData": "backend/cloud/main.js:4140",
+    "startRiasecAssessment": "backend/cloud/main.js:1464",
+    "saveRiasecResponse": "backend/cloud/main.js:1520",
+    "completeRiasecAssessment": "backend/cloud/main.js:1568",
+    "getRiasecResults": "backend/cloud/main.js:1652",
+    "getRiasecHistory": "backend/cloud/main.js:1692",
+    "resumeRiasecAssessment": "backend/cloud/main.js:1731",
+    "getRiasecCareerInfo": "backend/cloud/main.js:1788",
+    "startSkillsAssessment": "backend/cloud/main.js:1850",
+    "calculateSkillProfile": "backend/cloud/main.js:1912",
+    "updateCareerReadiness": "backend/cloud/main.js:285",
+    "submitQuestion": "backend/cloud/main.js:3005",
+    "answerQuestion": "backend/cloud/main.js:3059",
+    "getStudentQuestions": "backend/cloud/main.js:3115",
+    "getMyQuestions": "backend/cloud/main.js:3156",
+    "bookCounselorSession": "backend/cloud/main.js:2017",
+    "logCounselorActivity": "backend/cloud/main.js:2072",
+    "getCounselorAssignedStudents": "backend/cloud/main.js:2130",
+    "getCounselorActiveChatSessions": "backend/cloud/main.js:2168",
+    "getCounselorTodaysAppointments": "backend/cloud/main.js:2206",
+    "getCounselorPendingQuestions": "backend/cloud/main.js:2249",
+    "getCounselingAnalytics": "backend/cloud/main.js:2292",
+    "getCounselorRecentActivities": "backend/cloud/main.js:2376",
+    "getAssignedStudents": "backend/cloud/main.js:2438",
+    "getPendingSessionRequests": "backend/cloud/main.js:2478",
+    "logAdminActivity": "backend/cloud/main.js:2523",
+    "getAdminSystemMetrics": "backend/cloud/main.js:2586",
+    "getAdminSecurityMetrics": "backend/cloud/main.js:2640",
+    "getAdminBusinessMetrics": "backend/cloud/main.js:2682",
+    "getAdminContentMetrics": "backend/cloud/main.js:2724",
+    "getAdminSupportMetrics": "backend/cloud/main.js:2763",
+    "getAdminAuditLogs": "backend/cloud/main.js:2803",
+    "getAdminRecentActivities": "backend/cloud/main.js:2845",
+    "sendWelcomeEmail": "backend/cloud/main.js:3193",
+    "sendAssessmentCompletionEmail": "backend/cloud/main.js:3247",
+    "sendKuccpsDeadlineReminder": "backend/cloud/main.js:3306",
+    "sendSessionBookingConfirmation": "backend/cloud/main.js:3366",
+    "sendScholarshipAlert": "backend/cloud/main.js:3429",
+    "getEmailStatistics": "backend/cloud/main.js:3491",
+    "getUserAchievements": "backend/cloud/main.js:3548",
+    "addAchievementBadge": "backend/cloud/main.js:3588",
+    "getUserCertifications": "backend/cloud/main.js:3634",
+    "syncExternalCertification": "backend/cloud/main.js:3674",
+    "connectLearningPlatform": "backend/cloud/main.js:3720",
+    "getCacheStats": "backend/cloud/main.js:3774",
+    "clearExpiredCache": "backend/cloud/main.js:3812",
+    "clearAllCache": "backend/cloud/main.js:3843",
+    "initializeStudentCounselorSchema": "backend/cloud/main.js:24",
+    "initializeRiasecSchema": "backend/cloud/main.js:109",
+    "hello": "backend/cloud/main.js:194"
+  },
+  "frontendComponents": {
+    "FreeRiasecAssessment": {
+      "path": "frontend/src/components/assessments/FreeRiasecAssessment.tsx",
+      "backendCalls": ["getRiasecQuestions", "calculateRiasecScores"],
+      "size": "1376 lines",
+      "status": "Backend-driven with local fallback"
+    },
+    "SkillsAssessment": {
+      "path": "frontend/src/components/assessments/SkillsAssessment.tsx",
+      "backendCalls": ["getSkillsQuestions", "calculateSkillProfile"],
+      "size": "607 lines",
+      "status": "Backend-driven"
+    },
+    "CareerExploration": {
+      "path": "frontend/src/components/assessments/CareerExploration.tsx",
+      "backendCalls": ["exploreCareers", "getCareerDetails"],
+      "size": "774 lines",
+      "status": "Backend-driven"
+    },
+    "UniversityCourseFinder": {
+      "path": "frontend/src/components/assessments/UniversityCourseFinder.tsx",
+      "backendCalls": ["findUniversityCourses", "calculateKUCCPSPoints", "calculateCutoffPoints"],
+      "size": "784 lines",
+      "status": "Backend-driven"
+    },
+    "SubjectCareerMapper": {
+      "path": "frontend/src/components/assessments/SubjectCareerMapper.tsx",
+      "backendCalls": ["getCareerJobData", "analyzeSubjectCareerFit"],
+      "hardcodedData": "466 lines (SUBJECT_CAREERS object)",
+      "size": "1100 lines",
+      "status": "Partially backend-driven - hardcoded career data needs migration"
+    },
+    "StudentDashboard": {
+      "path": "frontend/src/pages/StudentDashboard.tsx",
+      "hook": "frontend/src/hooks/useDynamicDashboard.ts",
+      "backendCalls": [
+        "calculateCareerReadinessScore",
+        "getCareerExplorationData",
+        "getScholarshipMatches",
+        "getUniversityPlacementData"
+      ],
+      "status": "Backend-driven"
+    },
+    "CounselorDashboard": {
+      "path": "frontend/src/pages/CounselorDashboard.tsx",
+      "hook": "frontend/src/hooks/useCounselorDashboard.ts",
+      "backendCalls": [
+        "getCounselorAssignedStudents",
+        "getCounselorActiveChatSessions",
+        "getCounselorTodaysAppointments",
+        "getCounselorPendingQuestions",
+        "getCounselingAnalytics",
+        "getCounselorRecentActivities"
+      ],
+      "status": "Backend-driven"
+    },
+    "AdminDashboard": {
+      "path": "frontend/src/pages/AdminDashboard.tsx",
+      "hook": "frontend/src/hooks/useAdminDashboard.ts",
+      "backendCalls": [
+        "getAdminSystemMetrics",
+        "getAdminSecurityMetrics",
+        "getAdminBusinessMetrics",
+        "getAdminContentMetrics",
+        "getAdminSupportMetrics",
+        "getAdminAuditLogs",
+        "getAdminRecentActivities"
+      ],
+      "status": "Backend-driven"
+    },
+    "InboxPage": {
+      "path": "frontend/src/pages/InboxPage.tsx",
+      "backendCalls": ["getInboxConversations", "searchConversations", "archiveConversation"],
+      "missingCalls": ["getChatMessages", "getChatRooms", "markMessagesAsRead"],
+      "status": "Partially integrated - 3 functions not used"
+    }
+  },
+  "commonPatterns": {
+    "assessmentApi": {
+      "file": "frontend/src/lib/assessmentApi.ts",
+      "exports": ["getRiasecQuestions", "getSkillsQuestions", "saveAssessmentResult", "getUserAssessments"],
+      "usage": "Type-safe API wrapper for assessment functions"
+    },
+    "userPreferences": {
+      "file": "frontend/src/lib/userPreferences.ts",
+      "exports": ["getUserPreferences", "saveUserPreferences", "updateUserPreference"],
+      "usage": "localStorage fallback + Parse backend sync"
+    },
+    "parseConfig": {
+      "file": "frontend/src/config/parse.ts",
+      "exports": ["getParse", "initializeParse"],
+      "usage": "Dynamic Parse SDK import (browser-compatible)"
+    }
+  },
+  "migrations": {
+    "completed": [
+      {
+        "name": "RIASEC Scoring to Backend",
+        "commit": "652b12b",
+        "date": "2025-10-06",
+        "linesRemoved": 275,
+        "file": "backend/cloud/riasecScoringFunctions.js"
+      },
+      {
+        "name": "LocalStorage to Parse Objects",
+        "commit": "7a6bea3",
+        "date": "2025-10-06",
+        "linesAdded": 581,
+        "files": ["backend/cloud/userPreferencesFunctions.js", "frontend/src/lib/userPreferences.ts"]
+      },
+      {
+        "name": "Assessment Questions to Database",
+        "commit": "multiple",
+        "date": "2025-10-06",
+        "files": ["backend/migrations/seed-assessments.js", "frontend/src/lib/assessmentApi.ts"]
+      }
+    ],
+    "pending": [
+      {
+        "name": "SubjectCareerMapper to Parse Class",
+        "impact": "Remove 466 lines from frontend, -25KB bundle",
+        "effort": "2-3 days",
+        "status": "Not started"
+      },
+      {
+        "name": "Chat/Messaging Integration",
+        "impact": "Enable premium inbox feature",
+        "effort": "2 days",
+        "status": "Backend ready, frontend not integrated"
+      }
+    ]
+  }
+}

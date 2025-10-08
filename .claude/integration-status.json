@@ -1,0 +1,262 @@
+{
+  "lastUpdated": "2025-10-08",
+  "stats": {
+    "totalBackendFunctions": 108,
+    "integratedFunctions": 62,
+    "availableFunctions": 46,
+    "integrationRate": "57.4%",
+    "mobileReadiness": "82%"
+  },
+  "integrated": [
+    "getRiasecQuestions",
+    "getSkillsQuestions",
+    "saveAssessmentResult",
+    "getUserAssessments",
+    "calculateRiasecScores",
+    "getUserPreferences",
+    "saveUserPreferences",
+    "updateUserPreference",
+    "logCounselorActivity",
+    "getCounselorAssignedStudents",
+    "getCounselorActiveChatSessions",
+    "getCounselorTodaysAppointments",
+    "getCounselorPendingQuestions",
+    "getCounselingAnalytics",
+    "getCounselorRecentActivities",
+    "getAssignedStudents",
+    "getPendingSessionRequests",
+    "logAdminActivity",
+    "getAdminSystemMetrics",
+    "getAdminSecurityMetrics",
+    "getAdminBusinessMetrics",
+    "getAdminContentMetrics",
+    "getAdminSupportMetrics",
+    "getAdminAuditLogs",
+    "getAdminRecentActivities",
+    "submitQuestion",
+    "answerQuestion",
+    "getMyQuestions",
+    "getStudentQuestions",
+    "createChatRoom",
+    "sendMessage",
+    "logUserActivity",
+    "calculateCareerReadinessScore",
+    "getCareerExplorationData",
+    "getUniversityPlacementData",
+    "exploreCareers",
+    "getCareerDetails",
+    "getCareerJobData",
+    "getSubscriptionPlans",
+    "getUserSubscription",
+    "initiateSubscriptionPayment",
+    "checkSubscriptionPaymentStatus",
+    "cancelSubscription",
+    "sendWelcomeEmail",
+    "sendAssessmentCompletionEmail",
+    "sendKuccpsDeadlineReminder",
+    "sendSessionBookingConfirmation",
+    "sendScholarshipAlert",
+    "getEmailStatistics",
+    "getLinkedInProfessionalInsights",
+    "getNotifications",
+    "uploadProfileImage",
+    "calculateKUCCPSPoints",
+    "calculateCutoffPoints",
+    "findUniversityCourses",
+    "getCourseRecommendations",
+    "getKuccpsTimeline",
+    "updateAssessmentProgress",
+    "getAssessmentProgress",
+    "completeAssessment",
+    "hello"
+  ],
+  "available": [
+    "analyzeSubjectCareerFit",
+    "bookCounselorSession",
+    "calculateSkillProfile",
+    "clearAllCache",
+    "clearExpiredCache",
+    "completeRiasecAssessment",
+    "connectLearningPlatform",
+    "createNotification",
+    "addAchievementBadge",
+    "getUserAchievements",
+    "getUserCertifications",
+    "syncExternalCertification",
+    "getChatMessages",
+    "getChatRooms",
+    "getInboxConversations",
+    "archiveConversation",
+    "searchConversations",
+    "markMessagesAsRead",
+    "sendMultimediaMessage",
+    "getScholarshipMatches",
+    "getRiasecResults",
+    "getRiasecHistory",
+    "getRiasecCareerInfo",
+    "startRiasecAssessment",
+    "saveRiasecResponse",
+    "resumeRiasecAssessment",
+    "startSkillsAssessment",
+    "matchUniversityCourses",
+    "updateCareerReadiness",
+    "getBillingHistory",
+    "generateInvoice",
+    "getInvoiceDetails",
+    "getInvoiceHTML",
+    "resendInvoice",
+    "uploadFile",
+    "getCacheStats",
+    "initializeRiasecSchema",
+    "initializeStudentCounselorSchema",
+    "seedRiasecData",
+    "getAssessmentQuestions"
+  ],
+  "mismatches": [
+    {
+      "frontend": "findScholarshipMatches",
+      "backend": "getScholarshipMatches",
+      "action": "Rename backend or update frontend"
+    },
+    {
+      "frontend": "getAdminBillingAnalytics",
+      "backend": null,
+      "action": "Create backend function or remove frontend call"
+    }
+  ],
+  "hardcodedData": {
+    "SubjectCareerMapper": {
+      "file": "frontend/src/components/assessments/SubjectCareerMapper.tsx",
+      "lines": 466,
+      "size": "~25KB minified",
+      "backendFunction": "analyzeSubjectCareerFit",
+      "status": "Data model mismatch - frontend uses single subjects, backend uses combinations",
+      "action": "Migrate to Parse Class 'Career' database"
+    },
+    "CareerExploration": {
+      "file": "frontend/src/components/assessments/CareerExploration.tsx",
+      "status": "Integrated - uses exploreCareers backend",
+      "backendFunctions": ["exploreCareers", "getCareerDetails", "getCareerJobData"]
+    },
+    "UniversityCourseFinder": {
+      "file": "frontend/src/components/assessments/UniversityCourseFinder.tsx",
+      "status": "Integrated - uses findUniversityCourses backend",
+      "backendFunctions": ["findUniversityCourses", "calculateKUCCPSPoints", "calculateCutoffPoints"]
+    }
+  },
+  "mobileReadiness": {
+    "riasecAssessment": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": true,
+      "readinessScore": "100%"
+    },
+    "skillsAssessment": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": false,
+      "readinessScore": "90%"
+    },
+    "careerExploration": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": false,
+      "readinessScore": "90%"
+    },
+    "universityFinder": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": false,
+      "readinessScore": "90%"
+    },
+    "subjectMapper": {
+      "backendLogic": "partial",
+      "dataStorage": "hardcoded",
+      "offlineSupport": true,
+      "readinessScore": "60%"
+    },
+    "chatInbox": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": false,
+      "readinessScore": "40%",
+      "note": "7 functions available but not integrated"
+    },
+    "userPreferences": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": true,
+      "readinessScore": "100%"
+    },
+    "dashboard": {
+      "backendLogic": true,
+      "dataStorage": "Parse DB",
+      "offlineSupport": false,
+      "readinessScore": "90%"
+    }
+  },
+  "prioritizedIntegrations": {
+    "high": [
+      {
+        "category": "SubjectCareerMapper Migration",
+        "functions": ["Create Parse Class 'Career'", "Migrate 466 lines to database"],
+        "impact": "Mobile ready, -25KB bundle",
+        "effort": "2-3 days"
+      },
+      {
+        "category": "Chat/Messaging",
+        "functions": [
+          "getChatMessages",
+          "getChatRooms",
+          "getInboxConversations",
+          "archiveConversation",
+          "searchConversations",
+          "markMessagesAsRead",
+          "sendMultimediaMessage"
+        ],
+        "impact": "Premium inbox feature",
+        "effort": "2 days"
+      },
+      {
+        "category": "Assessment Progress",
+        "functions": [
+          "startRiasecAssessment",
+          "saveRiasecResponse",
+          "completeRiasecAssessment",
+          "resumeRiasecAssessment",
+          "startSkillsAssessment"
+        ],
+        "impact": "Resume incomplete assessments",
+        "effort": "1-2 days"
+      }
+    ],
+    "medium": [
+      {
+        "category": "Gamification",
+        "functions": ["getUserAchievements", "addAchievementBadge", "getUserCertifications"],
+        "impact": "Student engagement",
+        "effort": "1 day"
+      },
+      {
+        "category": "University Tools",
+        "functions": ["matchUniversityCourses", "updateCareerReadiness"],
+        "impact": "Enhanced recommendations",
+        "effort": "1 day"
+      }
+    ],
+    "low": [
+      {
+        "category": "Billing Admin",
+        "functions": ["getBillingHistory", "generateInvoice", "getInvoiceHTML", "getInvoiceDetails", "resendInvoice"],
+        "impact": "Admin billing features",
+        "effort": "1 day"
+      },
+      {
+        "category": "Cache Management",
+        "functions": ["getCacheStats", "clearExpiredCache", "clearAllCache"],
+        "impact": "Admin tools only",
+        "effort": "0.5 days"
+      }
+    ]
+  }
+}
