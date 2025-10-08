@@ -3,6 +3,7 @@
  * Handles GitHub Actions deployment triggers
  */
 
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const { execSync } = require('child_process');
 const app = express();
