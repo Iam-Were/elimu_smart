@@ -26,26 +26,28 @@ app.post('/webhooks/deploy/production', verifyToken, async (req, res) => {
   try {
     console.log('🚀 Production deployment triggered');
 
+    // Respond immediately to prevent timeout
+    res.json({
+      status: 'accepted',
+      message: 'Production deployment started',
+      timestamp: new Date().toISOString()
+    });
+
+    // Run deployment asynchronously
     const commands = [
       'cd /root/elimu_smart',
       'git pull origin main',
       'cd backend && npm install',
       'pm2 restart parse-server-prod',
       'cd ../frontend && npm install --include=dev',
-      'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode production',
+      'NODE_OPTIONS="--max-old-space-size=512" npm run build -- --mode production',
       'sudo cp -r dist/* /var/www/elimu-smart/'
     ].join(' && ');
 
-    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=768' } });
-
-    res.json({
-      status: 'success',
-      message: 'Production deployment completed',
-      timestamp: new Date().toISOString()
-    });
+    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=512' } });
+    console.log('✅ Production deployment completed successfully');
   } catch (error) {
-    console.error('Deployment failed:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Production deployment failed:', error);
   }
 });
 
@@ -54,26 +56,28 @@ app.post('/webhooks/deploy/staging', verifyToken, async (req, res) => {
   try {
     console.log('🧪 Staging deployment triggered');
 
+    // Respond immediately to prevent timeout
+    res.json({
+      status: 'accepted',
+      message: 'Staging deployment started',
+      timestamp: new Date().toISOString()
+    });
+
+    // Run deployment asynchronously
     const commands = [
       'cd /root/elimu_smart',
       'git pull origin main',
       'cd backend && npm install',
       'pm2 restart parse-server-staging',
       'cd ../frontend && npm install --include=dev',
-      'NODE_OPTIONS="--max-old-space-size=768" npm run build -- --mode staging',
+      'NODE_OPTIONS="--max-old-space-size=512" npm run build -- --mode staging',
       'sudo cp -r dist/* /var/www/elimu-smart-staging/'
     ].join(' && ');
 
-    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=768' } });
-
-    res.json({
-      status: 'success',
-      message: 'Staging deployment completed',
-      timestamp: new Date().toISOString()
-    });
+    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=512' } });
+    console.log('✅ Staging deployment completed successfully');
   } catch (error) {
     console.error('Staging deployment failed:', error);
-    res.status(500).json({ error: error.message });
   }
 });
 
