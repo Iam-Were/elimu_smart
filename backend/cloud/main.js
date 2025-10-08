@@ -20,6 +20,9 @@ require('./userPreferencesFunctions');
 // Import RIASEC scoring functions (auto-registers cloud functions)
 require('./riasecScoringFunctions');
 
+// Import career functions (auto-registers cloud functions)
+require('./careerFunctions');
+
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   const { user } = request;
