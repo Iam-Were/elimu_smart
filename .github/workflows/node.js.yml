@@ -1,4 +1,4 @@
-# Self-Healing CI/CD with Claude 3.5 Sonnet (Anthropic API)
+# Self-Healing CI/CD with GPT-4o (GitHub Models - FREE)
 # Auto-fixes TypeScript and ESLint errors using AI
 
 name: Node.js CI
@@ -73,7 +73,7 @@ jobs:
         with:
           name: build-errors
 
-      - name: Self-healing with Claude 3.5 Sonnet (Anthropic API)
+      - name: Self-healing with GPT-4o (GitHub Models FREE)
         id: analyze
         uses: actions/github-script@v7
         with:
@@ -94,22 +94,24 @@ jobs:
               console.log(`📄 Found file: ${filePath}`);
             }
 
-            // Call Anthropic API with Claude 3.5 Sonnet
-            console.log('🤖 Calling Claude 3.5 Sonnet via Anthropic API...');
+            // Call GitHub Models API with GPT-4o (FREE)
+            console.log('🤖 Calling GPT-4o via GitHub Models (FREE)...');
 
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': '${{ secrets.ANTHROPIC_API_KEY }}',
-                'anthropic-version': '2023-06-01'
+                'Authorization': `Bearer ${{ secrets.GITHUB_TOKEN }}`
               },
               body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 2000,
+                model: 'gpt-4o',
                 temperature: 0.2,
-                system: 'You are a TypeScript build error fixing agent for React projects. Analyze errors and provide exact code fixes. Return ONLY valid JSON with this structure: {"fixable": true/false, "confidence": 0-100, "fixes": [{"file": "relative/path", "search": "exact old code", "replace": "exact new code", "explanation": "brief reason"}]}',
+                max_tokens: 2000,
                 messages: [
+                  {
+                    role: 'system',
+                    content: 'You are a TypeScript build error fixing agent for React projects. Analyze errors and provide exact code fixes. Return ONLY valid JSON with this structure: {"fixable": true/false, "confidence": 0-100, "fixes": [{"file": "relative/path", "search": "exact old code", "replace": "exact new code", "explanation": "brief reason"}]}'
+                  },
                   {
                     role: 'user',
                     content: `**Build Error:**
@@ -157,8 +159,8 @@ jobs:
             const data = await response.json();
             console.log('📥 API Response:', JSON.stringify(data, null, 2));
 
-            // Parse Claude's response (Anthropic API format)
-            const responseText = data.content[0].text;
+            // Parse GPT-4o's response (OpenAI-compatible format)
+            const responseText = data.choices[0].message.content;
             const analysis = JSON.parse(responseText);
             console.log('🔍 Analysis:', JSON.stringify(analysis, null, 2));
 
@@ -201,11 +203,11 @@ jobs:
           git add .
           git commit -m "🤖 Auto-fix: Resolved build errors (Confidence: ${{ steps.analyze.outputs.confidence }}%)
 
-          Fixes applied by Claude 3.5 Sonnet:
+          Fixes applied by GPT-4o:
           ${{ steps.analyze.outputs.fixes }}
 
-          🤖 Generated with Anthropic API
-          Co-Authored-By: Claude 3.5 Sonnet <noreply@anthropic.com>"
+          🤖 Generated with GitHub Models (FREE)
+          Co-Authored-By: GPT-4o <models@github.com>"
           git push
 
       - name: Setup Node.js for retry
