@@ -118,8 +118,7 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
   // Gamification data
   const {
     achievements,
-    certifications,
-    isLoading: gamificationLoading
+    certifications
   } = useGamification();
 
   // State for draggable cards
