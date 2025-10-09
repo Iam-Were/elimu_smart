@@ -110,23 +110,20 @@ const InboxPage: React.FC = () => {
   }, [error]);
 
   // Handle search with backend integration
-  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<LinkedInConversation[]>([]);
 
   useEffect(() => {
     const performSearch = async () => {
       if (!searchTerm.trim()) {
         setSearchResults([]);
-        setIsSearching(false);
         return;
       }
 
-      setIsSearching(true);
       try {
         const results = await searchConversations(searchTerm);
 
         // Transform search results to LinkedIn-style
-        const transformedResults = results.map(room => {
+        const transformedResults: LinkedInConversation[] = results.map(room => {
           const otherParticipants = room.participants.filter(p => p !== user?.id);
           const participantId = otherParticipants[0] || 'unknown';
 
@@ -135,7 +132,7 @@ const InboxPage: React.FC = () => {
             participant: {
               id: participantId,
               name: room.title || `${room.type} Chat`,
-              role: room.type === 'counseling' ? 'counselor' : room.type === 'mentoring' ? 'mentor' : 'peer',
+              role: (room.type === 'counseling' ? 'counselor' : room.type === 'mentoring' ? 'mentor' : 'peer') as 'counselor' | 'mentor' | 'peer',
               isOnline: room.isActive
             },
             lastMessage: {
@@ -152,8 +149,6 @@ const InboxPage: React.FC = () => {
         setSearchResults(transformedResults);
       } catch (error) {
         console.error('Search failed:', error);
-      } finally {
-        setIsSearching(false);
       }
     };
 
@@ -212,7 +207,7 @@ const InboxPage: React.FC = () => {
 
     try {
       const result = await archiveConversation(selectedConversation.id);
-      if (result.success) {
+      if (result && result.success) {
         toast.success('Conversation archived');
         setSelectedConversation(null);
       } else {
