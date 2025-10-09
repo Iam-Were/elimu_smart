@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSkillsQuestions } from '@/lib/assessmentApi';
+import { getParse } from '@/config/parse';
 
 interface SkillCategory {
   name: string;
@@ -136,20 +137,11 @@ export const SkillsAssessment: React.FC = () => {
   const startAssessment = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:1337/parse/functions/startSkillsAssessment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({})
-      });
-      
-      const data = await response.json();
-      
-      if (data.result) {
-        setAssessmentId(data.result.id);
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('startSkillsAssessment');
+
+      if (result && result.id) {
+        setAssessmentId(result.id);
       } else {
         setError('Failed to start assessment. Please try again.');
       }
@@ -179,38 +171,22 @@ export const SkillsAssessment: React.FC = () => {
 
     try {
       setIsLoading(true);
-      
+      const Parse = await getParse();
+
       // First, save all responses to the assessment
-      await fetch(`http://localhost:1337/parse/classes/SkillsAssessment/${assessmentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || '',
-          'X-Parse-Master-Key': 'elimu-smart-master-key-dev-change-in-production'
-        },
-        body: JSON.stringify({
-          responses: finalResponses
-        })
-      });
+      const SkillsAssessment = Parse.Object.extend('SkillsAssessment');
+      const query = new Parse.Query(SkillsAssessment);
+      const assessment = await query.get(assessmentId);
+      assessment.set('responses', finalResponses);
+      await assessment.save();
 
       // Then calculate the skill profile
-      const response = await fetch('http://localhost:1337/parse/functions/calculateSkillProfile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
-          assessmentId
-        })
+      const result = await Parse.Cloud.run('calculateSkillProfile', {
+        assessmentId
       });
-      
-      const data = await response.json();
-      
-      if (data.result) {
-        setResults(data.result);
+
+      if (result) {
+        setResults(result);
         setShowResults(true);
       } else {
         setError('Failed to calculate results. Please try again.');

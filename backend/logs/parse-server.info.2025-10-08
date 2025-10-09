@@ -83,3 +83,93 @@
 {"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T03:15:36.803Z"}
 {"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T03:15:36.816Z"}
 {"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T03:15:36.853Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:37:41.249Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:37:41.336Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:37:41.343Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:37:47.204Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:37:47.205Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:37:47.210Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:37:47.214Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:37:47.221Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:37:47.237Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:37:47.251Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:41:05.079Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:41:05.220Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:41:05.229Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:41:09.667Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:41:09.669Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:41:09.670Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:41:09.674Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:41:09.679Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:41:09.692Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:41:09.705Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:43:04.736Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:43:04.765Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:43:04.767Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:43:07.015Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:43:07.017Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:43:07.018Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:43:07.019Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:43:07.021Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:43:07.032Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:43:07.043Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:45:41.424Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:45:41.481Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:45:41.483Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:45:44.290Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:45:44.295Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:45:44.296Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:45:44.298Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:45:44.299Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:45:44.316Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:45:44.321Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:50:55.270Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:50:55.396Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:50:55.403Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:51:00.572Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:51:00.573Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:51:00.583Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:51:00.584Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:51:00.586Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:51:00.598Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:51:00.610Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:56:59.802Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:56:59.870Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:56:59.879Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:57:05.298Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:57:05.300Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:57:05.301Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:57:05.302Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T08:57:05.318Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T08:57:05.336Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T08:57:05.367Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:02:46.365Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:02:46.579Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:02:46.587Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:02:51.519Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:02:51.523Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:02:51.526Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:02:51.531Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:02:51.534Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:02:51.551Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T09:02:51.568Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:14:08.126Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:14:08.217Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:14:08.226Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:14:11.162Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:14:11.164Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:14:11.165Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:14:11.166Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:14:11.167Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:14:11.183Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T09:14:11.188Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:16:59.996Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:17:00.084Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:17:00.088Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:17:06.064Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:17:06.067Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:17:06.071Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:17:06.076Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-08T09:17:06.085Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-08T09:17:06.107Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-08T09:17:06.139Z"}
