@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useSessionBooking } from '@/hooks/useSessionBooking';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   Calendar,
   Clock,
@@ -17,6 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
   User,
+  Loader2,
 } from 'lucide-react';
 
 interface Counselor {
@@ -75,7 +78,18 @@ const BookSession: React.FC = () => {
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<30 | 60 | 90>(60);
   const [selectedType, setSelectedType] = useState<'video' | 'phone' | 'in-person'>('video');
-  const [showPaywall, setShowPaywall] = useState(true);
+  const [sessionDate, setSessionDate] = useState('');
+  const [sessionTime, setSessionTime] = useState('');
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  // Hooks
+  const { bookSession, isBooking, error: bookingError } = useSessionBooking();
+  const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
+
+  // Check if user has premium subscription
+  const hasPremium = userSubscription?.status === 'active';
+  const showPaywall = !subscriptionLoading && !hasPremium;
 
   const getSessionTypeIcon = (type: 'video' | 'phone' | 'in-person') => {
     switch (type) {
@@ -93,6 +107,37 @@ const BookSession: React.FC = () => {
     }
   };
 
+  const handleBookSession = async () => {
+    if (!selectedCounselor || !sessionDate || !sessionTime) {
+      return;
+    }
+
+    try {
+      const result = await bookSession({
+        counselorId: selectedCounselor,
+        sessionDate,
+        sessionTime,
+        sessionType: selectedType,
+        duration: selectedDuration,
+        notes: sessionNotes
+      });
+
+      if (result.success) {
+        setBookingSuccess(true);
+        // Reset form
+        setSelectedCounselor(null);
+        setSessionDate('');
+        setSessionTime('');
+        setSessionNotes('');
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message === 'PREMIUM_REQUIRED') {
+        window.location.href = '/subscription';
+      }
+      // Error is already set by the hook
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Header */}
@@ -102,6 +147,26 @@ const BookSession: React.FC = () => {
           Schedule 1-on-1 sessions with professional counselors. Get personalized guidance for your career journey.
         </p>
       </div>
+
+      {/* Success Message */}
+      {bookingSuccess && (
+        <Alert className="mb-8 border-green-600 bg-green-50">
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <AlertDescription className="text-green-900">
+            <strong>Session Booked Successfully!</strong> You'll receive a confirmation email with session details shortly.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Error Message */}
+      {bookingError && (
+        <Alert className="mb-8 border-red-600 bg-red-50">
+          <AlertCircle className="h-5 w-5 text-red-600" />
+          <AlertDescription className="text-red-900">
+            <strong>Booking Failed:</strong> {bookingError}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Premium Feature Notice */}
       {showPaywall && (
@@ -317,11 +382,25 @@ const BookSession: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="date">Preferred Date</Label>
-                  <Input id="date" type="date" className="mt-2" />
+                  <Input
+                    id="date"
+                    type="date"
+                    className="mt-2"
+                    value={sessionDate}
+                    onChange={(e) => setSessionDate(e.target.value)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="time">Preferred Time</Label>
-                  <Input id="time" type="time" className="mt-2" />
+                  <Input
+                    id="time"
+                    type="time"
+                    className="mt-2"
+                    value={sessionTime}
+                    onChange={(e) => setSessionTime(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
 
@@ -333,6 +412,8 @@ const BookSession: React.FC = () => {
                   placeholder="Briefly describe your concerns or goals for this session..."
                   rows={4}
                   className="mt-2"
+                  value={sessionNotes}
+                  onChange={(e) => setSessionNotes(e.target.value)}
                 />
               </div>
 
@@ -359,13 +440,28 @@ const BookSession: React.FC = () => {
               <Button
                 className="w-full"
                 size="lg"
-                onClick={() => {
-                  setShowPaywall(true);
+                onClick={hasPremium ? handleBookSession : () => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
+                  window.location.href = '/subscription';
                 }}
+                disabled={isBooking || !sessionDate || !sessionTime || subscriptionLoading}
               >
-                <Lock className="h-5 w-5 mr-2" />
-                Proceed to Payment
+                {isBooking ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Booking Session...
+                  </>
+                ) : hasPremium ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5 mr-2" />
+                    Confirm Booking
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-5 w-5 mr-2" />
+                    Proceed to Payment
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

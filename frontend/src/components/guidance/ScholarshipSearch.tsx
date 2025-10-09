@@ -4,11 +4,15 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { getParse } from '@/config/parse';
-import { Award, Search, Calendar, DollarSign, Star } from 'lucide-react';
+import { useScholarshipMatches } from '@/hooks/useScholarshipMatches';
+import { Award, Search, Calendar, DollarSign, Star, Loader2 } from 'lucide-react';
 
 const ScholarshipSearch: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isApplying, setIsApplying] = useState(false);
+
+  // Use scholarship matches hook
+  const { data: scholarshipData, isLoading, error } = useScholarshipMatches();
 
   const handleStartApplication = async (scholarshipId: string) => {
     setIsApplying(true);
@@ -26,27 +30,7 @@ const ScholarshipSearch: React.FC = () => {
     }
   };
 
-  const scholarships = [
-    {
-      id: '1',
-      name: 'Equity Wings to Fly',
-      provider: 'Equity Bank Foundation',
-      amount: 'Full Tuition + Living Allowance',
-      deadline: '2024-03-15',
-      category: 'Need-Based',
-      matchScore: 95
-    },
-    {
-      id: '2',
-      name: 'KCB Foundation Scholarship',
-      provider: 'KCB Foundation',
-      amount: 'KSh 200,000 per year',
-      deadline: '2024-04-30',
-      category: 'Academic Merit',
-      matchScore: 88
-    }
-  ];
-
+  const scholarships = scholarshipData?.scholarships || [];
   const filteredScholarships = scholarships.filter(s =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -62,21 +46,31 @@ const ScholarshipSearch: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="text-center p-4">
             <Award className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-orange-600">50+</div>
-            <div className="text-sm text-muted-foreground">Scholarships</div>
+            <div className="text-2xl font-bold text-orange-600">
+              {isLoading ? <Loader2 className="h-6 w-6 mx-auto animate-spin" /> : scholarshipData?.matches || 0}
+            </div>
+            <div className="text-sm text-muted-foreground">Matches</div>
           </Card>
           <Card className="text-center p-4">
             <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-600">KSh 2.5B</div>
-            <div className="text-sm text-muted-foreground">Total Funding</div>
+            <div className="text-2xl font-bold text-green-600">
+              {isLoading ? <Loader2 className="h-6 w-6 mx-auto animate-spin" /> : scholarshipData?.totalValue || 'KSh 0'}
+            </div>
+            <div className="text-sm text-muted-foreground">Total Value</div>
           </Card>
           <Card className="text-center p-4">
-            <div className="text-2xl font-bold text-blue-600">18,000</div>
-            <div className="text-sm text-muted-foreground">Students Funded</div>
+            <Star className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-blue-600">
+              {isLoading ? <Loader2 className="h-6 w-6 mx-auto animate-spin" /> : scholarshipData?.newThisWeek || 0}
+            </div>
+            <div className="text-sm text-muted-foreground">New This Week</div>
           </Card>
           <Card className="text-center p-4">
-            <div className="text-2xl font-bold text-purple-600">85%</div>
-            <div className="text-sm text-muted-foreground">Success Rate</div>
+            <Calendar className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-purple-600">
+              {isLoading ? <Loader2 className="h-6 w-6 mx-auto animate-spin" /> : filteredScholarships.length}
+            </div>
+            <div className="text-sm text-muted-foreground">Available Now</div>
           </Card>
         </div>
 
@@ -94,8 +88,40 @@ const ScholarshipSearch: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Loading State */}
+        {isLoading && (
+          <Card className="border-orange-200">
+            <CardContent className="py-12 flex flex-col items-center justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-orange-600 mb-4" />
+              <p className="text-muted-foreground">Loading scholarship matches...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="py-8 text-center">
+              <p className="text-red-900 font-semibold mb-2">Failed to load scholarships</p>
+              <p className="text-red-700 text-sm">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No Results */}
+        {!isLoading && !error && filteredScholarships.length === 0 && (
+          <Card className="border-orange-200">
+            <CardContent className="py-12 text-center">
+              <Award className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-semibold mb-2">No scholarships found</p>
+              <p className="text-muted-foreground">Try adjusting your search or check back later for new opportunities.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Scholarship List */}
         <div className="space-y-4">
-          {filteredScholarships.map((scholarship) => (
+          {!isLoading && filteredScholarships.map((scholarship) => (
             <Card key={scholarship.id} className="border-orange-200">
               <CardHeader>
                 <div className="flex items-start justify-between">
