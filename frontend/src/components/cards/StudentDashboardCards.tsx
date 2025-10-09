@@ -9,9 +9,11 @@ import {
   RotateCcw,
   Loader2,
   Trophy,
+  Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
+import { useGamification } from '@/hooks/useGamification';
 
 interface StudentDashboardCard {
   id: string;
@@ -67,6 +69,19 @@ const studentDashboardCards: StudentDashboardCard[] = [
     actionText: 'Take Assessment',
     actionLink: '/assessment',
     isDynamic: true
+  },
+  {
+    id: 'achievements',
+    title: 'Achievements',
+    description: 'Milestones unlocked',
+    icon: Award,
+    iconGradient: 'from-yellow-500 to-amber-600',
+    changeType: 'positive',
+    value: 'Loading...',
+    change: 'Keep it up!',
+    actionText: 'View All',
+    actionLink: '/profile',
+    isDynamic: true
   }
   // Removed 'Get Support' card - redundant with Guidance section
 ];
@@ -99,6 +114,13 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
     error: dashboardError,
     logActivity
   } = useDynamicDashboard();
+
+  // Gamification data
+  const {
+    achievements,
+    certifications,
+    isLoading: gamificationLoading
+  } = useGamification();
 
   // State for draggable cards
   const [cards, setCards] = useState(studentDashboardCards);
@@ -202,6 +224,20 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
             value: completedAssessments > 0 ? `${completedAssessments} completed` : 'Start now',
             change: completedAssessments > 3 ? 'Well done!' : 'More insights available',
             changeType: (completedAssessments > 2 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
+          };
+        }
+
+        case 'achievements': {
+          // Show earned achievements
+          const earnedCount = achievements.filter(a => a.earned).length;
+          const certCount = certifications.filter(c => c.status === 'completed').length;
+          const totalRewards = earnedCount + certCount;
+
+          return {
+            ...card,
+            value: totalRewards > 0 ? `${totalRewards} unlocked` : 'Get started',
+            change: earnedCount > 0 ? `${earnedCount} achievements` : 'Complete assessments to earn',
+            changeType: (totalRewards > 0 ? 'positive' : 'neutral') as 'positive' | 'negative' | 'neutral'
           };
         }
 
