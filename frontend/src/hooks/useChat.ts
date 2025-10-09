@@ -345,7 +345,7 @@ export const useChat = () => {
       }));
 
       // Type-safe return
-      return { success: (result as Record<string, unknown>).success === true };
+      return { success: (result as unknown as Record<string, unknown>).success === true };
     } catch (error) {
       console.error('Failed to archive conversation:', error);
       return { success: false };
