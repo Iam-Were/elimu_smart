@@ -64,6 +64,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      models: write  # Required for GitHub Models API access
 
     steps:
       - uses: actions/checkout@v4
