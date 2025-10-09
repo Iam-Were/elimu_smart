@@ -516,11 +516,18 @@ Variable card heights communicate information importance (see Card Content secti
 5. ✅ Ensure accessibility (ARIA labels, keyboard navigation)
 
 ### Before Committing
-1. ✅ `npm run build` - Must pass with zero errors
-2. ✅ `npm run lint` - Must pass with zero errors and warnings
-3. ✅ Browser DevTools check - No console errors
-4. ✅ Test all interactive elements work
-5. ✅ Verify mobile responsiveness
+1. ✅ Push code to GitHub - Let GitHub Actions handle build and lint checks
+2. ✅ Monitor workflow status - Use `gh run list` and `gh run watch`
+3. ✅ DO NOT run `npm run build` or `npm run lint` locally on VPS
+4. ✅ GitHub workflows will automatically run all quality checks
+5. ✅ Browser DevTools check - No console errors (when testing features)
+6. ✅ Verify mobile responsiveness (when testing features)
+
+**GitHub Actions Workflow**:
+- Auto-Fix Lint Errors (runs first, auto-commits fixes)
+- Lint & Build Check (TypeScript + ESLint validation)
+- Node.js CI (production build test on Node 20.x)
+- Deploy to Staging (automatic deployment after build passes)
 
 ## Mobile Development Readiness
 

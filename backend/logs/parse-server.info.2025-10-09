@@ -72,3 +72,13 @@
 {"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:01:00.976Z"}
 {"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-09T14:01:00.991Z"}
 {"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-09T14:01:01.003Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-09T14:14:45.327Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-09T14:14:45.414Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-09T14:14:45.420Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:14:50.655Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:14:50.667Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:14:50.668Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:14:50.675Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-09T14:14:50.679Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-09T14:14:50.691Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-09T14:14:50.713Z"}
