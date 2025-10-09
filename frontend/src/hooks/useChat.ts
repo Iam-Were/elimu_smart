@@ -12,6 +12,7 @@ export interface ChatRoom {
   messageCount: number;
   isActive: boolean;
   createdBy: string;
+  unreadCount?: number;
 }
 
 export interface ChatMessage {
@@ -280,6 +281,124 @@ export const useChat = () => {
     }
   }, [user, loadChatRooms]);
 
+  // Get inbox conversations with unread counts
+  const getInboxConversations = useCallback(async (limit = 20, skip = 0) => {
+    if (!user) return [];
+
+    setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
+
+    try {
+      const result = await ParseApi.callCloudFunction('getInboxConversations', { limit, skip });
+      const conversations = Array.isArray(result) ? result : [];
+
+      // Transform to ChatRoom format with unread counts
+      const chatRooms = conversations.map((conv: Record<string, unknown>) => ({
+        ...parseRoomToRoom(conv),
+        unreadCount: (conv.unreadCount || 0) as number
+      }));
+
+      setChatState(prev => ({
+        ...prev,
+        rooms: chatRooms,
+        isLoading: false
+      }));
+
+      return chatRooms;
+    } catch (error) {
+      console.error('Failed to get inbox conversations:', error);
+      setChatState(prev => ({
+        ...prev,
+        error: 'Failed to load conversations',
+        isLoading: false
+      }));
+      return [];
+    }
+  }, [user, parseRoomToRoom]);
+
+  // Search conversations by title
+  const searchConversations = useCallback(async (searchTerm: string, limit = 10) => {
+    if (!user || !searchTerm.trim()) return [];
+
+    try {
+      const result = await ParseApi.callCloudFunction('searchConversations', { searchTerm, limit });
+      const rooms = Array.isArray(result) ? result : [];
+      return rooms.map(parseRoomToRoom);
+    } catch (error) {
+      console.error('Failed to search conversations:', error);
+      return [];
+    }
+  }, [user, parseRoomToRoom]);
+
+  // Archive a conversation
+  const archiveConversation = useCallback(async (chatRoomId: string) => {
+    if (!user) return { success: false };
+
+    try {
+      const result = await ParseApi.callCloudFunction('archiveConversation', { chatRoomId });
+
+      // Remove archived room from state
+      setChatState(prev => ({
+        ...prev,
+        rooms: prev.rooms.filter(room => room.id !== chatRoomId),
+        currentRoom: prev.currentRoom?.id === chatRoomId ? undefined : prev.currentRoom,
+        messages: prev.currentRoom?.id === chatRoomId ? [] : prev.messages
+      }));
+
+      return result as { success: boolean };
+    } catch (error) {
+      console.error('Failed to archive conversation:', error);
+      return { success: false };
+    }
+  }, [user]);
+
+  // Send multimedia message (text, image, or file)
+  const sendMultimediaMessage = useCallback(async (params: {
+    chatRoomId: string;
+    message: string;
+    messageType?: 'text' | 'image' | 'file';
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+  }) => {
+    if (!user) return;
+
+    try {
+      const result = await ParseApi.callCloudFunction('sendMultimediaMessage', params);
+
+      // Reload messages to show the new message
+      await loadMessages(params.chatRoomId);
+      return result;
+    } catch (error) {
+      console.error('Failed to send multimedia message:', error);
+
+      // Add message locally for demo purposes
+      const demoMessage: ChatMessage = {
+        id: `demo-msg-${Date.now()}`,
+        chatRoomId: params.chatRoomId,
+        sender: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName
+        },
+        message: params.message,
+        messageType: params.messageType || 'text',
+        timestamp: new Date(),
+        isRead: true,
+        fileUrl: params.fileUrl,
+        fileName: params.fileName,
+        fileSize: params.fileSize
+      };
+
+      setChatState(prev => ({
+        ...prev,
+        messages: [...prev.messages, demoMessage],
+        error: 'Message sent locally - backend connection failed'
+      }));
+
+      return demoMessage;
+    }
+  }, [user, loadMessages]);
+
   // Auto-refresh messages in current room (simple polling)
   useEffect(() => {
     if (!user || !chatState.currentRoom) return;
@@ -301,8 +420,12 @@ export const useChat = () => {
     error: chatState.error,
     unreadCount: chatState.unreadCount,
     sendMessage,
+    sendMultimediaMessage,
     setCurrentRoom,
     loadChatRooms,
+    getInboxConversations,
+    searchConversations,
+    archiveConversation,
     createChatRoom
   };
 };

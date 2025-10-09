@@ -1,59 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getParse } from '@/config/parse';
-import { Send, Video, Phone } from 'lucide-react';
+import { useChat } from '@/hooks/useChat';
+import { useAuth } from '@/hooks/useAuth';
+import { Send, Video, Phone, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const CounselorChat: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'counselor',
-      content: 'Hi! How can I help you today?',
-      time: '2:30 PM'
+
+  // Use chat hook for backend integration
+  const { user } = useAuth();
+  const {
+    rooms,
+    currentRoom,
+    messages,
+    isLoading,
+    sendMessage: sendChatMessage,
+    setCurrentRoom,
+    loadChatRooms
+  } = useChat();
+
+  // Select first counseling room on mount
+  useEffect(() => {
+    if (user && rooms.length > 0 && !currentRoom) {
+      const counselingRoom = rooms.find(r => r.type === 'counseling') || rooms[0];
+      setCurrentRoom(counselingRoom);
     }
-  ]);
-  const [isSending, setIsSending] = useState(false);
+  }, [user, rooms, currentRoom, setCurrentRoom]);
+
+  // Load rooms on mount
+  useEffect(() => {
+    if (user) {
+      loadChatRooms();
+    }
+  }, [user, loadChatRooms]);
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
-
-    const newMessage = {
-      id: Date.now(),
-      sender: 'student',
-      content: message,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessage('');
-    setIsSending(true);
+    if (!message.trim() || !currentRoom) {
+      toast.error('No active conversation', {
+        description: 'Please start a conversation first'
+      });
+      return;
+    }
 
     try {
-      const Parse = await getParse();
-      // Uses Parse functions: sendMessage, getChatMessages
-      await Parse.Cloud.run('sendMessage', {
-        roomId: 'counselor_chat',
-        content: newMessage.content,
-        type: 'chat'
-      });
-
-      // Simulate counselor response
-      setTimeout(() => {
-        const response = {
-          id: Date.now() + 1,
-          sender: 'counselor',
-          content: 'Thanks for sharing. Let me help you with that...',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages(prev => [...prev, response]);
-      }, 2000);
+      await sendChatMessage(currentRoom.id, message);
+      setMessage('');
+      toast.success('Message sent');
     } catch (error) {
       console.error('Message send failed:', error);
-    } finally {
-      setIsSending(false);
+      toast.error('Failed to send message', {
+        description: 'Please try again'
+      });
     }
   };
 
@@ -71,13 +71,15 @@ const CounselorChat: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
-                  SN
+                  {currentRoom?.title ? currentRoom.title.substring(0, 2).toUpperCase() : 'CC'}
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Sarah Njoki</CardTitle>
+                  <CardTitle className="text-lg">
+                    {currentRoom?.title || 'Career Counselor'}
+                  </CardTitle>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>Online</span>
+                    <div className={`w-2 h-2 rounded-full ${currentRoom?.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    <span>{currentRoom?.isActive ? 'Online' : 'Offline'}</span>
                   </div>
                 </div>
               </div>
@@ -94,30 +96,40 @@ const CounselorChat: React.FC = () => {
 
           {/* Messages */}
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === 'student' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className="max-w-[70%] space-y-1">
-                  <div
-                    className={`rounded-lg px-4 py-2 ${
-                      msg.sender === 'student'
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm">{msg.content}</p>
-                  </div>
-                  <div className={`text-xs text-muted-foreground ${
-                    msg.sender === 'student' ? 'text-right' : 'text-left'
-                  }`}>
-                    {msg.time}
+            {isLoading && messages.length === 0 ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <p className="text-sm">No messages yet. Start the conversation!</p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender.id === user?.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className="max-w-[70%] space-y-1">
+                    <div
+                      className={`rounded-lg px-4 py-2 ${
+                        msg.sender.id === user?.id
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      }`}
+                    >
+                      <p className="text-sm">{msg.message}</p>
+                    </div>
+                    <div className={`text-xs text-muted-foreground ${
+                      msg.sender.id === user?.id ? 'text-right' : 'text-left'
+                    }`}>
+                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {isSending && (
+              ))
+            )}
+            {isLoading && messages.length > 0 && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-lg px-4 py-2">
                   <div className="flex gap-1">
@@ -158,10 +170,14 @@ const CounselorChat: React.FC = () => {
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={!message.trim() || isSending}
+                disabled={!message.trim() || isLoading}
                 className="bg-orange-600 hover:bg-orange-700"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>

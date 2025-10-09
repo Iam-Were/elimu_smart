@@ -13,7 +13,8 @@ import {
   Paperclip,
   Circle,
   Loader2,
-  Send
+  Send,
+  Archive
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -55,8 +56,18 @@ const InboxPage: React.FC = () => {
     isLoading,
     error,
     sendMessage,
-    setCurrentRoom
+    setCurrentRoom,
+    getInboxConversations,
+    searchConversations,
+    archiveConversation
   } = useChat();
+
+  // Load inbox conversations on mount (with unread counts)
+  useEffect(() => {
+    if (user) {
+      getInboxConversations();
+    }
+  }, [user, getInboxConversations]);
 
   // Transform chat rooms to LinkedIn-style conversations
   const linkedInConversations: LinkedInConversation[] = rooms.map(room => {
@@ -78,7 +89,7 @@ const InboxPage: React.FC = () => {
         timestamp: room.lastActivity,
         isRead: true
       },
-      unreadCount: Math.max(0, room.messageCount - (messages.filter(m => m.isRead).length || 0))
+      unreadCount: room.unreadCount || 0
     };
   });
 
@@ -98,9 +109,59 @@ const InboxPage: React.FC = () => {
     }
   }, [error]);
 
-  const filteredConversations = linkedInConversations.filter(conv =>
-    conv.participant.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Handle search with backend integration
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<LinkedInConversation[]>([]);
+
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!searchTerm.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await searchConversations(searchTerm);
+
+        // Transform search results to LinkedIn-style
+        const transformedResults = results.map(room => {
+          const otherParticipants = room.participants.filter(p => p !== user?.id);
+          const participantId = otherParticipants[0] || 'unknown';
+
+          return {
+            id: room.id,
+            participant: {
+              id: participantId,
+              name: room.title || `${room.type} Chat`,
+              role: room.type === 'counseling' ? 'counselor' : room.type === 'mentoring' ? 'mentor' : 'peer',
+              isOnline: room.isActive
+            },
+            lastMessage: {
+              id: 'last',
+              content: room.lastMessage || 'Start a conversation...',
+              sender: { id: participantId, name: room.title || 'System', role: 'peer' },
+              timestamp: room.lastActivity,
+              isRead: true
+            },
+            unreadCount: room.unreadCount || 0
+          };
+        });
+
+        setSearchResults(transformedResults);
+      } catch (error) {
+        console.error('Search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(performSearch, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, searchConversations, user]);
+
+  const filteredConversations = searchTerm.trim() ? searchResults : linkedInConversations;
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -143,6 +204,23 @@ const InboxPage: React.FC = () => {
     if (room) {
       setCurrentRoom(room);
       setSelectedConversation(conversation);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!selectedConversation) return;
+
+    try {
+      const result = await archiveConversation(selectedConversation.id);
+      if (result.success) {
+        toast.success('Conversation archived');
+        setSelectedConversation(null);
+      } else {
+        toast.error('Failed to archive conversation');
+      }
+    } catch (error) {
+      console.error('Archive error:', error);
+      toast.error('Failed to archive conversation');
     }
   };
 
@@ -289,6 +367,15 @@ const InboxPage: React.FC = () => {
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                     <Video className="h-4 w-4 text-gray-600" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                    onClick={handleArchive}
+                    title="Archive conversation"
+                  >
+                    <Archive className="h-4 w-4 text-gray-600" />
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                     <MoreHorizontal className="h-4 w-4 text-gray-600" />
