@@ -505,6 +505,65 @@ export const useDynamicDashboard = () => {
     return () => clearInterval(interval);
   }, [loadDashboardData]);
 
+  // Update career readiness score incrementally
+  const updateCareerReadiness = async (newScore: number, activity: string = 'general'): Promise<{ success: boolean; newScore: number; streakCount?: number } | null> => {
+    try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
+
+      if (!currentUser) {
+        console.warn('Cannot update career readiness: User not authenticated');
+        return null;
+      }
+
+      const result = await Parse.Cloud.run('updateCareerReadiness', {
+        userId: currentUser.id,
+        newScore,
+        activity
+      });
+
+      // Refresh career readiness after update
+      await refreshCareerReadiness();
+
+      return {
+        success: result.success || false,
+        newScore: result.newScore || 0,
+        streakCount: result.streakCount
+      };
+    } catch (error) {
+      console.error('Failed to update career readiness:', error);
+      return null;
+    }
+  };
+
+  // Match university courses based on cutoff points
+  const matchUniversityCourses = async (cutoffPoints: number, interests: string[] = []): Promise<{ eligibleCourses: Array<{ name: string; cutoff: number; university: string }>; totalMatches: number; recommendedAction: string } | null> => {
+    try {
+      const Parse = await getParse();
+      const currentUser = Parse.User.current();
+
+      if (!currentUser) {
+        console.warn('Cannot match university courses: User not authenticated');
+        return null;
+      }
+
+      const result = await Parse.Cloud.run('matchUniversityCourses', {
+        userId: currentUser.id,
+        cutoffPoints,
+        interests
+      });
+
+      return {
+        eligibleCourses: result.eligibleCourses || [],
+        totalMatches: result.totalMatches || 0,
+        recommendedAction: result.recommendedAction || 'Explore Options'
+      };
+    } catch (error) {
+      console.error('Failed to match university courses:', error);
+      return null;
+    }
+  };
+
   return {
     ...dashboardData,
     logActivity,
@@ -512,7 +571,9 @@ export const useDynamicDashboard = () => {
     refreshScholarships,
     refreshUniversityPlacement,
     loadDashboardData,
-    loadExtendedData
+    loadExtendedData,
+    updateCareerReadiness,
+    matchUniversityCourses
   };
 };
 
