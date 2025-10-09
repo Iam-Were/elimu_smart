@@ -330,7 +330,7 @@ export const useChat = () => {
   }, [user, parseRoomToRoom]);
 
   // Archive a conversation
-  const archiveConversation = useCallback(async (chatRoomId: string) => {
+  const archiveConversation = useCallback(async (chatRoomId: string): Promise<{ success: boolean }> => {
     if (!user) return { success: false };
 
     try {
@@ -344,7 +344,8 @@ export const useChat = () => {
         messages: prev.currentRoom?.id === chatRoomId ? [] : prev.messages
       }));
 
-      return result as { success: boolean };
+      // Type-safe return
+      return { success: (result as Record<string, unknown>).success === true };
     } catch (error) {
       console.error('Failed to archive conversation:', error);
       return { success: false };
