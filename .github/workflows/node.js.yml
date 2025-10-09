@@ -41,10 +41,11 @@ jobs:
       run: |
         cd frontend
         npm run build 2>&1 | tee ../build-error.log
+        exit ${PIPESTATUS[0]}
       continue-on-error: true
 
     - name: Upload error log
-      if: failure()
+      if: steps.build.outcome == 'failure'
       uses: actions/upload-artifact@v4
       with:
         name: build-errors
@@ -58,7 +59,7 @@ jobs:
 
   auto-fix:
     needs: build
-    if: needs.build.outputs.build-status == 'failure'
+    if: needs.build.outputs.build-status == 'failure' || contains(needs.build.result, 'failure')
     runs-on: ubuntu-latest
     permissions:
       contents: write
