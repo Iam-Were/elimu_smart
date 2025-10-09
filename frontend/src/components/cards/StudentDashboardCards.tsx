@@ -118,7 +118,8 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
   // Gamification data
   const {
     achievements,
-    certifications
+    certifications,
+    isLoading: testUnusedVariable  // Deliberate error to test self-healing
   } = useGamification();
 
   // State for draggable cards
