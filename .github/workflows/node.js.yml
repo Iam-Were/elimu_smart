@@ -160,7 +160,11 @@ jobs:
             console.log('📥 API Response:', JSON.stringify(data, null, 2));
 
             // Parse GPT-4o's response (OpenAI-compatible format)
-            const responseText = data.choices[0].message.content;
+            let responseText = data.choices[0].message.content;
+
+            // Strip markdown code blocks if present (GPT-4o sometimes wraps JSON in ```json)
+            responseText = responseText.replace(/^```json\s*\n?/,'').replace(/\n?```$/,'');
+
             const analysis = JSON.parse(responseText);
             console.log('🔍 Analysis:', JSON.stringify(analysis, null, 2));
 
