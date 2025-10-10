@@ -5640,7 +5640,6 @@ Parse.Cloud.define('cancelSubscription', async (request) => {
   return { success: true, message: 'Subscription cancelled' };
 });
 
- */
 Parse.Cloud.define('getStudentQuestions', async (request) => {
   const { user } = request;
   const { status = 'pending', limit = 50, filterPremium = false } = request.params;
