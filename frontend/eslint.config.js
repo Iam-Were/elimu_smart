@@ -24,6 +24,11 @@ export default tseslint.config([
       'react-refresh/only-export-components': ['warn', {
         allowConstantExport: true,
         allowExportNames: ['icons', 'getIcon', 'iconIntelligence', 'badgeVariants', 'buttonVariants', 'toggleVariants']
+      }],
+      // Allow underscore prefix for intentionally unused variables
+      '@typescript-eslint/no-unused-vars': ['error', {
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_'
       }]
     }
   },
