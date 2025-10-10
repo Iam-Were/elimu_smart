@@ -2,10 +2,10 @@
   "lastUpdated": "2025-10-10",
   "stats": {
     "totalBackendFunctions": 108,
-    "integratedFunctions": 88,
-    "availableFunctions": 20,
-    "integrationRate": "81.5%",
-    "mobileReadiness": "92%"
+    "integratedFunctions": 95,
+    "availableFunctions": 13,
+    "integrationRate": "88.0%",
+    "mobileReadiness": "94%"
   },
   "integrated": [
     "getRiasecQuestions",
@@ -95,23 +95,23 @@
     "getInvoiceHTML",
     "resendInvoice",
     "getAdminBillingAnalytics",
-    "hello"
+    "hello",
+    "createNotification",
+    "getRiasecCareerInfo",
+    "analyzeSubjectCareerFit",
+    "uploadFile",
+    "syncExternalCertification",
+    "connectLearningPlatform",
+    "getAssessmentQuestions"
   ],
   "available": [
-    "analyzeSubjectCareerFit",
     "clearAllCache",
     "clearExpiredCache",
-    "connectLearningPlatform",
-    "createNotification",
-    "syncExternalCertification",
-    "getRiasecCareerInfo",
-    "generateInvoice",
-    "uploadFile",
     "getCacheStats",
     "initializeRiasecSchema",
     "initializeStudentCounselorSchema",
     "seedRiasecData",
-    "getAssessmentQuestions"
+    "generateInvoice"
   ],
   "mismatches": [],
   "hardcodedData": {
