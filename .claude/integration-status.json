@@ -2,10 +2,10 @@
   "lastUpdated": "2025-10-10",
   "stats": {
     "totalBackendFunctions": 108,
-    "integratedFunctions": 95,
-    "availableFunctions": 13,
-    "integrationRate": "88.0%",
-    "mobileReadiness": "94%"
+    "integratedFunctions": 101,
+    "availableFunctions": 7,
+    "integrationRate": "93.5%",
+    "mobileReadiness": "96%"
   },
   "integrated": [
     "getRiasecQuestions",
@@ -102,16 +102,19 @@
     "uploadFile",
     "syncExternalCertification",
     "connectLearningPlatform",
-    "getAssessmentQuestions"
-  ],
-  "available": [
-    "clearAllCache",
-    "clearExpiredCache",
-    "getCacheStats",
+    "getAssessmentQuestions",
     "initializeRiasecSchema",
     "initializeStudentCounselorSchema",
     "seedRiasecData",
+    "getCacheStats",
+    "clearExpiredCache",
+    "clearAllCache"
+  ],
+  "available": [
     "generateInvoice"
+  ],
+  "nonExistent": [
+    "Note: generateInvoice listed in original spec but does not exist in backend/cloud/main.js"
   ],
   "mismatches": [],
   "hardcodedData": {
