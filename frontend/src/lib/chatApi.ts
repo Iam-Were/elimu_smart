@@ -82,14 +82,14 @@ export async function getChatRooms(): Promise<ChatRoom[]> {
       objectId: room.id || room.objectId,
       title: room.get ? room.get('title') : room.title,
       participants: room.get ? room.get('participants') : room.participants,
-      lastActivity: room.get ? room.get('lastActivity') : new Date(room.lastActivity),
+      lastActivity: room.get ? room.get('lastActivity') as Date : new Date(room.lastActivity as string | Date),
       lastMessage: room.get ? room.get('lastMessage') : room.lastMessage,
       messageCount: room.get ? room.get('messageCount') : room.messageCount,
       isActive: room.get ? room.get('isActive') : room.isActive,
       createdBy: room.get ? room.get('createdBy') : room.createdBy,
-      createdAt: room.get ? room.get('createdAt') : new Date(room.createdAt),
-      updatedAt: room.get ? room.get('updatedAt') : new Date(room.updatedAt)
-    }));
+      createdAt: room.get ? room.get('createdAt') as Date : new Date(room.createdAt as string | Date),
+      updatedAt: room.get ? room.get('updatedAt') as Date : new Date(room.updatedAt as string | Date)
+    } as ChatRoom));
   } catch (error) {
     console.error('Failed to get chat rooms:', error);
     throw error;
@@ -122,11 +122,11 @@ export async function getChatMessages(
       fileUrl: msg.get ? msg.get('fileUrl') : msg.fileUrl,
       fileName: msg.get ? msg.get('fileName') : msg.fileName,
       fileSize: msg.get ? msg.get('fileSize') : msg.fileSize,
-      timestamp: msg.get ? msg.get('timestamp') : new Date(msg.timestamp),
+      timestamp: msg.get ? msg.get('timestamp') as Date : new Date(msg.timestamp as string | Date),
       isRead: msg.get ? msg.get('isRead') : msg.isRead,
-      createdAt: msg.get ? msg.get('createdAt') : new Date(msg.createdAt),
-      updatedAt: msg.get ? msg.get('updatedAt') : new Date(msg.updatedAt)
-    }));
+      createdAt: msg.get ? msg.get('createdAt') as Date : new Date(msg.createdAt as string | Date),
+      updatedAt: msg.get ? msg.get('updatedAt') as Date : new Date(msg.updatedAt as string | Date)
+    } as ChatMessage));
   } catch (error) {
     console.error('Failed to get chat messages:', error);
     throw error;
