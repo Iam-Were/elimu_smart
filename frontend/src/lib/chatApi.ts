@@ -71,6 +71,44 @@ interface ParseServerObject {
 }
 
 /**
+ * Helper: Transform Parse Server object to ChatRoom
+ */
+function transformToChatRoom(room: ParseServerObject): ChatRoom {
+  return {
+    objectId: room.id || room.objectId,
+    title: room.get ? room.get('title') : room.title,
+    participants: room.get ? room.get('participants') : room.participants,
+    lastActivity: room.get ? room.get('lastActivity') as Date : new Date(room.lastActivity as string | Date),
+    lastMessage: room.get ? room.get('lastMessage') : room.lastMessage,
+    messageCount: room.get ? room.get('messageCount') : room.messageCount,
+    isActive: room.get ? room.get('isActive') : room.isActive,
+    createdBy: room.get ? room.get('createdBy') : room.createdBy,
+    createdAt: room.get ? room.get('createdAt') as Date : new Date(room.createdAt as string | Date),
+    updatedAt: room.get ? room.get('updatedAt') as Date : new Date(room.updatedAt as string | Date)
+  } as ChatRoom;
+}
+
+/**
+ * Helper: Transform Parse Server object to ChatMessage
+ */
+function transformToChatMessage(msg: ParseServerObject): ChatMessage {
+  return {
+    objectId: msg.id || msg.objectId,
+    chatRoom: msg.get ? msg.get('chatRoom') : msg.chatRoom,
+    sender: msg.get ? msg.get('sender') : msg.sender,
+    message: msg.get ? msg.get('message') : msg.message,
+    messageType: msg.get ? msg.get('messageType') : msg.messageType || 'text',
+    fileUrl: msg.get ? msg.get('fileUrl') : msg.fileUrl,
+    fileName: msg.get ? msg.get('fileName') : msg.fileName,
+    fileSize: msg.get ? msg.get('fileSize') : msg.fileSize,
+    timestamp: msg.get ? msg.get('timestamp') as Date : new Date(msg.timestamp as string | Date),
+    isRead: msg.get ? msg.get('isRead') : msg.isRead,
+    createdAt: msg.get ? msg.get('createdAt') as Date : new Date(msg.createdAt as string | Date),
+    updatedAt: msg.get ? msg.get('updatedAt') as Date : new Date(msg.updatedAt as string | Date)
+  } as ChatMessage;
+}
+
+/**
  * Get all chat rooms for the current user
  */
 export async function getChatRooms(): Promise<ChatRoom[]> {
@@ -78,18 +116,7 @@ export async function getChatRooms(): Promise<ChatRoom[]> {
 
   try {
     const result = await Parse.Cloud.run('getChatRooms');
-    return result.map((room: ParseServerObject) => ({
-      objectId: room.id || room.objectId,
-      title: room.get ? room.get('title') : room.title,
-      participants: room.get ? room.get('participants') : room.participants,
-      lastActivity: room.get ? room.get('lastActivity') as Date : new Date(room.lastActivity as string | Date),
-      lastMessage: room.get ? room.get('lastMessage') : room.lastMessage,
-      messageCount: room.get ? room.get('messageCount') : room.messageCount,
-      isActive: room.get ? room.get('isActive') : room.isActive,
-      createdBy: room.get ? room.get('createdBy') : room.createdBy,
-      createdAt: room.get ? room.get('createdAt') as Date : new Date(room.createdAt as string | Date),
-      updatedAt: room.get ? room.get('updatedAt') as Date : new Date(room.updatedAt as string | Date)
-    } as ChatRoom));
+    return result.map(transformToChatRoom);
   } catch (error) {
     console.error('Failed to get chat rooms:', error);
     throw error;
@@ -113,20 +140,7 @@ export async function getChatMessages(
       skip
     });
 
-    return result.map((msg: ParseServerObject) => ({
-      objectId: msg.id || msg.objectId,
-      chatRoom: msg.get ? msg.get('chatRoom') : msg.chatRoom,
-      sender: msg.get ? msg.get('sender') : msg.sender,
-      message: msg.get ? msg.get('message') : msg.message,
-      messageType: msg.get ? msg.get('messageType') : msg.messageType || 'text',
-      fileUrl: msg.get ? msg.get('fileUrl') : msg.fileUrl,
-      fileName: msg.get ? msg.get('fileName') : msg.fileName,
-      fileSize: msg.get ? msg.get('fileSize') : msg.fileSize,
-      timestamp: msg.get ? msg.get('timestamp') as Date : new Date(msg.timestamp as string | Date),
-      isRead: msg.get ? msg.get('isRead') : msg.isRead,
-      createdAt: msg.get ? msg.get('createdAt') as Date : new Date(msg.createdAt as string | Date),
-      updatedAt: msg.get ? msg.get('updatedAt') as Date : new Date(msg.updatedAt as string | Date)
-    } as ChatMessage));
+    return result.map(transformToChatMessage);
   } catch (error) {
     console.error('Failed to get chat messages:', error);
     throw error;
@@ -186,18 +200,7 @@ export async function searchConversations(
       limit
     });
 
-    return result.map((room: ParseServerObject) => ({
-      objectId: room.id || room.objectId,
-      title: room.get ? room.get('title') : room.title,
-      participants: room.get ? room.get('participants') : room.participants,
-      lastActivity: room.get ? room.get('lastActivity') : new Date(room.lastActivity as string | Date),
-      lastMessage: room.get ? room.get('lastMessage') : room.lastMessage,
-      messageCount: room.get ? room.get('messageCount') : room.messageCount,
-      isActive: room.get ? room.get('isActive') : room.isActive,
-      createdBy: room.get ? room.get('createdBy') : room.createdBy,
-      createdAt: room.get ? room.get('createdAt') : new Date(room.createdAt as string | Date),
-      updatedAt: room.get ? room.get('updatedAt') : new Date(room.updatedAt as string | Date)
-    } as ChatRoom));
+    return result.map(transformToChatRoom);
   } catch (error) {
     console.error('Failed to search conversations:', error);
     throw error;
@@ -237,20 +240,7 @@ export async function sendMultimediaMessage(params: {
   try {
     const result = await Parse.Cloud.run('sendMultimediaMessage', params);
 
-    return {
-      objectId: result.id || result.objectId,
-      chatRoom: result.get ? result.get('chatRoom') : result.chatRoom,
-      sender: result.get ? result.get('sender') : result.sender,
-      message: result.get ? result.get('message') : result.message,
-      messageType: result.get ? result.get('messageType') : result.messageType || 'text',
-      fileUrl: result.get ? result.get('fileUrl') : result.fileUrl,
-      fileName: result.get ? result.get('fileName') : result.fileName,
-      fileSize: result.get ? result.get('fileSize') : result.fileSize,
-      timestamp: result.get ? result.get('timestamp') : new Date(result.timestamp),
-      isRead: result.get ? result.get('isRead') : result.isRead,
-      createdAt: result.get ? result.get('createdAt') : new Date(result.createdAt),
-      updatedAt: result.get ? result.get('updatedAt') : new Date(result.updatedAt)
-    };
+    return transformToChatMessage(result);
   } catch (error) {
     console.error('Failed to send multimedia message:', error);
     throw error;
