@@ -62,6 +62,14 @@ export interface ConversationResult {
   updatedAt: string;
 }
 
+// Internal types for Parse Server responses
+interface ParseServerObject {
+  id?: string;
+  objectId?: string;
+  get?: (key: string) => unknown;
+  [key: string]: unknown;
+}
+
 /**
  * Get all chat rooms for the current user
  */
@@ -70,7 +78,7 @@ export async function getChatRooms(): Promise<ChatRoom[]> {
 
   try {
     const result = await Parse.Cloud.run('getChatRooms');
-    return result.map((room: any) => ({
+    return result.map((room: ParseServerObject) => ({
       objectId: room.id || room.objectId,
       title: room.get ? room.get('title') : room.title,
       participants: room.get ? room.get('participants') : room.participants,
@@ -105,7 +113,7 @@ export async function getChatMessages(
       skip
     });
 
-    return result.map((msg: any) => ({
+    return result.map((msg: ParseServerObject) => ({
       objectId: msg.id || msg.objectId,
       chatRoom: msg.get ? msg.get('chatRoom') : msg.chatRoom,
       sender: msg.get ? msg.get('sender') : msg.sender,
@@ -178,18 +186,18 @@ export async function searchConversations(
       limit
     });
 
-    return result.map((room: any) => ({
+    return result.map((room: ParseServerObject) => ({
       objectId: room.id || room.objectId,
       title: room.get ? room.get('title') : room.title,
       participants: room.get ? room.get('participants') : room.participants,
-      lastActivity: room.get ? room.get('lastActivity') : new Date(room.lastActivity),
+      lastActivity: room.get ? room.get('lastActivity') : new Date(room.lastActivity as string | Date),
       lastMessage: room.get ? room.get('lastMessage') : room.lastMessage,
       messageCount: room.get ? room.get('messageCount') : room.messageCount,
       isActive: room.get ? room.get('isActive') : room.isActive,
       createdBy: room.get ? room.get('createdBy') : room.createdBy,
-      createdAt: room.get ? room.get('createdAt') : new Date(room.createdAt),
-      updatedAt: room.get ? room.get('updatedAt') : new Date(room.updatedAt)
-    }));
+      createdAt: room.get ? room.get('createdAt') : new Date(room.createdAt as string | Date),
+      updatedAt: room.get ? room.get('updatedAt') : new Date(room.updatedAt as string | Date)
+    } as ChatRoom));
   } catch (error) {
     console.error('Failed to search conversations:', error);
     throw error;
