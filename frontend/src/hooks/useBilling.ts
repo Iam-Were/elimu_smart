@@ -124,7 +124,7 @@ export const useBilling = () => {
     }
   }, []);
 
-  const downloadInvoicePDF = useCallback(async (invoiceId: string, invoiceNumber: string) => {
+  const downloadInvoicePDF = useCallback(async (invoiceId: string, _invoiceNumber: string) => {
     try {
       const html = await getInvoiceHTML(invoiceId);
       if (!html) {
