@@ -1,11 +1,11 @@
 {
   "lastUpdated": "2025-10-10",
   "stats": {
-    "totalBackendFunctions": 108,
-    "integratedFunctions": 101,
-    "availableFunctions": 7,
-    "integrationRate": "93.5%",
-    "mobileReadiness": "96%"
+    "totalBackendFunctions": 104,
+    "integratedFunctions": 104,
+    "availableFunctions": 0,
+    "integrationRate": "100%",
+    "mobileReadiness": "100%"
   },
   "integrated": [
     "getRiasecQuestions",
@@ -108,13 +108,19 @@
     "seedRiasecData",
     "getCacheStats",
     "clearExpiredCache",
-    "clearAllCache"
-  ],
-  "available": [
+    "clearAllCache",
+    "getCareersBySubject",
+    "searchCareers",
+    "getCareerCategories",
+    "getCareerById",
+    "getTopCareers",
     "generateInvoice"
   ],
-  "nonExistent": [
-    "Note: generateInvoice listed in original spec but does not exist in backend/cloud/main.js"
+  "available": [],
+  "notes": [
+    "Total functions verified: 104 (83 in main.js + 21 in separate modules)",
+    "Modules: assessmentFunctions.js (4), userPreferencesFunctions.js (3), riasecScoringFunctions.js (1)",
+    "billingFunctions.js (6), careerFunctions.js (5), linkedin-professional-insights.js (1), seedUsers.js (1)"
   ],
   "mismatches": [],
   "hardcodedData": {

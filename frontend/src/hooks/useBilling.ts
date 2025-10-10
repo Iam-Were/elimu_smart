@@ -160,6 +160,21 @@ export const useBilling = () => {
     }
   }, []);
 
+  const generateInvoice = useCallback(async (subscriptionId: string): Promise<{
+    success: boolean;
+    invoiceId: string;
+    invoiceNumber: string;
+  } | null> => {
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('generateInvoice', { subscriptionId });
+      return result;
+    } catch (err) {
+      console.error('Failed to generate invoice:', err);
+      return null;
+    }
+  }, []);
+
   // Auto-fetch on mount
   useEffect(() => {
     fetchBillingHistory();
@@ -172,6 +187,7 @@ export const useBilling = () => {
     fetchBillingHistory,
     getInvoiceDetails,
     downloadInvoicePDF,
-    resendInvoiceEmail
+    resendInvoiceEmail,
+    generateInvoice
   };
 };
