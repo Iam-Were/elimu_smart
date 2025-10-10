@@ -55,7 +55,7 @@ jobs:
       if: success()
       run: |
         cd backend
-        npm ci --legacy-peer-deps
+        npm install --prefer-offline --no-audit
 
   auto-fix:
     needs: build
