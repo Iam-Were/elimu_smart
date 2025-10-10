@@ -426,14 +426,21 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               
               <DropdownMenuSeparator />
               
-              {/* Only show subscription for non-counselor users */}
+              {/* Only show subscription/billing for non-counselor users */}
               {user?.role !== 'counselor' && (
-                <DropdownMenuItem onClick={() => navigate('/subscription')} className="cursor-pointer">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  <span>Subscription Status</span>
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={() => navigate('/subscription')} className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Subscription Status</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => navigate('/billing')} className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Billing & Invoices</span>
+                  </DropdownMenuItem>
+                </>
               )}
-              
+
               <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Help & Support</span>

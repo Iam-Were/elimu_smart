@@ -27,6 +27,7 @@ const Sprint18AssessmentPage = lazy(() => import('./pages/Sprint18AssessmentPage
 const AccountSettingsPage = lazy(() => import('./pages/AccountSettingsPage').then(m => ({ default: m.AccountSettingsPage })));
 const Sprint18GuidancePage = lazy(() => import('./pages/Sprint18GuidancePage'));
 const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
+const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
 
 // Assessment pages
@@ -129,6 +130,7 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<Sprint18DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/billing" element={<BillingPage />} />
         <Route path="/settings/*" element={<AccountSettingsPage />} />
         <Route path="/assessment" element={<Sprint18AssessmentPage />} />
         <Route path="/assessment/career" element={<FreeRiasecAssessment />} />

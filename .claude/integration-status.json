@@ -1,11 +1,11 @@
 {
-  "lastUpdated": "2025-10-09",
+  "lastUpdated": "2025-10-10",
   "stats": {
     "totalBackendFunctions": 108,
-    "integratedFunctions": 82,
-    "availableFunctions": 26,
-    "integrationRate": "75.9%",
-    "mobileReadiness": "90%"
+    "integratedFunctions": 88,
+    "availableFunctions": 20,
+    "integrationRate": "81.5%",
+    "mobileReadiness": "92%"
   },
   "integrated": [
     "getRiasecQuestions",
@@ -88,23 +88,24 @@
     "getUserCertifications",
     "matchUniversityCourses",
     "updateCareerReadiness",
+    "bookCounselorSession",
+    "getScholarshipMatches",
+    "getBillingHistory",
+    "getInvoiceDetails",
+    "getInvoiceHTML",
+    "resendInvoice",
+    "getAdminBillingAnalytics",
     "hello"
   ],
   "available": [
     "analyzeSubjectCareerFit",
-    "bookCounselorSession",
     "clearAllCache",
     "clearExpiredCache",
     "connectLearningPlatform",
     "createNotification",
     "syncExternalCertification",
-    "getScholarshipMatches",
     "getRiasecCareerInfo",
-    "getBillingHistory",
     "generateInvoice",
-    "getInvoiceDetails",
-    "getInvoiceHTML",
-    "resendInvoice",
     "uploadFile",
     "getCacheStats",
     "initializeRiasecSchema",
@@ -112,18 +113,7 @@
     "seedRiasecData",
     "getAssessmentQuestions"
   ],
-  "mismatches": [
-    {
-      "frontend": "findScholarshipMatches",
-      "backend": "getScholarshipMatches",
-      "action": "Rename backend or update frontend"
-    },
-    {
-      "frontend": "getAdminBillingAnalytics",
-      "backend": null,
-      "action": "Create backend function or remove frontend call"
-    }
-  ],
+  "mismatches": [],
   "hardcodedData": {
     "SubjectCareerMapper": {
       "file": "frontend/src/components/assessments/SubjectCareerMapper.tsx",
@@ -252,10 +242,12 @@
     ],
     "low": [
       {
-        "category": "Billing Admin",
-        "functions": ["getBillingHistory", "generateInvoice", "getInvoiceHTML", "getInvoiceDetails", "resendInvoice"],
-        "impact": "Admin billing features",
-        "effort": "1 day"
+        "category": "Billing & Invoicing",
+        "functions": ["getBillingHistory", "getInvoiceDetails", "getInvoiceHTML", "resendInvoice", "getAdminBillingAnalytics", "bookCounselorSession", "getScholarshipMatches"],
+        "impact": "Complete billing system with invoices, PDF download, admin analytics - COMPLETED",
+        "effort": "2 days",
+        "status": "✅ COMPLETE",
+        "completedDate": "2025-10-10"
       },
       {
         "category": "Cache Management",
