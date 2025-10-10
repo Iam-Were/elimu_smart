@@ -100,3 +100,89 @@ export const getUserAssessments = async (
     throw new Error('Failed to load assessment history. Please try again.');
   }
 };
+
+export interface RiasecType {
+  code: string;
+  name: string;
+  description: string;
+  kenyaCareers: string[];
+  kuccpsPathways: string[];
+}
+
+export interface RiasecCareerInfo {
+  types?: RiasecType[];
+  career?: string;
+  riasecType?: RiasecType;
+  relatedCareers?: string[];
+  pathways?: string[];
+}
+
+/**
+ * Get RIASEC career information by Holland Code or career name
+ */
+export const getRiasecCareerInfo = async (params: {
+  hollandCode?: string;
+  careerName?: string;
+}): Promise<RiasecCareerInfo> => {
+  try {
+    const Parse = await getParse();
+    const result = await Parse.Cloud.run('getRiasecCareerInfo', params);
+    return result as RiasecCareerInfo;
+  } catch (error) {
+    console.error('Failed to fetch RIASEC career info:', error);
+    throw new Error('Failed to load RIASEC career information. Please try again.');
+  }
+};
+
+export interface CareerFitAnalysis {
+  career: string;
+  eligible: boolean;
+  clusterPointsRequired: number;
+  studentClusterPoints: number;
+  gap: number;
+  competitiveness: number;
+  employmentRate: number;
+  averageSalary: number;
+  kuccpsCode: string;
+}
+
+export interface SubjectCareerFitResult {
+  careers: CareerFitAnalysis[];
+  message?: string;
+  alternativePathways?: string[];
+}
+
+/**
+ * Analyze subject-career fit based on KCSE subjects and grades
+ */
+export const analyzeSubjectCareerFit = async (params: {
+  subjects: string[];
+  grades: Record<string, string>;
+}): Promise<SubjectCareerFitResult> => {
+  try {
+    const Parse = await getParse();
+    const result = await Parse.Cloud.run('analyzeSubjectCareerFit', params);
+    return result as SubjectCareerFitResult;
+  } catch (error) {
+    console.error('Failed to analyze subject-career fit:', error);
+    throw new Error('Failed to analyze career compatibility. Please try again.');
+  }
+};
+
+/**
+ * Get assessment questions with optional randomization
+ */
+export const getAssessmentQuestions = async (params?: {
+  assessmentType?: string;
+  questionCount?: number;
+  randomize?: boolean;
+}): Promise<RiasecQuestion[]> => {
+  try {
+    const Parse = await getParse();
+    const result = await Parse.Cloud.run('getAssessmentQuestions', params || {});
+    return result as RiasecQuestion[];
+  } catch (error) {
+    console.error('Failed to fetch assessment questions:', error);
+    throw new Error('Failed to load assessment questions. Please try again.');
+  }
+};

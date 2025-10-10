@@ -88,6 +88,23 @@ export const useNotifications = () => {
     }
   }, []);
 
+  const createNotification = useCallback(async (params: {
+    recipientId: string;
+    title: string;
+    message: string;
+    type?: 'assessment_complete' | 'counselor_response' | 'deadline_reminder' | 'system';
+    actionUrl?: string;
+  }): Promise<boolean> => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('createNotification', params);
+      return true;
+    } catch (err) {
+      console.error('Failed to create notification:', err);
+      return false;
+    }
+  }, []);
+
   // Auto-fetch on mount
   useEffect(() => {
     fetchNotifications();
@@ -101,5 +118,6 @@ export const useNotifications = () => {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    createNotification,
   };
 };
