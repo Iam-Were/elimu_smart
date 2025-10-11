@@ -678,6 +678,307 @@ Parse.Cloud.define('deleteCourse', async (request) => {
   }
 });
 
+// ============================================
+// ASSESSMENT QUESTIONS CRUD OPERATIONS
+// ============================================
+
+/**
+ * Get all assessment questions (RIASEC + Skills) with pagination and filters
+ */
+Parse.Cloud.define('getAssessmentQuestions', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { page = 1, limit = 50, search, type, category, riasecType } = params || {};
+
+  try {
+    let results = [];
+    let totalCount = 0;
+
+    if (!type || type === 'riasec') {
+      const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+      const riasecQuery = new Parse.Query(RiasecQuestion);
+
+      // Apply filters
+      if (search) {
+        riasecQuery.matches('statement', new RegExp(search, 'i'));
+      }
+      if (category) {
+        riasecQuery.equalTo('category', category);
+      }
+      if (riasecType) {
+        riasecQuery.equalTo('riasecType', riasecType);
+      }
+
+      // Pagination
+      riasecQuery.limit(limit);
+      riasecQuery.skip((page - 1) * limit);
+      riasecQuery.ascending('questionId');
+
+      // Get results
+      const riasecResults = await riasecQuery.find({ useMasterKey: true });
+      const riasecCount = await riasecQuery.count({ useMasterKey: true });
+
+      results = riasecResults.map(q => ({
+        id: q.id,
+        type: 'riasec',
+        questionId: q.get('questionId'),
+        category: q.get('category'),
+        statement: q.get('statement'),
+        riasecType: q.get('riasecType'),
+        kenyaContext: q.get('kenyaContext'),
+        isActive: q.get('isActive'),
+        createdAt: q.get('createdAt'),
+        updatedAt: q.get('updatedAt')
+      }));
+
+      totalCount += riasecCount;
+    }
+
+    if (!type || type === 'skills') {
+      const SkillQuestion = Parse.Object.extend('SkillQuestion');
+      const skillQuery = new Parse.Query(SkillQuestion);
+
+      // Apply filters
+      if (search) {
+        skillQuery.matches('text', new RegExp(search, 'i'));
+      }
+      if (category) {
+        skillQuery.equalTo('category', category);
+      }
+
+      // Pagination
+      skillQuery.limit(limit);
+      skillQuery.skip((page - 1) * limit);
+      skillQuery.ascending('questionId');
+
+      // Get results
+      const skillResults = await skillQuery.find({ useMasterKey: true });
+      const skillCount = await skillQuery.count({ useMasterKey: true });
+
+      const skillMapped = skillResults.map(q => ({
+        id: q.id,
+        type: 'skills',
+        questionId: q.get('questionId'),
+        category: q.get('category'),
+        text: q.get('text'),
+        isActive: q.get('isActive'),
+        createdAt: q.get('createdAt'),
+        updatedAt: q.get('updatedAt')
+      }));
+
+      results = type === 'skills' ? skillMapped : [...results, ...skillMapped];
+      totalCount += skillCount;
+    }
+
+    return {
+      questions: results,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching assessment questions:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to fetch assessment questions');
+  }
+});
+
+/**
+ * Create a new assessment question (RIASEC or Skills)
+ */
+Parse.Cloud.define('createAssessmentQuestion', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { type, questionId, category, statement, text, riasecType, kenyaContext } = params;
+
+  // Validation
+  if (!type || (type !== 'riasec' && type !== 'skills')) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Type must be "riasec" or "skills"');
+  }
+
+  if (type === 'riasec' && (!statement || !riasecType || !category)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Statement, riasecType, and category are required for RIASEC questions');
+  }
+
+  if (type === 'skills' && (!text || !category)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Text and category are required for Skills questions');
+  }
+
+  try {
+    if (type === 'riasec') {
+      const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+      const question = new RiasecQuestion();
+
+      question.set('questionId', questionId || Date.now());
+      question.set('category', category);
+      question.set('statement', statement);
+      question.set('riasecType', riasecType);
+      question.set('kenyaContext', kenyaContext || '');
+      question.set('isActive', true);
+
+      await question.save(null, { useMasterKey: true });
+
+      return {
+        success: true,
+        question: {
+          id: question.id,
+          type: 'riasec',
+          questionId: question.get('questionId'),
+          statement: question.get('statement')
+        }
+      };
+    } else {
+      const SkillQuestion = Parse.Object.extend('SkillQuestion');
+      const question = new SkillQuestion();
+
+      question.set('questionId', questionId || Date.now());
+      question.set('category', category);
+      question.set('text', text);
+      question.set('isActive', true);
+
+      await question.save(null, { useMasterKey: true });
+
+      return {
+        success: true,
+        question: {
+          id: question.id,
+          type: 'skills',
+          questionId: question.get('questionId'),
+          text: question.get('text')
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Error creating assessment question:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to create assessment question');
+  }
+});
+
+/**
+ * Update an existing assessment question
+ */
+Parse.Cloud.define('updateAssessmentQuestion', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { id, type, ...updates } = params;
+
+  if (!id || !type) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Question ID and type are required');
+  }
+
+  try {
+    if (type === 'riasec') {
+      const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+      const query = new Parse.Query(RiasecQuestion);
+      const question = await query.get(id, { useMasterKey: true });
+
+      // Update allowed fields
+      const allowedFields = ['category', 'statement', 'riasecType', 'kenyaContext', 'isActive'];
+
+      allowedFields.forEach(field => {
+        if (updates[field] !== undefined) {
+          question.set(field, updates[field]);
+        }
+      });
+
+      await question.save(null, { useMasterKey: true });
+
+      return {
+        success: true,
+        question: {
+          id: question.id,
+          statement: question.get('statement')
+        }
+      };
+    } else {
+      const SkillQuestion = Parse.Object.extend('SkillQuestion');
+      const query = new Parse.Query(SkillQuestion);
+      const question = await query.get(id, { useMasterKey: true });
+
+      // Update allowed fields
+      const allowedFields = ['category', 'text', 'isActive'];
+
+      allowedFields.forEach(field => {
+        if (updates[field] !== undefined) {
+          question.set(field, updates[field]);
+        }
+      });
+
+      await question.save(null, { useMasterKey: true });
+
+      return {
+        success: true,
+        question: {
+          id: question.id,
+          text: question.get('text')
+        }
+      };
+    }
+  } catch (error) {
+    console.error('Error updating assessment question:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to update assessment question');
+  }
+});
+
+/**
+ * Delete an assessment question
+ */
+Parse.Cloud.define('deleteAssessmentQuestion', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { id, type } = params;
+
+  if (!id || !type) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Question ID and type are required');
+  }
+
+  try {
+    if (type === 'riasec') {
+      const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+      const query = new Parse.Query(RiasecQuestion);
+      const question = await query.get(id, { useMasterKey: true });
+
+      await question.destroy({ useMasterKey: true });
+    } else {
+      const SkillQuestion = Parse.Object.extend('SkillQuestion');
+      const query = new Parse.Query(SkillQuestion);
+      const question = await query.get(id, { useMasterKey: true });
+
+      await question.destroy({ useMasterKey: true });
+    }
+
+    return {
+      success: true,
+      message: 'Assessment question deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error deleting assessment question:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to delete assessment question');
+  }
+});
+
 module.exports = {
   // Exported for testing/documentation purposes
 };
