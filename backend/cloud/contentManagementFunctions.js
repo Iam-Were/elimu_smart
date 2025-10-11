@@ -438,6 +438,246 @@ Parse.Cloud.define('deleteCareer', async (request) => {
   }
 });
 
+// ============================================
+// COURSE CRUD OPERATIONS
+// ============================================
+
+/**
+ * Get all courses with pagination and filters
+ */
+Parse.Cloud.define('getCourses', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { page = 1, limit = 50, search, universityId, category, level } = params || {};
+
+  try {
+    const Course = Parse.Object.extend('Course');
+    const query = new Parse.Query(Course);
+
+    // Apply filters
+    if (search) {
+      query.matches('title', new RegExp(search, 'i'));
+    }
+    if (universityId) {
+      const University = Parse.Object.extend('University');
+      const universityPointer = University.createWithoutData(universityId);
+      query.equalTo('university', universityPointer);
+    }
+    if (category) {
+      query.equalTo('category', category);
+    }
+    if (level) {
+      query.equalTo('level', level);
+    }
+
+    // Include university data
+    query.include('university');
+
+    // Pagination
+    query.limit(limit);
+    query.skip((page - 1) * limit);
+    query.descending('createdAt');
+
+    // Get total count
+    const totalCount = await query.count({ useMasterKey: true });
+
+    // Get results
+    const results = await query.find({ useMasterKey: true });
+
+    return {
+      courses: results.map(c => ({
+        id: c.id,
+        courseId: c.get('courseId'),
+        title: c.get('title'),
+        category: c.get('category'),
+        level: c.get('level'),
+        duration: c.get('duration'),
+        requirements: c.get('requirements'),
+        cutoffPoints: c.get('cutoffPoints'),
+        careerPathways: c.get('careerPathways') || [],
+        description: c.get('description'),
+        isActive: c.get('isActive'),
+        university: c.get('university') ? {
+          id: c.get('university').id,
+          name: c.get('university').get('name'),
+          type: c.get('university').get('type')
+        } : null,
+        createdAt: c.get('createdAt'),
+        updatedAt: c.get('updatedAt')
+      })),
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to fetch courses');
+  }
+});
+
+/**
+ * Create a new course
+ */
+Parse.Cloud.define('createCourse', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const {
+    courseId,
+    title,
+    category,
+    level,
+    universityId,
+    duration,
+    requirements,
+    cutoffPoints,
+    careerPathways,
+    description
+  } = params;
+
+  // Validation
+  if (!title || !category || !universityId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Title, category, and university are required');
+  }
+
+  try {
+    const Course = Parse.Object.extend('Course');
+    const course = new Course();
+
+    // Create university pointer
+    const University = Parse.Object.extend('University');
+    const universityPointer = University.createWithoutData(universityId);
+
+    course.set('courseId', courseId || `course_${Date.now()}`);
+    course.set('title', title);
+    course.set('category', category);
+    course.set('level', level);
+    course.set('university', universityPointer);
+    course.set('duration', duration);
+    course.set('requirements', requirements);
+    course.set('cutoffPoints', cutoffPoints);
+    course.set('careerPathways', careerPathways || []);
+    course.set('description', description);
+    course.set('isActive', true);
+
+    await course.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      course: {
+        id: course.id,
+        courseId: course.get('courseId'),
+        title: course.get('title')
+      }
+    };
+  } catch (error) {
+    console.error('Error creating course:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to create course');
+  }
+});
+
+/**
+ * Update an existing course
+ */
+Parse.Cloud.define('updateCourse', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { id, universityId, ...updates } = params;
+
+  if (!id) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Course ID is required');
+  }
+
+  try {
+    const Course = Parse.Object.extend('Course');
+    const query = new Parse.Query(Course);
+    const course = await query.get(id, { useMasterKey: true });
+
+    // Update university pointer if provided
+    if (universityId) {
+      const University = Parse.Object.extend('University');
+      const universityPointer = University.createWithoutData(universityId);
+      course.set('university', universityPointer);
+    }
+
+    // Update allowed fields
+    const allowedFields = [
+      'title', 'category', 'level', 'duration', 'requirements',
+      'cutoffPoints', 'careerPathways', 'description', 'isActive'
+    ];
+
+    allowedFields.forEach(field => {
+      if (updates[field] !== undefined) {
+        course.set(field, updates[field]);
+      }
+    });
+
+    await course.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      course: {
+        id: course.id,
+        title: course.get('title')
+      }
+    };
+  } catch (error) {
+    console.error('Error updating course:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to update course');
+  }
+});
+
+/**
+ * Delete a course
+ */
+Parse.Cloud.define('deleteCourse', async (request) => {
+  const { user, master, params } = request;
+
+  // RBAC: Admin only
+  if (!user && !master) {
+    throw new Error('Authentication required');
+  }
+
+  const { id } = params;
+
+  if (!id) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Course ID is required');
+  }
+
+  try {
+    const Course = Parse.Object.extend('Course');
+    const query = new Parse.Query(Course);
+    const course = await query.get(id, { useMasterKey: true });
+
+    await course.destroy({ useMasterKey: true });
+
+    return {
+      success: true,
+      message: 'Course deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to delete course');
+  }
+});
+
 module.exports = {
   // Exported for testing/documentation purposes
 };
