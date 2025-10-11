@@ -6151,3 +6151,8 @@ Parse.Cloud.define('getMyQuestions', async (request) => {
 // ============================================
 require('./contentManagementFunctions');
 
+// ============================================
+// CAREER FUNCTIONS (OPTIMIZED with Redis caching)
+// ============================================
+require('./careerFunctions');
+
