@@ -8,7 +8,8 @@
       "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart add frontend/src/lib/assessmentApi.ts frontend/src/components/assessments/FreeRiasecAssessment.tsx)",
       "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart commit -m \"$(cat <<''EOF''\nFrontend: RIASEC Assessment API Integration\n\nUpdated RIASEC assessment to fetch questions from Parse Cloud Functions\ninstead of using hardcoded data.\n\nNew File:\n- frontend/src/lib/assessmentApi.ts: Assessment API service with type-safe\n  functions for getRiasecQuestions, getSkillsQuestions, saveAssessmentResult,\n  and getUserAssessments\n\nModified:\n- frontend/src/components/assessments/FreeRiasecAssessment.tsx:\n  - Added useEffect hook to load questions from API on mount\n  - Added loading state with spinner (Loader2 icon)\n  - Added error state with refresh button\n  - Replaced hardcoded iipRiasecQuestions array with dynamic questions state\n  - Maintains same interleaving logic for question order\n  - Updated all references from interleavedIipQuestions to questions state\n\nFeatures:\n- API-first: Questions loaded from database via Cloud Functions\n- Loading UX: Shows \"Fetching 96 questions from database\" message\n- Error handling: Graceful fallback with user-friendly error messages\n- Type-safe: Full TypeScript interfaces for API responses\n- Backward compatible: Same user experience, better data management\n\nImpact: Reduces frontend bundle size, enables centralized question updates\nwithout redeployment.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git add:*)",
-      "Bash(nslookup:*)"
+      "Bash(nslookup:*)",
+      "Read(//root/**)"
     ],
     "deny": [],
     "ask": [],

@@ -1,0 +1,693 @@
+{
+  "lastUpdated": "2025-10-10",
+  "overallStatus": "Not Started",
+  "totalPhases": 5,
+  "completedPhases": 0,
+  "totalEffort": "15-20 days",
+  "startDate": null,
+  "completionDate": null,
+  "phases": {
+    "phase1": {
+      "name": "Universities & Courses",
+      "duration": "3-4 days",
+      "priority": "CRITICAL",
+      "status": "not_started",
+      "completionPercentage": 0,
+      "startDate": null,
+      "completionDate": null,
+      "tasks": {
+        "day1": {
+          "name": "Database Schema Design & Creation",
+          "status": "not_started",
+          "tasks": [
+            {"id": "1.1", "name": "Define Parse Class Schemas", "effort": "2 hours", "status": "not_started"},
+            {"id": "1.2", "name": "Create Schema Initialization Script", "effort": "1 hour", "status": "not_started"}
+          ]
+        },
+        "day2": {
+          "name": "Data Migration Script",
+          "status": "not_started",
+          "tasks": [
+            {"id": "1.3", "name": "Create Migration Script", "effort": "4-5 hours", "status": "not_started"}
+          ]
+        },
+        "day3": {
+          "name": "Update Backend Functions",
+          "status": "not_started",
+          "tasks": [
+            {"id": "1.4", "name": "Update findUniversityCourses Function", "effort": "2-3 hours", "status": "not_started"},
+            {"id": "1.5", "name": "Add New Query Functions", "effort": "1-2 hours", "status": "not_started"}
+          ]
+        },
+        "day4": {
+          "name": "Testing & Validation",
+          "status": "not_started",
+          "tasks": [
+            {"id": "1.6", "name": "Create Test Suite", "effort": "3-4 hours", "status": "not_started"}
+          ]
+        }
+      },
+      "deliverables": {
+        "schemas": ["University (21 fields)", "Course (24 fields)"],
+        "migrations": ["Schema initialization", "Data migration", "Validation tests"],
+        "functions": ["findUniversityCourses (updated)", "getUniversityDetails (new)", "searchUniversities (new)"]
+      },
+      "successMetrics": {
+        "universitiesMigrated": {"target": "50-70", "actual": 0},
+        "coursesMigrated": {"target": "1,000-3,500", "actual": 0},
+        "migrationTime": {"target": "< 5 minutes", "actual": null},
+        "queryResponseTime": {"target": "< 200ms", "actual": null},
+        "testPassRate": {"target": "100%", "actual": null}
+      }
+    },
+    "phase2": {
+      "name": "Career Database",
+      "duration": "3-4 days",
+      "priority": "CRITICAL",
+      "status": "not_started",
+      "completionPercentage": 0,
+      "startDate": null,
+      "completionDate": null,
+      "tasks": {
+        "day5": {
+          "name": "Career Database Schema",
+          "status": "not_started",
+          "tasks": [
+            {"id": "2.1", "name": "Define Career Parse Class Schema", "effort": "2 hours", "status": "not_started"},
+            {"id": "2.2", "name": "Create Career Schema Initialization", "effort": "1 hour", "status": "not_started"}
+          ]
+        },
+        "day6": {
+          "name": "Career Data Migration",
+          "status": "not_started",
+          "tasks": [
+            {"id": "2.3", "name": "Migrate Career Database", "effort": "4-5 hours", "status": "not_started"}
+          ]
+        },
+        "day7": {
+          "name": "Update Career Functions",
+          "status": "not_started",
+          "tasks": [
+            {"id": "2.4", "name": "Update Career Cloud Functions", "effort": "3-4 hours", "status": "not_started"}
+          ]
+        },
+        "day8": {
+          "name": "Testing Career Migration",
+          "status": "not_started",
+          "tasks": [
+            {"id": "2.5", "name": "Create Career Test Suite", "effort": "2-3 hours", "status": "not_started"}
+          ]
+        }
+      },
+      "deliverables": {
+        "schemas": ["Career (32 fields)"],
+        "migrations": ["Schema initialization", "Data migration (50-100 careers)", "Validation tests"],
+        "functions": ["exploreCareers (updated)", "getCareerDetails (updated)", "getCareerCategories (new)"]
+      },
+      "successMetrics": {
+        "careersMigrated": {"target": "50-100", "actual": 0},
+        "migrationTime": {"target": "< 2 minutes", "actual": null},
+        "queryResponseTime": {"target": "< 150ms", "actual": null},
+        "testPassRate": {"target": "100%", "actual": null}
+      }
+    },
+    "phase3": {
+      "name": "Subject-Career Mappings",
+      "duration": "2-3 days",
+      "priority": "HIGH",
+      "status": "not_started",
+      "completionPercentage": 0,
+      "startDate": null,
+      "completionDate": null,
+      "tasks": {
+        "day9": {
+          "name": "Subject Mapping Schema",
+          "status": "not_started",
+          "tasks": [
+            {"id": "3.1", "name": "Define SubjectCareerMapping Parse Class", "effort": "1-2 hours", "status": "not_started"},
+            {"id": "3.2", "name": "Create Mapping Schema Initialization", "effort": "1 hour", "status": "not_started"}
+          ]
+        },
+        "day10": {
+          "name": "Migrate Subject Mappings & Update Functions",
+          "status": "not_started",
+          "tasks": [
+            {"id": "3.3", "name": "Migrate Subject-Career Data", "effort": "3-4 hours", "status": "not_started"},
+            {"id": "3.4", "name": "Update analyzeSubjectCareerFit Function", "effort": "2-3 hours", "status": "not_started"}
+          ]
+        }
+      },
+      "deliverables": {
+        "schemas": ["SubjectCareerMapping (14 fields)"],
+        "migrations": ["Schema initialization", "Data migration (30-40 subjects)"],
+        "functions": ["analyzeSubjectCareerFit (updated)", "getSubjectMappingDetails (new)"],
+        "frontend": ["Update SubjectCareerMapper.tsx", "Remove hardcoded SUBJECT_CAREERS constant"]
+      },
+      "successMetrics": {
+        "subjectMappingsMigrated": {"target": "30-40", "actual": 0},
+        "migrationTime": {"target": "< 1 minute", "actual": null},
+        "queryResponseTime": {"target": "< 100ms", "actual": null},
+        "frontendBundleReduction": {"target": "~15KB", "actual": null}
+      }
+    },
+    "phase4": {
+      "name": "RIASEC & Skills Framework",
+      "duration": "3-4 days",
+      "priority": "MEDIUM",
+      "status": "not_started",
+      "completionPercentage": 0,
+      "startDate": null,
+      "completionDate": null,
+      "tasks": {
+        "day11-12": {
+          "name": "RIASEC Type Schema & Migration",
+          "status": "not_started",
+          "tasks": [
+            {"id": "4.1", "name": "Define RIASEC Type Schema", "effort": "2 hours", "status": "not_started"},
+            {"id": "4.2", "name": "Create RIASEC Migration Script", "effort": "4-5 hours", "status": "not_started"}
+          ]
+        },
+        "day13": {
+          "name": "Update RIASEC Functions",
+          "status": "not_started",
+          "tasks": [
+            {"id": "4.3", "name": "Update getRiasecCareerInfo Function", "effort": "2-3 hours", "status": "not_started"}
+          ]
+        }
+      },
+      "deliverables": {
+        "schemas": ["RIASECType (21 fields)", "SkillCategory (12 fields)"],
+        "migrations": ["RIASEC types migration (6 types)", "Skills framework migration (6+ categories)"],
+        "functions": ["getRiasecCareerInfo (updated)", "startSkillsAssessment (updated)"]
+      },
+      "successMetrics": {
+        "riasecTypesMigrated": {"target": "6", "actual": 0},
+        "skillCategoriesMigrated": {"target": "6", "actual": 0},
+        "migrationTime": {"target": "< 2 minutes", "actual": null},
+        "queryResponseTime": {"target": "< 120ms", "actual": null}
+      }
+    },
+    "phase5": {
+      "name": "Admin Content Management Panel",
+      "duration": "4-5 days",
+      "priority": "LOW",
+      "status": "not_started",
+      "completionPercentage": 0,
+      "startDate": null,
+      "completionDate": null,
+      "canRunInParallel": true,
+      "tasks": {
+        "day14-15": {
+          "name": "Admin CRUD Interfaces",
+          "status": "not_started",
+          "tasks": [
+            {"id": "5.1", "name": "University/Course Management", "effort": "1 day", "status": "not_started"},
+            {"id": "5.2", "name": "Career Management", "effort": "1 day", "status": "not_started"},
+            {"id": "5.3", "name": "Subject Mapping Management", "effort": "1 day", "status": "not_started"},
+            {"id": "5.4", "name": "RIASEC & Skills Management", "effort": "1 day", "status": "not_started"}
+          ]
+        },
+        "day16-17": {
+          "name": "Bulk Operations & Data Quality",
+          "status": "not_started",
+          "tasks": [
+            {"id": "5.5", "name": "Bulk Import/Export", "effort": "1 day", "status": "not_started"},
+            {"id": "5.6", "name": "Data Quality Dashboard", "effort": "1 day", "status": "not_started"}
+          ]
+        },
+        "day18": {
+          "name": "Version History & Audit Logs",
+          "status": "not_started",
+          "tasks": [
+            {"id": "5.7", "name": "Content Versioning", "effort": "1 day", "status": "not_started"}
+          ]
+        }
+      },
+      "deliverables": {
+        "adminUI": ["6 content management interfaces", "Bulk import/export tools", "Data quality dashboard", "Version history viewer"],
+        "backendSupport": ["Cloud Functions for admin operations", "CSV parsing utilities", "Data validation functions", "Audit logging"]
+      },
+      "successMetrics": {
+        "adminInterfacesComplete": {"target": "6", "actual": 0},
+        "bulkImportTested": {"target": true, "actual": false},
+        "dataValidationWorking": {"target": true, "actual": false},
+        "auditLogsFunctional": {"target": true, "actual": false}
+      }
+    }
+  },
+  "hardcodedDataAnalysis": {
+    "totalLines": 1525,
+    "percentageOfBackend": "25.6%",
+    "dataStructures": [
+      {
+        "name": "RIASEC_TYPES",
+        "location": "backend/cloud/main.js:2362-2900",
+        "lines": 539,
+        "size": "~30KB",
+        "phase": "phase4",
+        "priority": "MEDIUM"
+      },
+      {
+        "name": "SUBJECT_CAREER_MAPPINGS",
+        "location": "backend/cloud/main.js:2900-3049",
+        "lines": 150,
+        "size": "~8KB",
+        "phase": "phase3",
+        "priority": "HIGH"
+      },
+      {
+        "name": "SKILL_FRAMEWORK",
+        "location": "backend/cloud/main.js:3049-3228",
+        "lines": 180,
+        "size": "~10KB",
+        "phase": "phase4",
+        "priority": "MEDIUM"
+      },
+      {
+        "name": "KENYA_UNIVERSITIES_DATABASE",
+        "location": "backend/cloud/main.js:3228-3706",
+        "lines": 479,
+        "size": "~26KB",
+        "phase": "phase1",
+        "priority": "CRITICAL"
+      },
+      {
+        "name": "KENYA_CAREERS_DATABASE",
+        "location": "backend/cloud/main.js:3706-end",
+        "lines": 177,
+        "size": "~35KB",
+        "phase": "phase2",
+        "priority": "CRITICAL"
+      }
+    ]
+  },
+  "benefits": {
+    "scalability": "Dynamic content updates without code changes",
+    "performance": "Indexed database queries vs. array iteration",
+    "maintainability": "Admin panel for content management",
+    "bundleSize": "~25KB reduction in frontend bundle",
+    "dataIntegrity": "Relationships enforced at database level",
+    "versioning": "Track all content changes with audit logs"
+  },
+  "frontendHooks": {
+    "existing": [
+      "useAuth", "useTheme", "useOnboarding", "useNotifications", "useBilling",
+      "useChat", "useCounselorDashboard", "useAdminDashboard", "useDynamicDashboard",
+      "useSubscription", "useEmailService", "useGamification", "useSessionBooking",
+      "useScholarshipMatches", "useAssessmentProgress"
+    ],
+    "recommended": [
+      {
+        "name": "useUniversity",
+        "phase": "phase1",
+        "priority": "MEDIUM",
+        "effort": "2-3 hours",
+        "purpose": "Manage university/course search, filtering, and details",
+        "methods": ["searchUniversities", "getUniversityDetails", "findCourses", "filterByCutoff"]
+      },
+      {
+        "name": "useCareers",
+        "phase": "phase2",
+        "priority": "HIGH",
+        "effort": "2-3 hours",
+        "purpose": "Career exploration with state management and caching",
+        "methods": ["exploreCareers", "getCareerDetails", "searchByCategory", "getTopCareers"]
+      },
+      {
+        "name": "useSubjectMapper",
+        "phase": "phase3",
+        "priority": "HIGH",
+        "effort": "3-4 hours",
+        "purpose": "Replace SubjectCareerMapper component logic with hook",
+        "methods": ["analyzeSubjects", "getCareersBySubject", "getRecommendations"],
+        "note": "Critical for reducing frontend bundle size"
+      },
+      {
+        "name": "useRiasecTypes",
+        "phase": "phase4",
+        "priority": "LOW",
+        "effort": "1-2 hours",
+        "purpose": "Manage RIASEC type information and career matching",
+        "methods": ["getRiasecInfo", "getTypeByCode", "getCareerMatches"]
+      }
+    ]
+  },
+  "mcpIntegration": {
+    "recommended": true,
+    "servers": [
+      {
+        "name": "postgres",
+        "package": "@modelcontextprotocol/server-postgres",
+        "priority": "HIGH",
+        "useCase": "Direct database queries during migration, data verification",
+        "connectionString": "postgresql://postgres:password@localhost:5432/elimu_smart_production"
+      },
+      {
+        "name": "filesystem",
+        "package": "@modelcontextprotocol/server-filesystem",
+        "priority": "MEDIUM",
+        "useCase": "Generate migration scripts dynamically, read backend files"
+      },
+      {
+        "name": "github",
+        "package": "@modelcontextprotocol/server-github",
+        "priority": "LOW",
+        "useCase": "Manage commits, branches, and PRs during migration phases"
+      }
+    ],
+    "setup": {
+      "configLocation": "~/.config/Claude/claude_desktop_config.json (Linux) or ~/Library/Application Support/Claude/claude_desktop_config.json (Mac)",
+      "instructions": "Add MCP servers to config, restart Claude Desktop, verify mcp__* tools available"
+    },
+    "benefits": [
+      "Query database without writing temporary Cloud Functions",
+      "Verify data integrity in real-time",
+      "Run custom SQL for analysis and debugging",
+      "Generate migration scripts based on actual data structure",
+      "Faster iteration during migration development"
+    ]
+  },
+  "notes": [
+    "Phase 5 (Admin Panel) can be developed in parallel with Phases 1-4",
+    "Each phase includes rollback procedures if issues arise",
+    "Complete database backup required before starting each phase",
+    "All migrations idempotent - can be re-run safely",
+    "Testing strategy includes automated and manual validation",
+    "4 new React hooks recommended for better state management",
+    "MCP PostgreSQL server highly recommended for migration execution"
+  ],
+  "references": {
+    "planDocument": ".claude/DATABASE_MIGRATION_PLAN.md",
+    "hardcodedAnalysis": ".claude/HARDCODED_DATA_ANALYSIS.md",
+    "integrationStatus": ".claude/integration-status.json",
+    "apiGuide": ".claude/API_INTEGRATION_GUIDE.md"
+  },
+  "mobileAppRoadmap": {
+    "status": "Ready to Start",
+    "framework": "React Native + Expo SDK 54",
+    "approach": "AI-Powered Conversion + Cloud CI/CD",
+    "timeline": "6 weeks",
+    "estimatedCost": {
+      "year1": "$124-472",
+      "year2Plus": "$99-447/year",
+      "breakdown": {
+        "appStores": "$124 (Apple $99/year + Google $25 one-time)",
+        "aiToolsOptional": "$0-348 (Free tiers or Natively.dev Starter $29/month)",
+        "cicd": "$0 (Codemagic free tier 500 mins/month)"
+      }
+    },
+    "aiTools": {
+      "primary": {
+        "name": "Natively.dev",
+        "purpose": "Full app generation from text descriptions",
+        "pricing": "Free tier or $29/month Starter",
+        "features": ["GitHub export", "Expo built-in", "One-click deploy", "Cloud development"],
+        "workflow": "Describe app → AI generates 40+ screens → Export to GitHub → Deploy to app stores"
+      },
+      "supplementary": {
+        "name": "RapidNative",
+        "purpose": "Component-level refinement",
+        "pricing": "Free tier (20 requests/month)",
+        "features": ["TypeScript support", "NativeWind styling", "Interactive chat", "Component-level generation"],
+        "workflow": "Generate specific components → Copy into app → Iterate with AI"
+      },
+      "cicd": {
+        "name": "Codemagic",
+        "purpose": "Cloud builds for iOS & Android without local Mac/PC",
+        "pricing": "Free tier (500 build minutes/month)",
+        "features": ["GitHub integration", "Cloud Mac builds", "App store automation", "Code signing"],
+        "workflow": "Connect GitHub → Push code → Automatic builds → Auto-deploy to stores"
+      },
+      "deployment": {
+        "name": "Expo EAS",
+        "purpose": "Build and deployment service + OTA updates",
+        "pricing": "Free tier (limited builds)",
+        "features": ["EAS Build", "EAS Submit", "EAS Update (over-the-air)", "GitHub integration"],
+        "note": "Use Codemagic free tier during development, EAS for post-launch OTA updates"
+      }
+    },
+    "phases": {
+      "phase1": {
+        "name": "AI-Generated Prototype",
+        "duration": "2 weeks",
+        "cost": "$0 (using free tiers)",
+        "tasks": [
+          {
+            "id": "M1.1",
+            "name": "Sign up for all free tiers",
+            "effort": "5 minutes",
+            "status": "not_started",
+            "deliverable": "Accounts: Natively.dev, RapidNative, Codemagic, Expo"
+          },
+          {
+            "id": "M1.2",
+            "name": "Generate app structure with Natively.dev",
+            "effort": "2-3 days",
+            "status": "not_started",
+            "deliverable": "Full React Native app with 40+ screens",
+            "aiPrompt": "Create a React Native career guidance app for Kenyan students: Login/Register with Parse Server authentication, Student dashboard with assessment cards, RIASEC personality test (60 questions), University course finder with KUCCPS integration, Career exploration with search, Counselor chat interface, Profile and settings, Bottom tab navigation. Tech: React Native, Expo SDK 54, TypeScript, NativeWind"
+          },
+          {
+            "id": "M1.3",
+            "name": "Export to GitHub repository",
+            "effort": "10 minutes",
+            "status": "not_started",
+            "deliverable": "New repo: elimu-smart-mobile"
+          },
+          {
+            "id": "M1.4",
+            "name": "Refine complex screens with RapidNative",
+            "effort": "1-2 days",
+            "status": "not_started",
+            "deliverable": "RIASEC question cards, university search UI, chat interface (20 free requests)"
+          },
+          {
+            "id": "M1.5",
+            "name": "Preview on phone with Expo Go",
+            "effort": "2 minutes",
+            "status": "not_started",
+            "deliverable": "Live preview on iPhone/Android"
+          }
+        ]
+      },
+      "phase2": {
+        "name": "Backend Integration",
+        "duration": "2 weeks",
+        "cost": "$0 (manual work)",
+        "tasks": [
+          {
+            "id": "M2.1",
+            "name": "Setup Parse Server SDK",
+            "effort": "2 hours",
+            "status": "not_started",
+            "deliverable": "npm packages: parse, @parse/react-native, @react-native-async-storage/async-storage"
+          },
+          {
+            "id": "M2.2",
+            "name": "Copy React hooks from web app",
+            "effort": "1 day",
+            "status": "not_started",
+            "deliverable": "15 hooks copied: useAuth, useNotifications, useBilling, useDynamicDashboard, etc.",
+            "note": "All hooks already mobile-compatible, zero changes needed"
+          },
+          {
+            "id": "M2.3",
+            "name": "Connect 104 Cloud Functions",
+            "effort": "2 days",
+            "status": "not_started",
+            "deliverable": "All backend functions callable via Parse.Cloud.run()",
+            "note": "Backend 100% mobile-ready (verified in integration-status.json)"
+          },
+          {
+            "id": "M2.4",
+            "name": "Test locally with Expo Go",
+            "effort": "1 day",
+            "status": "not_started",
+            "deliverable": "All features working: assessments, dashboard, chat, university finder"
+          }
+        ]
+      },
+      "phase3": {
+        "name": "CI/CD Setup",
+        "duration": "1 week",
+        "cost": "$0 (500 free build minutes)",
+        "tasks": [
+          {
+            "id": "M3.1",
+            "name": "Connect Codemagic to GitHub",
+            "effort": "30 minutes",
+            "status": "not_started",
+            "deliverable": "Codemagic project linked to elimu-smart-mobile repo"
+          },
+          {
+            "id": "M3.2",
+            "name": "Configure iOS build workflow",
+            "effort": "1 hour",
+            "status": "not_started",
+            "deliverable": "Apple Developer credentials, auto-generated certificates, workflow on main branch push"
+          },
+          {
+            "id": "M3.3",
+            "name": "Configure Android build workflow",
+            "effort": "1 hour",
+            "status": "not_started",
+            "deliverable": "Google Play credentials, auto-generated keystore, workflow on main branch push"
+          },
+          {
+            "id": "M3.4",
+            "name": "First cloud build test",
+            "effort": "10 minutes",
+            "status": "not_started",
+            "deliverable": "iOS + Android builds completed successfully in Codemagic"
+          }
+        ]
+      },
+      "phase4": {
+        "name": "App Store Deployment",
+        "duration": "1 week",
+        "cost": "$124 (app store accounts)",
+        "tasks": [
+          {
+            "id": "M4.1",
+            "name": "Create Apple Developer account",
+            "effort": "1 hour",
+            "status": "not_started",
+            "cost": "$99/year",
+            "deliverable": "App Store Connect access"
+          },
+          {
+            "id": "M4.2",
+            "name": "Create Google Play Developer account",
+            "effort": "1 hour",
+            "status": "not_started",
+            "cost": "$25 one-time",
+            "deliverable": "Google Play Console access"
+          },
+          {
+            "id": "M4.3",
+            "name": "Submit iOS app for review",
+            "effort": "2 hours",
+            "status": "not_started",
+            "deliverable": "App listing with screenshots, Codemagic auto-upload to TestFlight"
+          },
+          {
+            "id": "M4.4",
+            "name": "Submit Android app for review",
+            "effort": "2 hours",
+            "status": "not_started",
+            "deliverable": "App listing with screenshots, Codemagic auto-upload to Internal Testing"
+          },
+          {
+            "id": "M4.5",
+            "name": "App goes live",
+            "effort": "2-5 days review time",
+            "status": "not_started",
+            "deliverable": "Download links active on App Store & Google Play"
+          }
+        ]
+      }
+    },
+    "componentConversionMapping": {
+      "webToMobile": [
+        {
+          "webComponent": "shadcn UI components (90+)",
+          "mobileEquivalent": "React Native Paper or Native Base",
+          "strategy": "AI generates mobile equivalents via Natively.dev"
+        },
+        {
+          "webComponent": "react-router-dom",
+          "mobileEquivalent": "React Navigation",
+          "strategy": "Bottom tab navigation + stack navigators"
+        },
+        {
+          "webComponent": "Vite build system",
+          "mobileEquivalent": "Metro bundler",
+          "strategy": "Expo handles automatically"
+        },
+        {
+          "webComponent": "recharts (analytics)",
+          "mobileEquivalent": "victory-native",
+          "strategy": "RapidNative generates chart components"
+        },
+        {
+          "webComponent": "localStorage",
+          "mobileEquivalent": "AsyncStorage",
+          "strategy": "Parse SDK auto-handles with @react-native-async-storage/async-storage"
+        }
+      ]
+    },
+    "backendReadiness": {
+      "score": "100%",
+      "details": {
+        "cloudFunctions": "104/104 mobile-compatible (Parse.Cloud.run() works identically)",
+        "parseSDK": "@parse/react-native uses same API as web version",
+        "reactHooks": "15/15 hooks can be copied directly with zero changes",
+        "authentication": "Parse Session tokens work across platforms",
+        "fileUploads": "Parse.File works on mobile with react-native-document-picker"
+      }
+    },
+    "costScenarios": [
+      {
+        "name": "Absolute Minimum (Free Tier Only)",
+        "monthly": "$0",
+        "yearly": "$124 first year, $99 subsequent years",
+        "breakdown": [
+          "Natively.dev Free: $0/month",
+          "RapidNative Free (20 requests): $0/month",
+          "Codemagic Free (500 mins): $0/month",
+          "Expo EAS Free: $0/month",
+          "Apple Developer: $99/year",
+          "Google Play: $25 one-time"
+        ],
+        "notes": "Sufficient for development and launch. Can upgrade later if needed."
+      },
+      {
+        "name": "Optimal Development (Paid Starter Tiers)",
+        "monthly": "$29",
+        "yearly": "$472 first year, $447 subsequent years",
+        "breakdown": [
+          "Natively.dev Starter: $29/month (50 requests, private repos)",
+          "RapidNative Free: $0/month",
+          "Codemagic Free: $0/month",
+          "Expo EAS Free: $0/month",
+          "Apple Developer: $99/year",
+          "Google Play: $25 one-time"
+        ],
+        "notes": "More control during active development. Can downgrade to free tier after export."
+      },
+      {
+        "name": "After Launch (Export Code, Cancel AI Tools)",
+        "monthly": "$0",
+        "yearly": "$99/year",
+        "breakdown": [
+          "App Generation: Exported to GitHub (cancel subscription)",
+          "CI/CD Builds: Codemagic Free (updates only)",
+          "OTA Updates: Expo EAS Free",
+          "Apple Developer: $99/year"
+        ],
+        "notes": "Own the code, develop manually or with GitHub Copilot. Keep using Codemagic free tier forever."
+      }
+    ],
+    "nextSteps": [
+      "Sign up for free tiers (Natively.dev, RapidNative, Codemagic, Expo)",
+      "Generate first prototype with Natively.dev using provided AI prompt",
+      "Export to new GitHub repository: elimu-smart-mobile",
+      "Test on phone with Expo Go app",
+      "Integrate Parse Server backend (copy existing hooks)",
+      "Setup Codemagic CI/CD workflows",
+      "Create app store developer accounts ($124)",
+      "Submit apps for review"
+    ],
+    "documentation": {
+      "conversionPlan": ".claude/MOBILE_APP_CONVERSION_PLAN.md",
+      "toolsComparison": ".claude/MOBILE_AI_TOOLS_COMPARISON.md",
+      "mobileReadiness": ".claude/mobile-readiness.md"
+    },
+    "successCriteria": {
+      "phase1": "Working prototype with 40+ screens, testable on phone via Expo Go",
+      "phase2": "All 104 backend functions integrated, all assessments working end-to-end",
+      "phase3": "Automated builds triggered by GitHub push, iOS + Android builds succeed",
+      "phase4": "Apps live on both stores, download links active"
+    }
+  }
+}

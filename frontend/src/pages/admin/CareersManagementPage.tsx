@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AdminDataTable, TableColumn } from '@/components/admin/AdminDataTable';
+import { AdminDataTable, type TableColumn } from '@/components/admin/AdminDataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -405,7 +405,7 @@ export const CareersManagementPage: React.FC = () => {
         )}
 
         {/* Data Table */}
-        <AdminDataTable
+        <AdminDataTable<Career>
           data={careers}
           columns={columns}
           onRowEdit={handleEdit}

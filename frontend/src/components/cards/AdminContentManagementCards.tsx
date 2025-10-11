@@ -131,8 +131,8 @@ export const AdminContentManagementCards: React.FC<AdminContentManagementCardsPr
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Get admin role from user metadata
-  const adminRole = (user?.role === 'admin' ? user?.adminRole as AdminRoleType | undefined : undefined) || 'operations';
+  // Get admin role from user metadata (default to operations for all admins)
+  const adminRole: AdminRoleType = (user?.role === 'admin' ? (user as { adminRole?: AdminRoleType }).adminRole : undefined) || 'operations';
 
   // Check if current admin has access to a card
   const hasAccess = (card: AdminContentCard): boolean => {
