@@ -3225,7 +3225,11 @@ function generateSkillRecommendations(skillScores) {
 // UNIVERSITY COURSE FINDER API - Find Compatible University Programs
 // ================================================================================================
 
-const KENYA_UNIVERSITIES_DATABASE = [
+// ⚠️ DEPRECATED: Hardcoded university data (kept for reference only)
+// Data now stored in Parse Classes: University & Course
+// Migration completed: 2025-10-11
+// To update data, use Parse Dashboard or admin functions
+const KENYA_UNIVERSITIES_DATABASE_DEPRECATED = [
   // Public Universities
   {
     id: 'uon',
@@ -3357,7 +3361,8 @@ const KENYA_UNIVERSITIES_DATABASE = [
   }
 ];
 
-// University Course Finder Cloud Function
+// University Course Finder Cloud Function (Parse Class Version - Updated 2025-10-11)
+// Queries from University & Course Parse Classes instead of hardcoded data
 Parse.Cloud.define('findUniversityCourses', async (request) => {
   const { user } = request;
   if (!user) {
@@ -3371,7 +3376,7 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
     locationPreferences
   } = request.params;
 
-  console.log('🎓 Processing University Course Finder request:', {
+  console.log('🎓 Processing University Course Finder request (Parse Class version):', {
     studentProfile: studentProfile ? 'provided' : 'missing',
     academicPreferences: academicPreferences ? 'provided' : 'missing',
     financialConstraints: financialConstraints ? 'provided' : 'missing',
@@ -3389,43 +3394,113 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
 
   try {
     // Check cache first (10 minute TTL)
-    const cachedResult = await cache.get(cacheKey);
+    let cachedResult = null;
+    if (cache && cache.get) {
+      try {
+        cachedResult = await cache.get(cacheKey);
+      } catch (cacheError) {
+        console.warn('Cache access failed:', cacheError.message);
+      }
+    }
+
     if (cachedResult) {
       console.log('✅ Cache HIT - Returning cached university results');
       return { ...cachedResult, fromCache: true };
     }
 
-    console.log('❌ Cache MISS - Computing university matches');
+    console.log('❌ Cache MISS - Computing university matches from Parse Classes');
 
     // Calculate student's cluster points based on grades
     const clusterPoints = calculateClusterPoints(studentProfile.grades);
-    
+
+    // Query Universities from Parse Class
+    const UniversityClass = Parse.Object.extend('University');
+    const universityQuery = new Parse.Query(UniversityClass);
+    universityQuery.equalTo('active', true);
+
+    // Apply location filter if specified
+    if (locationPreferences && locationPreferences.length > 0) {
+      universityQuery.containedIn('location', locationPreferences);
+    }
+
+    const universities = await universityQuery.find({ useMasterKey: true });
+    console.log(`📚 Found ${universities.length} active universities`);
+
+    // Check if we found any universities
+    if (!universities || universities.length === 0) {
+      console.log('⚠️  No universities found in database');
+      return {
+        success: true,
+        clusterPoints,
+        matchingPrograms: [],
+        recommendations: {
+          summary: 'No universities available yet. Check back soon!',
+          topRecommendations: [],
+          alternativeOptions: []
+        },
+        summary: {
+          totalMatches: 0,
+          eligiblePrograms: 0,
+          averageMatchScore: 0
+        },
+        dataSource: 'parse_class'
+      };
+    }
+
     // Find matching programs
     const matchingPrograms = [];
-    
-    for (const university of KENYA_UNIVERSITIES_DATABASE) {
-      // Apply location filter if specified
-      if (locationPreferences && locationPreferences.length > 0) {
-        if (!locationPreferences.includes(university.location)) {
+
+    for (const university of universities) {
+      // Safety check for university object
+      if (!university) {
+        console.warn('⚠️  Skipping undefined university');
+        continue;
+      }
+
+      // Query courses for this university
+      const CourseClass = Parse.Object.extend('Course');
+      const courseQuery = new Parse.Query(CourseClass);
+      courseQuery.equalTo('university', university);
+      courseQuery.equalTo('active', true);
+
+      const courses = await courseQuery.find({ useMasterKey: true });
+
+      for (const course of courses) {
+        // Safety check for course object
+        if (!course) {
+          console.warn('⚠️  Skipping undefined course');
           continue;
         }
-      }
-      
-      for (const program of university.programs) {
+
+        // Extract course data with null checks
+        const program = {
+          id: course.get('courseId') || 'unknown',
+          name: course.get('name') || 'Unknown Course',
+          kuccpsCode: course.get('kuccpsCode') || '',
+          cutoffPoints: course.get('cutoffPoints') || 0,
+          duration: course.get('duration') || '4 years',
+          subjects: course.get('subjects') || [],
+          careerOutcomes: course.get('careerOutcomes') || [],
+          averageSalary: course.get('averageSalary') || 0,
+          employmentRate: course.get('employmentRate') || 0,
+          annualFees: course.get('annualFees') || 0,
+          scholarships: course.get('scholarships') || []
+        };
+
         // Check academic eligibility
         const eligible = clusterPoints >= program.cutoffPoints;
         const pointsGap = program.cutoffPoints - clusterPoints;
-        
+
         // Check subject requirements
         const hasRequiredSubjects = checkSubjectRequirements(
-          studentProfile.subjects, 
+          studentProfile.subjects,
           program.subjects
         );
-        
+
         // Check financial constraints
-        const financiallyViable = !financialConstraints || 
+        const financiallyViable = !financialConstraints ||
           program.annualFees <= (financialConstraints.maxAnnualFees || 200000);
-        
+
         // Calculate match score (0-100)
         const matchScore = calculateUniversityMatchScore({
           clusterPoints,
@@ -3435,15 +3510,15 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
           hasRequiredSubjects,
           financiallyViable
         });
-        
+
         // Add to results if meets minimum criteria
         if (matchScore >= 30) {
           matchingPrograms.push({
-            universityId: university.id,
-            universityName: university.name,
-            universityType: university.type,
-            location: university.location,
-            kuccpsCode: university.kuccpsCode,
+            universityId: university.get('universityId') || 'unknown',
+            universityName: university.get('name') || 'Unknown University',
+            universityType: university.get('type') || 'public',
+            location: university.get('location') || 'Kenya',
+            kuccpsCode: university.get('kuccpsCode') || '',
             program: {
               ...program,
               eligible,
@@ -3465,10 +3540,10 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
         }
       }
     }
-    
+
     // Sort by match score (highest first)
     matchingPrograms.sort((a, b) => b.program.matchScore - a.program.matchScore);
-    
+
     // Generate personalized recommendations
     const recommendations = generateUniversityRecommendations({
       matchingPrograms,
@@ -3477,21 +3552,26 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
       academicPreferences,
       financialConstraints
     });
-    
-    // Log activity
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'university_finder',
-      details: {
-        clusterPoints,
-        programsFound: matchingPrograms.length,
-        preferences: {
-          academic: !!academicPreferences,
-          financial: !!financialConstraints,
-          location: !!locationPreferences
+
+    // Log activity (non-blocking - don't fail if logging fails)
+    try {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'university_finder',
+        details: {
+          clusterPoints,
+          programsFound: matchingPrograms.length,
+          preferences: {
+            academic: !!academicPreferences,
+            financial: !!financialConstraints,
+            location: !!locationPreferences
+          },
+          dataSource: 'parse_class' // Track that we're using Parse Classes now
         }
-      }
-    });
+      });
+    } catch (loggingError) {
+      console.warn('Activity logging failed (non-critical):', loggingError.message);
+    }
 
     const result = {
       success: true,
@@ -3501,18 +3581,28 @@ Parse.Cloud.define('findUniversityCourses', async (request) => {
       summary: {
         totalMatches: matchingPrograms.length,
         eligiblePrograms: matchingPrograms.filter(p => p.program.eligible).length,
-        averageMatchScore: matchingPrograms.reduce((sum, p) => sum + p.program.matchScore, 0) / matchingPrograms.length
-      }
+        averageMatchScore: matchingPrograms.length > 0
+          ? matchingPrograms.reduce((sum, p) => sum + p.program.matchScore, 0) / matchingPrograms.length
+          : 0
+      },
+      dataSource: 'parse_class' // Indicate data comes from Parse Classes
     };
 
     // Cache the result for 10 minutes (600 seconds)
-    await cache.set(cacheKey, result, 600);
-    console.log('💾 Cached university finder results');
+    if (cache && cache.set) {
+      try {
+        await cache.set(cacheKey, result, 600);
+        console.log('💾 Cached university finder results');
+      } catch (cacheError) {
+        console.warn('Cache write failed:', cacheError.message);
+      }
+    }
 
     return result;
-    
+
   } catch (error) {
     console.error('❌ University Course Finder error:', error);
+    console.error('Error stack:', error.stack);
     throw new Error(`Failed to find university courses: ${error.message}`);
   }
 });
@@ -3703,7 +3793,11 @@ function generateUniversityRecommendations({
 // CAREER EXPLORATION API - Comprehensive Career Information & Guidance
 // ================================================================================================
 
-const KENYA_CAREERS_DATABASE = [
+// ⚠️ DEPRECATED: Hardcoded career data (kept for reference only)
+// Data now stored in Parse Class: Career (42 careers in database)
+// Migration completed: 2025-10-11
+// To update data, use Parse Dashboard or admin functions
+const KENYA_CAREERS_DATABASE_DEPRECATED = [
   // Healthcare & Medical
   {
     id: 'medical-doctor',
@@ -3881,10 +3975,11 @@ const KENYA_CAREERS_DATABASE = [
   }
 ];
 
-// Career Exploration Cloud Function
+// Career Exploration Cloud Function (Parse Class Version - Updated 2025-10-11)
+// Queries from Career Parse Class instead of hardcoded data
 Parse.Cloud.define('exploreCareers', async (request) => {
-  const { user } = request;
-  if (!user) {
+  const { user, master } = request;
+  if (!user && !master) {
     throw new Error('User must be authenticated');
   }
 
@@ -3913,46 +4008,86 @@ Parse.Cloud.define('exploreCareers', async (request) => {
   })}`;
 
   try {
-    // Check cache first (20 minute TTL - career data changes infrequently)
-    const cachedResult = await cache.get(cacheKey);
-    if (cachedResult) {
-      console.log('✅ Cache HIT - Returning cached career exploration results');
-      return { ...cachedResult, fromCache: true };
-    }
-
-    console.log('❌ Cache MISS - Computing career exploration results');
-
-    let careers = [...KENYA_CAREERS_DATABASE];
-
-    // Apply filters
-    if (filters) {
-      if (filters.categories && filters.categories.length > 0) {
-        careers = careers.filter(career => 
-          filters.categories.includes(career.category)
-        );
-      }
-
-      if (filters.salaryRange) {
-        careers = careers.filter(career => 
-          career.averageSalary >= filters.salaryRange.min &&
-          career.averageSalary <= filters.salaryRange.max
-        );
-      }
-
-      if (filters.educationLevel) {
-        careers = careers.filter(career => 
-          career.educationLevel === filters.educationLevel
-        );
-      }
-
-      if (filters.jobOutlook) {
-        careers = careers.filter(career => 
-          career.jobOutlook === filters.jobOutlook
-        );
+    // Check cache first with null safety (20 minute TTL - career data changes infrequently)
+    let cachedResult = null;
+    if (cache && cache.get) {
+      try {
+        cachedResult = await cache.get(cacheKey);
+        if (cachedResult) {
+          console.log('✅ Cache HIT - Returning cached career exploration results');
+          return { ...cachedResult, fromCache: true };
+        }
+      } catch (cacheError) {
+        console.warn('Cache access failed:', cacheError.message);
       }
     }
 
-    // Apply search query
+    console.log('❌ Cache MISS - Querying careers from Parse Class');
+
+    // Query Career class from Parse
+    const CareerClass = Parse.Object.extend('Career');
+    const careerQuery = new Parse.Query(CareerClass);
+    careerQuery.equalTo('isActive', true);
+    careerQuery.limit(1000); // Get all active careers
+
+    // Apply category filter using Parse Query
+    if (filters && filters.categories && filters.categories.length > 0) {
+      careerQuery.containedIn('category', filters.categories);
+    }
+
+    // Apply salary range filter using Parse Query
+    if (filters && filters.salaryRange) {
+      if (filters.salaryRange.min) {
+        careerQuery.greaterThanOrEqualTo('avgSalary', filters.salaryRange.min);
+      }
+      if (filters.salaryRange.max) {
+        careerQuery.lessThanOrEqualTo('avgSalary', filters.salaryRange.max);
+      }
+    }
+
+    // Apply education level filter
+    if (filters && filters.educationLevel) {
+      careerQuery.equalTo('educationLevel', filters.educationLevel);
+    }
+
+    // Apply job outlook filter
+    if (filters && filters.jobOutlook) {
+      careerQuery.equalTo('jobOutlook', filters.jobOutlook);
+    }
+
+    // Execute query
+    const careerObjects = await careerQuery.find({ useMasterKey: true });
+
+    // Convert Parse objects to plain objects and map field names
+    let careers = careerObjects.map(career => ({
+      id: career.get('careerId') || career.id,
+      title: career.get('title') || 'Unknown Career',
+      category: career.get('category') || 'General',
+      averageSalary: career.get('avgSalary') || 0,
+      salaryRange: {
+        min: career.get('salaryRangeMin') || 0,
+        max: career.get('salaryRangeMax') || 0
+      },
+      educationLevel: career.get('educationLevel') || 'Not specified',
+      educationPath: career.get('educationPath') || 'Not specified',
+      keySubjects: career.get('keySubjects') || [],
+      minimumGrades: career.get('minimumGrades') || {},
+      workEnvironment: career.get('workEnvironment') || 'Various settings',
+      jobOutlook: career.get('jobOutlook') || 'moderate',
+      industryGrowth: career.get('industryGrowth') || 'moderate',
+      employmentRate: career.get('employmentRate') || 0,
+      description: career.get('description') || '',
+      dailyTasks: career.get('dailyTasks') || [],
+      skills: career.get('skills') || [],
+      personalityTraits: career.get('personalityTraits') || [],
+      careerProgression: career.get('careerProgression') || '',
+      challenges: career.get('challenges') || [],
+      rewards: career.get('rewards') || [],
+      relatedCareers: career.get('relatedCareers') || [],
+      kenyaSpecific: career.get('kenyaSpecific') || {}
+    }));
+
+    // Apply search query (in-memory filter for complex text search)
     if (searchQuery && searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       careers = careers.filter(career =>
@@ -4000,17 +4135,19 @@ Parse.Cloud.define('exploreCareers', async (request) => {
     // Generate exploration insights
     const insights = generateExplorationInsights(limitedCareers, filters, studentProfile);
 
-    // Log activity
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'career_exploration',
-      details: {
-        filters: filters || {},
-        searchQuery: searchQuery || '',
-        resultsCount: limitedCareers.length,
-        sortBy: sortBy || 'relevance'
-      }
-    });
+    // Log activity (only if user exists - skip for master key requests)
+    if (user && user.id) {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'career_exploration',
+        details: {
+          filters: filters || {},
+          searchQuery: searchQuery || '',
+          resultsCount: limitedCareers.length,
+          sortBy: sortBy || 'relevance'
+        }
+      });
+    }
 
     const result = {
       success: true,
@@ -4024,22 +4161,30 @@ Parse.Cloud.define('exploreCareers', async (request) => {
       }
     };
 
-    // Cache the result for 20 minutes (1200 seconds)
-    await cache.set(cacheKey, result, 1200);
-    console.log('💾 Cached career exploration results');
+    // Cache the result for 20 minutes (1200 seconds) with null safety
+    if (cache && cache.set) {
+      try {
+        await cache.set(cacheKey, result, 1200);
+        console.log('💾 Cached career exploration results');
+      } catch (cacheError) {
+        console.warn('Cache write failed:', cacheError.message);
+      }
+    }
 
     return result;
 
   } catch (error) {
     console.error('❌ Career Exploration error:', error);
+    console.error('Error stack:', error.stack);
     throw new Error(`Failed to explore careers: ${error.message}`);
   }
 });
 
-// Get detailed career information
+// Get detailed career information (Parse Class Version - Updated 2025-10-11)
+// Queries from Career Parse Class instead of hardcoded data
 Parse.Cloud.define('getCareerDetails', async (request) => {
-  const { user } = request;
-  if (!user) {
+  const { user, master } = request;
+  if (!user && !master) {
     throw new Error('User must be authenticated');
   }
 
@@ -4048,10 +4193,44 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
   console.log('📋 Getting career details for:', careerId);
 
   try {
-    const career = KENYA_CAREERS_DATABASE.find(c => c.id === careerId);
-    if (!career) {
+    // Query Career from Parse Class
+    const CareerClass = Parse.Object.extend('Career');
+    const careerQuery = new Parse.Query(CareerClass);
+    careerQuery.equalTo('careerId', careerId);
+    const careerObject = await careerQuery.first({ useMasterKey: true });
+
+    if (!careerObject) {
       throw new Error('Career not found');
     }
+
+    // Convert Parse object to plain object with field mapping
+    const career = {
+      id: careerObject.get('careerId') || careerObject.id,
+      title: careerObject.get('title') || 'Unknown Career',
+      category: careerObject.get('category') || 'General',
+      averageSalary: careerObject.get('avgSalary') || 0,
+      salaryRange: {
+        min: careerObject.get('salaryRangeMin') || 0,
+        max: careerObject.get('salaryRangeMax') || 0
+      },
+      educationLevel: careerObject.get('educationLevel') || 'Not specified',
+      educationPath: careerObject.get('educationPath') || 'Not specified',
+      keySubjects: careerObject.get('keySubjects') || [],
+      minimumGrades: careerObject.get('minimumGrades') || {},
+      workEnvironment: careerObject.get('workEnvironment') || 'Various settings',
+      jobOutlook: careerObject.get('jobOutlook') || 'moderate',
+      industryGrowth: careerObject.get('industryGrowth') || 'moderate',
+      employmentRate: careerObject.get('employmentRate') || 0,
+      description: careerObject.get('description') || '',
+      dailyTasks: careerObject.get('dailyTasks') || [],
+      skills: careerObject.get('skills') || [],
+      personalityTraits: careerObject.get('personalityTraits') || [],
+      careerProgression: careerObject.get('careerProgression') || '',
+      challenges: careerObject.get('challenges') || [],
+      rewards: careerObject.get('rewards') || [],
+      relatedCareers: careerObject.get('relatedCareers') || [],
+      kenyaSpecific: careerObject.get('kenyaSpecific') || {}
+    };
 
     // Add personalized information if student profile provided
     let personalizedCareer = { ...career };
@@ -4067,16 +4246,18 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
     personalizedCareer.industryTrends = getIndustryTrends(career.category);
     personalizedCareer.successStories = getSuccessStories(career);
 
-    // Log activity
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'career_details_view',
-      details: {
-        careerId,
-        careerTitle: career.title,
-        category: career.category
-      }
-    });
+    // Log activity (only if user exists - skip for master key requests)
+    if (user && user.id) {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'career_details_view',
+        details: {
+          careerId,
+          careerTitle: career.title,
+          category: career.category
+        }
+      });
+    }
 
     return {
       success: true,
@@ -4085,6 +4266,7 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
 
   } catch (error) {
     console.error('❌ Get Career Details error:', error);
+    console.error('Error stack:', error.stack);
     throw new Error(`Failed to get career details: ${error.message}`);
   }
 });
@@ -4424,8 +4606,8 @@ function generateCareerActionPlan(career, studentProfile) {
 
 // Helper function to find similar careers
 function findSimilarCareers(targetCareer) {
-  return KENYA_CAREERS_DATABASE
-    .filter(career => 
+  return KENYA_CAREERS_DATABASE_DEPRECATED
+    .filter(career =>
       career.id !== targetCareer.id &&
       (career.category === targetCareer.category ||
        career.keySubjects.some(subject => targetCareer.keySubjects.includes(subject)))
@@ -5961,4 +6143,11 @@ Parse.Cloud.define('getMyQuestions', async (request) => {
     throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get questions');
   }
 });
+
+
+
+// ============================================
+// CONTENT MANAGEMENT FUNCTIONS
+// ============================================
+require('./contentManagementFunctions');
 

@@ -62,6 +62,9 @@ const AnalyticsPage = lazy(() => import('./pages/counselor/AnalyticsPage').then(
 // Admin pages
 const AdminPortal = lazy(() => import('./pages/admin/AdminPortal'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const AdminContentManagementPage = lazy(() => import('./pages/admin/AdminContentManagementPage').then(m => ({ default: m.AdminContentManagementPage })));
+const UniversitiesManagementPage = lazy(() => import('./pages/admin/UniversitiesManagementPage').then(m => ({ default: m.UniversitiesManagementPage })));
+const CareersManagementPage = lazy(() => import('./pages/admin/CareersManagementPage').then(m => ({ default: m.CareersManagementPage })));
 const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage').then(m => ({ default: m.UserManagementPage })));
 const SystemAnalyticsPage = lazy(() => import('./pages/admin/SystemAnalyticsPage').then(m => ({ default: m.SystemAnalyticsPage })));
 const ContentModerationPage = lazy(() => import('./pages/admin/ContentModerationPage').then(m => ({ default: m.ContentModerationPage })));
@@ -160,6 +163,9 @@ const AppContent: React.FC = () => {
         <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
         <Route path="/counselor/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/content" element={<AdminContentManagementPage />} />
+        <Route path="/admin/content/universities" element={<UniversitiesManagementPage />} />
+        <Route path="/admin/content/careers" element={<CareersManagementPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/analytics" element={<SystemAnalyticsPage />} />
         <Route path="/admin/content-moderation" element={<ContentModerationPage />} />

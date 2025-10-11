@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  Shield, 
-  Users, 
+import {
+  Shield,
+  Users,
   BarChart3,
   Settings,
   FileText,
@@ -11,7 +11,8 @@ import {
   Lock,
   Search,
   TrendingUp,
-  Zap
+  Zap,
+  FolderKanban
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -242,8 +243,25 @@ const AdminPortal: React.FC = () => {
         </div>
 
         {/* Secondary Admin Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+
+          {/* Content Management - NEW */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <FolderKanban className="h-6 w-6 text-purple-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-2">Content Management</h4>
+              <p className="text-sm text-gray-600 mb-4">Manage universities, courses, careers, and assessments</p>
+              <button
+                onClick={() => navigate('/admin/content')}
+                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                Manage Content →
+              </button>
+            </div>
+          </div>
+
           {/* System Configuration */}
           <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex flex-col items-center text-center">
@@ -252,7 +270,7 @@ const AdminPortal: React.FC = () => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">System Config</h4>
               <p className="text-sm text-gray-600 mb-4">Platform settings and configuration management</p>
-              <button 
+              <button
                 onClick={() => navigate('/admin/system-configuration')}
                 className="text-sm text-purple-600 hover:text-purple-800 font-medium"
               >

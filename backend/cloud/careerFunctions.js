@@ -20,7 +20,8 @@ Parse.Cloud.define('getCareersBySubject', async (request) => {
     const Career = Parse.Object.extend('Career');
     const query = new Parse.Query(Career);
 
-    query.equalTo('relatedSubjects', subject);
+    // Use containsAll for array field (relatedSubjects is an Array)
+    query.containsAll('relatedSubjects', [subject]);
     query.equalTo('isActive', true);
     query.descending('matchScore');
     query.limit(10); // Top 10 careers per subject
