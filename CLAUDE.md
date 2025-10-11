@@ -1,5 +1,12 @@
 # Claude Code Development Guide - Elimu Smart
 
+> **🚨 CRITICAL: READ FIRST 🚨**
+> **Project Tracking System**: To prevent context loss and incorrect recommendations, **ALWAYS** read `.claude/project-status.json` at the start of EVERY session.
+> ```bash
+> cat .claude/project-status.json  # See what's completed, what's next
+> ```
+> See `.claude/TRACKING_SYSTEM.md` for full workflow guide.
+
 ## Project Overview
 
 Elimu Smart is an AI-ready career guidance platform for Kenyan students built with React 19, TypeScript, Vite, and shadcn UI.
