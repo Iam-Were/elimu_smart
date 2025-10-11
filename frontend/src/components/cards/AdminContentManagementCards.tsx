@@ -78,11 +78,11 @@ const adminContentCards: AdminContentCard[] = [
     icon: <FileQuestion className="h-6 w-6" />,
     iconGradient: 'from-purple-500 to-purple-600',
     actionText: 'Manage Questions',
-    actionLink: '/admin/content/assessments',
+    actionLink: '/admin/content/questions',
     itemCount: 132,
     category: 'Assessments',
     priority: 'medium',
-    allowedRoles: ['operations'], // Operations only (technical content)
+    allowedRoles: ['operations', 'platform'], // Operations & Platform admins
   },
   {
     id: 'subject-mappings',
