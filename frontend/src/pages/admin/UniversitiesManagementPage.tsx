@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { GraduationCap, Plus, X } from 'lucide-react';
 import { getParse } from '@/config/parse';
 
-interface University {
+interface University extends Record<string, unknown> {
   id: string;
   universityId: string;
   name: string;

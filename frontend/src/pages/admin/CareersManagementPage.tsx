@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Briefcase, Plus, X } from 'lucide-react';
 import { getParse } from '@/config/parse';
 
-interface Career {
+interface Career extends Record<string, unknown> {
   id: string;
   careerId: string;
   title: string;
