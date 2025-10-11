@@ -60,6 +60,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
 
   useEffect(() => {
     fetchQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType]);
 
   // Handle create/update
@@ -77,7 +78,6 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
         // Update
         await Parse.Cloud.run('updateAssessmentQuestion', {
           id: editingQuestion.id,
-          type: editingQuestion.type,
           ...params
         });
       } else {
@@ -162,7 +162,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
       id: 'statement',
       label: 'Question',
       type: 'custom',
-      render: (value: unknown, row: AssessmentQuestion) => {
+      render: (_value: unknown, row: AssessmentQuestion) => {
         const text = row.type === 'riasec' ? row.statement : row.text;
         return (
           <div className="max-w-md truncate" title={text as string}>
@@ -175,7 +175,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
       id: 'riasecType',
       label: 'RIASEC',
       type: 'custom',
-      render: (value: unknown, row: AssessmentQuestion) => {
+      render: (_value: unknown, row: AssessmentQuestion) => {
         if (row.type !== 'riasec') return <span className="text-gray-400">N/A</span>;
         return (
           <Badge variant="secondary" className="text-xs">
