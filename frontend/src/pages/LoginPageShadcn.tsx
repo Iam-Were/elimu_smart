@@ -25,16 +25,10 @@ export const LoginPageShadcn: React.FC = () => {
     setError('');
 
     try {
-      const user = await login(formData);
+      await login(formData);
 
-      // Navigate based on user role
-      if (user.role === 'counselor') {
-        navigate('/counselor/dashboard');
-      } else if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      // Navigate to root - RoleBasedDefaultRoute will handle role-based routing
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -60,16 +54,10 @@ export const LoginPageShadcn: React.FC = () => {
     setError('');
 
     try {
-      const user = await login({ email, password });
+      await login({ email, password });
 
-      // Navigate based on user role
-      if (user.role === 'counselor') {
-        navigate('/counselor/dashboard');
-      } else if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      // Navigate to root - RoleBasedDefaultRoute will handle role-based routing
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
