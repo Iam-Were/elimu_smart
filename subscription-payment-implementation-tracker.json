@@ -1,0 +1,578 @@
+{
+  "metadata": {
+    "generatedAt": "2025-10-12T09:45:00Z",
+    "purpose": "Track actual implementation status of subscription and payment features",
+    "lastVerified": "2025-10-12",
+    "verificationMethod": "Production testing + code inspection"
+  },
+
+  "summary": {
+    "overallStatus": "PARTIALLY_IMPLEMENTED",
+    "codeExists": true,
+    "deployed": true,
+    "functionalStatus": "REQUIRES_AUTHENTICATION_TESTING",
+    "blockers": [
+      "404 error when accessing /subscription (unauthenticated)",
+      "Backend functions return 'unauthorized' (authentication required)",
+      "No subscription database tables verified",
+      "M-Pesa integration not tested with real payments"
+    ]
+  },
+
+  "frontend": {
+    "routes": {
+      "subscriptionPage": {
+        "path": "/subscription",
+        "status": "EXISTS_IN_CODE",
+        "file": "/root/elimu_smart/frontend/src/App.tsx",
+        "lineNumber": 137,
+        "lazyLoaded": true,
+        "deployedToProduction": true,
+        "productionTest": {
+          "url": "https://elimu-smart.co.ke/subscription",
+          "httpStatus": 404,
+          "requiresAuth": "LIKELY_YES",
+          "tested": "2025-10-12T09:45:00Z"
+        },
+        "implementation": "COMPLETE_IN_CODE",
+        "needsTesting": "Requires authenticated user test"
+      },
+      "billingPage": {
+        "path": "/billing",
+        "status": "EXISTS_IN_CODE",
+        "file": "/root/elimu_smart/frontend/src/App.tsx",
+        "lineNumber": 138,
+        "lazyLoaded": true,
+        "implementation": "COMPLETE_IN_CODE",
+        "needsTesting": "Requires authenticated user test"
+      }
+    },
+
+    "components": {
+      "SubscriptionPage": {
+        "file": "/root/elimu_smart/frontend/src/pages/SubscriptionPage.tsx",
+        "exists": true,
+        "lines": 297,
+        "lastModified": "2025-10-06",
+        "features": {
+          "pricingDisplay": "IMPLEMENTED",
+          "planCards": "IMPLEMENTED",
+          "mPesaPaymentForm": "IMPLEMENTED",
+          "phoneNumberInput": "IMPLEMENTED",
+          "planSelection": "IMPLEMENTED"
+        },
+        "uiComponents": [
+          "Card (shadcn)",
+          "Button (shadcn)",
+          "Input (shadcn)",
+          "Badge (shadcn)",
+          "Alert (shadcn)"
+        ],
+        "status": "CODE_COMPLETE",
+        "bundleSize": "Found in production assets",
+        "needsVerification": "User flow testing with authentication"
+      },
+
+      "BillingPage": {
+        "file": "/root/elimu_smart/frontend/src/pages/BillingPage.tsx",
+        "exists": true,
+        "lines": "100+",
+        "features": {
+          "invoiceHistory": "IMPLEMENTED",
+          "billingDetails": "IMPLEMENTED",
+          "paymentMethods": "IMPLEMENTED"
+        },
+        "status": "CODE_COMPLETE",
+        "needsVerification": "Invoice generation testing"
+      }
+    },
+
+    "hooks": {
+      "useSubscription": {
+        "file": "/root/elimu_smart/frontend/src/hooks/useSubscription.ts",
+        "exists": true,
+        "lines": 101,
+        "functions": {
+          "loadSubscriptionData": "IMPLEMENTED",
+          "initiatePayment": "IMPLEMENTED",
+          "checkPaymentStatus": "IMPLEMENTED",
+          "cancelSubscription": "IMPLEMENTED"
+        },
+        "backendIntegration": {
+          "getSubscriptionPlans": "CONNECTED",
+          "getUserSubscription": "CONNECTED",
+          "initiateSubscriptionPayment": "CONNECTED",
+          "checkSubscriptionPaymentStatus": "CONNECTED",
+          "cancelSubscription": "CONNECTED"
+        },
+        "status": "CODE_COMPLETE",
+        "needsTesting": "End-to-end payment flow"
+      },
+
+      "useBilling": {
+        "file": "/root/elimu_smart/frontend/src/hooks/useBilling.ts",
+        "exists": "NEEDS_VERIFICATION",
+        "expectedFunctions": [
+          "getBillingHistory",
+          "getInvoiceDetails",
+          "downloadInvoice"
+        ],
+        "status": "UNKNOWN"
+      }
+    },
+
+    "pricingPlans": {
+      "definedInBackend": true,
+      "plans": [
+        {
+          "id": "free",
+          "name": "Free Plan",
+          "price": 0,
+          "duration": "forever",
+          "features": ["Basic career assessment", "Limited counselor access", "Community forum"]
+        },
+        {
+          "id": "basic",
+          "name": "Basic Plan",
+          "price": 500,
+          "duration": "monthly",
+          "features": ["All Free features", "Unlimited assessments", "3 counselor sessions/month", "Ad-free"]
+        },
+        {
+          "id": "premium",
+          "name": "Premium Plan",
+          "price": 1000,
+          "duration": "monthly",
+          "features": ["All Basic features", "Unlimited counselor sessions", "Career roadmap", "Priority support"],
+          "popular": true
+        },
+        {
+          "id": "annual",
+          "name": "Annual Premium",
+          "price": 10000,
+          "duration": "yearly",
+          "features": ["All Premium features", "2 months free", "Exclusive webinars"],
+          "savings": 2000
+        }
+      ]
+    }
+  },
+
+  "backend": {
+    "cloudFunctions": {
+      "getSubscriptionPlans": {
+        "file": "/root/elimu_smart/backend/cloud/main.js",
+        "lineNumber": 5736,
+        "exists": true,
+        "implementation": "COMPLETE",
+        "returns": "4 subscription plans with pricing",
+        "requiresAuth": false,
+        "productionTest": {
+          "url": "https://elimu-smart.co.ke/parse/functions/getSubscriptionPlans",
+          "response": "{\"error\":\"unauthorized\"}",
+          "tested": "2025-10-12T09:45:00Z",
+          "note": "May require authentication despite being plan listing"
+        },
+        "status": "EXISTS_BUT_NEEDS_AUTH_TESTING"
+      },
+
+      "initiateSubscriptionPayment": {
+        "file": "/root/elimu_smart/backend/cloud/main.js",
+        "lineNumber": 5762,
+        "exists": true,
+        "implementation": "COMPLETE",
+        "parameters": ["planId", "phoneNumber"],
+        "mPesaIntegration": "CONFIGURED",
+        "requiresAuth": true,
+        "productionTest": {
+          "tested": "2025-10-12T09:45:00Z",
+          "response": "{\"error\":\"unauthorized\"}",
+          "note": "Requires valid session token"
+        },
+        "status": "EXISTS_REQUIRES_AUTH"
+      },
+
+      "checkSubscriptionPaymentStatus": {
+        "file": "/root/elimu_smart/backend/cloud/main.js",
+        "lineNumber": "~5770",
+        "exists": true,
+        "implementation": "LIKELY_COMPLETE",
+        "requiresAuth": true,
+        "status": "EXISTS_REQUIRES_AUTH"
+      },
+
+      "getUserSubscription": {
+        "file": "/root/elimu_smart/backend/cloud/main.js",
+        "lineNumber": "~5775",
+        "exists": true,
+        "implementation": "LIKELY_COMPLETE",
+        "requiresAuth": true,
+        "status": "EXISTS_REQUIRES_AUTH"
+      },
+
+      "cancelSubscription": {
+        "file": "/root/elimu_smart/backend/cloud/main.js",
+        "lineNumber": "~5780",
+        "exists": true,
+        "implementation": "LIKELY_COMPLETE",
+        "requiresAuth": true,
+        "status": "EXISTS_REQUIRES_AUTH"
+      },
+
+      "getBillingHistory": {
+        "exists": "UNKNOWN",
+        "expectedLocation": "/root/elimu_smart/backend/cloud/main.js",
+        "status": "NEEDS_VERIFICATION"
+      },
+
+      "getInvoiceDetails": {
+        "exists": "UNKNOWN",
+        "expectedLocation": "/root/elimu_smart/backend/cloud/main.js",
+        "status": "NEEDS_VERIFICATION"
+      },
+
+      "generateInvoice": {
+        "exists": "LIKELY_EXISTS",
+        "note": "CLAUDE.md mentions billing functions",
+        "status": "NEEDS_VERIFICATION"
+      }
+    },
+
+    "database": {
+      "parseSchemas": {
+        "Subscription": {
+          "exists": "UNKNOWN",
+          "tested": "2025-10-12T09:45:00Z",
+          "testMethod": "Parse schemas endpoint returned empty (unauthorized)",
+          "expectedFields": [
+            "user (Pointer to _User)",
+            "planId (String)",
+            "status (String: active/cancelled/expired)",
+            "startDate (Date)",
+            "endDate (Date)",
+            "amount (Number)",
+            "paymentMethod (String)"
+          ],
+          "status": "NEEDS_VERIFICATION"
+        },
+
+        "Payment": {
+          "exists": "UNKNOWN",
+          "expectedFields": [
+            "user (Pointer to _User)",
+            "subscription (Pointer to Subscription)",
+            "amount (Number)",
+            "phoneNumber (String)",
+            "mPesaCode (String)",
+            "status (String: pending/completed/failed)",
+            "initiatedAt (Date)",
+            "completedAt (Date)"
+          ],
+          "status": "NEEDS_VERIFICATION"
+        },
+
+        "Invoice": {
+          "exists": "UNKNOWN",
+          "expectedFields": [
+            "user (Pointer to _User)",
+            "subscription (Pointer to Subscription)",
+            "invoiceNumber (String)",
+            "amount (Number)",
+            "status (String: paid/unpaid)",
+            "issuedAt (Date)",
+            "dueDate (Date)"
+          ],
+          "status": "NEEDS_VERIFICATION"
+        }
+      }
+    },
+
+    "mPesaIntegration": {
+      "configured": true,
+      "environment": "PRODUCTION",
+      "credentials": {
+        "consumerKey": "EXISTS_IN_ENV",
+        "consumerSecret": "EXISTS_IN_ENV",
+        "shortcode": "5482596",
+        "passkey": "EXISTS_IN_ENV",
+        "callbackUrl": "TBD"
+      },
+      "features": {
+        "stkPush": "CONFIGURED",
+        "paymentCallback": "NEEDS_IMPLEMENTATION",
+        "paymentVerification": "NEEDS_IMPLEMENTATION"
+      },
+      "testingStatus": "NOT_TESTED_WITH_REAL_PAYMENTS"
+    },
+
+    "emailIntegration": {
+      "provider": "ZeptoMail",
+      "configured": true,
+      "functions": {
+        "sendWelcomeEmail": "EXISTS",
+        "sendPaymentConfirmation": "NEEDS_VERIFICATION",
+        "sendInvoiceEmail": "NEEDS_VERIFICATION",
+        "sendSubscriptionReminder": "NEEDS_VERIFICATION"
+      }
+    }
+  },
+
+  "userJourney": {
+    "subscriptionFlow": {
+      "steps": [
+        {
+          "step": 1,
+          "action": "User navigates to /subscription",
+          "status": "404_WHEN_UNAUTHENTICATED",
+          "blockers": ["Requires login", "Route protected"],
+          "needsTesting": "Login → Navigate to /subscription"
+        },
+        {
+          "step": 2,
+          "action": "View pricing plans",
+          "status": "UI_IMPLEMENTED",
+          "dataSource": "getSubscriptionPlans cloud function",
+          "needsTesting": "Verify plans display correctly"
+        },
+        {
+          "step": 3,
+          "action": "Select plan and enter phone number",
+          "status": "UI_IMPLEMENTED",
+          "validation": "Phone format validation needed",
+          "needsTesting": "Form validation and UX"
+        },
+        {
+          "step": 4,
+          "action": "Click 'Subscribe with M-Pesa'",
+          "status": "BUTTON_IMPLEMENTED",
+          "backend": "initiateSubscriptionPayment",
+          "needsTesting": "End-to-end payment flow"
+        },
+        {
+          "step": 5,
+          "action": "Receive M-Pesa STK push notification",
+          "status": "BACKEND_CONFIGURED",
+          "needsTesting": "Real M-Pesa test with test phone"
+        },
+        {
+          "step": 6,
+          "action": "Enter M-Pesa PIN and complete payment",
+          "status": "EXTERNAL_PROCESS",
+          "needsTesting": "Monitor M-Pesa callback"
+        },
+        {
+          "step": 7,
+          "action": "System processes payment callback",
+          "status": "NEEDS_IMPLEMENTATION",
+          "blockers": ["Callback URL not configured", "Callback handler needs implementation"],
+          "priority": "HIGH"
+        },
+        {
+          "step": 8,
+          "action": "User subscription status updated",
+          "status": "NEEDS_IMPLEMENTATION",
+          "database": "Subscription table update",
+          "priority": "HIGH"
+        },
+        {
+          "step": 9,
+          "action": "User receives confirmation email",
+          "status": "NEEDS_VERIFICATION",
+          "function": "sendPaymentConfirmation",
+          "priority": "MEDIUM"
+        },
+        {
+          "step": 10,
+          "action": "User sees premium features unlocked",
+          "status": "NEEDS_IMPLEMENTATION",
+          "blockers": ["Feature gating logic not implemented", "Subscription status check missing"],
+          "priority": "HIGH"
+        }
+      ]
+    },
+
+    "billingFlow": {
+      "steps": [
+        {
+          "step": 1,
+          "action": "User navigates to /billing",
+          "status": "ROUTE_EXISTS",
+          "needsTesting": "Requires authentication test"
+        },
+        {
+          "step": 2,
+          "action": "View billing history",
+          "status": "UI_IMPLEMENTED",
+          "backend": "getBillingHistory (needs verification)",
+          "needsTesting": "Display invoice list"
+        },
+        {
+          "step": 3,
+          "action": "Download invoice PDF",
+          "status": "NEEDS_IMPLEMENTATION",
+          "function": "getInvoiceHTML or generateInvoice",
+          "priority": "LOW"
+        }
+      ]
+    }
+  },
+
+  "testingRequirements": {
+    "critical": [
+      {
+        "test": "Authenticated access to /subscription",
+        "steps": [
+          "Login as student@elimu.com",
+          "Navigate to /subscription",
+          "Verify page loads (not 404)",
+          "Verify pricing plans display"
+        ],
+        "priority": "CRITICAL"
+      },
+      {
+        "test": "M-Pesa payment flow (test environment)",
+        "steps": [
+          "Select a plan",
+          "Enter test phone number",
+          "Initiate payment",
+          "Monitor backend logs for M-Pesa API calls",
+          "Verify STK push sent"
+        ],
+        "priority": "CRITICAL",
+        "note": "Use M-Pesa sandbox first, then production test with KES 1"
+      },
+      {
+        "test": "Payment callback handling",
+        "steps": [
+          "Set up M-Pesa callback URL",
+          "Implement callback endpoint",
+          "Simulate M-Pesa callback",
+          "Verify subscription status updated"
+        ],
+        "priority": "CRITICAL"
+      },
+      {
+        "test": "Feature gating for premium users",
+        "steps": [
+          "Create test user with free subscription",
+          "Verify premium features blocked",
+          "Upgrade to premium",
+          "Verify premium features unlocked"
+        ],
+        "priority": "HIGH"
+      }
+    ],
+
+    "medium": [
+      {
+        "test": "Billing history display",
+        "priority": "MEDIUM"
+      },
+      {
+        "test": "Invoice generation and download",
+        "priority": "MEDIUM"
+      },
+      {
+        "test": "Subscription cancellation flow",
+        "priority": "MEDIUM"
+      },
+      {
+        "test": "Email notifications",
+        "priority": "MEDIUM"
+      }
+    ],
+
+    "low": [
+      {
+        "test": "Subscription renewal reminders",
+        "priority": "LOW"
+      },
+      {
+        "test": "Failed payment retry logic",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "implementationGaps": {
+    "critical": [
+      {
+        "gap": "M-Pesa callback handler",
+        "description": "Endpoint to receive payment confirmation from M-Pesa",
+        "location": "backend/routes/ or cloud function",
+        "estimatedEffort": "4 hours",
+        "dependencies": ["Callback URL configuration", "Payment verification logic"]
+      },
+      {
+        "gap": "Subscription status management",
+        "description": "Create/update Subscription records in database",
+        "location": "backend/cloud/subscription-functions.js",
+        "estimatedEffort": "3 hours",
+        "dependencies": ["Subscription Parse Class schema"]
+      },
+      {
+        "gap": "Feature gating middleware",
+        "description": "Check user subscription status before allowing premium features",
+        "location": "frontend/hooks/useSubscription.ts + backend cloud functions",
+        "estimatedEffort": "2 hours",
+        "dependencies": ["Subscription status lookup"]
+      }
+    ],
+
+    "high": [
+      {
+        "gap": "Payment verification",
+        "description": "Verify M-Pesa payment status with Daraja API query endpoint",
+        "estimatedEffort": "2 hours"
+      },
+      {
+        "gap": "Database schema creation",
+        "description": "Create Subscription, Payment, Invoice Parse Classes",
+        "estimatedEffort": "1 hour"
+      }
+    ],
+
+    "medium": [
+      {
+        "gap": "Invoice generation",
+        "description": "Generate PDF invoices for completed payments",
+        "estimatedEffort": "3 hours"
+      },
+      {
+        "gap": "Email notifications",
+        "description": "Send payment confirmation and invoice emails",
+        "estimatedEffort": "2 hours"
+      }
+    ]
+  },
+
+  "recommendations": {
+    "immediate": [
+      "Test authenticated access to /subscription route",
+      "Verify backend cloud functions with valid session token",
+      "Create Parse Class schemas for Subscription, Payment, Invoice",
+      "Implement M-Pesa callback handler"
+    ],
+
+    "shortTerm": [
+      "Set up M-Pesa sandbox testing environment",
+      "Implement subscription status management",
+      "Add feature gating logic",
+      "Test end-to-end payment flow"
+    ],
+
+    "longTerm": [
+      "Implement invoice generation",
+      "Add subscription renewal reminders",
+      "Build admin dashboard for subscription management",
+      "Add payment analytics and reporting"
+    ]
+  },
+
+  "estimatedCompletionTime": {
+    "criticalGaps": "12 hours",
+    "fullImplementation": "25-30 hours",
+    "testingAndRefinement": "8-10 hours",
+    "totalToProduction": "40-50 hours"
+  }
+}
