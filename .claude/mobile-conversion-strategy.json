@@ -1,0 +1,861 @@
+{
+  "project": {
+    "name": "Elimu Smart Mobile Conversion",
+    "version": "1.0.0",
+    "created": "2025-10-12",
+    "lastUpdated": "2025-10-12",
+    "status": "planning",
+    "targetFramework": "React Native + Expo SDK 54",
+    "componentLibrary": "React Native Paper 5.x",
+    "backend": "Parse Server (existing, 104 cloud functions)",
+    "approach": "Automated AI conversion with minimal manual coding"
+  },
+
+  "tokenBudget": {
+    "totalAvailable": 200000,
+    "usedSoFar": 95000,
+    "remaining": 105000,
+    "phases": {
+      "phase1_setup": 15000,
+      "phase2_conversion": 60000,
+      "phase3_integration": 15000,
+      "phase4_deployment": 10000,
+      "phase5_testing": 5000
+    },
+    "notes": "Conservative estimates. Track actual usage in token-budget-tracker.json"
+  },
+
+  "requiredIntegrations": {
+    "immediate": [
+      {
+        "service": "GitHub",
+        "purpose": "Version control and repository hosting",
+        "cost": "Free",
+        "status": "already_exists",
+        "repo": "https://github.com/Iam-Were/elimu_smart",
+        "action": "Create new repo 'elimu-smart-mobile' or use subdirectory"
+      },
+      {
+        "service": "Expo Account",
+        "purpose": "Development builds, Expo Go testing",
+        "cost": "Free",
+        "status": "needs_signup",
+        "url": "https://expo.dev/signup",
+        "action": "Create account, get access token"
+      },
+      {
+        "service": "Codemagic",
+        "purpose": "Cloud iOS/Android builds without Mac",
+        "cost": "Free (500 mins/month)",
+        "status": "needs_signup",
+        "url": "https://codemagic.io/signup",
+        "action": "Sign up, connect GitHub repo"
+      }
+    ],
+    "beforeAppStoreSubmission": [
+      {
+        "service": "Apple Developer Account",
+        "purpose": "iOS App Store deployment",
+        "cost": "$99/year",
+        "status": "needs_creation",
+        "url": "https://developer.apple.com/programs/enroll/",
+        "action": "Enroll as individual developer",
+        "credentials": ["App ID", "Certificates", "Provisioning Profiles"]
+      },
+      {
+        "service": "Google Play Developer Account",
+        "purpose": "Android Google Play deployment",
+        "cost": "$25 one-time",
+        "status": "needs_creation",
+        "url": "https://play.google.com/console/signup",
+        "action": "Create developer account",
+        "credentials": ["Package name", "Signing key"]
+      }
+    ],
+    "optional": [
+      {
+        "service": "Sentry",
+        "purpose": "Crash reporting and error tracking",
+        "cost": "Free tier available",
+        "status": "optional",
+        "url": "https://sentry.io"
+      }
+    ]
+  },
+
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Project Setup & Configuration",
+      "duration": "1-2 days",
+      "estimatedTokens": 15000,
+      "status": "pending",
+      "prerequisites": ["GitHub repo", "Expo account"],
+      "tasks": [
+        {
+          "id": "1.1",
+          "task": "Create mobile project structure",
+          "description": "Initialize React Native + Expo project with TypeScript",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "output": "mobile/ directory with package.json, tsconfig.json, app.json"
+        },
+        {
+          "id": "1.2",
+          "task": "Install dependencies",
+          "description": "Install React Native Paper, Parse SDK, React Navigation",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "packages": [
+            "react-native-paper",
+            "parse",
+            "@parse/react-native",
+            "@react-native-async-storage/async-storage",
+            "@react-navigation/native",
+            "@react-navigation/bottom-tabs",
+            "@react-navigation/stack"
+          ]
+        },
+        {
+          "id": "1.3",
+          "task": "Configure Parse Server connection",
+          "description": "Set up Parse SDK initialization for mobile",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "file": "mobile/src/config/parse.ts"
+        },
+        {
+          "id": "1.4",
+          "task": "Set up navigation structure",
+          "description": "Create tab navigator and stack navigators",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "files": [
+            "mobile/src/navigation/RootNavigator.tsx",
+            "mobile/src/navigation/StudentNavigator.tsx",
+            "mobile/src/navigation/AuthNavigator.tsx"
+          ]
+        },
+        {
+          "id": "1.5",
+          "task": "Create theme configuration",
+          "description": "Set up React Native Paper theme matching web orange theme",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "file": "mobile/src/theme/theme.ts",
+          "colors": {
+            "primary": "#f97316",
+            "secondary": "#fb923c"
+          }
+        },
+        {
+          "id": "1.6",
+          "task": "Set up environment variables",
+          "description": "Configure dev/staging/production environments",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "files": [".env", ".env.staging", ".env.production"]
+        },
+        {
+          "id": "1.7",
+          "task": "Configure Expo app.json",
+          "description": "Set app name, bundle ID, icons, splash screen",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "file": "mobile/app.json"
+        },
+        {
+          "id": "1.8",
+          "task": "Create Codemagic workflow configuration",
+          "description": "Set up automated iOS/Android builds",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "file": "mobile/codemagic.yaml"
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Component Conversion (Authentication & Core)",
+      "duration": "3-5 days",
+      "estimatedTokens": 35000,
+      "status": "pending",
+      "dependencies": ["Phase 1 complete"],
+      "componentGroups": [
+        {
+          "group": "Authentication Screens",
+          "webPath": "frontend/src/pages/",
+          "mobilePath": "mobile/src/screens/auth/",
+          "estimatedTokens": 12000,
+          "components": [
+            {
+              "id": "2.1",
+              "name": "LoginPage",
+              "webFile": "LoginPage.tsx",
+              "mobileFile": "LoginScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 3000,
+              "status": "pending",
+              "shadcnComponents": ["Card", "Button", "Input", "Form"],
+              "paperComponents": ["TextInput", "Button", "Card"],
+              "notes": "Convert form validation, handle keyboard, add biometric auth option"
+            },
+            {
+              "id": "2.2",
+              "name": "RegisterPage",
+              "webFile": "RegisterPage.tsx",
+              "mobileFile": "RegisterScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 3000,
+              "status": "pending",
+              "shadcnComponents": ["Card", "Button", "Input", "Form", "Select"],
+              "paperComponents": ["TextInput", "Button", "Card", "Menu"],
+              "notes": "Multi-step form, needs ScrollView for small screens"
+            },
+            {
+              "id": "2.3",
+              "name": "ForgotPasswordPage",
+              "webFile": "ForgotPasswordPage.tsx",
+              "mobileFile": "ForgotPasswordScreen.tsx",
+              "complexity": "low",
+              "estimatedTokens": 2000,
+              "status": "pending"
+            },
+            {
+              "id": "2.4",
+              "name": "ProfilePage",
+              "webFile": "profile/ProfilePage.tsx",
+              "mobileFile": "profile/ProfileScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 4000,
+              "status": "pending",
+              "notes": "Image picker for profile photo, ScrollView layout"
+            }
+          ]
+        },
+        {
+          "group": "Student Dashboard",
+          "webPath": "frontend/src/pages/student/",
+          "mobilePath": "mobile/src/screens/student/",
+          "estimatedTokens": 15000,
+          "components": [
+            {
+              "id": "2.5",
+              "name": "StudentDashboard",
+              "webFile": "StudentDashboard.tsx",
+              "mobileFile": "DashboardScreen.tsx",
+              "complexity": "high",
+              "estimatedTokens": 8000,
+              "status": "pending",
+              "features": [
+                "8 dynamic cards (Career Readiness, Assessments, etc)",
+                "Hero KPI section",
+                "Urgent Actions banner",
+                "Quick Wins section"
+              ],
+              "paperComponents": ["Card", "ProgressBar", "Chip", "FAB"],
+              "notes": "Use FlatList for performance, implement pull-to-refresh"
+            },
+            {
+              "id": "2.6",
+              "name": "StudentAssessmentCards",
+              "webFile": "StudentAssessmentCards.tsx",
+              "mobileFile": "AssessmentsListScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 4000,
+              "status": "pending",
+              "notes": "6 assessment cards with progress indicators"
+            },
+            {
+              "id": "2.7",
+              "name": "StudentGuidanceCards",
+              "webFile": "StudentGuidanceCards.tsx",
+              "mobileFile": "GuidanceListScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 3000,
+              "status": "pending",
+              "notes": "8 guidance service cards with lock icons for premium"
+            }
+          ]
+        },
+        {
+          "group": "Core UI Components",
+          "webPath": "frontend/src/components/",
+          "mobilePath": "mobile/src/components/",
+          "estimatedTokens": 8000,
+          "components": [
+            {
+              "id": "2.8",
+              "name": "LoadingSpinner",
+              "complexity": "low",
+              "estimatedTokens": 500,
+              "status": "pending"
+            },
+            {
+              "id": "2.9",
+              "name": "ErrorMessage",
+              "complexity": "low",
+              "estimatedTokens": 500,
+              "status": "pending"
+            },
+            {
+              "id": "2.10",
+              "name": "EmptyState",
+              "complexity": "low",
+              "estimatedTokens": 1000,
+              "status": "pending"
+            },
+            {
+              "id": "2.11",
+              "name": "AssessmentCard (reusable)",
+              "complexity": "medium",
+              "estimatedTokens": 2000,
+              "status": "pending"
+            },
+            {
+              "id": "2.12",
+              "name": "GradientIcon (reusable)",
+              "complexity": "medium",
+              "estimatedTokens": 2000,
+              "status": "pending",
+              "notes": "Use react-native-linear-gradient"
+            },
+            {
+              "id": "2.13",
+              "name": "BottomSheet",
+              "complexity": "medium",
+              "estimatedTokens": 2000,
+              "status": "pending",
+              "notes": "Use @gorhom/bottom-sheet"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Assessment Screens Conversion",
+      "duration": "3-4 days",
+      "estimatedTokens": 30000,
+      "status": "pending",
+      "dependencies": ["Phase 2 complete"],
+      "componentGroups": [
+        {
+          "group": "RIASEC Assessment",
+          "webPath": "frontend/src/components/assessments/",
+          "mobilePath": "mobile/src/screens/assessments/riasec/",
+          "estimatedTokens": 10000,
+          "components": [
+            {
+              "id": "3.1",
+              "name": "FreeRiasecAssessment",
+              "webFile": "FreeRiasecAssessment.tsx",
+              "mobileFile": "RiasecAssessmentScreen.tsx",
+              "complexity": "high",
+              "estimatedTokens": 6000,
+              "status": "pending",
+              "features": [
+                "60-question flow",
+                "Swipeable cards (react-native-deck-swiper)",
+                "Progress bar",
+                "Save/resume functionality",
+                "Offline support"
+              ],
+              "notes": "Most complex screen - needs careful UX for mobile"
+            },
+            {
+              "id": "3.2",
+              "name": "RiasecResults",
+              "webFile": "RiasecResults.tsx",
+              "mobileFile": "RiasecResultsScreen.tsx",
+              "complexity": "high",
+              "estimatedTokens": 4000,
+              "status": "pending",
+              "features": [
+                "Radar chart (react-native-chart-kit)",
+                "Career matches list",
+                "Share functionality"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Skills Assessment",
+          "estimatedTokens": 6000,
+          "components": [
+            {
+              "id": "3.3",
+              "name": "SkillsAssessment",
+              "webFile": "SkillsAssessment.tsx",
+              "mobileFile": "SkillsAssessmentScreen.tsx",
+              "complexity": "medium",
+              "estimatedTokens": 4000,
+              "status": "pending"
+            },
+            {
+              "id": "3.4",
+              "name": "SkillsResults",
+              "complexity": "medium",
+              "estimatedTokens": 2000,
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "group": "Subject-Career Mapper",
+          "estimatedTokens": 6000,
+          "components": [
+            {
+              "id": "3.5",
+              "name": "SubjectCareerMapper",
+              "webFile": "SubjectCareerMapper.tsx",
+              "mobileFile": "SubjectMapperScreen.tsx",
+              "complexity": "high",
+              "estimatedTokens": 6000,
+              "status": "pending",
+              "features": [
+                "Subject selection grid",
+                "Career results list",
+                "Filtering",
+                "LinkedIn insights integration"
+              ],
+              "notes": "Already uses backend API - just UI conversion needed"
+            }
+          ]
+        },
+        {
+          "group": "University Finder",
+          "estimatedTokens": 8000,
+          "components": [
+            {
+              "id": "3.6",
+              "name": "UniversityFinder (multi-step)",
+              "complexity": "high",
+              "estimatedTokens": 8000,
+              "status": "pending",
+              "features": [
+                "Grade input",
+                "Subject selection",
+                "Preferences",
+                "Results with KUCCPS data"
+              ],
+              "notes": "Consider single-page design for mobile"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Guidance & Chat Features",
+      "duration": "2-3 days",
+      "estimatedTokens": 15000,
+      "status": "pending",
+      "dependencies": ["Phase 3 complete"],
+      "components": [
+        {
+          "id": "4.1",
+          "name": "InboxPage (Premium Chat)",
+          "complexity": "high",
+          "estimatedTokens": 5000,
+          "status": "pending",
+          "features": [
+            "Message list",
+            "Real-time messaging",
+            "File attachments (image picker)",
+            "Read receipts"
+          ],
+          "notes": "Use react-native-gifted-chat library"
+        },
+        {
+          "id": "4.2",
+          "name": "QuickQuestions (Community Q&A)",
+          "complexity": "medium",
+          "estimatedTokens": 3000,
+          "status": "pending"
+        },
+        {
+          "id": "4.3",
+          "name": "SessionBooking",
+          "complexity": "medium",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "features": ["Calendar picker", "Time slots", "M-Pesa payment"]
+        },
+        {
+          "id": "4.4",
+          "name": "CareerResources",
+          "complexity": "low",
+          "estimatedTokens": 2000,
+          "status": "pending"
+        },
+        {
+          "id": "4.5",
+          "name": "CrisisResources",
+          "complexity": "low",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "notes": "Add click-to-call functionality for hotlines"
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Career & University Exploration",
+      "duration": "2 days",
+      "estimatedTokens": 10000,
+      "status": "pending",
+      "dependencies": ["Phase 3 complete"],
+      "components": [
+        {
+          "id": "5.1",
+          "name": "CareerExploration",
+          "complexity": "high",
+          "estimatedTokens": 5000,
+          "status": "pending",
+          "features": [
+            "Search bar with autocomplete",
+            "Filters (category, salary, demand)",
+            "Career cards with live job data",
+            "Bookmark functionality"
+          ]
+        },
+        {
+          "id": "5.2",
+          "name": "CareerDetailPage",
+          "complexity": "medium",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "features": [
+            "Full career info",
+            "LinkedIn professional insights",
+            "Similar careers",
+            "Share functionality"
+          ]
+        },
+        {
+          "id": "5.3",
+          "name": "ScholarshipSearch",
+          "complexity": "medium",
+          "estimatedTokens": 2000,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Backend Integration & Hooks",
+      "duration": "1-2 days",
+      "estimatedTokens": 10000,
+      "status": "pending",
+      "dependencies": ["Phase 2 complete"],
+      "tasks": [
+        {
+          "id": "6.1",
+          "task": "Copy React hooks from web app",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "files": [
+            "useAuth.ts",
+            "useNotifications.ts",
+            "useBilling.ts",
+            "useDynamicDashboard.ts",
+            "useCounselorDashboard.ts",
+            "useEmailService.ts"
+          ],
+          "notes": "These hooks work as-is on mobile - just copy/paste!"
+        },
+        {
+          "id": "6.2",
+          "task": "Set up Parse Local Datastore for offline",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "features": [
+            "Enable local datastore",
+            "Pin important data",
+            "Sync on reconnect"
+          ]
+        },
+        {
+          "id": "6.3",
+          "task": "Implement push notifications",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "service": "Expo Notifications",
+          "features": [
+            "Request permissions",
+            "Handle notification taps",
+            "Badge counts"
+          ]
+        },
+        {
+          "id": "6.4",
+          "task": "Test all 104 cloud functions",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "notes": "Verify all Parse.Cloud.run() calls work on mobile"
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "Cloud Build & CI/CD Setup",
+      "duration": "1-2 days",
+      "estimatedTokens": 10000,
+      "status": "pending",
+      "dependencies": ["Phase 6 complete", "Codemagic account", "Expo account"],
+      "tasks": [
+        {
+          "id": "7.1",
+          "task": "Configure Codemagic iOS workflow",
+          "estimatedTokens": 3000,
+          "status": "pending",
+          "requirements": ["Apple Developer account", "App ID", "Certificates"]
+        },
+        {
+          "id": "7.2",
+          "task": "Configure Codemagic Android workflow",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "requirements": ["Google Play account", "Keystore"]
+        },
+        {
+          "id": "7.3",
+          "task": "Set up environment variables in Codemagic",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "variables": [
+            "PARSE_APP_ID",
+            "PARSE_SERVER_URL",
+            "EXPO_TOKEN",
+            "APPLE_CERTIFICATE",
+            "GOOGLE_KEYSTORE"
+          ]
+        },
+        {
+          "id": "7.4",
+          "task": "Test first cloud build",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "notes": "Trigger build from GitHub push"
+        },
+        {
+          "id": "7.5",
+          "task": "Configure automatic app store submission",
+          "estimatedTokens": 2000,
+          "status": "pending",
+          "targets": ["TestFlight", "Google Play Internal Testing"]
+        }
+      ]
+    },
+    {
+      "phase": 8,
+      "name": "App Store Preparation & Submission",
+      "duration": "2-3 days",
+      "estimatedTokens": 5000,
+      "status": "pending",
+      "dependencies": ["Phase 7 complete", "Apple Developer account", "Google Play account"],
+      "tasks": [
+        {
+          "id": "8.1",
+          "task": "Create app icons and splash screens",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "requirements": ["Logo file from user"],
+          "sizes": ["iOS: 1024x1024", "Android: Adaptive icon"]
+        },
+        {
+          "id": "8.2",
+          "task": "Generate app screenshots",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "requirements": [
+            "iPhone 15 Pro Max (1290x2796)",
+            "iPad Pro 12.9 (2048x2732)",
+            "Android Phone (1080x1920)",
+            "Android Tablet (1600x2560)"
+          ]
+        },
+        {
+          "id": "8.3",
+          "task": "Write app store listings",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "content": [
+            "App name: Elimu Smart",
+            "Subtitle: Career Guidance for Kenyan Students",
+            "Description: 4000 chars",
+            "Keywords",
+            "Privacy policy URL"
+          ]
+        },
+        {
+          "id": "8.4",
+          "task": "Submit to Apple App Store",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "requirements": ["App Store Connect account", "Build from TestFlight"]
+        },
+        {
+          "id": "8.5",
+          "task": "Submit to Google Play Store",
+          "estimatedTokens": 1000,
+          "status": "pending",
+          "requirements": ["Google Play Console account", "Content rating"]
+        }
+      ]
+    }
+  ],
+
+  "componentMappings": {
+    "shadcn_to_paper": {
+      "Button": "Button",
+      "Card": "Card",
+      "CardHeader": "Card.Title",
+      "CardTitle": "Title (Text component)",
+      "CardDescription": "Paragraph (Text component)",
+      "CardContent": "Card.Content",
+      "CardFooter": "Card.Actions",
+      "Input": "TextInput",
+      "Textarea": "TextInput (multiline)",
+      "Select": "Menu + List",
+      "Dialog": "Modal + Portal",
+      "AlertDialog": "Dialog",
+      "Tabs": "BottomNavigation or SegmentedButtons",
+      "Badge": "Chip",
+      "Avatar": "Avatar",
+      "Progress": "ProgressBar",
+      "Separator": "Divider",
+      "Switch": "Switch",
+      "Checkbox": "Checkbox",
+      "RadioGroup": "RadioButton.Group",
+      "Slider": "Slider (from @react-native-community/slider)",
+      "Toast": "Snackbar"
+    },
+    "webToMobile": {
+      "div": "View",
+      "span": "Text",
+      "p": "Text",
+      "h1": "Text (variant='headlineLarge')",
+      "h2": "Text (variant='headlineMedium')",
+      "h3": "Text (variant='titleLarge')",
+      "button": "Button or TouchableOpacity",
+      "img": "Image",
+      "a": "Text (onPress) or Linking.openURL",
+      "ul": "FlatList or ScrollView",
+      "li": "View (in FlatList item)"
+    },
+    "stylingApproach": {
+      "tailwind": "StyleSheet.create() or inline styles",
+      "className": "style prop",
+      "hover": "Pressable with pressed state",
+      "focus": "onFocus/onBlur handlers",
+      "responsive": "Dimensions API or useWindowDimensions()"
+    }
+  },
+
+  "criticalNotes": {
+    "performanceOptimizations": [
+      "Use FlatList for long lists (not ScrollView with map)",
+      "Implement virtualization for assessment questions",
+      "Use React.memo for card components",
+      "Lazy load images with react-native-fast-image",
+      "Implement pull-to-refresh on dashboard"
+    ],
+    "mobileSpecificFeatures": [
+      "Add biometric authentication (Face ID, fingerprint)",
+      "Implement deep linking for notifications",
+      "Add share functionality (React Native Share)",
+      "Handle keyboard avoiding view for forms",
+      "Implement proper back button handling",
+      "Add splash screen with lottie animation"
+    ],
+    "offlineSupport": [
+      "Enable Parse Local Datastore",
+      "Cache assessment questions locally",
+      "Queue failed API calls for retry",
+      "Show offline indicator",
+      "Allow completing assessments offline"
+    ],
+    "testingRequirements": [
+      "Test on both iOS and Android",
+      "Test on small screens (iPhone SE)",
+      "Test on tablets (iPad, large Android)",
+      "Test offline mode",
+      "Test push notifications",
+      "Test deep linking",
+      "Test payment flows (M-Pesa sandbox)"
+    ]
+  },
+
+  "progressTracking": {
+    "totalComponents": 40,
+    "convertedComponents": 0,
+    "totalScreens": 45,
+    "completedScreens": 0,
+    "cloudFunctionsIntegrated": 0,
+    "cloudFunctionsTested": 0,
+    "percentComplete": 0
+  },
+
+  "userActions": {
+    "immediate": [
+      "Sign up for Expo account",
+      "Sign up for Codemagic account",
+      "Provide logo file (PNG, 1024x1024)"
+    ],
+    "beforePhase7": [
+      "Create Apple Developer account ($99)",
+      "Create Google Play Developer account ($25)",
+      "Provide app store credentials to Codemagic"
+    ],
+    "duringTesting": [
+      "Install Expo Go app on phone",
+      "Test each screen as it's built",
+      "Report any UI issues or bugs",
+      "Approve final designs"
+    ],
+    "beforeLaunch": [
+      "Review app store listings",
+      "Approve screenshots",
+      "Test beta builds on TestFlight/Internal Testing",
+      "Approve final submission"
+    ]
+  },
+
+  "riskMitigation": {
+    "risks": [
+      {
+        "risk": "Token budget exceeded before completion",
+        "likelihood": "medium",
+        "mitigation": "Track tokens per phase, prioritize critical screens, can pause and resume across sessions"
+      },
+      {
+        "risk": "Complex components don't convert well to mobile",
+        "likelihood": "low",
+        "mitigation": "Start with simple screens, iterate, user reviews each screen before proceeding"
+      },
+      {
+        "risk": "Cloud build failures",
+        "likelihood": "low",
+        "mitigation": "Test builds early, use Expo EAS as backup, well-documented error handling"
+      },
+      {
+        "risk": "App store rejection",
+        "likelihood": "low",
+        "mitigation": "Follow guidelines strictly, provide demo account, detailed submission notes"
+      }
+    ]
+  },
+
+  "nextSteps": {
+    "immediate": [
+      "User signs up for Expo and Codemagic",
+      "Claude starts Phase 1: Project Setup",
+      "Create mobile directory structure",
+      "Install dependencies"
+    ],
+    "firstMilestone": "Complete Phase 1 (setup) and convert first 5 screens (Login, Register, Dashboard, Profile, Assessments List)",
+    "reviewPoint": "After 5 screens, user reviews on Expo Go, provides feedback, Claude iterates"
+  }
+}
