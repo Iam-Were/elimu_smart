@@ -209,7 +209,7 @@ export const useAuth = () => {
       const body = document.body;
       body.className = body.className.replace(/theme-\w+/g, '');
     }
-  }, [authState.user?.role]);
+  }, [authState.user]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));

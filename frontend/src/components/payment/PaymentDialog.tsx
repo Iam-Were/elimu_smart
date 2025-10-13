@@ -129,7 +129,8 @@ export function PaymentDialog({
           setErrorMessage('Payment timeout. Please check your subscription status.');
           onError?.('Payment timeout');
         }
-      } catch (error) {
+      } catch {
+        // Silent failure - continue polling unless max attempts reached
         if (attempts >= maxAttempts) {
           clearInterval(poll);
           setPaymentStatus('error');

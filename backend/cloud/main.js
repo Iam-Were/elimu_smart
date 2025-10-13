@@ -5759,54 +5759,8 @@ Parse.Cloud.define('getUserSubscription', async (request) => {
   }
 });
 
-Parse.Cloud.define('initiateSubscriptionPayment', async (request) => {
-  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
-  const { planId, phoneNumber } = request.params;
-  if (!planId || !phoneNumber) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Plan ID and phone required');
-  const plansResponse = await Parse.Cloud.run('getSubscriptionPlans');
-  const plan = plansResponse.plans.find(p => p.id === planId);
-  if (!plan || plan.price === 0) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Invalid plan');
-  const Subscription = Parse.Object.extend('Subscription');
-  const subscription = new Subscription();
-  subscription.set('user', request.user);
-  subscription.set('planId', plan.id);
-  subscription.set('planName', plan.name);
-  subscription.set('amount', plan.price);
-  subscription.set('status', 'pending');
-  await subscription.save(null, { useMasterKey: true });
-  const paymentResult = await mpesaService.initiateSTKPush({ phoneNumber, amount: plan.price, accountReference: `SUB-${subscription.id}`, transactionDesc: `Elimu Smart ${plan.name}` });
-  subscription.set('checkoutRequestId', paymentResult.checkoutRequestId);
-  await subscription.save(null, { useMasterKey: true });
-  return { success: true, subscriptionId: subscription.id, checkoutRequestId: paymentResult.checkoutRequestId, message: paymentResult.customerMessage };
-});
-
-Parse.Cloud.define('checkSubscriptionPaymentStatus', async (request) => {
-  if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
-  const { subscriptionId } = request.params;
-  const Subscription = Parse.Object.extend('Subscription');
-  const query = new Parse.Query(Subscription);
-  const subscription = await query.get(subscriptionId, { useMasterKey: true });
-  const paymentStatus = await mpesaService.querySTKPushStatus(subscription.get('checkoutRequestId'));
-  if (paymentStatus.success) {
-    subscription.set('status', 'active');
-    subscription.set('startDate', new Date());
-    const expiresAt = new Date();
-    if (subscription.get('duration') === 'monthly') expiresAt.setMonth(expiresAt.getMonth() + 1);
-    else if (subscription.get('duration') === 'yearly') expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-    subscription.set('expiresAt', expiresAt);
-    await subscription.save(null, { useMasterKey: true });
-
-    // Auto-generate invoice after successful payment
-    try {
-      await Parse.Cloud.run('generateInvoice', { subscriptionId }, { sessionToken: request.user.getSessionToken() });
-    } catch (error) {
-      console.warn('Failed to auto-generate invoice:', error.message);
-    }
-
-    return { success: true, status: 'active', expiresAt, message: 'Payment successful!' };
-  }
-  return { success: false, status: 'pending', message: 'Payment pending' };
-});
+// Payment functions moved to paymentFunctions.js
+// See: initiateSubscriptionPayment, checkSubscriptionPaymentStatus
 
 Parse.Cloud.define('cancelSubscription', async (request) => {
   if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
