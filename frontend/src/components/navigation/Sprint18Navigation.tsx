@@ -36,7 +36,6 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import type { ThemeRole, User as UserType } from '../../types';
-import { RoleSwitcher } from '../common/RoleSwitcher';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { getRoleColor } from '../../constants/theme';
 
@@ -344,9 +343,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
         <div className="flex items-center space-x-2">
           {/* Notifications */}
           <NotificationCenter />
-
-          {/* TODO: Remove RoleSwitcher for production - dev/demo only */}
-          <RoleSwitcher />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-react';
 import { getParse } from '@/config/parse';
 import { callCloudFunction } from '@/lib/parseConfig';
 import {
-  // ArrowLeft, // TODO: Re-enable when implementing Card 3
   CheckCircle,
   AlertCircle,
   TrendingUp,
@@ -92,9 +91,6 @@ const KENYAN_SUBJECTS = [
   { name: 'French', icon: Globe, emoji: '🇫🇷', description: 'Foreign language, cultural understanding' },
   { name: 'German', icon: Globe, emoji: '🇩🇪', description: 'Foreign language, cultural understanding' }
 ];
-
-// TODO: Re-enable when implementing Card 3 grade analyzer
-// const GRADES = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
 
 // Career data now fetched from backend via getCareersBySubject Cloud Function
 // Previously: 466 lines of hardcoded data (SUBJECT_CAREERS object)

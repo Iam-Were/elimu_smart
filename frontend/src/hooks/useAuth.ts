@@ -17,49 +17,6 @@ const parseUserToUser = (parseUser: ParseUser): User => {
   };
 };
 
-// Demo users for development fallback
-const getDemoUser = (email: string): User => {
-  const demoUsers: Record<string, User> = {
-    'student@elimu.com': {
-      id: 'student-001',
-      email: 'student@elimu.com',
-      firstName: 'Alex',
-      lastName: 'Mwangi',
-      role: 'student',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    'counselor@elimu.com': {
-      id: 'counselor-001',
-      email: 'counselor@elimu.com',
-      firstName: 'Sarah',
-      lastName: 'Njoki',
-      role: 'counselor',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    'admin@elimu.com': {
-      id: 'admin-001',
-      email: 'admin@elimu.com',
-      firstName: 'Michael',
-      lastName: 'Kimani',
-      role: 'admin',
-      adminRoleType: 'platform',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  };
-
-  const user = demoUsers[email];
-  if (!user) {
-    throw new Error('Invalid email or password');
-  }
-  return user;
-};
-
 // Authentication service using REST ParseApi + demo fallback
 const SESSION_TOKEN_KEY = 'parse-session-token';
 
@@ -88,8 +45,8 @@ const authService = {
       console.log('✅ Parse REST login successful:', user.email);
       return user;
     } catch (error) {
-      console.warn('Parse REST login failed, falling back to demo user:', error);
-      return getDemoUser(credentials.email);
+      console.error('❌ Parse REST login failed:', error);
+      throw error;
     }
   },
 
@@ -131,19 +88,8 @@ const authService = {
       console.log('✅ Parse REST registration successful:', user.email);
       return user;
     } catch (error) {
-      console.error('❌ Parse REST registration failed with error:', error);
-      console.warn('🔄 Using mock fallback for registration');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return {
-        id: Date.now().toString(),
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: data.role,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      console.error('❌ Parse REST registration failed:', error);
+      throw error;
     }
   },
 

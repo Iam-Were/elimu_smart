@@ -32,54 +32,9 @@ interface ProfileDropdownProps {
 }
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
-  const { user, logout, login } = useAuth();
+  const { user, logout } = useAuth();
   const { currentTheme, isDark, toggleDarkMode } = useThemeContext();
   const navigate = useNavigate();
-
-  // Demo users for quick switching
-  const demoUsers = [
-    {
-      email: 'student@elimu.com',
-      password: 'student',
-      role: 'student',
-      name: 'Student',
-      icon: '🎓',
-    },
-    {
-      email: 'counselor@elimu.com',
-      password: 'counselor',
-      role: 'counselor',
-      name: 'Counselor',
-      icon: '👨‍🏫',
-    },
-    {
-      email: 'admin@elimu.com',
-      password: 'admin',
-      role: 'admin',
-      name: 'Admin',
-      icon: '👨‍💼',
-    },
-  ];
-
-  const handleDemoLogin = async (demoUser: typeof demoUsers[0]) => {
-    try {
-      await login({
-        email: demoUser.email,
-        password: demoUser.password,
-      });
-
-      toast.success(`🎭 Demo Mode Active`, {
-        description: `Switched to ${demoUser.name} (${demoUser.role})`,
-      });
-
-      // Navigate immediately - App.tsx checks localStorage directly
-      navigate('/dashboard');
-    } catch {
-      toast.error('Demo Login Failed', {
-        description: 'Could not switch to demo user',
-      });
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -273,24 +228,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
               onCheckedChange={toggleDarkMode}
             />
           </div>
-        </div>
-
-        {/* Demo User Switching */}
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Demo User Switch</DropdownMenuLabel>
-        <div className="px-2 py-2 space-y-1">
-          {demoUsers.map(demoUser => (
-            <Button
-              key={demoUser.role}
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-xs h-auto py-2"
-              onClick={() => handleDemoLogin(demoUser)}
-            >
-              <span className="mr-2">{demoUser.icon}</span>
-              Switch to {demoUser.name}
-            </Button>
-          ))}
         </div>
 
         {/* Sign Out */}
