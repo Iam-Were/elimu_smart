@@ -2297,66 +2297,7 @@ Parse.Cloud.define('seedRiasecData', async (request) => {
   }
 });
 
-// Get assessment questions with optional rotation/randomization
-Parse.Cloud.define('getAssessmentQuestions', async (request) => {
-  const { params } = request;
-  const { assessmentType, questionCount, randomize } = params;
-
-  try {
-    const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
-    const query = new Parse.Query(RiasecQuestion);
-
-    query.equalTo('isActive', true);
-    query.limit(1000); // Get all active questions
-
-    const results = await query.find({ useMasterKey: true });
-
-    let questions = results.map(q => ({
-      id: q.get('questionId'),
-      category: q.get('category'),
-      statement: q.get('statement'),
-      riasecType: q.get('riasecType'),
-      kenyaContext: q.get('kenyaContext')
-    }));
-
-    // Interleave by RIASEC type (R, I, A, S, E, C pattern)
-    const grouped = { R: [], I: [], A: [], S: [], E: [], C: [] };
-    questions.forEach(q => grouped[q.riasecType].push(q));
-
-    const interleaved = [];
-    const types = ['R', 'I', 'A', 'S', 'E', 'C'];
-    const maxPerType = Math.max(...Object.values(grouped).map(arr => arr.length));
-
-    for (let i = 0; i < maxPerType; i++) {
-      for (const type of types) {
-        if (grouped[type][i]) {
-          interleaved.push(grouped[type][i]);
-        }
-      }
-    }
-
-    // Optional: limit to specific count
-    const finalQuestions = questionCount ? interleaved.slice(0, questionCount) : interleaved;
-
-    return {
-      success: true,
-      questions: finalQuestions,
-      totalAvailable: questions.length
-    };
-
-  } catch (error) {
-    console.error('Get questions error:', error);
-
-    // Fallback to empty array if database not seeded yet
-    return {
-      success: false,
-      questions: [],
-      totalAvailable: 0,
-      error: error.message,
-      fallbackRequired: true
-    };
-  }
-});
+// getAssessmentQuestions function moved to contentManagementFunctions.js
 
 // RIASEC Assessment Data Models and Functions
 const RIASEC_TYPES = {

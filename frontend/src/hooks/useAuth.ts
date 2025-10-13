@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import ParseApi, { type ParseUser } from '../lib/parseApi';
+import { getParse } from '../config/parse';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 
 // Convert ParseUser to our User type
@@ -68,6 +69,15 @@ const authService = {
       const parseUser = await ParseApi.login({ username: credentials.email, password: credentials.password });
       if (parseUser.sessionToken) {
         localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
+
+        // Sync session with Parse SDK for cloud function calls
+        try {
+          const Parse = await getParse();
+          await Parse.User.become(parseUser.sessionToken);
+          console.log('✅ Parse SDK session synced');
+        } catch (sdkError) {
+          console.warn('Failed to sync Parse SDK session:', sdkError);
+        }
       }
       const user = parseUserToUser({
         ...parseUser,
@@ -104,9 +114,18 @@ const authService = {
       });
       
       console.log('📥 ParseApi.register response:', parseUser);
-      
+
       if (parseUser.sessionToken) {
         localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
+
+        // Sync session with Parse SDK for cloud function calls
+        try {
+          const Parse = await getParse();
+          await Parse.User.become(parseUser.sessionToken);
+          console.log('✅ Parse SDK session synced after registration');
+        } catch (sdkError) {
+          console.warn('Failed to sync Parse SDK session:', sdkError);
+        }
       }
       const user = parseUserToUser(parseUser as ParseUser);
       console.log('✅ Parse REST registration successful:', user.email);
@@ -134,6 +153,15 @@ const authService = {
       if (token) {
         await ParseApi.logout(token);
       }
+
+      // Clear Parse SDK session
+      try {
+        const Parse = await getParse();
+        await Parse.User.logOut();
+        console.log('✅ Parse SDK session cleared');
+      } catch (sdkError) {
+        console.warn('Failed to clear Parse SDK session:', sdkError);
+      }
     } catch (error) {
       console.warn('Parse REST logout failed (non-fatal):', error);
     } finally {
@@ -146,6 +174,16 @@ const authService = {
     if (sessionToken) {
       try {
         const parseUser = await ParseApi.getCurrentUser(sessionToken);
+
+        // Sync session with Parse SDK for cloud function calls
+        try {
+          const Parse = await getParse();
+          await Parse.User.become(sessionToken);
+          console.log('✅ Parse SDK session restored');
+        } catch (sdkError) {
+          console.warn('Failed to restore Parse SDK session:', sdkError);
+        }
+
         return parseUserToUser(parseUser as ParseUser);
       } catch (error) {
         console.warn('Parse REST session invalid, clearing token:', error);
