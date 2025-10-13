@@ -16,7 +16,7 @@ module.exports = {
       merge_logs: true,
       max_restarts: 10,
       min_uptime: '10s',
-      max_memory_restart: '500M',
+      max_memory_restart: '350M',  // Reduced from 500M
       autorestart: true,
       watch: false,
 
@@ -43,7 +43,7 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       max_restarts: 10,
       min_uptime: '10s',
-      max_memory_restart: '300M',
+      max_memory_restart: '200M',  // Reduced from 300M
       autorestart: true,
       watch: false,
 
@@ -65,7 +65,8 @@ module.exports = {
       error_file: './logs/prod-dashboard-error.log',
       out_file: './logs/prod-dashboard-out.log',
       autorestart: true,
-      max_restarts: 10
+      max_restarts: 10,
+      max_memory_restart: '150M'  // Added limit
     },
 
     // STAGING Parse Dashboard (Optional - port 4041)
@@ -81,7 +82,8 @@ module.exports = {
       error_file: './logs/staging-dashboard-error.log',
       out_file: './logs/staging-dashboard-out.log',
       autorestart: true,
-      max_restarts: 10
+      max_restarts: 10,
+      max_memory_restart: '100M'  // Added limit
     }
   ]
 };

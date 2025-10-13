@@ -23,7 +23,6 @@ import {
   SunIcon,
 } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
 
