@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import ParseApi, { type ParseUser } from '../lib/parseApi';
-import { getParse } from '../config/parse';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 
 // Convert ParseUser to our User type
