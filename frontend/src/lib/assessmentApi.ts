@@ -3,7 +3,7 @@
  * Fetches assessment questions from Parse Cloud Functions
  */
 
-import getParse from './parse';
+import { getParse } from '@/config/parse';
 
 export interface RiasecQuestion {
   id: number;
