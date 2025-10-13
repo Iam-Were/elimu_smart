@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   Search,
   Filter,
   ArrowLeft,
@@ -22,6 +22,7 @@ import {
   Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { callCloudFunction } from '@/lib/parseConfig';
 
 interface Career {
   id: string;
@@ -160,25 +161,19 @@ export const CareerExploration: React.FC = () => {
         filters.jobOutlook = selectedOutlook;
       }
 
-      const response = await fetch('http://localhost:1337/parse/functions/exploreCareers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
+      const result = await callCloudFunction(
+        'exploreCareers',
+        {
           filters: Object.keys(filters).length > 0 ? filters : undefined,
           searchQuery: searchQuery.trim() || undefined,
           sortBy,
           limit: 20
-        })
-      });
+        },
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result && data.result.success) {
-        setExplorationResult(data.result);
+      if (result && result.success) {
+        setExplorationResult(result);
       } else {
         setError('Failed to explore careers. Please try again.');
       }
@@ -193,22 +188,16 @@ export const CareerExploration: React.FC = () => {
   const handleCareerDetails = async (careerId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:1337/parse/functions/getCareerDetails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
+      const result = await callCloudFunction(
+        'getCareerDetails',
+        {
           careerId
-        })
-      });
+        },
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result && data.result.success) {
-        setSelectedCareer(data.result.career);
+      if (result && result.success) {
+        setSelectedCareer(result.career);
         setShowDetails(true);
       } else {
         setError('Failed to load career details. Please try again.');

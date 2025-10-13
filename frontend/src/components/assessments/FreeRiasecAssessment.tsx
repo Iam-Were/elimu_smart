@@ -33,6 +33,7 @@ import {
   completeRiasecAssessment,
   resumeRiasecAssessment
 } from '@/lib/assessmentProgress';
+import { callCloudFunction } from '@/lib/parseConfig';
 
 // IIP RIASEC Markers - Free for non-commercial use
 // Citation: Armstrong, P. I., Allison, W., & Rounds, J. (2008). 
@@ -282,127 +283,7 @@ interface RiasecQuestion {
   kenyaContext?: string;
 }
 
-const iipRiasecQuestions: RiasecQuestion[] = [
-  // REALISTIC Activities
-  { id: 1, category: 'activities', statement: 'Test the quality of parts before shipment', riasecType: 'R', kenyaContext: 'Quality control in Kenya manufacturing' },
-  { id: 2, category: 'activities', statement: 'Lay brick or tile for building construction', riasecType: 'R', kenyaContext: 'Construction boom in Nairobi and major towns' },
-  { id: 3, category: 'activities', statement: 'Work in geothermal or renewable energy installations', riasecType: 'R', kenyaContext: 'Olkaria geothermal project and solar farms' },
-  { id: 4, category: 'activities', statement: 'Assemble or repair mobile phones and electronics', riasecType: 'R', kenyaContext: 'Growing tech repair sector in Kenya' },
-  { id: 5, category: 'activities', statement: 'Drive a matatu, truck, or delivery vehicle', riasecType: 'R', kenyaContext: 'Transport and logistics sector' },
-  { id: 6, category: 'activities', statement: 'Repair household appliances and electronics', riasecType: 'R', kenyaContext: 'Jua Kali technicians in high demand' },
-  { id: 7, category: 'activities', statement: 'Manage fish farming or aquaculture operations', riasecType: 'R', kenyaContext: 'Growing aquaculture in Lake Victoria region' },
-  { id: 8, category: 'activities', statement: 'Build furniture or kitchen cabinets', riasecType: 'R', kenyaContext: 'Carpentry is a well-established trade' },
-
-  // REALISTIC Occupations
-  { id: 9, category: 'occupations', statement: 'Mechanical Engineer', riasecType: 'R', kenyaContext: 'High demand in manufacturing and construction' },
-  { id: 10, category: 'occupations', statement: 'Matatu Owner/Operator or Transport Manager', riasecType: 'R', kenyaContext: 'Profitable business in Kenya transport sector' },
-  { id: 11, category: 'occupations', statement: 'Aircraft Mechanic', riasecType: 'R', kenyaContext: 'JKIA and Wilson Airport opportunities' },
-  { id: 12, category: 'occupations', statement: 'Carpenter or Furniture Maker', riasecType: 'R', kenyaContext: 'Thriving furniture industry' },
-  { id: 13, category: 'occupations', statement: 'Auto Mechanic', riasecType: 'R', kenyaContext: 'Essential trade with steady income' },
-  { id: 14, category: 'occupations', statement: 'Commercial Airline Pilot', riasecType: 'R', kenyaContext: 'Kenya Airways and regional airlines' },
-  { id: 15, category: 'occupations', statement: 'Electrician', riasecType: 'R', kenyaContext: 'High demand with KPLC projects' },
-  { id: 16, category: 'occupations', statement: 'Commercial Farmer or Agribusiness Manager', riasecType: 'R', kenyaContext: 'Modern agriculture is highly profitable' },
-
-  // INVESTIGATIVE Activities
-  { id: 17, category: 'activities', statement: 'Study ways to reduce water pollution in rivers and lakes', riasecType: 'I', kenyaContext: 'Important for Lake Victoria and Nairobi River' },
-  { id: 18, category: 'activities', statement: 'Develop new medicines or medical treatments', riasecType: 'I', kenyaContext: 'KEMRI research opportunities' },
-  { id: 19, category: 'activities', statement: 'Plan and conduct research studies', riasecType: 'I', kenyaContext: 'Universities and research institutions' },
-  { id: 20, category: 'activities', statement: 'Study Kenyan history and archaeological sites', riasecType: 'I', kenyaContext: 'National Museums of Kenya' },
-  { id: 21, category: 'activities', statement: 'Study animal behavior in national parks', riasecType: 'I', kenyaContext: 'Wildlife conservation research' },
-  { id: 22, category: 'activities', statement: 'Do research on plants, crops, or wildlife', riasecType: 'I', kenyaContext: 'Agricultural and conservation research' },
-  { id: 23, category: 'activities', statement: 'Do laboratory tests to identify diseases', riasecType: 'I', kenyaContext: 'KNH, KEMRI, and hospital labs' },
-  { id: 24, category: 'activities', statement: 'Study weather patterns and climate change', riasecType: 'I', kenyaContext: 'Kenya Meteorological Department' },
-
-  // INVESTIGATIVE Occupations
-  { id: 25, category: 'occupations', statement: 'Psychologist or Mental Health Counselor', riasecType: 'I', kenyaContext: 'Growing mental health awareness' },
-  { id: 26, category: 'occupations', statement: 'Research Scientist at KEMRI or Universities', riasecType: 'I', kenyaContext: 'Medical and agricultural research' },
-  { id: 27, category: 'occupations', statement: 'Medical Doctor', riasecType: 'I', kenyaContext: 'High demand, competitive KUCCPS cutoff ~10.5 pts' },
-  { id: 28, category: 'occupations', statement: 'Data Analyst or Data Scientist', riasecType: 'I', kenyaContext: 'Booming tech sector in Nairobi' },
-  { id: 29, category: 'occupations', statement: 'Chemist or Pharmaceutical Researcher', riasecType: 'I', kenyaContext: 'Pharmaceutical industry growing' },
-  { id: 30, category: 'occupations', statement: 'Mathematician or Statistician', riasecType: 'I', kenyaContext: 'KNBS and research institutions' },
-  { id: 31, category: 'occupations', statement: 'Biologist or Environmental Scientist', riasecType: 'I', kenyaContext: 'Conservation and environmental projects' },
-  { id: 32, category: 'occupations', statement: 'IT Systems Analyst or Software Developer', riasecType: 'I', kenyaContext: 'Silicon Savannah tech hub' },
-
-  // ARTISTIC Activities
-  { id: 33, category: 'activities', statement: 'Conduct a musical choir', riasecType: 'A' },
-  { id: 34, category: 'activities', statement: 'Direct a play', riasecType: 'A' },
-  { id: 35, category: 'activities', statement: 'Design artwork for magazines', riasecType: 'A' },
-  { id: 36, category: 'activities', statement: 'Write a song', riasecType: 'A' },
-  { id: 37, category: 'activities', statement: 'Write books or plays', riasecType: 'A' },
-  { id: 38, category: 'activities', statement: 'Play a musical instrument', riasecType: 'A' },
-  { id: 39, category: 'activities', statement: 'Perform stunts for a movie or television show', riasecType: 'A' },
-  { id: 40, category: 'activities', statement: 'Create special effects for movies', riasecType: 'A' },
-
-  // ARTISTIC Occupations
-  { id: 41, category: 'occupations', statement: 'Poet or Creative Writer', riasecType: 'A', kenyaContext: 'Kenyan literature and poetry scene' },
-  { id: 42, category: 'occupations', statement: 'Actor or Film Producer', riasecType: 'A', kenyaContext: 'Riverwood and theatre industry' },
-  { id: 43, category: 'occupations', statement: 'Musician or Music Producer', riasecType: 'A', kenyaContext: 'Vibrant Kenyan music industry' },
-  { id: 44, category: 'occupations', statement: 'Film Editor or Video Content Creator', riasecType: 'A', kenyaContext: 'YouTube and Riverwood opportunities' },
-  { id: 45, category: 'occupations', statement: 'Artist or Visual Designer', riasecType: 'A', kenyaContext: 'Growing arts scene in Nairobi' },
-  { id: 46, category: 'occupations', statement: 'Singer or Performer', riasecType: 'A', kenyaContext: 'Gospel and secular music markets' },
-  { id: 47, category: 'occupations', statement: 'Graphic Designer or UI/UX Designer', riasecType: 'A', kenyaContext: 'Tech startups need designers' },
-  { id: 48, category: 'occupations', statement: 'Journalist or Media Personality', riasecType: 'A', kenyaContext: 'Nation, Standard, Citizen TV opportunities' },
-
-  // SOCIAL Activities
-  { id: 49, category: 'activities', statement: 'Give career guidance to people', riasecType: 'S' },
-  { id: 50, category: 'activities', statement: 'Do volunteer work at a non-profit organization', riasecType: 'S' },
-  { id: 51, category: 'activities', statement: 'Help people who have problems with drugs or alcohol', riasecType: 'S' },
-  { id: 52, category: 'activities', statement: 'Teach children how to read', riasecType: 'S' },
-  { id: 53, category: 'activities', statement: 'Work with mentally disabled children', riasecType: 'S' },
-  { id: 54, category: 'activities', statement: 'Teach an individual an exercise routine', riasecType: 'S' },
-  { id: 55, category: 'activities', statement: 'Help people with family-related problems', riasecType: 'S' },
-  { id: 56, category: 'activities', statement: 'Supervise the activities of children at a camp', riasecType: 'S' },
-
-  // SOCIAL Occupations
-  { id: 57, category: 'occupations', statement: 'Social Worker', riasecType: 'S' },
-  { id: 58, category: 'occupations', statement: 'Marriage Counselor', riasecType: 'S' },
-  { id: 59, category: 'occupations', statement: 'Teacher', riasecType: 'S' },
-  { id: 60, category: 'occupations', statement: 'Clinical Psychologist', riasecType: 'S' },
-  { id: 61, category: 'occupations', statement: 'Counselor', riasecType: 'S' },
-  { id: 62, category: 'occupations', statement: 'Social Science Teacher', riasecType: 'S' },
-  { id: 63, category: 'occupations', statement: 'Speech Therapist', riasecType: 'S' },
-  { id: 64, category: 'occupations', statement: 'Nurse', riasecType: 'S' },
-
-  // ENTERPRISING Activities
-  { id: 65, category: 'activities', statement: 'Buy and sell land', riasecType: 'E' },
-  { id: 66, category: 'activities', statement: 'Manage a retail store', riasecType: 'E' },
-  { id: 67, category: 'activities', statement: 'Operate a beauty salon or barber shop', riasecType: 'E' },
-  { id: 68, category: 'activities', statement: 'Manage a department within a large company', riasecType: 'E' },
-  { id: 69, category: 'activities', statement: 'Start your own business', riasecType: 'E' },
-  { id: 70, category: 'activities', statement: 'Negotiate business contracts', riasecType: 'E' },
-  { id: 71, category: 'activities', statement: 'Represent a client in a lawsuit', riasecType: 'E' },
-  { id: 72, category: 'activities', statement: 'Market a new line of clothing', riasecType: 'E' },
-
-  // ENTERPRISING Occupations
-  { id: 73, category: 'occupations', statement: 'Business Executive', riasecType: 'E' },
-  { id: 74, category: 'occupations', statement: 'Television Producer', riasecType: 'E' },
-  { id: 75, category: 'occupations', statement: 'Sports Promoter', riasecType: 'E' },
-  { id: 76, category: 'occupations', statement: 'Business Owner', riasecType: 'E' },
-  { id: 77, category: 'occupations', statement: 'Sales Manager', riasecType: 'E' },
-  { id: 78, category: 'occupations', statement: 'Marketing Director', riasecType: 'E' },
-  { id: 79, category: 'occupations', statement: 'Lawyer', riasecType: 'E' },
-  { id: 80, category: 'occupations', statement: 'Political Campaign Manager', riasecType: 'E' },
-
-  // CONVENTIONAL Activities
-  { id: 81, category: 'activities', statement: 'Create Excel spreadsheets for financial analysis', riasecType: 'C', kenyaContext: 'Essential skill for business and accounting' },
-  { id: 82, category: 'activities', statement: 'Review and proofread official documents', riasecType: 'C', kenyaContext: 'Quality assurance in offices' },
-  { id: 83, category: 'activities', statement: 'Use accounting software like QuickBooks or Sage', riasecType: 'C', kenyaContext: 'Standard in Kenyan businesses' },
-  { id: 84, category: 'activities', statement: 'Maintain employee records and HR databases', riasecType: 'C', kenyaContext: 'HR departments in companies' },
-  { id: 85, category: 'activities', statement: 'Analyze data and create statistical reports', riasecType: 'C', kenyaContext: 'Data analysis for decision-making' },
-  { id: 86, category: 'activities', statement: 'Manage financial records and reconciliations', riasecType: 'C', kenyaContext: 'Banking and accounting work' },
-  { id: 87, category: 'activities', statement: 'Process customer M-Pesa or bank transactions', riasecType: 'C', kenyaContext: 'Mobile money and banking services' },
-  { id: 88, category: 'activities', statement: 'Track inventory and supply chain records', riasecType: 'C', kenyaContext: 'Logistics and retail management' },
-
-  // CONVENTIONAL Occupations
-  { id: 89, category: 'occupations', statement: 'Accountant (CPA-K)', riasecType: 'C', kenyaContext: 'High demand, salary KSh 50K-200K' },
-  { id: 90, category: 'occupations', statement: 'Payroll or HR Administrator', riasecType: 'C', kenyaContext: 'Essential in all companies' },
-  { id: 91, category: 'occupations', statement: 'Executive Assistant or Office Manager', riasecType: 'C', kenyaContext: 'Professional administrative roles' },
-  { id: 92, category: 'occupations', statement: 'Budget Analyst or Financial Planner', riasecType: 'C', kenyaContext: 'Government and corporate sectors' },
-  { id: 93, category: 'occupations', statement: 'Accounts Clerk or Bookkeeper', riasecType: 'C', kenyaContext: 'Entry-level accounting positions' },
-  { id: 94, category: 'occupations', statement: 'Bank Manager or Loan Officer', riasecType: 'C', kenyaContext: 'Banking sector opportunities' },
-  { id: 95, category: 'occupations', statement: 'Credit Manager or Risk Analyst', riasecType: 'C', kenyaContext: 'Financial services sector' },
-  { id: 96, category: 'occupations', statement: 'Retail or Supermarket Manager', riasecType: 'C', kenyaContext: 'Naivas, Carrefour, Quickmart chains' }
-];
+// Questions are loaded from backend API - no hardcoded data
 
 interface RiasecScores {
   R: number;
@@ -668,8 +549,8 @@ export const FreeRiasecAssessment: React.FC = () => {
   const calculateResults = (finalResponses: Record<number, number>) => {
     // Fallback local calculation when backend is unavailable
     const scores: RiasecScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-    
-    iipRiasecQuestions.forEach(question => {
+
+    questions.forEach(question => {
       const response = finalResponses[question.id];
       if (response !== undefined) {
         const type = question.riasecType as keyof RiasecScores;
@@ -680,7 +561,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     // Normalize scores to 0-100 scale (IIP scores range 0-32 per type)
     const riasecKeys: (keyof RiasecScores)[] = ['R', 'I', 'A', 'S', 'E', 'C'];
     riasecKeys.forEach(type => {
-      const typeQuestions = iipRiasecQuestions.filter(q => q.riasecType === type);
+      const typeQuestions = questions.filter(q => q.riasecType === type);
       const maxScore = typeQuestions.length * 4; // 4 = max response value
       scores[type] = Math.round((scores[type] / maxScore) * 100);
     });
@@ -1005,26 +886,16 @@ export const FreeRiasecAssessment: React.FC = () => {
               if (assessmentId) {
                 try {
                   // Update assessment as completed with 100% progress
-                  const response = await fetch('http://localhost:1337/parse/functions/updateAssessmentProgress', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-Parse-Application-Id': 'elimu-smart-local-dev',
-                      'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-                    },
-                    body: JSON.stringify({
+                  await callCloudFunction(
+                    'updateAssessmentProgress',
+                    {
                       assessmentType: 'riasec-discovery',
                       progress: 100,
                       status: 'completed'
-                    })
-                  });
-                  
-                  if (response.ok) {
-                    navigate('/assessment');
-                  } else {
-                    console.error('Failed to update assessment progress');
-                    navigate('/assessment');
-                  }
+                    },
+                    localStorage.getItem('parse-session-token') || ''
+                  );
+                  navigate('/assessment');
                 } catch (error) {
                   console.error('Failed to update assessment progress:', error);
                   navigate('/assessment');
@@ -1269,63 +1140,30 @@ export const FreeRiasecAssessment: React.FC = () => {
             variant="outline" 
             className="gap-2"
             onClick={async () => {
-              console.log('Save Progress clicked, assessmentId:', assessmentId);
-              console.log('Auth token:', localStorage.getItem('elimu-auth-token'));
-              
               if (assessmentId) {
                 try {
+                  const sessionToken = localStorage.getItem('parse-session-token') || '';
+
                   // First save progress
-                  const saveResponse = await fetch('http://localhost:1337/parse/functions/saveRiasecProgress', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-Parse-Application-Id': 'elimu-smart-local-dev',
-                      'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-                    },
-                    body: JSON.stringify({
-                      assessmentId,
-                      currentQuestion,
-                      responses
-                    })
-                  });
-                  
-                  console.log('Save response status:', saveResponse.status);
-                  
-                  if (saveResponse.ok) {
-                    // Complete the assessment (mark as saved progress)
-                    const completeResponse = await fetch('http://localhost:1337/parse/functions/updateAssessmentProgress', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'X-Parse-Application-Id': 'elimu-smart-local-dev',
-                        'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-                      },
-                      body: JSON.stringify({
-                        assessmentType: 'riasec-discovery',
-                        progress: Math.round((currentQuestion / totalQuestions) * 100),
-                        status: 'in-progress'
-                      })
-                    });
-                    
-                    console.log('Complete response status:', completeResponse.status);
-                    
-                    if (completeResponse.ok) {
-                      // Navigate back to assessment page
-                      navigate('/assessment');
-                    } else {
-                      alert('Progress saved but unable to update status. Please continue or try again later.');
-                    }
-                  } else {
-                    const errorText = await saveResponse.text();
-                    console.error('Save failed:', errorText);
-                    alert('Failed to save progress to backend. Please try again.');
-                  }
+                  await callCloudFunction('saveRiasecProgress', {
+                    assessmentId,
+                    currentQuestion,
+                    responses
+                  }, sessionToken);
+
+                  // Update assessment progress
+                  await callCloudFunction('updateAssessmentProgress', {
+                    assessmentType: 'riasec-discovery',
+                    progress: Math.round((currentQuestion / totalQuestions) * 100),
+                    status: 'in-progress'
+                  }, sessionToken);
+
+                  navigate('/assessment');
                 } catch (error) {
                   console.error('Failed to save progress:', error);
                   alert('Unable to save progress. Please continue or try again later.');
                 }
               } else {
-                console.log('No assessmentId, saving locally');
                 // Local mode - save to localStorage
                 localStorage.setItem('riasec_progress', JSON.stringify({
                   currentQuestion,
@@ -1333,7 +1171,6 @@ export const FreeRiasecAssessment: React.FC = () => {
                   timestamp: Date.now()
                 }));
                 alert('Progress saved locally!');
-                // Navigate back to assessment page
                 navigate('/assessment');
               }
             }}

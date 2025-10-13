@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  Outlet,
 } from 'react-router-dom';
 import { ThemeProvider } from './components/common/ThemeProvider';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -77,112 +78,94 @@ const MaintenanceToolsPage = lazy(() => import('./pages/admin/MaintenanceToolsPa
 
 import './styles/globals.css';
 
-// Role-based default route component
-const RoleBasedDefaultRoute: React.FC = () => {
-  const { user } = useAuth();
-
-  // Apply role-based theme on first load
-  React.useEffect(() => {
-    if (user?.role && typeof document !== 'undefined') {
-      const body = document.body;
-      body.className = body.className.replace(/theme-\w+/g, '');
-
-      if (user.role === 'admin') {
-        body.classList.add('theme-admin');
-      } else if (user.role === 'counselor') {
-        body.classList.add('theme-counselor');
-      }
-      // Students use default orange theme (no class needed)
-    }
-  }, [user?.role]);
-
-  // Role-based routing
-  if (user?.role === 'counselor') {
-    return <Navigate to="/counselor/dashboard" replace />;
-  }
-  if (user?.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-  // Default to student dashboard
-  return <Navigate to="/dashboard" replace />;
-};
-
-const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <LoadingOverlay visible={true} message="Loading..." />;
-  }
+// Protected Routes - checks localStorage on every route access
+const ProtectedRoutes: React.FC = () => {
+  const sessionToken = localStorage.getItem('parse-session-token');
+  const storedUser = localStorage.getItem('elimu-user');
+  const isAuthenticated = !!(sessionToken || storedUser);
 
   if (!isAuthenticated) {
-    return (
-      <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPageShadcn />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    );
+    return <Navigate to="/" replace />;
   }
 
   return (
     <Sprint18Layout>
       <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
-        <Routes>
-          <Route path="/dashboard" element={<Sprint18DashboardPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/billing" element={<BillingPage />} />
-        <Route path="/settings/*" element={<AccountSettingsPage />} />
-        <Route path="/assessment" element={<Sprint18AssessmentPage />} />
-        <Route path="/assessment/career" element={<FreeRiasecAssessment />} />
-        <Route path="/assessment/subjects" element={<SubjectCareerMapper />} />
-        <Route path="/assessment/skills" element={<SkillsAssessment />} />
-        <Route path="/assessment/university" element={<UniversityCourseFinder />} />
-        <Route path="/assessment/explore" element={<CareerExploration />} />
-        <Route path="/guidance" element={<Sprint18GuidancePage />} />
-        <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
-        <Route path="/guidance/counselor-connect" element={<CounselorConnect />} />
-        <Route path="/guidance/chat-counselor" element={<CounselorChat />} />
-        <Route path="/guidance/community-qa" element={<CommunityQA />} />
-        <Route path="/guidance/resources" element={<CareerResources />} />
-        <Route path="/guidance/crisis" element={<CrisisSupport />} />
-        <Route path="/guidance/book-session" element={<BookSession />} />
-        <Route path="/inbox" element={<InboxPage />} />
-        <Route path="/student/quick-questions" element={<QuickQuestions />} />
-        <Route path="/student/mentorship-matching" element={<MentorshipMatching />} />
-        <Route path="/student/scholarship-search" element={<ScholarshipSearch />} />
-        <Route path="/student/skills-development" element={<SkillsDevelopment />} />
-        <Route path="/admin/portal" element={<AdminPortal />} />
-        <Route path="/counselor/dashboard" element={<CounselorDashboardPage />} />
-        <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
-        <Route path="/counselor/students" element={<StudentsPage />} />
-        <Route path="/counselor/questions" element={<QuestionsPage />} />
-        <Route path="/counselor/sessions" element={<SessionsPage />} />
-        <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
-        <Route path="/counselor/analytics" element={<AnalyticsPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/content" element={<AdminContentManagementPage />} />
-        <Route path="/admin/content/universities" element={<UniversitiesManagementPage />} />
-        <Route path="/admin/content/courses" element={<CoursesManagementPage />} />
-        <Route path="/admin/content/careers" element={<CareersManagementPage />} />
-        <Route path="/admin/content/questions" element={<AssessmentQuestionsManagementPage />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/analytics" element={<SystemAnalyticsPage />} />
-        <Route path="/admin/content-moderation" element={<ContentModerationPage />} />
-        <Route path="/admin/system-configuration" element={<SystemConfigurationPage />} />
-        <Route path="/admin/audit-log" element={<AuditLogPage />} />
-        <Route path="/admin/security-monitoring" element={<SecurityMonitoringPage />} />
-        <Route path="/admin/maintenance-tools" element={<MaintenanceToolsPage />} />
-        {/* Role-based default routing */}
-        <Route path="/" element={<RoleBasedDefaultRoute />} />
-        <Route path="*" element={<RoleBasedDefaultRoute />} />
-        </Routes>
+        <Outlet />
       </Suspense>
     </Sprint18Layout>
+  );
+};
+
+const AppContent: React.FC = () => {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingOverlay visible={true} message="Loading..." />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPageShadcn />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+        {/* Protected routes - checks localStorage on every access */}
+        <Route element={<ProtectedRoutes />}>
+          <Route path="/dashboard" element={<Sprint18DashboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/billing" element={<BillingPage />} />
+          <Route path="/settings/*" element={<AccountSettingsPage />} />
+          <Route path="/assessment" element={<Sprint18AssessmentPage />} />
+          <Route path="/assessment/career" element={<FreeRiasecAssessment />} />
+          <Route path="/assessment/subjects" element={<SubjectCareerMapper />} />
+          <Route path="/assessment/skills" element={<SkillsAssessment />} />
+          <Route path="/assessment/university" element={<UniversityCourseFinder />} />
+          <Route path="/assessment/explore" element={<CareerExploration />} />
+          <Route path="/guidance" element={<Sprint18GuidancePage />} />
+          <Route path="/guidance/professional-networking" element={<ProfessionalNetworkingHub />} />
+          <Route path="/guidance/counselor-connect" element={<CounselorConnect />} />
+          <Route path="/guidance/chat-counselor" element={<CounselorChat />} />
+          <Route path="/guidance/community-qa" element={<CommunityQA />} />
+          <Route path="/guidance/resources" element={<CareerResources />} />
+          <Route path="/guidance/crisis" element={<CrisisSupport />} />
+          <Route path="/guidance/book-session" element={<BookSession />} />
+          <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/student/quick-questions" element={<QuickQuestions />} />
+          <Route path="/student/mentorship-matching" element={<MentorshipMatching />} />
+          <Route path="/student/scholarship-search" element={<ScholarshipSearch />} />
+          <Route path="/student/skills-development" element={<SkillsDevelopment />} />
+          <Route path="/admin/portal" element={<AdminPortal />} />
+          <Route path="/counselor/dashboard" element={<CounselorDashboardPage />} />
+          <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
+          <Route path="/counselor/students" element={<StudentsPage />} />
+          <Route path="/counselor/questions" element={<QuestionsPage />} />
+          <Route path="/counselor/sessions" element={<SessionsPage />} />
+          <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
+          <Route path="/counselor/analytics" element={<AnalyticsPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/content" element={<AdminContentManagementPage />} />
+          <Route path="/admin/content/universities" element={<UniversitiesManagementPage />} />
+          <Route path="/admin/content/courses" element={<CoursesManagementPage />} />
+          <Route path="/admin/content/careers" element={<CareersManagementPage />} />
+          <Route path="/admin/content/questions" element={<AssessmentQuestionsManagementPage />} />
+          <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/analytics" element={<SystemAnalyticsPage />} />
+          <Route path="/admin/content-moderation" element={<ContentModerationPage />} />
+          <Route path="/admin/system-configuration" element={<SystemConfigurationPage />} />
+          <Route path="/admin/audit-log" element={<AuditLogPage />} />
+          <Route path="/admin/security-monitoring" element={<SecurityMonitoringPage />} />
+          <Route path="/admin/maintenance-tools" element={<MaintenanceToolsPage />} />
+        </Route>
+
+        {/* Catch-all: redirect to landing page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 

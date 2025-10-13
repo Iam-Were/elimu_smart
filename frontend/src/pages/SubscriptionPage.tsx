@@ -1,92 +1,26 @@
-import { useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Button from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, Crown, Loader2, Smartphone, X } from 'lucide-react';
+import { Check, Crown, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { PaymentDialog } from '@/components/payment/PaymentDialog';
 
 export const SubscriptionPage = () => {
-  const { plans, userSubscription, isLoading, initiatePayment, checkPaymentStatus, cancelSubscription } = useSubscription();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [, setPendingSubscriptionId] = useState<string | null>(null);
+  const { plans, userSubscription, isLoading, cancelSubscription, reload } = useSubscription();
 
-  const handleSubscribe = async (planId: string) => {
-    if (planId === 'free') {
-      toast.info('You are already on the Free plan');
-      return;
-    }
-
-    setSelectedPlan(planId);
+  const handlePaymentSuccess = () => {
+    toast.success('Subscription Activated!', {
+      description: 'Your premium features are now available'
+    });
+    reload(); // Refresh subscription status
   };
 
-  const handlePayment = async () => {
-    if (!phoneNumber || !selectedPlan) {
-      toast.error('Please enter your M-Pesa phone number');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      const result = await initiatePayment(selectedPlan, phoneNumber);
-
-      if (result.success) {
-        setPendingSubscriptionId(result.subscriptionId);
-        toast.success('Payment Request Sent', {
-          description: 'Please check your phone for the M-Pesa prompt'
-        });
-
-        // Start polling for payment status
-        pollPaymentStatus(result.subscriptionId);
-      }
-    } catch (error) {
-      console.error('Payment initiation error:', error);
-      toast.error('Payment Failed', {
-        description: error instanceof Error ? error.message : 'Failed to initiate payment'
-      });
-      setIsProcessing(false);
-    }
-  };
-
-  const pollPaymentStatus = async (subscriptionId: string) => {
-    let attempts = 0;
-    const maxAttempts = 20; // Poll for 2 minutes (20 * 6 seconds)
-
-    const poll = setInterval(async () => {
-      attempts++;
-
-      try {
-        const status = await checkPaymentStatus(subscriptionId);
-
-        if (status.success) {
-          clearInterval(poll);
-          setIsProcessing(false);
-          setPendingSubscriptionId(null);
-          setSelectedPlan(null);
-          setPhoneNumber('');
-          toast.success('Subscription Activated!', {
-            description: 'Your premium features are now available'
-          });
-        } else if (attempts >= maxAttempts) {
-          clearInterval(poll);
-          setIsProcessing(false);
-          toast.warning('Payment Status Unknown', {
-            description: 'Please check your subscription status manually'
-          });
-        }
-      } catch {
-        if (attempts >= maxAttempts) {
-          clearInterval(poll);
-          setIsProcessing(false);
-        }
-      }
-    }, 6000); // Poll every 6 seconds
+  const handlePaymentError = (error: string) => {
+    toast.error('Payment Failed', {
+      description: error
+    });
   };
 
   const handleCancelSubscription = async () => {
@@ -181,105 +115,44 @@ export const SubscriptionPage = () => {
             </CardContent>
 
             <CardFooter>
-              <Button
-                className="w-full"
-                variant={plan.popular ? 'default' : 'outline'}
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={isProcessing || (userSubscription?.plan === plan.id && userSubscription?.status === 'active')}
-              >
-                {userSubscription?.plan === plan.id && userSubscription?.status === 'active' ? 'Current Plan' : 'Select Plan'}
-              </Button>
+              {plan.price === 0 ? (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  disabled
+                >
+                  Current Plan
+                </Button>
+              ) : userSubscription?.plan === plan.id && userSubscription?.status === 'active' ? (
+                <Button
+                  className="w-full"
+                  variant="default"
+                  disabled
+                >
+                  Current Plan
+                </Button>
+              ) : (
+                <PaymentDialog
+                  plan={plan}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  trigger={
+                    <Button
+                      className="w-full"
+                      variant={plan.popular ? 'default' : 'outline'}
+                    >
+                      Select Plan
+                    </Button>
+                  }
+                />
+              )}
             </CardFooter>
           </Card>
         ))}
       </div>
 
-      {/* M-Pesa Payment Form */}
-      {selectedPlan && (
-        <Card className="max-w-md mx-auto border-orange-200 shadow-lg">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Complete Payment</CardTitle>
-                <CardDescription>
-                  {plans.find(p => p.id === selectedPlan)?.name}
-                </CardDescription>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedPlan(null);
-                  setPhoneNumber('');
-                }}
-                disabled={isProcessing}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-              <div className="flex items-center gap-3 mb-2">
-                <Smartphone className="h-5 w-5 text-orange-600" />
-                <span className="font-semibold text-orange-900">M-Pesa Payment</span>
-              </div>
-              <p className="text-sm text-orange-800">
-                Enter your M-Pesa phone number to receive a payment prompt
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="phoneNumber">M-Pesa Phone Number</Label>
-              <Input
-                id="phoneNumber"
-                type="tel"
-                placeholder="254712345678"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                disabled={isProcessing}
-                className="mt-2"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Format: 254XXXXXXXXX
-              </p>
-            </div>
-
-            {isProcessing && (
-              <Alert className="bg-blue-50 border-blue-200">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <AlertDescription className="text-blue-900">
-                  Waiting for M-Pesa payment confirmation... Please check your phone and enter your PIN.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-
-          <CardFooter>
-            <Button
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-              onClick={handlePayment}
-              disabled={isProcessing || !phoneNumber}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing Payment...
-                </>
-              ) : (
-                <>
-                  <Smartphone className="mr-2 h-4 w-4" />
-                  Pay with M-Pesa
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
-
       {/* Cancel Subscription Option */}
-      {userSubscription && userSubscription.status === 'active' && userSubscription.plan !== 'free' && !selectedPlan && (
+      {userSubscription && userSubscription.status === 'active' && userSubscription.plan !== 'free' && (
         <div className="text-center mt-8">
           <Button
             variant="ghost"

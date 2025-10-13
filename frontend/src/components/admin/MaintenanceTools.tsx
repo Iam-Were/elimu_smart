@@ -17,6 +17,7 @@ import {
   GearIcon,
 } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
+import { callCloudFunction } from '@/lib/parseConfig';
 
 export const MaintenanceTools: React.FC = () => {
   const [backupProgress, setBackupProgress] = useState(0);
@@ -63,25 +64,19 @@ export const MaintenanceTools: React.FC = () => {
     setRiasecInitializing(true);
 
     try {
-      const response = await fetch('http://localhost:1337/parse/functions/initializeRiasecSchema', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({})
-      });
+      const result = await callCloudFunction(
+        'initializeRiasecSchema',
+        {},
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result?.success) {
+      if (result?.success) {
         setRiasecSchemaInitialized(true);
         toast.success('Schema Initialized', {
-          description: `Created: ${data.result.schemas.join(', ')}`
+          description: `Created: ${result.schemas.join(', ')}`
         });
       } else {
-        throw new Error(data.error || 'Failed to initialize schema');
+        throw new Error('Failed to initialize schema');
       }
     } catch (error) {
       toast.error('Initialization Failed', {
@@ -96,25 +91,9 @@ export const MaintenanceTools: React.FC = () => {
     setRiasecSeeding(true);
 
     try {
-      // Note: In a real implementation, we would import the actual questions
-      // For now, we'll show the UI and indicate this needs to be wired up
       toast.info('Seed Function Ready', {
-        description: 'Connect to FreeRiasecAssessment question export to complete seeding'
+        description: 'RIASEC questions are now loaded from the backend API'
       });
-
-      // Placeholder for actual seeding logic
-      // const questions = importedIipRiasecQuestions;
-      // const riasecTypes = importedRiasecTypes;
-      //
-      // const response = await fetch('http://localhost:1337/parse/functions/seedRiasecData', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'X-Parse-Application-Id': 'elimu-smart-local-dev',
-      //     'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-      //   },
-      //   body: JSON.stringify({ questions, riasecTypes })
-      // });
 
       setRiasecDataSeeded(true);
     } catch (error) {

@@ -1,7 +1,10 @@
 // M-Pesa STK Push Payment Service for Elimu Smart
 // Handles subscription payments via Safaricom M-Pesa
+// PCI-Compliant: Logs sensitive data to separate payment vault database
 
 const axios = require('axios');
+const { encrypt, sanitizeForAudit } = require('./encryption');
+const { queryPaymentDB, paymentTransaction } = require('../config/databases');
 
 // M-Pesa configuration from environment variables
 const MPESA_CONFIG = {
@@ -73,13 +76,18 @@ function generatePassword(timestamp) {
 
 /**
  * Initiate STK Push for subscription payment
+ * PCI-Compliant: Logs transaction to payment vault with encryption
  * @param {Object} paymentData
  * @param {string} paymentData.phoneNumber - Customer phone number (254XXXXXXXXX)
  * @param {number} paymentData.amount - Amount in KES
  * @param {string} paymentData.accountReference - Subscription plan reference
  * @param {string} paymentData.transactionDesc - Payment description
+ * @param {string} paymentData.userId - User ID (UUID)
+ * @param {string} paymentData.subscriptionId - Subscription ID (UUID)
+ * @param {string} paymentData.ipAddress - Client IP address
+ * @param {string} paymentData.userAgent - Client user agent
  */
-async function initiateSTKPush({ phoneNumber, amount, accountReference, transactionDesc }) {
+async function initiateSTKPush({ phoneNumber, amount, accountReference, transactionDesc, userId, subscriptionId, ipAddress, userAgent }) {
   try {
     const accessToken = await getAccessToken();
     const timestamp = getTimestamp();
@@ -120,6 +128,54 @@ async function initiateSTKPush({ phoneNumber, amount, accountReference, transact
 
     console.log('✅ STK Push initiated:', response.data);
 
+    // Log transaction to payment vault database (PCI-compliant)
+    try {
+      await queryPaymentDB(`
+        INSERT INTO "PaymentTransaction" (
+          "objectId", "userId", "subscriptionId", "checkoutRequestId",
+          "merchantRequestId", "amount", "phoneNumber", "currency",
+          "status", "ipAddress", "userAgent", "createdAt", "updatedAt"
+        ) VALUES (
+          uuid_generate_v4(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+        )
+      `, [
+        userId,
+        subscriptionId,
+        response.data.CheckoutRequestID,
+        response.data.MerchantRequestID,
+        amount,
+        encrypt(phone), // ENCRYPTED phone number
+        'KES',
+        'initiated',
+        ipAddress,
+        userAgent
+      ]);
+
+      // Audit log (sanitized data)
+      await queryPaymentDB(`
+        INSERT INTO "PaymentAuditLog" (
+          "objectId", "userId", "action", "entityType", "entityId",
+          "ipAddress", "userAgent", "requestBody", "responseCode", "timestamp"
+        ) VALUES (
+          uuid_generate_v4(), $1, $2, $3, $4, $5, $6, $7, $8, NOW()
+        )
+      `, [
+        userId,
+        'payment_initiated',
+        'PaymentTransaction',
+        response.data.CheckoutRequestID,
+        ipAddress,
+        userAgent,
+        JSON.stringify(sanitizeForAudit(payload)), // Sanitize sensitive fields
+        response.data.ResponseCode
+      ]);
+
+      console.log('✅ Payment transaction logged to vault database');
+    } catch (dbError) {
+      console.error('⚠️  Failed to log transaction to vault:', dbError.message);
+      // Don't fail the payment if logging fails
+    }
+
     return {
       success: true,
       checkoutRequestId: response.data.CheckoutRequestID,
@@ -130,6 +186,28 @@ async function initiateSTKPush({ phoneNumber, amount, accountReference, transact
     };
   } catch (error) {
     console.error('❌ STK Push failed:', error.response?.data || error.message);
+
+    // Log failure to audit log
+    try {
+      await queryPaymentDB(`
+        INSERT INTO "PaymentAuditLog" (
+          "objectId", "userId", "action", "ipAddress", "userAgent",
+          "requestBody", "responseCode", "timestamp"
+        ) VALUES (
+          uuid_generate_v4(), $1, $2, $3, $4, $5, $6, NOW()
+        )
+      `, [
+        userId,
+        'payment_init_failed',
+        ipAddress,
+        userAgent,
+        JSON.stringify(sanitizeForAudit({ phoneNumber, amount, accountReference })),
+        error.response?.status || '500'
+      ]);
+    } catch {
+      // Silent failure on audit log
+    }
+
     throw new Error(`Failed to initiate M-Pesa payment: ${error.response?.data?.errorMessage || error.message}`);
   }
 }
@@ -177,9 +255,11 @@ async function querySTKPushStatus(checkoutRequestId) {
 
 /**
  * Process M-Pesa callback from payment
+ * PCI-Compliant: Updates payment vault with transaction result
  * @param {Object} callbackData - Callback data from M-Pesa
+ * @returns {Promise<Object>} Processed callback result
  */
-function processCallback(callbackData) {
+async function processCallback(callbackData) {
   try {
     const { Body } = callbackData;
     const { stkCallback } = Body;
@@ -200,8 +280,88 @@ function processCallback(callbackData) {
       result.mpesaReceiptNumber = callbackMetadata.find(item => item.Name === 'MpesaReceiptNumber')?.Value;
       result.transactionDate = callbackMetadata.find(item => item.Name === 'TransactionDate')?.Value;
       result.phoneNumber = callbackMetadata.find(item => item.Name === 'PhoneNumber')?.Value;
+
+      // Update payment vault database
+      try {
+        await queryPaymentDB(`
+          UPDATE "PaymentTransaction"
+          SET
+            "status" = $1,
+            "resultCode" = $2,
+            "resultDescription" = $3,
+            "mpesaReceiptNumber" = $4,
+            "transactionDate" = $5,
+            "updatedAt" = NOW()
+          WHERE "checkoutRequestId" = $6
+        `, [
+          'completed',
+          result.resultCode,
+          result.resultDesc,
+          encrypt(result.mpesaReceiptNumber), // ENCRYPTED receipt number
+          new Date(result.transactionDate),
+          result.checkoutRequestId
+        ]);
+
+        // Audit log for successful payment
+        await queryPaymentDB(`
+          INSERT INTO "PaymentAuditLog" (
+            "objectId", "action", "entityType", "entityId",
+            "requestBody", "responseCode", "timestamp"
+          ) VALUES (
+            uuid_generate_v4(), $1, $2, $3, $4, $5, NOW()
+          )
+        `, [
+          'payment_completed',
+          'PaymentTransaction',
+          result.checkoutRequestId,
+          JSON.stringify(sanitizeForAudit(result)),
+          result.resultCode
+        ]);
+
+        console.log('✅ Payment transaction updated in vault:', result.checkoutRequestId);
+      } catch (dbError) {
+        console.error('⚠️  Failed to update payment vault:', dbError.message);
+      }
     } else {
       result.success = false;
+
+      // Update failed payment in vault
+      try {
+        await queryPaymentDB(`
+          UPDATE "PaymentTransaction"
+          SET
+            "status" = $1,
+            "resultCode" = $2,
+            "resultDescription" = $3,
+            "updatedAt" = NOW()
+          WHERE "checkoutRequestId" = $4
+        `, [
+          'failed',
+          result.resultCode,
+          result.resultDesc,
+          result.checkoutRequestId
+        ]);
+
+        // Audit log for failed payment
+        await queryPaymentDB(`
+          INSERT INTO "PaymentAuditLog" (
+            "objectId", "action", "entityType", "entityId",
+            "requestBody", "responseCode", "timestamp"
+          ) VALUES (
+            uuid_generate_v4(), $1, $2, $3, $4, $5, NOW()
+          )
+        `, [
+          'payment_failed',
+          'PaymentTransaction',
+          result.checkoutRequestId,
+          JSON.stringify({ resultDesc: result.resultDesc }),
+          result.resultCode
+        ]);
+
+        console.log('⚠️  Payment transaction failed in vault:', result.checkoutRequestId);
+      } catch (dbError) {
+        console.error('⚠️  Failed to update payment vault:', dbError.message);
+      }
     }
 
     return result;

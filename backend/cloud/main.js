@@ -6156,3 +6156,8 @@ require('./contentManagementFunctions');
 // ============================================
 require('./careerFunctions');
 
+
+// ============================================
+// Payment & M-Pesa Integration Functions
+// ============================================
+require('./paymentFunctions');

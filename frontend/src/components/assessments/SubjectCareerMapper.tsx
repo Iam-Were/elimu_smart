@@ -4,6 +4,7 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { getParse } from '@/config/parse';
+import { callCloudFunction } from '@/lib/parseConfig';
 import {
   // ArrowLeft, // TODO: Re-enable when implementing Card 3
   CheckCircle,
@@ -138,28 +139,21 @@ export const SubjectCareerMapper: React.FC = () => {
     setLiveJobsLoading(careerTitle);
 
     try {
-      const response = await fetch('http://localhost:1337/parse/functions/getCareerJobData', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
+      const result = await callCloudFunction(
+        'getCareerJobData',
+        {
           careerTitle,
           location: 'kenya'
-        })
-      });
+        },
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result?.data) {
+      if (result?.data) {
         setLiveJobData(prev => ({
           ...prev,
-          [careerTitle]: data.result.data
+          [careerTitle]: result.data
         }));
       } else {
-        // Handle error case
         setLiveJobData(prev => ({
           ...prev,
           [careerTitle]: { error: 'Unable to load live jobs. Please try again later.' }
@@ -221,22 +215,16 @@ export const SubjectCareerMapper: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:1337/parse/functions/analyzeSubjectCareerFit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('elimu-auth-token') || ''
-        },
-        body: JSON.stringify({
+      const result = await callCloudFunction(
+        'analyzeSubjectCareerFit',
+        {
           subjects: selectedSubjects,
           grades
-        })
-      });
+        },
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result) {
+      if (result) {
         // Analysis completed successfully
       } else {
         setError('Failed to analyze career compatibility. Please try again.');

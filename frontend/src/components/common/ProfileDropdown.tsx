@@ -71,7 +71,8 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
       toast.success(`🎭 Demo Mode Active`, {
         description: `Switched to ${demoUser.name} (${demoUser.role})`,
       });
-      
+
+      // Navigate immediately - App.tsx checks localStorage directly
       navigate('/dashboard');
     } catch {
       toast.error('Demo Login Failed', {
@@ -83,7 +84,8 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/');
+      // Force navigation to landing page with cache-busting parameter
+      window.location.href = '/?logout=' + Date.now();
     } catch (error) {
       console.error('Logout failed:', error);
     }

@@ -152,14 +152,6 @@ const authService = {
         localStorage.removeItem(SESSION_TOKEN_KEY);
       }
     }
-
-    // Demo fallback
-    try {
-      const stored = localStorage.getItem('elimu-user');
-      if (stored) {
-        return JSON.parse(stored) as User;
-      }
-    } catch {/* ignore */}
     return null;
   },
 };
@@ -197,15 +189,33 @@ export const useAuth = () => {
     initializeAuth();
   }, []);
 
+  // Apply role-based theme when user role changes
+  useEffect(() => {
+    if (authState.user?.role && typeof document !== 'undefined') {
+      const body = document.body;
+
+      // Remove existing theme classes
+      body.className = body.className.replace(/theme-\w+/g, '');
+
+      // Apply role-specific theme
+      if (authState.user.role === 'admin') {
+        body.classList.add('theme-admin');
+      } else if (authState.user.role === 'counselor') {
+        body.classList.add('theme-counselor');
+      }
+      // Student role uses default theme (no class needed)
+    } else if (!authState.user && typeof document !== 'undefined') {
+      // Remove theme classes when logged out
+      const body = document.body;
+      body.className = body.className.replace(/theme-\w+/g, '');
+    }
+  }, [authState.user?.role]);
+
   const login = useCallback(async (credentials: LoginCredentials) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const user = await authService.login(credentials);
-
-      // Store auth data
-      localStorage.setItem('elimu-auth-token', 'mock-token');
-      localStorage.setItem('elimu-user', JSON.stringify(user));
 
       setAuthState({
         user,
@@ -233,10 +243,6 @@ export const useAuth = () => {
     try {
       const user = await authService.register(data);
 
-      // Store auth data
-      localStorage.setItem('elimu-auth-token', 'mock-token');
-      localStorage.setItem('elimu-user', JSON.stringify(user));
-
       setAuthState({
         user,
         isAuthenticated: true,
@@ -262,10 +268,6 @@ export const useAuth = () => {
 
     try {
       await authService.logout();
-
-      // Clear auth data
-      localStorage.removeItem('elimu-auth-token');
-      localStorage.removeItem('elimu-user');
 
       setAuthState({
         user: null,

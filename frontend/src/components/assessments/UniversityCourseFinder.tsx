@@ -18,6 +18,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { callCloudFunction } from '@/lib/parseConfig';
 
 
 
@@ -183,14 +184,9 @@ export const UniversityCourseFinder: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:1337/parse/functions/findUniversityCourses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Parse-Application-Id': 'elimu-smart-local-dev',
-          'X-Parse-Session-Token': localStorage.getItem('parse-session-token') || ''
-        },
-        body: JSON.stringify({
+      const result = await callCloudFunction(
+        'findUniversityCourses',
+        {
           studentProfile: {
             subjects: selectedSubjects,
             grades
@@ -206,25 +202,19 @@ export const UniversityCourseFinder: React.FC = () => {
             familyIncome
           },
           locationPreferences: locationPreferences.length > 0 ? locationPreferences : undefined
-        })
-      });
+        },
+        localStorage.getItem('parse-session-token') || ''
+      );
 
-      const data = await response.json();
-
-      if (data.result && data.result.success) {
-        setFinderResult(data.result);
+      if (result && result.success) {
+        setFinderResult(result);
         setShowResults(true);
         // Scroll to results
         setTimeout(() => {
           document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-      } else if (data.error && data.error.code === 141) {
-        setError('Please log in to use the University Course Finder. Redirecting to login...');
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
       } else {
-        setError(data.error?.message || 'Failed to find university courses. Please try again.');
+        setError('Failed to find university courses. Please try again.');
       }
     } catch (error) {
       console.error('University Course Finder error:', error);

@@ -7,14 +7,21 @@ let parseInitialized = false;
 
 export const initializeParse = () => {
   if (!parseInitialized) {
-    Parse.initialize(
-      'elimu-smart-local-dev', // Application ID
-      'your-javascript-key-here' // JavaScript Key (can be same as app ID for local dev)
-    );
-    
-    // Set server URL
-    Parse.serverURL = 'http://localhost:1337/parse';
+    // Read configuration from environment variables
+    const appId = import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev';
+    const jsKey = import.meta.env.VITE_PARSE_JS_KEY || 'your-javascript-key-here';
+    const serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse';
+
+    Parse.initialize(appId, jsKey);
+    Parse.serverURL = serverURL;
+
     parseInitialized = true;
+
+    console.log('✅ Parse SDK initialized:', {
+      appId,
+      serverURL,
+      environment: import.meta.env.MODE
+    });
   }
   return Parse;
 };

@@ -450,7 +450,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               
               <DropdownMenuItem
                 className="cursor-pointer text-red-600 focus:text-red-600"
-                onClick={logout}
+                onClick={async () => {
+                  await logout();
+                  // Force navigation to landing page with cache-busting parameter
+                  window.location.href = '/?logout=' + Date.now();
+                }}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sign Out</span>

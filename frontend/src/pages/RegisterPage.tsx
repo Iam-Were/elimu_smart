@@ -96,6 +96,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await register(data);
+      // Navigate immediately - App.tsx checks localStorage directly
       navigate('/dashboard');
     } catch (error: unknown) {
       console.error('Registration error:', error instanceof Error ? error.message : error);
