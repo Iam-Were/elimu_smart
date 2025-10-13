@@ -9,6 +9,16 @@ export const initializeParse = async () => {
       // Dynamic import for better browser compatibility with Vite
       Parse = (await import('parse')).default;
 
+      // Configure localStorage as AsyncStorage for browser environment
+      // This prevents "currentInstallationId" undefined errors
+      Parse.setAsyncStorage({
+        getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
+        setItem: (key: string, value: string) => Promise.resolve(localStorage.setItem(key, value)),
+        removeItem: (key: string) => Promise.resolve(localStorage.removeItem(key)),
+        getAllKeys: () => Promise.resolve(Object.keys(localStorage)),
+        clear: () => Promise.resolve(localStorage.clear())
+      });
+
       Parse.initialize(
         import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
         import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
