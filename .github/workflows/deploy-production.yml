@@ -1,19 +1,49 @@
 name: Deploy to Production
 
 on:
-  workflow_dispatch:  # Manual only - safety for production
+  workflow_dispatch:  # Manual trigger for safety
+  push:
+    branches:
+      - main  # Auto-deploy on main branch
 
 jobs:
-  deploy-production:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger VPS Production Deployment
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
         run: |
-          RESPONSE=$(curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-            -w "\n%{http_code}" \
-            https://elimu-smart.co.ke/webhooks/deploy/production)
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          NODE_OPTIONS="--max-old-space-size=2048" npm run build -- --mode production
+
+      - name: Deploy built files to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "frontend/dist/*"
+          target: "/tmp/elimu-deploy"
+          strip_components: 2
+
+      - name: Trigger backend deployment
+        run: |
+          RESPONSE=$(curl -X POST             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"             -w "\n%{http_code}"             https://elimu-smart.co.ke/webhooks/deploy/production)
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
@@ -24,17 +54,30 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Deployment triggered successfully"
+          echo "✅ Backend deployment triggered"
           echo "$BODY"
 
-      - name: Wait for Deployment
-        run: sleep 60
+      - name: Move built files to production
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            sudo cp -r /tmp/elimu-deploy/* /var/www/elimu-smart/
+            rm -rf /tmp/elimu-deploy
+            echo "✅ Frontend deployed"
 
-      - name: Verify Production Deployment
+      - name: Verify deployment
         run: |
+          sleep 30
           PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
-          if [ "$PROD_STATUS" != "200" ]; then
-            echo "❌ Production health check failed: $PROD_STATUS"
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+          
+          if [ "$PROD_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
+            echo "❌ Deployment verification failed"
+            echo "Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
             exit 1
           fi
-          echo "✅ Production deployment verified: $PROD_STATUS"
+          
+          echo "✅ Deployment verified - Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"

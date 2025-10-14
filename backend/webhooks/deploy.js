@@ -15,7 +15,7 @@ const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const expectedToken = process.env.GH_WEBHOOK_TOKEN || process.env.GH_TOKEN;
 
-  if (!authHeader || authHeader !== \) {
+  if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
@@ -39,12 +39,10 @@ app.post('/webhooks/deploy/production', verifyToken, async (req, res) => {
       'git pull origin main',
       'cd backend && npm install --omit=dev',
       'pm2 restart parse-server-prod parse-dashboard-prod',
-      'cd ../frontend && npm install --include=dev',
-      'NODE_OPTIONS="--max-old-space-size=512" npm run build -- --mode production',
-      'sudo cp -r dist/* /var/www/elimu-smart/'
+      'echo "✅ Backend deployment completed"'
     ].join(' && ');
 
-    execSync(commands, { stdio: 'inherit', env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=512' } });
+    execSync(commands, { stdio: 'inherit', env: { ...process.env } });
     console.log('✅ Production deployment completed successfully');
   } catch (error) {
     console.error('Production deployment failed:', error);
@@ -58,7 +56,7 @@ app.get('/webhooks/health', (req, res) => {
 
 const PORT = process.env.WEBHOOK_PORT || 3001;
 app.listen(PORT, () => {
-  console.log(\);
+  console.log(`Deployment webhook server running on port ${PORT}`);
 });
 
 module.exports = app;
