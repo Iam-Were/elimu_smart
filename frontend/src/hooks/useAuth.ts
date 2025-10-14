@@ -25,9 +25,16 @@ const authService = {
       const parseUser = await ParseApi.login({ username: credentials.email, password: credentials.password });
       if (parseUser.sessionToken) {
         localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
-        // Session token is passed to cloud functions via {sessionToken} parameter
-        // No need to call Parse.User.become() which can cause currentInstallationId errors
-        console.log('✅ Session token stored for cloud function authentication');
+        // ✅ CRITICAL FIX: Sync REST session with Parse SDK
+        // This allows Parse.Cloud.run() and Parse SDK methods to work
+        try {
+          const { getParse } = await import('@/config/parse');
+          const Parse = getParse();
+          await Parse.User.become(parseUser.sessionToken);
+          console.log('✅ Parse SDK session synced - cloud functions will work');
+        } catch (sdkError) {
+          console.warn('⚠️  Parse SDK sync failed (non-fatal):', sdkError);
+        }
       }
       const user = parseUserToUser({
         ...parseUser,
@@ -67,9 +74,16 @@ const authService = {
 
       if (parseUser.sessionToken) {
         localStorage.setItem(SESSION_TOKEN_KEY, parseUser.sessionToken);
-        // Session token is passed to cloud functions via {sessionToken} parameter
-        // No need to call Parse.User.become() which can cause currentInstallationId errors
-        console.log('✅ Session token stored for cloud function authentication');
+        // ✅ CRITICAL FIX: Sync REST session with Parse SDK
+        // This allows Parse.Cloud.run() and Parse SDK methods to work
+        try {
+          const { getParse } = await import('@/config/parse');
+          const Parse = getParse();
+          await Parse.User.become(parseUser.sessionToken);
+          console.log('✅ Parse SDK session synced - cloud functions will work');
+        } catch (sdkError) {
+          console.warn('⚠️  Parse SDK sync failed (non-fatal):', sdkError);
+        }
       }
       const user = parseUserToUser(parseUser as ParseUser);
       console.log('✅ Parse REST registration successful:', user.email);
@@ -102,10 +116,14 @@ const authService = {
     if (sessionToken) {
       try {
         const parseUser = await ParseApi.getCurrentUser(sessionToken);
-
-        // Session token is passed to cloud functions via {sessionToken} parameter
-        // No need to call Parse.User.become() which can cause currentInstallationId errors
-        console.log('✅ Session token retrieved for cloud function authentication');
+        // ✅ Sync existing session with Parse SDK
+        try {
+          const { getParse } = await import('@/config/parse');
+          const Parse = getParse();
+          await Parse.User.become(sessionToken);
+        } catch (sdkError) {
+          console.warn('⚠️  Parse SDK sync failed:', sdkError);
+        }
 
         return parseUserToUser(parseUser as ParseUser);
       } catch (error) {
