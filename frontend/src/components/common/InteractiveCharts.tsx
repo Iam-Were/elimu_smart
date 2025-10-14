@@ -413,88 +413,43 @@ export const ProgressBarChart: React.FC<ProgressBarChartProps> = ({
   );
 };
 
+interface MetricData {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  trend?: {
+    value: number;
+    period: string;
+    positive?: boolean;
+  };
+  icon?: React.ReactNode;
+  color?: string;
+}
+
 interface DashboardAnalyticsProps {
   timeRange: string;
   onTimeRangeChange: (range: string) => void;
+  metrics?: MetricData[];
+  progressData?: ChartDataPoint[];
+  barData?: ChartDataPoint[];
+  progressBarData?: Array<{
+    label: string;
+    value: number;
+    maxValue: number;
+    color?: string;
+    description?: string;
+  }>;
 }
 
 export const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({
   timeRange,
   onTimeRangeChange,
+  metrics = [],
+  progressData = [],
+  barData = [],
+  progressBarData = [],
 }) => {
-  // Mock data - in real app this would come from props or API
-  const mockMetrics = [
-    {
-      title: 'Total Students',
-      value: 2847,
-      subtitle: 'Active users',
-      trend: { value: 12.5, period: 'vs last month', positive: true },
-      color: 'var(--primary)',
-    },
-    {
-      title: 'Assessments Completed',
-      value: 1234,
-      subtitle: 'This month',
-      trend: { value: 8.2, period: 'vs last month', positive: true },
-      color: 'var(--success)',
-    },
-    {
-      title: 'Career Matches',
-      value: '94%',
-      subtitle: 'Success rate',
-      trend: { value: 2.1, period: 'vs last month', positive: true },
-      color: 'var(--info)',
-    },
-    {
-      title: 'Avg. Session Time',
-      value: '24m',
-      subtitle: 'Per session',
-      trend: { value: -3.2, period: 'vs last month', positive: false },
-      color: 'var(--warning)',
-    },
-  ];
-
-  const mockProgressData = [
-    { label: 'Engineering', value: 245, color: 'var(--chart-1)' },
-    { label: 'Medicine', value: 189, color: 'var(--chart-2)' },
-    { label: 'Business', value: 156, color: 'var(--chart-3)' },
-    { label: 'Arts', value: 98, color: 'var(--chart-4)' },
-    { label: 'Other', value: 67, color: 'var(--chart-5)' },
-  ];
-
-  const mockBarData = [
-    { label: 'Jan', value: 120 },
-    { label: 'Feb', value: 145 },
-    { label: 'Mar', value: 167 },
-    { label: 'Apr', value: 189 },
-    { label: 'May', value: 201 },
-    { label: 'Jun', value: 234 },
-  ];
-
-  const mockProgressBarData = [
-    {
-      label: 'Profile Completion',
-      value: 78,
-      maxValue: 100,
-      color: 'blue',
-      description: 'Student profiles completed',
-    },
-    {
-      label: 'Assessment Participation',
-      value: 156,
-      maxValue: 200,
-      color: 'green',
-      description: 'Monthly assessment target',
-    },
-    {
-      label: 'Career Guidance Sessions',
-      value: 89,
-      maxValue: 120,
-      color: 'orange',
-      description: 'Counselor session quota',
-    },
-  ];
-
+  // Data is now passed via props
   return (
     <div className="space-y-6">
       {/* Header Controls */}
@@ -519,6 +474,7 @@ export const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({
       </div>
 
       {/* Metric Cards */}
+      {metrics.length > 0 && (
       <div
         style={{
           display: 'grid',
@@ -526,40 +482,50 @@ export const DashboardAnalytics: React.FC<DashboardAnalyticsProps> = ({
           gap: '16px',
         }}
       >
-        {mockMetrics.map((metric, index) => (
+        {metrics.map((metric, index) => (
           <MetricCard key={index} {...metric} />
         ))}
       </div>
+      )}
+
 
       {/* Charts Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-          gap: '16px',
-        }}
-      >
-        <ProgressChart
-          title="Career Interest Distribution"
-          subtitle="Student preferences by field"
-          data={mockProgressData}
-          height={300}
-        />
-        
-        <BarChart
-          title="Monthly Assessments"
-          subtitle="Completed assessments over time"
-          data={mockBarData}
-          height={300}
-        />
-      </div>
+      {(progressData.length > 0 || barData.length > 0) && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+            gap: '16px',
+          }}
+        >
+          {progressData.length > 0 && (
+            <ProgressChart
+              title="Career Interest Distribution"
+              subtitle="Student preferences by field"
+              data={progressData}
+              height={300}
+            />
+          )}
+          
+          {barData.length > 0 && (
+            <BarChart
+              title="Monthly Assessments"
+              subtitle="Completed assessments over time"
+              data={barData}
+              height={300}
+            />
+          )}
+        </div>
+      )}
 
       {/* Progress Bars */}
-      <ProgressBarChart
-        title="Goal Progress"
-        data={mockProgressBarData}
-        height={280}
-      />
+      {progressBarData.length > 0 && (
+        <ProgressBarChart
+          title="Goal Progress"
+          data={progressBarData}
+          height={280}
+        />
+      )}
     </div>
   );
 };

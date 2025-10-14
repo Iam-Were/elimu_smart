@@ -14,101 +14,18 @@ import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camer
 import { ImageUploader } from '../components/common/ImageUploader';
 
 
-// Mock data for projects and portfolio (will be replaced with API calls)
-const mockProjects = [
-  {
-    id: '1',
-    title: 'School Management System',
-    description: 'A web application for managing student records, grades, and attendance built with React and Node.js',
-    type: 'Web Development',
-    status: 'Completed',
-    startDate: '2024-01-15',
-    endDate: '2024-02-28',
-    technologies: ['React', 'Node.js', 'MongoDB', 'Express'],
-    githubUrl: 'https://github.com/student/school-management',
-    liveUrl: 'https://school-mgmt-demo.netlify.app',
-    imageUrl: '/api/placeholder/400/250',
-    achievements: ['Improved efficiency by 40%', 'Used by 200+ students'],
-    isPublic: true
-  },
-  {
-    id: '2',
-    title: 'Climate Data Analysis',
-    description: 'Data analysis project examining climate patterns in Kenya using Python and visualization libraries',
-    type: 'Data Science',
-    status: 'In Progress',
-    startDate: '2024-02-01',
-    endDate: null,
-    technologies: ['Python', 'Pandas', 'Matplotlib', 'Jupyter'],
-    githubUrl: 'https://github.com/student/climate-analysis',
-    liveUrl: null,
-    imageUrl: '/api/placeholder/400/250',
-    achievements: ['Featured in school science fair'],
-    isPublic: true
-  },
-  {
-    id: '3',
-    title: 'Mobile Expense Tracker',
-    description: 'Android app for tracking personal expenses with budget management features',
-    type: 'Mobile Development',
-    status: 'Completed',
-    startDate: '2023-11-01',
-    endDate: '2023-12-15',
-    technologies: ['Java', 'Android Studio', 'SQLite'],
-    githubUrl: 'https://github.com/student/expense-tracker',
-    liveUrl: null,
-    imageUrl: '/api/placeholder/400/250',
-    achievements: ['500+ downloads on Play Store'],
-    isPublic: false
-  }
-];
 
-const mockExperience = [
-  {
-    id: '1',
-    title: 'Junior Web Developer Intern',
-    company: 'TechStart Kenya',
-    location: 'Nairobi, Kenya',
-    type: 'Internship',
-    startDate: '2024-01-15',
-    endDate: null,
-    current: true,
-    description: 'Working on client websites using React and WordPress. Gained experience in responsive design and client communication.',
-    skills: ['React', 'WordPress', 'CSS', 'Client Communication'],
-    achievements: ['Built 3 client websites', 'Improved page load speeds by 30%']
-  },
-  {
-    id: '2',
-    title: 'Computer Lab Assistant',
-    company: 'Nairobi Secondary School',
-    location: 'Nairobi, Kenya',
-    type: 'Part-time',
-    startDate: '2023-09-01',
-    endDate: '2023-12-31',
-    current: false,
-    description: 'Assisted students with computer basics and maintained lab equipment. Tutored junior students in programming fundamentals.',
-    skills: ['Teaching', 'Technical Support', 'Computer Maintenance'],
-    achievements: ['Helped 50+ students improve computer skills']
-  }
-];
 
-const mockSkills = [
-  { name: 'JavaScript', level: 85, category: 'Programming' },
-  { name: 'React', level: 80, category: 'Frontend' },
-  { name: 'Python', level: 75, category: 'Programming' },
-  { name: 'Node.js', level: 70, category: 'Backend' },
-  { name: 'Data Analysis', level: 65, category: 'Analytics' },
-  { name: 'Project Management', level: 78, category: 'Soft Skills' },
-  { name: 'Communication', level: 85, category: 'Soft Skills' },
-  { name: 'Problem Solving', level: 90, category: 'Soft Skills' }
-];
+
+
+
 
 export const ProfilePage: React.FC = () => {
-  const [projects, setProjects] = useState(mockProjects);
-  const [experience, setExperience] = useState(mockExperience);
-  const [skills] = useState(mockSkills);
-  const [, setLoadingProjects] = useState(true);
-  const [, setLoadingExperience] = useState(true);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [experience, setExperience] = useState<any[]>([]);
+  const [skills] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingExperience, setLoadingExperience] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
@@ -140,10 +57,12 @@ export const ProfilePage: React.FC = () => {
         const result = await Parse.Cloud.run('getUserProjects');
         if (result.success && result.projects.length > 0) {
           setProjects(result.projects);
+        } else {
+          setProjects([]);
         }
       } catch (error) {
-        console.warn('Failed to load projects, using mock data:', error);
-        // Keep mock data as fallback
+        console.error('Failed to load projects:', error);
+        setProjects([]);
       } finally {
         setLoadingProjects(false);
       }
@@ -160,11 +79,13 @@ export const ProfilePage: React.FC = () => {
         const result = await Parse.Cloud.run('getUserExperience');
         if (result.success && result.experience.length > 0) {
           setExperience(result.experience);
+        } else {
+          setExperience([]);
         }
       } catch (error) {
-        console.warn('Failed to load experience, using mock data:', error);
-        // Keep mock data as fallback
-      } finally {
+        console.error('Failed to load experience:', error);
+        setExperience([]);
+      } finally{
         setLoadingExperience(false);
       }
     };
@@ -556,8 +477,19 @@ export const ProfilePage: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {projects.map((project) => (
+            {loadingProjects ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading projects...
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Code className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium mb-1">No projects yet</p>
+                <p className="text-sm">Add your first project to showcase your work</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {projects.map((project) => (
                 <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -590,8 +522,9 @@ export const ProfilePage: React.FC = () => {
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -610,8 +543,19 @@ export const ProfilePage: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {experience.map((exp) => (
+            {loadingExperience ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading experience...
+              </div>
+            ) : experience.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium mb-1">No experience yet</p>
+                <p className="text-sm">Add your work experience, internships, or volunteer work</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {experience.map((exp) => (
                 <div key={exp.id} className="border-b last:border-b-0 pb-6 last:pb-0">
                   <div className="flex items-start gap-4">
                     <div className={`w-12 h-12 rounded bg-gradient-to-r ${getThemeColor(currentTheme)} flex items-center justify-center text-white flex-shrink-0`}>
@@ -632,8 +576,9 @@ export const ProfilePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -652,8 +597,15 @@ export const ProfilePage: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {skills.map((skill) => (
+            {skills.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium mb-1">No skills yet</p>
+                <p className="text-sm">Add your technical and soft skills</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {skills.map((skill) => (
                 <div key={skill.name} className="p-3 border rounded-lg text-center hover:shadow-md transition-shadow">
                   <div className="font-medium text-sm mb-2">{skill.name}</div>
                   <div className="text-xs text-gray-500 mb-2">{skill.category}</div>
@@ -665,8 +617,9 @@ export const ProfilePage: React.FC = () => {
                   </div>
                   <div className="text-xs text-gray-600">{skill.level}%</div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
