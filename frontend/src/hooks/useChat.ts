@@ -108,26 +108,12 @@ export const useChat = () => {
       }));
     } catch (error) {
       console.error('Failed to load chat rooms:', error);
-      // Create demo room for testing
-      const demoRoom: ChatRoom = {
-        id: 'demo-room-1',
-        title: 'Career Counselor',
-        type: 'counseling',
-        participants: [user.id, 'counselor-1'],
-        lastMessage: 'Welcome! How can I help you with your career planning?',
-        lastActivity: new Date(),
-        messageCount: 1,
-        isActive: true,
-        createdBy: 'counselor-1'
-      };
-
       setChatState(prev => ({
         ...prev,
-        rooms: [demoRoom],
-        error: 'Using demo data - backend connection failed',
+        rooms: [],
+        error: "Failed to load chat rooms",
         isLoading: false
       }));
-    }
   }, [user, parseRoomToRoom]);
 
   // Load messages for a specific room
