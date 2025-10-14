@@ -504,7 +504,7 @@ export const ProfilePage: React.FC = () => {
                   <p className="text-sm text-gray-700 mb-3">{project.description}</p>
 
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {project.technologies.map((tech) => (
+                    {project.technologies.map((tech: string) => (
                       <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
                     ))}
                   </div>
@@ -569,7 +569,7 @@ export const ProfilePage: React.FC = () => {
                       </p>
                       <p className="text-sm text-gray-700 mb-3">{exp.description}</p>
                       <div className="flex flex-wrap gap-2">
-                        {exp.skills.map((skill) => (
+                        {exp.skills.map((skill: string) => (
                           <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
                         ))}
                       </div>
@@ -605,7 +605,7 @@ export const ProfilePage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {skills.map((skill) => (
+                {skills.map((skill: any) => (
                 <div key={skill.name} className="p-3 border rounded-lg text-center hover:shadow-md transition-shadow">
                   <div className="font-medium text-sm mb-2">{skill.name}</div>
                   <div className="text-xs text-gray-500 mb-2">{skill.category}</div>
