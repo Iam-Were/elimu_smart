@@ -19,16 +19,6 @@ jobs:
           fi
           echo "✅ Production healthy: $PROD_STATUS"
 
-      - name: Check Staging Health
-        run: |
-          STAGING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://staging.elimu-smart.co.ke/parse/health)
-          if [ "$STAGING_STATUS" != "200" ]; then
-            echo "⚠️ Staging health check failed: $STAGING_STATUS"
-            # Don't fail the job for staging
-          else
-            echo "✅ Staging healthy: $STAGING_STATUS"
-          fi
-
       - name: Check Webhook Agent
         run: |
           WEBHOOK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/webhooks/health)
