@@ -28,12 +28,15 @@ const getSessionToken = (): string => {
 
 /**
  * Fetch RIASEC assessment questions from Parse Cloud Function
+ * Questions are public and don't require authentication
  */
 export const getRiasecQuestions = async (): Promise<RiasecQuestion[]> => {
   try {
     const Parse = await getParse();
+    // Assessment questions are public, make session token optional
     const sessionToken = getSessionToken();
-    const result = await Parse.Cloud.run('getRiasecQuestions', {}, { sessionToken });
+    const options = sessionToken ? { sessionToken } : undefined;
+    const result = await Parse.Cloud.run('getRiasecQuestions', {}, options);
     return result as RiasecQuestion[];
   } catch (error) {
     console.error('Failed to fetch RIASEC questions from API:', error);
@@ -43,12 +46,15 @@ export const getRiasecQuestions = async (): Promise<RiasecQuestion[]> => {
 
 /**
  * Fetch Skills assessment questions from Parse Cloud Function
+ * Questions are public and don't require authentication
  */
 export const getSkillsQuestions = async (): Promise<SkillQuestion[]> => {
   try {
     const Parse = await getParse();
+    // Assessment questions are public, make session token optional
     const sessionToken = getSessionToken();
-    const result = await Parse.Cloud.run('getSkillsQuestions', {}, { sessionToken });
+    const options = sessionToken ? { sessionToken } : undefined;
+    const result = await Parse.Cloud.run('getSkillsQuestions', {}, options);
     return result as SkillQuestion[];
   } catch (error) {
     console.error('Failed to fetch Skills questions from API:', error);
@@ -68,6 +74,9 @@ export const saveAssessmentResult = async (
   try {
     const Parse = await getParse();
     const sessionToken = getSessionToken();
+    if (!sessionToken) {
+      throw new Error('Authentication required to save assessment results');
+    }
     const result = await Parse.Cloud.run('saveAssessmentResult', {
       assessmentType,
       responses,
@@ -96,6 +105,9 @@ export const getUserAssessments = async (
   try {
     const Parse = await getParse();
     const sessionToken = getSessionToken();
+    if (!sessionToken) {
+      throw new Error('Authentication required to fetch assessment history');
+    }
     const result = await Parse.Cloud.run('getUserAssessments', {
       assessmentType
     }, { sessionToken });
@@ -138,7 +150,8 @@ export const getRiasecCareerInfo = async (params: {
   try {
     const Parse = await getParse();
     const sessionToken = getSessionToken();
-    const result = await Parse.Cloud.run('getRiasecCareerInfo', params, { sessionToken });
+    const options = sessionToken ? { sessionToken } : undefined;
+    const result = await Parse.Cloud.run('getRiasecCareerInfo', params, options);
     return result as RiasecCareerInfo;
   } catch (error) {
     console.error('Failed to fetch RIASEC career info:', error);
@@ -174,7 +187,8 @@ export const analyzeSubjectCareerFit = async (params: {
   try {
     const Parse = await getParse();
     const sessionToken = getSessionToken();
-    const result = await Parse.Cloud.run('analyzeSubjectCareerFit', params, { sessionToken });
+    const options = sessionToken ? { sessionToken } : undefined;
+    const result = await Parse.Cloud.run('analyzeSubjectCareerFit', params, options);
     return result as SubjectCareerFitResult;
   } catch (error) {
     console.error('Failed to analyze subject-career fit:', error);
@@ -193,7 +207,8 @@ export const getAssessmentQuestions = async (params?: {
   try {
     const Parse = await getParse();
     const sessionToken = getSessionToken();
-    const result = await Parse.Cloud.run('getAssessmentQuestions', params || {}, { sessionToken });
+    const options = sessionToken ? { sessionToken } : undefined;
+    const result = await Parse.Cloud.run('getAssessmentQuestions', params || {}, options);
     return result as RiasecQuestion[];
   } catch (error) {
     console.error('Failed to fetch assessment questions:', error);
