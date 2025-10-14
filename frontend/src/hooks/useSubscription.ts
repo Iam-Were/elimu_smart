@@ -31,7 +31,7 @@ export const useSubscription = () => {
   const loadSubscriptionData = async () => {
     try {
       setIsLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // Load subscription plans
       const plansResponse = await Parse.Cloud.run('getSubscriptionPlans');
@@ -52,7 +52,7 @@ export const useSubscription = () => {
 
   const initiatePayment = async (planId: string, phoneNumber: string) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('initiateSubscriptionPayment', { planId, phoneNumber });
       return result;
     } catch (err) {
@@ -63,7 +63,7 @@ export const useSubscription = () => {
 
   const checkPaymentStatus = async (subscriptionId: string) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('checkSubscriptionPaymentStatus', { subscriptionId });
       if (result.success) {
         await loadSubscriptionData(); // Reload subscription data
@@ -77,7 +77,7 @@ export const useSubscription = () => {
 
   const cancelSubscription = async () => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('cancelSubscription');
       await loadSubscriptionData(); // Reload subscription data
       return result;

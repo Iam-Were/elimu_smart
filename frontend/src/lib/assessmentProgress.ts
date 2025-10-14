@@ -83,7 +83,7 @@ export interface QuestionData {
  * Start a new RIASEC assessment
  */
 export async function startRiasecAssessment(): Promise<AssessmentStartResult> {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {
@@ -104,7 +104,7 @@ export async function saveRiasecResponse(
   response: number,
   questionData: QuestionData
 ): Promise<SaveResponseResult> {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {
@@ -127,7 +127,7 @@ export async function saveRiasecResponse(
 export async function completeRiasecAssessment(
   assessmentId: string
 ): Promise<CompleteAssessmentResult> {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {
@@ -145,7 +145,7 @@ export async function completeRiasecAssessment(
  * Resume an in-progress RIASEC assessment
  */
 export async function resumeRiasecAssessment(): Promise<ResumeAssessmentResult> {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {
@@ -161,7 +161,7 @@ export async function resumeRiasecAssessment(): Promise<ResumeAssessmentResult> 
  * Get RIASEC assessment results
  */
 export async function getRiasecResults(assessmentId?: string) {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {
@@ -179,7 +179,7 @@ export async function getRiasecResults(assessmentId?: string) {
  * Get user's RIASEC assessment history
  */
 export async function getRiasecHistory() {
-  const Parse = await getParse();
+  const Parse = getParse();
   const sessionToken = getSessionToken();
 
   try {

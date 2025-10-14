@@ -171,7 +171,7 @@ export const QuestionQueue: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getStudentQuestions');
 
         if (result.success) {
@@ -249,7 +249,7 @@ export const QuestionQueue: React.FC = () => {
   const handleSendResponse = async () => {
     if (selectedQuestion && answerText.trim()) {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('answerQuestion', {
           questionId: selectedQuestion.id,
           answer: answerText

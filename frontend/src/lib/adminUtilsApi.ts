@@ -13,7 +13,7 @@ export async function initializeRiasecSchema(): Promise<{
   message: string;
   schemas: string[];
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('initializeRiasecSchema');
@@ -32,7 +32,7 @@ export async function initializeStudentCounselorSchema(): Promise<{
   message: string;
   schemas: string[];
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('initializeStudentCounselorSchema');
@@ -62,7 +62,7 @@ export async function seedRiasecData(params: {
   typesSaved: number;
   totalQuestions: number;
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('seedRiasecData', params);
@@ -86,7 +86,7 @@ export async function getCacheStats(): Promise<{
     expiresAt: Date;
   }>;
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getCacheStats');
@@ -104,7 +104,7 @@ export async function clearExpiredCache(): Promise<{
   success: boolean;
   entriesCleared: number;
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('clearExpiredCache');
@@ -122,7 +122,7 @@ export async function clearAllCache(): Promise<{
   success: boolean;
   entriesCleared: number;
 }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('clearAllCache');

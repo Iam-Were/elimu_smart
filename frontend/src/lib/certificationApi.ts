@@ -31,7 +31,7 @@ export async function syncExternalCertification(params: {
   credentialUrl?: string;
   completedDate?: string;
 }): Promise<{ success: boolean; certification: Certification }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('syncExternalCertification', params);
@@ -50,7 +50,7 @@ export async function connectLearningPlatform(params: {
   accessToken: string;
   refreshToken?: string;
 }): Promise<{ success: boolean; message: string }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('connectLearningPlatform', params);

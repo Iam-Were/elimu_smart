@@ -55,7 +55,7 @@ export const useGamification = () => {
     setState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getUserAchievements');
 
       const achievements = result.achievements.map((ach: Record<string, unknown>) => ({
@@ -93,7 +93,7 @@ export const useGamification = () => {
     if (!user) return null;
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('addAchievementBadge', {
         achievementType,
         data
@@ -118,7 +118,7 @@ export const useGamification = () => {
     setState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getUserCertifications');
 
       const certifications = result.certifications.map((cert: Record<string, unknown>) => ({

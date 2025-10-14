@@ -39,7 +39,7 @@ export const useBilling = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getBillingHistory', { limit });
 
       const transformedInvoices: Invoice[] = result.map((inv: {
@@ -80,7 +80,7 @@ export const useBilling = () => {
 
   const getInvoiceDetails = useCallback(async (invoiceId: string): Promise<InvoiceDetails | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getInvoiceDetails', { invoiceId });
 
       return {
@@ -115,7 +115,7 @@ export const useBilling = () => {
 
   const getInvoiceHTML = useCallback(async (invoiceId: string): Promise<string | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getInvoiceHTML', { invoiceId });
       return result.html;
     } catch (err) {
@@ -151,7 +151,7 @@ export const useBilling = () => {
 
   const resendInvoiceEmail = useCallback(async (invoiceId: string): Promise<boolean> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('resendInvoice', { invoiceId });
       return result.success;
     } catch (err) {
@@ -166,7 +166,7 @@ export const useBilling = () => {
     invoiceNumber: string;
   } | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('generateInvoice', { subscriptionId });
       return result;
     } catch (err) {

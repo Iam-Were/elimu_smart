@@ -72,7 +72,7 @@ export const BillingAnalytics: React.FC = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminBillingAnalytics');
       setData(result);
     } catch (err) {

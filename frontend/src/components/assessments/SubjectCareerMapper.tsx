@@ -112,7 +112,7 @@ export const SubjectCareerMapper: React.FC = () => {
       setCareerError(null);
 
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getCareersBySubject', {
           subject: selectedSubject
         });

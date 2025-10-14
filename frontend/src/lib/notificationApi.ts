@@ -29,7 +29,7 @@ export async function getNotifications(
   skip: number = 0,
   unreadOnly: boolean = false
 ): Promise<Notification[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getNotifications', {
@@ -78,7 +78,7 @@ export async function createNotification(params: {
   actionUrl?: string;
   chatRoomId?: string;
 }): Promise<Notification> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('createNotification', params);

@@ -24,7 +24,7 @@ export const useAssessmentProgress = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAssessmentProgress');
 
       // Transform backend data to frontend interface
@@ -68,7 +68,7 @@ export const useAssessmentProgress = () => {
     progress: number;
   }) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // Optimistic update
       setProgressData(prev => {
@@ -116,7 +116,7 @@ export const useAssessmentProgress = () => {
 
   const completeAssessment = useCallback(async (assessmentType: string) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // Optimistic update
       setProgressData(prev =>

@@ -43,7 +43,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAssessmentQuestions', {
         page: 1,
         limit: 200,
@@ -68,7 +68,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const params = {
         ...formData,
         questionId: editingQuestion?.questionId
@@ -124,7 +124,7 @@ export const AssessmentQuestionsManagementPage: React.FC = () => {
     }
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('deleteAssessmentQuestion', {
         id: question.id,
         type: question.type

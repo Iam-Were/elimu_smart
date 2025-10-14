@@ -29,7 +29,7 @@ const StudentDashboard: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const currentUser = Parse.User.current();
 
         if (currentUser) {

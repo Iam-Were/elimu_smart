@@ -30,7 +30,7 @@ const QuickQuestions: React.FC = () => {
   useEffect(() => {
     const loadMyQuestions = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getMyQuestions');
 
         if (result.success) {
@@ -52,7 +52,7 @@ const QuickQuestions: React.FC = () => {
     setIsSubmitting(true);
     setSuccessMessage('');
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('submitQuestion', {
         question: question.trim(),
         category: category || undefined

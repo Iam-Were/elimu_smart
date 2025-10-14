@@ -30,7 +30,7 @@ export interface CareerData {
  * Replaces frontend SUBJECT_CAREERS lookup
  */
 export async function getCareersBySubject(subject: string): Promise<CareerData[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getCareersBySubject', { subject });
@@ -50,7 +50,7 @@ export async function searchCareers(params: {
   minSalary?: number;
   demand?: 'High' | 'Medium' | 'Low';
 }): Promise<CareerData[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('searchCareers', params);
@@ -65,7 +65,7 @@ export async function searchCareers(params: {
  * Get all career categories
  */
 export async function getCareerCategories(): Promise<string[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getCareerCategories');
@@ -80,7 +80,7 @@ export async function getCareerCategories(): Promise<string[]> {
  * Get career details by ID
  */
 export async function getCareerById(careerId: string): Promise<CareerData> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getCareerById', { careerId });
@@ -98,7 +98,7 @@ export async function getTopCareers(params?: {
   limit?: number;
   category?: string;
 }): Promise<CareerData[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getTopCareers', params || {});

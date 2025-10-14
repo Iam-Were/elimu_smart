@@ -30,7 +30,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
  */
 export async function getUserPreferences(): Promise<UserPreferences> {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const result = await Parse.Cloud.run('getUserPreferences');
     return result as UserPreferences;
   } catch (error) {
@@ -62,7 +62,7 @@ export async function getUserPreferences(): Promise<UserPreferences> {
  */
 export async function saveUserPreferences(preferences: Partial<UserPreferences>): Promise<void> {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     await Parse.Cloud.run('saveUserPreferences', preferences);
 
     // Also save to localStorage as backup (offline mode)
@@ -90,7 +90,7 @@ export async function updateUserPreference<K extends keyof UserPreferences>(
   value: UserPreferences[K]
 ): Promise<void> {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     await Parse.Cloud.run('updateUserPreference', { field, value });
 
     // Also update localStorage as backup

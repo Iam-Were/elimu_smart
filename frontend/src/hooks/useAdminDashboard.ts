@@ -100,7 +100,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     duration?: number
   ) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('logAdminActivity', {
         activityType,
         data,
@@ -117,7 +117,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     if (adminRole === 'provider_safety') return null; // No system access for safety managers
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminSystemMetrics');
       return {
         totalUsers: result.totalUsers || 0,
@@ -141,7 +141,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     if (adminRole === 'platform' && !adminRole) return null; // Limited security access for platform admins
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminSecurityMetrics');
       return {
         activeThreats: result.activeThreats || 0,
@@ -162,7 +162,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     if (adminRole !== 'platform') return null; // Business data only for platform admins
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminBusinessMetrics');
       return {
         monthlyRevenue: result.monthlyRevenue || 0,
@@ -183,7 +183,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     if (adminRole === 'platform') return null; // Platform admins don't handle content
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminContentMetrics');
       return {
         flaggedContent: result.flaggedContent || 0,
@@ -204,7 +204,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
     if (adminRole !== 'operations') return null; // Support data only for operations
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminSupportMetrics');
       return {
         openTickets: result.openTickets || 0,
@@ -223,7 +223,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   // Get recent audit logs
   const getRecentAuditLogs = async (): Promise<AuditLog[]> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminAuditLogs', { limit: 10 });
       return (result || []).map((log: Record<string, unknown>) => ({
         id: log.id,
@@ -243,7 +243,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   // Get recent admin activities
   const getRecentActivities = async (): Promise<AdminActivity[]> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminRecentActivities', { limit: 20 });
       return (result || []).map((activity: Record<string, unknown>) => ({
         activityType: activity.activityType,
@@ -321,7 +321,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   useEffect(() => {
     const loadDataIfAdmin = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const user = Parse.User.current();
         if (user && user.get('role') === 'admin') {
           loadAdminDashboard();
@@ -338,7 +338,7 @@ export const useAdminDashboard = (adminRole?: AdminRoleType) => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const user = Parse.User.current();
         if (user && user.get('role') === 'admin') {
           loadAdminDashboard();

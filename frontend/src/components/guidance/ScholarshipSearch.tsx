@@ -17,7 +17,7 @@ const ScholarshipSearch: React.FC = () => {
   const handleStartApplication = async (scholarshipId: string) => {
     setIsApplying(true);
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       // Uses Parse function: logUserActivity
       await Parse.Cloud.run('logUserActivity', {
         activityType: 'scholarship_application_started',

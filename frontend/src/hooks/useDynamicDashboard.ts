@@ -148,7 +148,7 @@ export const useDynamicDashboard = () => {
     duration?: number
   ) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) {
@@ -170,7 +170,7 @@ export const useDynamicDashboard = () => {
   // Calculate career readiness score
   const calculateCareerReadiness = async (): Promise<CareerReadinessScore | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) {
@@ -198,7 +198,7 @@ export const useDynamicDashboard = () => {
   // Get university placement data
   const getUniversityPlacement = async (): Promise<UniversityPlacementData | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return null;
@@ -218,7 +218,7 @@ export const useDynamicDashboard = () => {
   // Find scholarship matches
   const findScholarshipMatches = async (): Promise<ScholarshipMatch[]> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return [];
@@ -242,7 +242,7 @@ export const useDynamicDashboard = () => {
   // Calculate cutoff points analysis
   const getCutoffAnalysis = async (): Promise<CutoffAnalysis | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return null;
@@ -264,7 +264,7 @@ export const useDynamicDashboard = () => {
   // Get KUCCPS timeline and deadlines
   const getKuccpsTimeline = async (): Promise<KuccpsTimeline | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return null;
@@ -288,7 +288,7 @@ export const useDynamicDashboard = () => {
   // Get course recommendations
   const getCourseRecommendations = async (): Promise<CourseRecommendations | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return null;
@@ -309,7 +309,7 @@ export const useDynamicDashboard = () => {
   // Get user activities
   const getUserActivities = async (): Promise<UserActivity[]> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
       
       if (!currentUser) return [];
@@ -331,7 +331,7 @@ export const useDynamicDashboard = () => {
   // Get assessment progress for all cards
   const getAssessmentProgress = async (): Promise<Record<string, unknown>> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
 
       if (!currentUser) return {};
@@ -347,7 +347,7 @@ export const useDynamicDashboard = () => {
   // Get LinkedIn professional insights
   const getLinkedInInsights = async (): Promise<LinkedInInsights | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
 
       if (!currentUser) return null;
@@ -475,7 +475,7 @@ export const useDynamicDashboard = () => {
   useEffect(() => {
     const loadDataIfUser = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const user = Parse.User.current();
         if (user) {
           loadDashboardData();
@@ -492,7 +492,7 @@ export const useDynamicDashboard = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const user = Parse.User.current();
         if (user) {
           loadDashboardData();
@@ -508,7 +508,7 @@ export const useDynamicDashboard = () => {
   // Update career readiness score incrementally
   const updateCareerReadiness = async (newScore: number, activity: string = 'general'): Promise<{ success: boolean; newScore: number; streakCount?: number } | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
 
       if (!currentUser) {
@@ -539,7 +539,7 @@ export const useDynamicDashboard = () => {
   // Match university courses based on cutoff points
   const matchUniversityCourses = async (cutoffPoints: number, interests: string[] = []): Promise<{ eligibleCourses: Array<{ name: string; cutoff: number; university: string }>; totalMatches: number; recommendedAction: string } | null> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const currentUser = Parse.User.current();
 
       if (!currentUser) {

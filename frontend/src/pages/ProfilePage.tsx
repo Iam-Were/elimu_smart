@@ -53,7 +53,7 @@ export const ProfilePage: React.FC = () => {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getUserProjects');
         if (result.success && result.projects.length > 0) {
           setProjects(result.projects);
@@ -75,7 +75,7 @@ export const ProfilePage: React.FC = () => {
   useEffect(() => {
     const loadExperience = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getUserExperience');
         if (result.success && result.experience.length > 0) {
           setExperience(result.experience);

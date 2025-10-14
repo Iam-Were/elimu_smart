@@ -60,7 +60,7 @@ export const CareersManagementPage: React.FC = () => {
   const fetchCareers = async () => {
     try {
       setLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getCareers', {
         page: 1,
         limit: 100
@@ -83,7 +83,7 @@ export const CareersManagementPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const params = {
         ...formData,
         salaryRangeMin: formData.salaryRangeMin ? parseInt(formData.salaryRangeMin) : undefined,
@@ -150,7 +150,7 @@ export const CareersManagementPage: React.FC = () => {
     }
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('deleteCareer', { id: career.id });
       fetchCareers();
     } catch (error) {

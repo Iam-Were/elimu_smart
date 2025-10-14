@@ -16,7 +16,7 @@ export const testBackendIntegration = async () => {
   console.log('🧪 Testing Assessment Cards Backend Integration...');
   
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const user = Parse.User.current();
     
     if (!user) {

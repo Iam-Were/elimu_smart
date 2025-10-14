@@ -10,7 +10,7 @@ const MentorshipMatching: React.FC = () => {
   const handleRequestMentorship = async (mentorId: string) => {
     setIsRequesting(true);
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       // Uses Parse function: sendMessage (mentor request)
       await Parse.Cloud.run('sendMessage', {
         roomId: `mentor_request_${mentorId}`,

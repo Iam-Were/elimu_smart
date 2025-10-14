@@ -12,7 +12,7 @@ const SkillsDevelopment: React.FC = () => {
   const handleStartCourse = async (courseId: string) => {
     setIsStarting(true);
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       // Uses Parse function: logUserActivity
       await Parse.Cloud.run('logUserActivity', {
         activityType: 'skills_course_started',

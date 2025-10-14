@@ -48,7 +48,7 @@ export const UniversitiesManagementPage: React.FC = () => {
   const fetchUniversities = async () => {
     try {
       setLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getUniversities', {
         page: 1,
         limit: 100
@@ -71,7 +71,7 @@ export const UniversitiesManagementPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const params = {
         ...formData,
         ranking: formData.ranking ? parseInt(formData.ranking) : undefined,
@@ -137,7 +137,7 @@ export const UniversitiesManagementPage: React.FC = () => {
     }
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('deleteUniversity', { id: university.id });
       fetchUniversities();
     } catch (error) {

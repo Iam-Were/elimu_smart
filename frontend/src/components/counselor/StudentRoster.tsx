@@ -135,7 +135,7 @@ export const StudentRoster: React.FC = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getAssignedStudents');
 
         if (result.success) {

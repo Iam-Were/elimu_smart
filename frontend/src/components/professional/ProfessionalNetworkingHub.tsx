@@ -52,7 +52,7 @@ export const ProfessionalNetworkingHub: React.FC = () => {
   useEffect(() => {
     const fetchProfessionalData = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         if (!Parse) return;
         const result = await Parse.Cloud.run('getLinkedInProfessionalInsights', {
           industry: userIndustry,

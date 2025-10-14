@@ -32,7 +32,7 @@ export const useParseAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const currentParseUser = Parse.User.current();
         
         if (currentParseUser) {
@@ -81,7 +81,7 @@ export const useParseAuth = () => {
 
     try {
       await initializeParse(); // Initialize Parse before using it
-      const Parse = await getParse();
+      const Parse = getParse();
       const parseUser = await Parse.User.logIn(credentials.email, credentials.password);
       const user = parseUserToUser(parseUser);
 
@@ -118,7 +118,7 @@ export const useParseAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const parseUser = new Parse.User();
       parseUser.set('username', data.email);
       parseUser.set('email', data.email);
@@ -155,7 +155,7 @@ export const useParseAuth = () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.User.logOut();
       
       localStorage.removeItem('elimu-theme');
@@ -182,7 +182,7 @@ export const useParseAuth = () => {
   // Test cloud function
   const testCloudFunction = useCallback(async () => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('hello');
       console.log('Cloud function result:', result);
       return result;
@@ -195,7 +195,7 @@ export const useParseAuth = () => {
   // Calculate KUCCPS points using cloud function
   const calculateKUCCPSPoints = useCallback(async (subjects: string[], gradePoints: Record<string, string>) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('calculateKUCCPSPoints', {
         subjects,
         gradePoints

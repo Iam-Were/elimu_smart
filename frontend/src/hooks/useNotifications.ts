@@ -22,7 +22,7 @@ export const useNotifications = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getNotifications', { limit });
 
       // Transform backend data to frontend interface
@@ -57,7 +57,7 @@ export const useNotifications = () => {
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // Optimistic update
       setNotifications(prev =>
@@ -75,7 +75,7 @@ export const useNotifications = () => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // Optimistic update
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -96,7 +96,7 @@ export const useNotifications = () => {
     actionUrl?: string;
   }): Promise<boolean> => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('createNotification', params);
       return true;
     } catch (err) {

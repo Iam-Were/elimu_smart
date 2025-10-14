@@ -36,7 +36,7 @@ export async function uploadFile(
   file: File,
   chatRoomId?: string
 ): Promise<UploadedFile> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     // Convert file to base64
@@ -66,7 +66,7 @@ export async function uploadFile(
  * Upload profile image
  */
 export async function uploadProfileImage(file: File): Promise<string> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     // Convert file to base64

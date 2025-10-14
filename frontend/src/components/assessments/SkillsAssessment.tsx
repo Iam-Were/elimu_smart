@@ -137,7 +137,7 @@ export const SkillsAssessment: React.FC = () => {
   const startAssessment = async () => {
     try {
       setIsLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('startSkillsAssessment');
 
       if (result && result.id) {
@@ -171,7 +171,7 @@ export const SkillsAssessment: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
 
       // First, save all responses to the assessment
       const SkillsAssessment = Parse.Object.extend('SkillsAssessment');

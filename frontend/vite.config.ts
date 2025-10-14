@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Use minified Parse build for better Vite compatibility
+      'parse': path.resolve(__dirname, './node_modules/parse/dist/parse.min.js'),
     },
   },
   define: {
@@ -16,14 +18,15 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['parse'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
   build: {
     rollupOptions: {
-      external: ['events'],
       output: {
-        globals: {
-          events: 'events'
-        },
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'parse-sdk': ['parse'],
@@ -31,6 +34,7 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    sourcemap: true
   }
 });

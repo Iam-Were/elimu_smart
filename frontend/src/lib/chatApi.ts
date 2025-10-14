@@ -112,7 +112,7 @@ function transformToChatMessage(msg: ParseServerObject): ChatMessage {
  * Get all chat rooms for the current user
  */
 export async function getChatRooms(): Promise<ChatRoom[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getChatRooms');
@@ -131,7 +131,7 @@ export async function getChatMessages(
   limit: number = 50,
   skip: number = 0
 ): Promise<ChatMessage[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getChatMessages', {
@@ -151,7 +151,7 @@ export async function getChatMessages(
  * Mark all messages in a chat room as read
  */
 export async function markMessagesAsRead(chatRoomId: string): Promise<{ messagesMarked: number }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('markMessagesAsRead', {
@@ -171,7 +171,7 @@ export async function getInboxConversations(
   limit: number = 20,
   skip: number = 0
 ): Promise<ConversationResult[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('getInboxConversations', {
@@ -192,7 +192,7 @@ export async function searchConversations(
   searchTerm: string,
   limit: number = 10
 ): Promise<ChatRoom[]> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('searchConversations', {
@@ -211,7 +211,7 @@ export async function searchConversations(
  * Archive a conversation
  */
 export async function archiveConversation(chatRoomId: string): Promise<{ success: boolean }> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('archiveConversation', {
@@ -235,7 +235,7 @@ export async function sendMultimediaMessage(params: {
   fileName?: string;
   fileSize?: number;
 }): Promise<ChatMessage> {
-  const Parse = await getParse();
+  const Parse = getParse();
 
   try {
     const result = await Parse.Cloud.run('sendMultimediaMessage', params);

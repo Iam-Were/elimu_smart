@@ -11,7 +11,7 @@ const CounselorConnect: React.FC = () => {
   const handleStartChat = async () => {
     setIsConnecting(true);
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       // Uses Parse function: createChatRoom
       await Parse.Cloud.run('createChatRoom', {
         type: 'counselor_support',

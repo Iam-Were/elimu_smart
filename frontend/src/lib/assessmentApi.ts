@@ -32,7 +32,7 @@ const getSessionToken = (): string => {
  */
 export const getRiasecQuestions = async (): Promise<RiasecQuestion[]> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     // Assessment questions are public, make session token optional
     const sessionToken = getSessionToken();
     const options = sessionToken ? { sessionToken } : undefined;
@@ -50,7 +50,7 @@ export const getRiasecQuestions = async (): Promise<RiasecQuestion[]> => {
  */
 export const getSkillsQuestions = async (): Promise<SkillQuestion[]> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     // Assessment questions are public, make session token optional
     const sessionToken = getSessionToken();
     const options = sessionToken ? { sessionToken } : undefined;
@@ -72,7 +72,7 @@ export const saveAssessmentResult = async (
   results: Record<string, unknown>
 ): Promise<{ success: boolean; resultId: string }> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const sessionToken = getSessionToken();
     if (!sessionToken) {
       throw new Error('Authentication required to save assessment results');
@@ -103,7 +103,7 @@ export const getUserAssessments = async (
   results: Record<string, unknown>;
 }>> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const sessionToken = getSessionToken();
     if (!sessionToken) {
       throw new Error('Authentication required to fetch assessment history');
@@ -148,7 +148,7 @@ export const getRiasecCareerInfo = async (params: {
   careerName?: string;
 }): Promise<RiasecCareerInfo> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const sessionToken = getSessionToken();
     const options = sessionToken ? { sessionToken } : undefined;
     const result = await Parse.Cloud.run('getRiasecCareerInfo', params, options);
@@ -185,7 +185,7 @@ export const analyzeSubjectCareerFit = async (params: {
   grades: Record<string, string>;
 }): Promise<SubjectCareerFitResult> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const sessionToken = getSessionToken();
     const options = sessionToken ? { sessionToken } : undefined;
     const result = await Parse.Cloud.run('analyzeSubjectCareerFit', params, options);
@@ -205,7 +205,7 @@ export const getAssessmentQuestions = async (params?: {
   randomize?: boolean;
 }): Promise<RiasecQuestion[]> => {
   try {
-    const Parse = await getParse();
+    const Parse = getParse();
     const sessionToken = getSessionToken();
     const options = sessionToken ? { sessionToken } : undefined;
     const result = await Parse.Cloud.run('getAssessmentQuestions', params || {}, options);

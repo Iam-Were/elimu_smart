@@ -67,7 +67,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('sendWelcomeEmail', {
         email,
         firstName,
@@ -95,7 +95,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('sendAssessmentCompletionEmail', {
         email,
         firstName,
@@ -124,7 +124,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('sendKuccpsDeadlineReminder', {
         email,
         firstName,
@@ -156,7 +156,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('sendSessionBookingConfirmation', {
         studentEmail,
         counselorEmail,
@@ -194,7 +194,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('sendScholarshipAlert', {
         email,
         firstName,
@@ -220,7 +220,7 @@ export const useEmailService = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getEmailStatistics');
       
       // Convert date strings back to Date objects

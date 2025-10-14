@@ -163,7 +163,7 @@ export const SystemAnalytics: React.FC = () => {
   const loadBillingAnalytics = async () => {
     setLoadingBilling(true);
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getAdminBillingAnalytics');
       setBillingData(result);
     } catch (error) {

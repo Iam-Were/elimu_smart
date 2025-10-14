@@ -80,7 +80,7 @@ export const CoursesManagementPage: React.FC = () => {
   // Fetch universities for dropdown
   const fetchUniversities = async () => {
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getUniversities', {
         page: 1,
         limit: 100
@@ -95,7 +95,7 @@ export const CoursesManagementPage: React.FC = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getCourses', {
         page: 1,
         limit: 200
@@ -119,7 +119,7 @@ export const CoursesManagementPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const params = {
         ...formData,
         cutoffPoints: formData.cutoffPoints ? parseInt(formData.cutoffPoints) : undefined,
@@ -184,7 +184,7 @@ export const CoursesManagementPage: React.FC = () => {
     }
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       await Parse.Cloud.run('deleteCourse', { id: course.id });
       fetchCourses();
     } catch (error) {

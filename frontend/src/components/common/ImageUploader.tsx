@@ -78,7 +78,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       const base64Data = await fileToBase64(file);
 
       // Upload to backend
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('uploadProfileImage', {
         imageData: base64Data,
         fileName: file.name,

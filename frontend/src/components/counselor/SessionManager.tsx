@@ -155,7 +155,7 @@ export const SessionManager: React.FC = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const Parse = await getParse();
+        const Parse = getParse();
         const result = await Parse.Cloud.run('getPendingSessionRequests');
 
         if (result.success) {

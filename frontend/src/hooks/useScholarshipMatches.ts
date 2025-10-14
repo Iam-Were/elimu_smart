@@ -33,7 +33,7 @@ export const useScholarshipMatches = () => {
     setError(null);
 
     try {
-      const Parse = await getParse();
+      const Parse = getParse();
       const result = await Parse.Cloud.run('getScholarshipMatches');
 
       // Transform backend data to frontend interface
