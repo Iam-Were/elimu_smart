@@ -111,9 +111,10 @@ export const useChat = () => {
       setChatState(prev => ({
         ...prev,
         rooms: [],
-        error: "Failed to load chat rooms",
+        error: 'Failed to load chat rooms. Please try again.',
         isLoading: false
       }));
+    }
   }, [user, parseRoomToRoom]);
 
   // Load messages for a specific room
@@ -141,40 +142,10 @@ export const useChat = () => {
       }
     } catch (error) {
       console.error('Failed to load messages:', error);
-      // Create demo messages for testing
-      const demoMessages: ChatMessage[] = [
-        {
-          id: 'demo-msg-1',
-          chatRoomId,
-          sender: {
-            id: 'counselor-1',
-            firstName: 'Sarah',
-            lastName: 'Johnson'
-          },
-          message: 'Hello! I\'m here to help with your career planning. What would you like to discuss?',
-          messageType: 'text',
-          timestamp: new Date(Date.now() - 60000),
-          isRead: true
-        },
-        {
-          id: 'demo-msg-2',
-          chatRoomId,
-          sender: {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName
-          },
-          message: 'Hi! I\'m not sure what career path to choose after Form 4.',
-          messageType: 'text',
-          timestamp: new Date(Date.now() - 30000),
-          isRead: true
-        }
-      ];
-
       setChatState(prev => ({
         ...prev,
-        messages: demoMessages,
-        error: 'Using demo messages - backend connection failed',
+        messages: [],
+        error: 'Failed to load messages. Please try again.',
         isLoading: false
       }));
     }
@@ -196,29 +167,11 @@ export const useChat = () => {
       return result;
     } catch (error) {
       console.error('Failed to send message:', error);
-
-      // Add message locally for demo purposes
-      const demoMessage: ChatMessage = {
-        id: `demo-msg-${Date.now()}`,
-        chatRoomId,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName
-        },
-        message,
-        messageType,
-        timestamp: new Date(),
-        isRead: true
-      };
-
       setChatState(prev => ({
         ...prev,
-        messages: [...prev.messages, demoMessage],
-        error: 'Message sent locally - backend connection failed'
+        error: 'Failed to send message. Please try again.'
       }));
-
-      return demoMessage;
+      throw error;
     }
   }, [user, loadMessages]);
 
@@ -357,32 +310,11 @@ export const useChat = () => {
       return result;
     } catch (error) {
       console.error('Failed to send multimedia message:', error);
-
-      // Add message locally for demo purposes
-      const demoMessage: ChatMessage = {
-        id: `demo-msg-${Date.now()}`,
-        chatRoomId: params.chatRoomId,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName
-        },
-        message: params.message,
-        messageType: params.messageType || 'text',
-        timestamp: new Date(),
-        isRead: true,
-        fileUrl: params.fileUrl,
-        fileName: params.fileName,
-        fileSize: params.fileSize
-      };
-
       setChatState(prev => ({
         ...prev,
-        messages: [...prev.messages, demoMessage],
-        error: 'Message sent locally - backend connection failed'
+        error: 'Failed to send message. Please try again.'
       }));
-
-      return demoMessage;
+      throw error;
     }
   }, [user, loadMessages]);
 
