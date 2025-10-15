@@ -1,7 +1,7 @@
 // Working Parse Server setup based on Sprint 22 commit e110a05
-const ParseServer = require('parse-server').ParseServer;
-const ParseDashboard = require('parse-dashboard');
-const RedisCacheAdapter = require('parse-server').RedisCacheAdapter;
+const ParseServer = require('parse-server').ParseServer
+const ParseDashboard = require('parse-dashboard')
+const RedisCacheAdapter = require('parse-server').RedisCacheAdapter
 const express = require('express');
 const cors = require('cors');
 const path = require('path');

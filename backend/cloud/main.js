@@ -2,8 +2,8 @@
 // These functions run on the server and handle business logic
 
 // Import services
-const emailService = require('../services/emailService');
-const { cache, cacheKeys } = require('../utils/cache');
+const emailService = require('../services/emailService')
+const { cache, cacheKeys } = require('../utils/cache')
 
 // Import billing functions (auto-registers cloud functions)
 require('./billingFunctions');

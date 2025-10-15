@@ -14,6 +14,70 @@ import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camer
 import { ImageUploader } from '../components/common/ImageUploader';
 
 
+interface UserProject {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  description: string;
+  technologies: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+}
+
+interface UserExperience {
+  id: string;
+  title: string;
+  company: string;
+  type: string;
+  startDate: string;
+  endDate?: string;
+  current: boolean;
+  description: string;
+  skills: string[];
+}
+
+interface UserSkill {
+  name: string;
+  category: string;
+  level: number;
+}
+
+const normalizeProject = (project: Record<string, unknown>): UserProject => {
+  const technologies = Array.isArray(project.technologies)
+    ? project.technologies.filter((tech): tech is string => typeof tech === 'string')
+    : [];
+
+  return {
+    id: String(project.objectId ?? project.id ?? project.title ?? 'project-unknown'),
+    title: typeof project.title === 'string' ? project.title : 'Untitled Project',
+    type: typeof project.type === 'string' ? project.type : 'General',
+    status: typeof project.status === 'string' ? project.status : 'In Progress',
+    description: typeof project.description === 'string' ? project.description : 'Description not available.',
+    technologies,
+    githubUrl: typeof project.githubUrl === 'string' ? project.githubUrl : undefined,
+    liveUrl: typeof project.liveUrl === 'string' ? project.liveUrl : undefined
+  };
+};
+
+const normalizeExperience = (experience: Record<string, unknown>): UserExperience => {
+  const skills = Array.isArray(experience.skills)
+    ? experience.skills.filter((skill): skill is string => typeof skill === 'string')
+    : [];
+
+  return {
+    id: String(experience.objectId ?? experience.id ?? experience.title ?? 'experience-unknown'),
+    title: typeof experience.title === 'string' ? experience.title : 'Experience Title',
+    company: typeof experience.company === 'string' ? experience.company : 'Company',
+    type: typeof experience.type === 'string' ? experience.type : 'Full-time',
+    startDate: typeof experience.startDate === 'string' ? experience.startDate : new Date().toISOString(),
+    endDate: typeof experience.endDate === 'string' ? experience.endDate : undefined,
+    current: experience.current === true,
+    description: typeof experience.description === 'string' ? experience.description : 'Description not available.',
+    skills
+  };
+};
+
 
 
 
@@ -21,9 +85,9 @@ import { ImageUploader } from '../components/common/ImageUploader';
 
 
 export const ProfilePage: React.FC = () => {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [experience, setExperience] = useState<any[]>([]);
-  const [skills] = useState<any[]>([]);
+  const [projects, setProjects] = useState<UserProject[]>([]);
+  const [experience, setExperience] = useState<UserExperience[]>([]);
+  const [skills] = useState<UserSkill[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingExperience, setLoadingExperience] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -54,9 +118,12 @@ export const ProfilePage: React.FC = () => {
     const loadProjects = async () => {
       try {
         const Parse = getParse();
-        const result = await Parse.Cloud.run('getUserProjects');
-        if (result.success && result.projects.length > 0) {
-          setProjects(result.projects);
+        const result = await Parse.Cloud.run('getUserProjects') as { success?: boolean; projects?: unknown[] };
+        if (result?.success && Array.isArray(result.projects) && result.projects.length > 0) {
+          const normalized = result.projects
+            .map((project) => (project && typeof project === 'object' ? normalizeProject(project as Record<string, unknown>) : null))
+            .filter((project): project is UserProject => project !== null);
+          setProjects(normalized);
         } else {
           setProjects([]);
         }
@@ -76,9 +143,12 @@ export const ProfilePage: React.FC = () => {
     const loadExperience = async () => {
       try {
         const Parse = getParse();
-        const result = await Parse.Cloud.run('getUserExperience');
-        if (result.success && result.experience.length > 0) {
-          setExperience(result.experience);
+        const result = await Parse.Cloud.run('getUserExperience') as { success?: boolean; experience?: unknown[] };
+        if (result?.success && Array.isArray(result.experience) && result.experience.length > 0) {
+          const normalized = result.experience
+            .map((item) => (item && typeof item === 'object' ? normalizeExperience(item as Record<string, unknown>) : null))
+            .filter((item): item is UserExperience => item !== null);
+          setExperience(normalized);
         } else {
           setExperience([]);
         }
@@ -605,7 +675,7 @@ export const ProfilePage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {skills.map((skill: any) => (
+                {skills.map((skill) => (
                 <div key={skill.name} className="p-3 border rounded-lg text-center hover:shadow-md transition-shadow">
                   <div className="font-medium text-sm mb-2">{skill.name}</div>
                   <div className="text-xs text-gray-500 mb-2">{skill.category}</div>
