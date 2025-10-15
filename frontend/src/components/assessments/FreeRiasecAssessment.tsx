@@ -391,38 +391,42 @@ export const FreeRiasecAssessment: React.FC = () => {
     return 0;
   };
 
-  const startAssessment = useCallback(async () => {
+  const startAssessment = useCallback(async (forceNew: boolean = false) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Check for incomplete assessment first
-      const resumeResult = await resumeRiasecAssessment();
+      // Check for incomplete assessment first (unless user wants to start fresh)
+      if (!forceNew) {
+        const resumeResult = await resumeRiasecAssessment();
 
-      if (resumeResult.assessment) {
-        // Resume incomplete assessment
-        setAssessmentId(resumeResult.assessment.id);
-        setCurrentQuestion(resumeResult.assessment.currentQuestion);
-        // Reconstruct responses from backend
-        const resumedResponses: Record<number, number> = {};
-        resumeResult.assessment.responses.forEach((qId: string, index: number) => {
-          resumedResponses[parseInt(qId)] = index;
-        });
-        setResponses(resumedResponses);
-        console.log('Resumed incomplete assessment:', resumeResult.assessment.id);
-      } else {
-        // Start new assessment
-        const result = await startRiasecAssessment();
-        setAssessmentId(result.assessmentId);
-        console.log('Started new assessment:', result.assessmentId);
+        if (resumeResult.assessment) {
+          // Resume incomplete assessment silently
+          setAssessmentId(resumeResult.assessment.id);
+          setCurrentQuestion(resumeResult.assessment.currentQuestion);
+          // Reconstruct responses from backend
+          const resumedResponses: Record<number, number> = {};
+          resumeResult.assessment.responses.forEach((qId: string, index: number) => {
+            resumedResponses[parseInt(qId)] = index;
+          });
+          setResponses(resumedResponses);
+          // No console logging - assessment resumes quietly
+          setIsLoading(false);
+          return; // Exit early - don't start new assessment
+        }
       }
+
+      // Start new assessment
+      const result = await startRiasecAssessment();
+      setAssessmentId(result.assessmentId);
 
       // Log activity
       logActivity('free_riasec_assessment_started', {
-        assessmentId: assessmentId || 'new-assessment',
+        assessmentId: result.assessmentId,
         totalQuestions,
         version: 'IIP_RIASEC_Markers',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isResume: false
       });
     } catch (error) {
       console.warn('Failed to start/resume assessment, continuing with local:', error);
@@ -431,7 +435,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
 
     setIsLoading(false);
-  }, [logActivity, totalQuestions, assessmentId]);
+  }, [logActivity, totalQuestions]);
 
   useEffect(() => {
     startAssessment();
