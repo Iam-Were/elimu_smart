@@ -70,14 +70,29 @@ jobs:
 
       - name: Verify deployment
         run: |
-          sleep 30
-          PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
-          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+          echo "⏳ Waiting for Parse Server to restart..."
+          sleep 45
           
-          if [ "$PROD_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
-            echo "❌ Deployment verification failed"
-            echo "Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
-            exit 1
-          fi
+          # Retry up to 3 times with 10 second intervals
+          MAX_RETRIES=3
+          RETRY_COUNT=0
           
-          echo "✅ Deployment verified - Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
+            FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+            
+            if [ "$PROD_STATUS" = "200" ] && [ "$FRONTEND_STATUS" = "200" ]; then
+              echo "✅ Deployment verified - Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
+              exit 0
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "⚠️  Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS - Retrying in 10s... ($RETRY_COUNT/$MAX_RETRIES)"
+              sleep 10
+            fi
+          done
+          
+          echo "❌ Deployment verification failed after $MAX_RETRIES attempts"
+          echo "Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
+          exit 1
