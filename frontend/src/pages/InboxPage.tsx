@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,12 +18,28 @@ import {
   Archive,
   X,
   Check,
-  CheckCheck
+  CheckCheck,
+  Pin,
+  Star,
+  Reply,
+  Forward,
+  Copy,
+  Trash2
 } from 'lucide-react';
 import { useChat, type ChatRoom } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const PINNED_STORAGE_KEY = 'elimu_smart_pinned_conversations';
+const STARRED_STORAGE_KEY = 'elimu_smart_starred_messages';
+const REACTIONS_STORAGE_KEY = 'elimu_smart_message_reactions';
+
+interface MessageReaction {
+  emoji: string;
+  users: string[];
+  count: number;
+}
 
 // Helper function to transform chat room to LinkedIn-style conversation
 const transformRoomToConversation = (room: ChatRoom, userId?: string): LinkedInConversation => {
@@ -66,6 +82,9 @@ interface LinkedInConversation {
     isRead: boolean;
   };
   unreadCount: number;
+  isPinned?: boolean;
+  isArchived?: boolean;
+  hasStarredMessages?: boolean;
 }
 
 const InboxPage: React.FC = () => {
@@ -75,7 +94,76 @@ const InboxPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
+  const [messageSearchTerm, setMessageSearchTerm] = useState('');
+  const [pinnedConversationIds, setPinnedConversationIds] = useState<string[]>([]);
+  const [starredMessagesByConversation, setStarredMessagesByConversation] = useState<Record<string, string[]>>({});
+  const [messageReactionsMap, setMessageReactionsMap] = useState<Record<string, MessageReaction[]>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted preferences from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const storedPinned = localStorage.getItem(PINNED_STORAGE_KEY);
+      if (storedPinned) {
+        const parsedPinned = JSON.parse(storedPinned) as string[];
+        if (Array.isArray(parsedPinned)) {
+          setPinnedConversationIds(parsedPinned);
+        }
+      }
+
+      const storedStarred = localStorage.getItem(STARRED_STORAGE_KEY);
+      if (storedStarred) {
+        const parsedStarred = JSON.parse(storedStarred) as Record<string, string[]>;
+        if (parsedStarred && typeof parsedStarred === 'object') {
+          setStarredMessagesByConversation(parsedStarred);
+        }
+      }
+
+      const storedReactions = localStorage.getItem(REACTIONS_STORAGE_KEY);
+      if (storedReactions) {
+        const parsedReactions = JSON.parse(storedReactions) as Record<string, MessageReaction[]>;
+        if (parsedReactions && typeof parsedReactions === 'object') {
+          setMessageReactionsMap(parsedReactions);
+        }
+      }
+    } catch (storageError) {
+      console.warn('Failed to load chat preferences from storage:', storageError);
+    }
+  }, []);
+
+  // Persist pinned conversations
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(pinnedConversationIds));
+    } catch (storageError) {
+      console.warn('Failed to persist pinned conversations:', storageError);
+    }
+  }, [pinnedConversationIds]);
+
+  // Persist starred messages
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STARRED_STORAGE_KEY, JSON.stringify(starredMessagesByConversation));
+    } catch (storageError) {
+      console.warn('Failed to persist starred messages:', storageError);
+    }
+  }, [starredMessagesByConversation]);
+
+  // Persist reactions
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(messageReactionsMap));
+    } catch (storageError) {
+      console.warn('Failed to persist message reactions:', storageError);
+    }
+  }, [messageReactionsMap]);
 
   // Backend integration
   const { user } = useAuth();
@@ -148,26 +236,69 @@ const InboxPage: React.FC = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, searchConversations, user]);
 
-  // Filter conversations based on active filter
-  const getFilteredConversations = () => {
-    const baseConversations = searchTerm.trim() ? searchResults : linkedInConversations;
-    
+  // Enhance conversations with pin/star state and sort by pinned status
+  const conversationsWithState = useMemo(() => {
+    const baseList = searchTerm.trim() ? searchResults : linkedInConversations;
+    const pinnedSet = new Set(pinnedConversationIds);
+
+    return baseList
+      .map((conversation) => {
+        const starredMessages = starredMessagesByConversation[conversation.id] ?? [];
+        return {
+          ...conversation,
+          isPinned: pinnedSet.has(conversation.id) || conversation.isPinned,
+          hasStarredMessages: starredMessages.length > 0
+        };
+      })
+      .sort((a, b) => {
+        if (a.isPinned === b.isPinned) {
+          return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
+        }
+        return a.isPinned ? -1 : 1;
+      });
+  }, [searchTerm, searchResults, linkedInConversations, pinnedConversationIds, starredMessagesByConversation]);
+
+  const filteredConversations = useMemo(() => {
     switch (activeFilter) {
       case 'unread':
-        return baseConversations.filter((conversation) => conversation.unreadCount > 0);
+        return conversationsWithState.filter(c => c.unreadCount > 0);
       case 'starred':
-        // TODO: Implement starred logic when backend supports it
-        return baseConversations;
+        return conversationsWithState.filter(c => c.hasStarredMessages);
       case 'archived':
-        // TODO: Load archived conversations from backend
-        return [];
+        return conversationsWithState.filter(c => c.isArchived);
       case 'all':
       default:
-        return baseConversations;
+        return conversationsWithState;
     }
-  };
+  }, [conversationsWithState, activeFilter]);
 
-  const filteredConversations = getFilteredConversations();
+  const filteredMessages = useMemo(() => {
+    if (!messageSearchTerm.trim()) {
+      return messages;
+    }
+
+    const term = messageSearchTerm.toLowerCase();
+    return messages.filter((message) => message.message.toLowerCase().includes(term));
+  }, [messages, messageSearchTerm]);
+
+  const highlightMessageContent = useCallback((text: string) => {
+    if (!messageSearchTerm.trim()) {
+      return text;
+    }
+
+    const escapedTerm = messageSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escapedTerm})`, 'gi'));
+
+    return parts.map((part, index) => (
+      part.toLowerCase() === messageSearchTerm.toLowerCase() ? (
+        <mark key={index} className="bg-yellow-200 text-gray-900 px-0.5 rounded-sm">
+          {part}
+        </mark>
+      ) : (
+        <React.Fragment key={index}>{part}</React.Fragment>
+      )
+    ));
+  }, [messageSearchTerm]);
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -250,6 +381,117 @@ const InboxPage: React.FC = () => {
       return date.toLocaleDateString();
     }
   };
+
+  const togglePinnedConversation = useCallback((conversationId: string) => {
+    setPinnedConversationIds((prev) => {
+      const isPinned = prev.includes(conversationId);
+      const updated = isPinned
+        ? prev.filter((id) => id !== conversationId)
+        : [conversationId, ...prev];
+
+      toast.success(isPinned ? 'Conversation unpinned' : 'Conversation pinned');
+      return updated;
+    });
+  }, []);
+
+  const toggleStarMessage = useCallback((conversationId: string | undefined, messageId: string) => {
+    if (!conversationId) return;
+
+    setStarredMessagesByConversation((prev) => {
+      const existing = prev[conversationId] ?? [];
+      const isStarred = existing.includes(messageId);
+      const updatedMessages = isStarred
+        ? existing.filter((id) => id !== messageId)
+        : [...existing, messageId];
+
+      const updatedRecord: Record<string, string[]> = { ...prev };
+      if (updatedMessages.length > 0) {
+        updatedRecord[conversationId] = updatedMessages;
+      } else {
+        delete updatedRecord[conversationId];
+      }
+
+      toast.success(isStarred ? 'Message unstarred' : 'Message starred');
+      return updatedRecord;
+    });
+  }, []);
+
+  const toggleReaction = useCallback((messageId: string, emoji: string) => {
+    const userId = user?.id ?? 'self';
+    let action: 'added' | 'removed' | null = null;
+
+    setMessageReactionsMap((prev) => {
+      const existing = prev[messageId] ?? [];
+      const reactionIndex = existing.findIndex((reaction) => reaction.emoji === emoji);
+      let updatedReactions: MessageReaction[] = existing;
+
+      if (reactionIndex >= 0) {
+        const reaction = existing[reactionIndex];
+        const hasUser = reaction.users.includes(userId);
+
+        if (hasUser) {
+          const remainingUsers = reaction.users.filter((id) => id !== userId);
+          action = 'removed';
+
+          if (remainingUsers.length === 0) {
+            updatedReactions = [
+              ...existing.slice(0, reactionIndex),
+              ...existing.slice(reactionIndex + 1)
+            ];
+          } else {
+            updatedReactions = [...existing];
+            updatedReactions[reactionIndex] = {
+              ...reaction,
+              users: remainingUsers,
+              count: remainingUsers.length
+            };
+          }
+        } else {
+          updatedReactions = [...existing];
+          updatedReactions[reactionIndex] = {
+            ...reaction,
+            users: [...reaction.users, userId],
+            count: reaction.count + 1
+          };
+          action = 'added';
+        }
+      } else {
+        updatedReactions = [
+          ...existing,
+          {
+            emoji,
+            users: [userId],
+            count: 1
+          }
+        ];
+        action = 'added';
+      }
+
+      const updatedMap = { ...prev };
+      if (updatedReactions.length === 0) {
+        delete updatedMap[messageId];
+      } else {
+        updatedMap[messageId] = updatedReactions;
+      }
+
+      return updatedMap;
+    });
+
+    if (action === 'added') {
+      toast.success(`Reacted with ${emoji}`);
+    } else if (action === 'removed') {
+      toast.success('Reaction removed');
+    }
+  }, [user]);
+
+  const activeConversationId = currentRoom?.id ?? selectedConversation?.id ?? '';
+  const starredMessageSet = useMemo(() => {
+    if (!activeConversationId) {
+      return new Set<string>();
+    }
+
+    return new Set(starredMessagesByConversation[activeConversationId] ?? []);
+  }, [activeConversationId, starredMessagesByConversation]);
 
   return (
     <>
@@ -361,11 +603,34 @@ const InboxPage: React.FC = () => {
               <div
                 key={conversation.id}
                 className={cn(
-                  "flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors",
-                  selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]"
+                  "group relative flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors",
+                  selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]",
+                  conversation.isPinned && "bg-blue-50/50"
                 )}
                 onClick={() => handleConversationClick(conversation)}
               >
+                {/* Pin Indicator */}
+                {conversation.isPinned && (
+                  <div className="absolute top-2 right-2">
+                    <Pin className="h-3 w-3 text-blue-500 fill-blue-500" />
+                  </div>
+                )}
+
+                {/* Pin Toggle Button (on hover) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePinnedConversation(conversation.id);
+                  }}
+                  className="absolute top-2 right-8 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-200"
+                  title={conversation.isPinned ? "Unpin conversation" : "Pin conversation"}
+                >
+                  <Pin className={cn(
+                    "h-3.5 w-3.5",
+                    conversation.isPinned ? "text-blue-500 fill-blue-500" : "text-gray-400"
+                  )} />
+                </button>
+
                 <div className="relative">
                   <Avatar className="h-12 w-12 border border-gray-200">
                     <AvatarImage src={conversation.participant.avatar} />
@@ -471,6 +736,18 @@ const InboxPage: React.FC = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* In-conversation Search */}
+              <div className="mt-3 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search in conversation..."
+                  value={messageSearchTerm}
+                  onChange={(e) => setMessageSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                />
+              </div>
             </div>
 
             {/* Messages */}
@@ -486,12 +763,23 @@ const InboxPage: React.FC = () => {
                     <span>Start a conversation...</span>
                   </div>
                 </div>
+              ) : filteredMessages.length === 0 ? (
+                <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
+                  <div className="text-center">
+                    <Search className="h-8 w-8 mb-2 text-gray-300 mx-auto" />
+                    <span>No messages match your search</span>
+                  </div>
+                </div>
               ) : (
-                messages.map((message, index) => {
+                filteredMessages.map((message, index) => {
                   const isOwnMessage = message.sender.id === user?.id;
+                  const previousMessage = index > 0 ? filteredMessages[index - 1] : null;
                   const showTimestamp = index === 0 || 
-                    (messages[index - 1] && 
-                     new Date(message.timestamp).getTime() - new Date(messages[index - 1].timestamp).getTime() > 300000); // 5 minutes
+                    (previousMessage && 
+                     new Date(message.timestamp).getTime() - new Date(previousMessage.timestamp).getTime() > 300000); // 5 minutes
+                  
+                  const messageReactions = messageReactionsMap[message.id] || [];
+                  const isStarred = starredMessageSet.has(message.id);
                   
                   return (
                     <div key={message.id}>
@@ -506,33 +794,149 @@ const InboxPage: React.FC = () => {
                           })}
                         </div>
                       )}
-                      <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
-                          isOwnMessage
-                            ? 'bg-[#f97316] text-white rounded-br-md'
-                            : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
-                        }`}>
-                          <div className="break-words whitespace-pre-wrap">{message.message}</div>
-                          <div className={`flex items-center gap-1 mt-1 text-xs ${
-                            isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
-                          }`}>
-                            <span>
-                              {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true
-                              })}
-                            </span>
+                      <div 
+                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative`}
+                        onMouseEnter={() => setHoveredMessageId(message.id)}
+                        onMouseLeave={() => setHoveredMessageId(null)}
+                      >
+                        {/* Message Hover Actions */}
+                        {hoveredMessageId === message.id && (
+                          <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-8 flex items-center gap-1 bg-white shadow-lg border border-gray-200 rounded-full px-2 py-1 z-10`}>
+                            <button 
+                              onClick={() => setShowReactionsFor(message.id)}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Add reaction"
+                            >
+                              <Smile className="h-4 w-4 text-gray-600" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                console.log('Reply to message', message.id);
+                                toast.info('Reply feature coming soon!');
+                              }}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Reply"
+                            >
+                              <Reply className="h-4 w-4 text-gray-600" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                console.log('Forward message', message.id);
+                                toast.info('Forward feature coming soon!');
+                              }}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Forward"
+                            >
+                              <Forward className="h-4 w-4 text-gray-600" />
+                            </button>
+                            <button 
+                              onClick={() => toggleStarMessage(selectedConversation.id, message.id)}
+                              className={cn(
+                                "p-1 hover:bg-gray-100 rounded-full transition-colors",
+                                isStarred && "text-yellow-500"
+                              )}
+                              title={isStarred ? "Unstar message" : "Star message"}
+                            >
+                              <Star className={cn("h-4 w-4", isStarred && "fill-yellow-500")} />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(message.message);
+                                toast.success('Message copied to clipboard');
+                              }}
+                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Copy message"
+                            >
+                              <Copy className="h-4 w-4 text-gray-600" />
+                            </button>
                             {isOwnMessage && (
-                              <span className="ml-1">
-                                {message.isRead ? (
-                                  <CheckCheck className="h-3 w-3" aria-label="Read" />
-                                ) : (
-                                  <Check className="h-3 w-3" aria-label="Delivered" />
-                                )}
-                              </span>
+                              <button 
+                                onClick={() => {
+                                  console.log('Delete message', message.id);
+                                  toast.info('Delete feature coming soon!');
+                                }}
+                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Delete message"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </button>
                             )}
                           </div>
+                        )}
+
+                        {/* Reaction Picker */}
+                        {showReactionsFor === message.id && (
+                          <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-12 flex items-center gap-1 bg-white shadow-xl border border-gray-200 rounded-full px-3 py-2 z-20`}>
+                            {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={() => {
+                                  toggleReaction(message.id, emoji);
+                                  setShowReactionsFor(null);
+                                }}
+                                className="text-xl hover:scale-125 transition-transform"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="relative">
+                          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
+                            isOwnMessage
+                              ? 'bg-[#f97316] text-white rounded-br-md'
+                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
+                          }`}>
+                            {/* Star Indicator */}
+                            {isStarred && (
+                              <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                              </div>
+                            )}
+                            
+                            <div 
+                              className="break-words whitespace-pre-wrap"
+                              dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
+                            />
+                            <div className={`flex items-center gap-1 mt-1 text-xs ${
+                              isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
+                            }`}>
+                              <span>
+                                {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                              </span>
+                              {isOwnMessage && (
+                                <span className="ml-1">
+                                  {message.isRead ? (
+                                    <CheckCheck className="h-3 w-3" aria-label="Read" />
+                                  ) : (
+                                    <Check className="h-3 w-3" aria-label="Delivered" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Message Reactions */}
+                          {messageReactions.length > 0 && (
+                            <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                              {messageReactions.map((reaction) => (
+                                <button
+                                  key={reaction.emoji}
+                                  onClick={() => toggleReaction(message.id, reaction.emoji)}
+                                  className="flex items-center gap-1 px-2 py-0.5 bg-white border border-gray-200 rounded-full text-xs hover:border-[#f97316] transition-colors"
+                                  title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
+                                >
+                                  <span>{reaction.emoji}</span>
+                                  <span className="text-gray-600">{reaction.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
