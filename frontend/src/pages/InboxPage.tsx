@@ -133,29 +133,10 @@ const InboxPage: React.FC = () => {
       try {
         const results = await searchConversations(searchTerm);
 
-        // Transform search results to LinkedIn-style
-        const transformedResults: LinkedInConversation[] = results.map((room) => {
-          const otherParticipants = room.participants.filter((participant) => participant !== user?.id);
-          const participantId = otherParticipants[0] || 'unknown';
-
-          return {
-            id: room.id,
-            participant: {
-              id: participantId,
-              name: room.title || `${room.type} Chat`,
-              role: (room.type === 'counseling' ? 'counselor' : room.type === 'mentoring' ? 'mentor' : 'peer') as 'counselor' | 'mentor' | 'peer',
-              isOnline: room.isActive
-            },
-            lastMessage: {
-              id: 'last',
-              content: room.lastMessage || 'Start a conversation...',
-              sender: { id: participantId, name: room.title || 'System', role: 'peer' },
-              timestamp: room.lastActivity,
-              isRead: true
-            },
-            unreadCount: room.unreadCount || 0
-          };
-        });
+        // Transform search results to LinkedIn-style using helper function
+        const transformedResults: LinkedInConversation[] = results.map((room) => 
+          transformRoomToConversation(room, user?.id)
+        );
 
         setSearchResults(transformedResults);
       } catch (error) {
