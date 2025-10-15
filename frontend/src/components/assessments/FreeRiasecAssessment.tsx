@@ -409,12 +409,10 @@ export const FreeRiasecAssessment: React.FC = () => {
           resumedResponses[parseInt(qId)] = index;
         });
         setResponses(resumedResponses);
-        console.log('Resumed incomplete assessment:', resumeResult.assessment.id);
       } else {
         // Start new assessment
         const result = await startRiasecAssessment();
         setAssessmentId(result.assessmentId);
-        console.log('Started new assessment:', result.assessmentId);
       }
 
       // Log activity
