@@ -51,8 +51,6 @@ const InboxPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
-  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
-  const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Backend integration
@@ -542,9 +540,9 @@ const InboxPage: React.FC = () => {
                             {isOwnMessage && (
                               <span className="ml-1">
                                 {message.isRead ? (
-                                  <CheckCheck className="h-3 w-3" title="Read" />
+                                  <CheckCheck className="h-3 w-3" />
                                 ) : (
-                                  <Check className="h-3 w-3" title="Delivered" />
+                                  <Check className="h-3 w-3" />
                                 )}
                               </span>
                             )}
