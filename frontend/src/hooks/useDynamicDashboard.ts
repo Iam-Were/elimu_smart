@@ -378,13 +378,28 @@ export const useDynamicDashboard = () => {
 
   // Additional data loading functions for specific features
   const loadExtendedData = useCallback(async () => {
-    const [cutoffAnalysis, timeline, courseRecs, linkedinInsights, assessmentProgress] = await Promise.all([
+    const results = await Promise.allSettled([
       getCutoffAnalysis(),
       getKuccpsTimeline(),
       getCourseRecommendations(),
       getLinkedInInsights(),
       getAssessmentProgress()
     ]);
+
+    // Extract successful results, use null/empty for failures
+    const cutoffAnalysis = results[0].status === 'fulfilled' ? results[0].value : null;
+    const timeline = results[1].status === 'fulfilled' ? results[1].value : null;
+    const courseRecs = results[2].status === 'fulfilled' ? results[2].value : null;
+    const linkedinInsights = results[3].status === 'fulfilled' ? results[3].value : null;
+    const assessmentProgress = results[4].status === 'fulfilled' ? results[4].value : {};
+
+    // Log any failures for debugging
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const functionNames = ['getCutoffAnalysis', 'getKuccpsTimeline', 'getCourseRecommendations', 'getLinkedInInsights', 'getAssessmentProgress'];
+        console.warn(`Extended data load: ${functionNames[index]} failed:`, result.reason);
+      }
+    });
 
     setDashboardData(prev => ({
       ...prev,
@@ -402,17 +417,27 @@ export const useDynamicDashboard = () => {
 
     try {
       // Load only essential data for dashboard cards
-      const [
-        careerReadiness,
-        universityPlacement,
-        scholarships,
-        activities
-      ] = await Promise.all([
+      // Use Promise.allSettled to handle failures gracefully
+      const results = await Promise.allSettled([
         calculateCareerReadiness(),
         getUniversityPlacement(),
         findScholarshipMatches(),
         getUserActivities()
       ]);
+
+      // Extract successful results, use null for failures
+      const careerReadiness = results[0].status === 'fulfilled' ? results[0].value : null;
+      const universityPlacement = results[1].status === 'fulfilled' ? results[1].value : null;
+      const scholarships = results[2].status === 'fulfilled' ? results[2].value : [];
+      const activities = results[3].status === 'fulfilled' ? results[3].value : [];
+
+      // Log any failures for debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const functionNames = ['calculateCareerReadiness', 'getUniversityPlacement', 'findScholarshipMatches', 'getUserActivities'];
+          console.warn(`Dashboard data load: ${functionNames[index]} failed:`, result.reason);
+        }
+      });
 
       setDashboardData({
         careerReadinessScore: careerReadiness,
@@ -471,20 +496,25 @@ export const useDynamicDashboard = () => {
     }));
   };
 
-  // Load data on mount
+  // Load data on mount - ONLY after auth is ready to prevent race conditions
   useEffect(() => {
     const loadDataIfUser = async () => {
       try {
         const Parse = getParse();
         const user = Parse.User.current();
+
+        // Wait a brief moment for Parse SDK session to be fully established
+        // This prevents race conditions where Cloud Functions are called before session is ready
         if (user) {
+          // Small delay to ensure Parse SDK session is fully synced
+          await new Promise(resolve => setTimeout(resolve, 100));
           loadDashboardData();
         }
       } catch (error) {
         console.error('Failed to check user session:', error);
       }
     };
-    
+
     loadDataIfUser();
   }, [loadDashboardData]);
 

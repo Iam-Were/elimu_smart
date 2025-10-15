@@ -143,6 +143,8 @@ export const useAuth = () => {
     error: null,
   });
 
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -154,6 +156,8 @@ export const useAuth = () => {
           isLoading: false,
           error: null,
         });
+        // Mark auth as ready after Parse SDK session is synced
+        setIsAuthReady(true);
       } catch (error) {
         setAuthState({
           user: null,
@@ -162,6 +166,7 @@ export const useAuth = () => {
           error:
             error instanceof Error ? error.message : 'Authentication failed',
         });
+        setIsAuthReady(true); // Still mark as ready even on error
       }
     };
 
@@ -192,6 +197,7 @@ export const useAuth = () => {
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    setIsAuthReady(false); // Reset auth ready state during login
 
     try {
       const user = await authService.login(credentials);
@@ -203,6 +209,9 @@ export const useAuth = () => {
         error: null,
       });
 
+      // Mark auth as ready after login completes (Parse SDK session synced in authService)
+      setIsAuthReady(true);
+
       return user;
     } catch (error) {
       const errorMessage =
@@ -212,12 +221,14 @@ export const useAuth = () => {
         isLoading: false,
         error: errorMessage,
       }));
+      setIsAuthReady(true); // Mark as ready even on error
       throw error;
     }
   }, []);
 
   const register = useCallback(async (data: RegisterData) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    setIsAuthReady(false); // Reset auth ready state during registration
 
     try {
       const user = await authService.register(data);
@@ -229,6 +240,9 @@ export const useAuth = () => {
         error: null,
       });
 
+      // Mark auth as ready after registration completes (Parse SDK session synced in authService)
+      setIsAuthReady(true);
+
       return user;
     } catch (error) {
       const errorMessage =
@@ -238,12 +252,14 @@ export const useAuth = () => {
         isLoading: false,
         error: errorMessage,
       }));
+      setIsAuthReady(true); // Mark as ready even on error
       throw error;
     }
   }, []);
 
   const logout = useCallback(async () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
+    setIsAuthReady(false);
 
     try {
       await authService.logout();
@@ -254,12 +270,14 @@ export const useAuth = () => {
         isLoading: false,
         error: null,
       });
+      setIsAuthReady(true);
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : 'Logout failed',
       }));
+      setIsAuthReady(true);
     }
   }, []);
 
@@ -269,6 +287,7 @@ export const useAuth = () => {
 
   return {
     ...authState,
+    isAuthReady,
     login,
     register,
     logout,

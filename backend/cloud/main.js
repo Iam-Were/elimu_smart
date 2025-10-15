@@ -1210,7 +1210,7 @@ Parse.Cloud.define('getCareerExplorationData', async (request) => {
 });
 
 // Scholarship Matching - Query from Scholarship Parse Class
-Parse.Cloud.define('getScholarshipMatches', async (request) => {
+Parse.Cloud.define('findScholarshipMatches', async (request) => {
   const user = request.user;
   
   if (!user) {
@@ -1267,32 +1267,6 @@ Parse.Cloud.define('getScholarshipMatches', async (request) => {
     throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get scholarship matches');
   }
 });
-
-// Alias function for frontend compatibility - findScholarshipMatches
-Parse.Cloud.define('findScholarshipMatches', async (request) => {
-  const user = request.user;
-  
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-  
-  try {
-    // Call the main function and format response for frontend
-    const result = await Parse.Cloud.run('getScholarshipMatches', {}, { user });
-    
-    // Return in format expected by frontend
-    return {
-      matches: result.scholarships || [],
-      totalMatches: result.matches || 0,
-      newThisWeek: result.newThisWeek || 0,
-      totalValue: result.totalValue || 'KSh 0'
-    };
-  } catch (error) {
-    console.error('Find scholarship matches error:', error);
-    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to find scholarship matches');
-  }
-});
-
 // University Placement Calculator (GitHub API Integration)
 Parse.Cloud.define('getUniversityPlacementData', async (request) => {
   const user = request.user;
@@ -1511,39 +1485,73 @@ Parse.Cloud.define('getCourseRecommendations', async (request) => {
 
 // Helper Functions
 function calculateAssessmentScore(activities) {
-  const assessmentActivities = activities.filter(a => 
-    a.get('activityType').includes('assessment')
-  );
-  return Math.min(assessmentActivities.length * 15, 100);
+  try {
+    if (!activities || activities.length === 0) return 0;
+
+    const assessmentActivities = activities.filter(a => {
+      const activityType = a.get('activityType');
+      return activityType && activityType.includes('assessment');
+    });
+    return Math.min(assessmentActivities.length * 15, 100);
+  } catch (error) {
+    console.error('Error calculating assessment score:', error);
+    return 0;
+  }
 }
 
 function calculateResearchScore(activities) {
-  const researchTime = activities.reduce((total, activity) => {
-    if (activity.get('activityType').includes('research') || 
-        activity.get('activityType').includes('career')) {
-      return total + (activity.get('duration') || 0);
-    }
-    return total;
-  }, 0);
-  
-  return Math.min(researchTime / 60, 100); // Convert to minutes, max 100
+  try {
+    if (!activities || activities.length === 0) return 0;
+
+    const researchTime = activities.reduce((total, activity) => {
+      try {
+        const activityType = activity.get('activityType');
+        if (activityType && (activityType.includes('research') || activityType.includes('career'))) {
+          return total + (activity.get('duration') || 0);
+        }
+      } catch (e) {
+        console.warn('Skipping activity due to error:', e);
+      }
+      return total;
+    }, 0);
+
+    return Math.min(researchTime / 60, 100); // Convert to minutes, max 100
+  } catch (error) {
+    console.error('Error calculating research score:', error);
+    return 0;
+  }
 }
 
 function calculateExplorationScore(activities) {
-  const explorationActivities = activities.filter(a => 
-    a.get('activityType').includes('course') ||
-    a.get('activityType').includes('university')
-  );
-  return Math.min(explorationActivities.length * 10, 100);
+  try {
+    if (!activities || activities.length === 0) return 0;
+
+    const explorationActivities = activities.filter(a => {
+      const activityType = a.get('activityType');
+      return activityType && (activityType.includes('course') || activityType.includes('university'));
+    });
+    return Math.min(explorationActivities.length * 10, 100);
+  } catch (error) {
+    console.error('Error calculating exploration score:', error);
+    return 0;
+  }
 }
 
 function calculateActionsScore(activities) {
-  const actionActivities = activities.filter(a => 
-    a.get('activityType').includes('application') ||
-    a.get('activityType').includes('counselor') ||
-    a.get('activityType').includes('chat')
-  );
-  return Math.min(actionActivities.length * 20, 100);
+  try {
+    if (!activities || activities.length === 0) return 0;
+
+    const actionActivities = activities.filter(a => {
+      const activityType = a.get('activityType');
+      return activityType && (activityType.includes('application') ||
+                              activityType.includes('counselor') ||
+                              activityType.includes('chat'));
+    });
+    return Math.min(actionActivities.length * 20, 100);
+  } catch (error) {
+    console.error('Error calculating actions score:', error);
+    return 0;
+  }
 }
 
 function generateImprovementRecommendations(components) {
