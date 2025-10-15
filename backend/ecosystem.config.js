@@ -1,10 +1,10 @@
 module.exports = {
   apps: [
-    // PRODUCTION Parse Server
+    // PRODUCTION Parse Server (Cluster Mode with Startup Lock)
     {
       name: 'parse-server-prod',
-      script: 'server-working.js',
-      instances: 2,  // Cluster mode - 2 instances
+      script: 'server-cluster.js',  // Uses startup lock wrapper
+      instances: 2,  // Cluster mode - 2 instances (now safe!)
       exec_mode: 'cluster',
       cwd: '/root/elimu_smart/backend',
       env: {
