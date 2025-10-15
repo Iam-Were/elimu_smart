@@ -18,12 +18,35 @@ import {
   Archive,
   X,
   Check,
-  CheckCheck
+  CheckCheck,
+  Edit3,
+  Pin,
+  Star,
+  Reply,
+  Forward,
+  Copy,
+  Trash2
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+interface MessageReaction {
+  emoji: string;
+  users: string[];
+  count: number;
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  sender: { id: string; name: string; role: string; };
+  timestamp: Date;
+  isRead: boolean;
+  reactions?: MessageReaction[];
+  isStarred?: boolean;
+}
 
 interface LinkedInConversation {
   id: string;
@@ -34,14 +57,10 @@ interface LinkedInConversation {
     role: 'counselor' | 'mentor' | 'peer';
     isOnline: boolean;
   };
-  lastMessage: {
-    id: string;
-    content: string;
-    sender: { id: string; name: string; role: string; };
-    timestamp: Date;
-    isRead: boolean;
-  };
+  lastMessage: ChatMessage;
   unreadCount: number;
+  isPinned?: boolean;
+  isArchived?: boolean;
 }
 
 const InboxPage: React.FC = () => {
@@ -51,6 +70,9 @@ const InboxPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
+  const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Backend integration
@@ -375,11 +397,30 @@ const InboxPage: React.FC = () => {
               <div
                 key={conversation.id}
                 className={cn(
-                  "flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors",
-                  selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]"
+                  "flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors group relative",
+                  selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]",
+                  conversation.isPinned && "bg-blue-50/50"
                 )}
                 onClick={() => handleConversationClick(conversation)}
               >
+                {/* Pin indicator */}
+                {conversation.isPinned && (
+                  <div className="absolute top-2 right-2">
+                    <Pin className="h-3 w-3 text-blue-600 fill-blue-600" />
+                  </div>
+                )}
+                
+                {/* Pin button (on hover) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toast.success(conversation.isPinned ? 'Conversation unpinned' : 'Conversation pinned');
+                  }}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+                  title={conversation.isPinned ? 'Unpin' : 'Pin conversation'}
+                >
+                  <Pin className={cn("h-4 w-4", conversation.isPinned && "text-blue-600 fill-blue-600")} />
+                </button>
                 <div className="relative">
                   <Avatar className="h-12 w-12 border border-gray-200">
                     <AvatarImage src={conversation.participant.avatar} />
@@ -456,6 +497,17 @@ const InboxPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* In-conversation search */}
+                  <div className="relative mr-2">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                    <Input
+                      placeholder="Search in conversation..."
+                      value={messageSearchTerm}
+                      onChange={(e) => setMessageSearchTerm(e.target.value)}
+                      className="pl-8 h-8 w-48 text-sm border-gray-300 focus:border-[#f97316] focus:ring-[#f97316]"
+                    />
+                  </div>
+
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                     <Phone className="h-4 w-4 text-gray-600" />
                   </Button>
@@ -520,33 +572,117 @@ const InboxPage: React.FC = () => {
                           })}
                         </div>
                       )}
-                      <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
-                          isOwnMessage
-                            ? 'bg-[#f97316] text-white rounded-br-md'
-                            : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
-                        }`}>
-                          <div className="break-words whitespace-pre-wrap">{message.message}</div>
-                          <div className={`flex items-center gap-1 mt-1 text-xs ${
-                            isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
+                      <div 
+                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group`}
+                        onMouseEnter={() => setHoveredMessageId(message.id)}
+                        onMouseLeave={() => setHoveredMessageId(null)}
+                      >
+                        <div className="relative">
+                          {/* Message Actions (on hover) */}
+                          {hoveredMessageId === message.id && (
+                            <div className={`absolute -top-8 ${isOwnMessage ? 'right-0' : 'left-0'} flex gap-1 bg-white border border-gray-200 rounded-lg shadow-md p-1`}>
+                              <button 
+                                onClick={() => setShowReactionsFor(message.id)}
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                title="Add reaction"
+                              >
+                                <Smile className="h-4 w-4 text-gray-600" />
+                              </button>
+                              <button 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                title="Reply"
+                              >
+                                <Reply className="h-4 w-4 text-gray-600" />
+                              </button>
+                              <button 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                title="Forward"
+                              >
+                                <Forward className="h-4 w-4 text-gray-600" />
+                              </button>
+                              <button 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                title="Star"
+                              >
+                                <Star className="h-4 w-4 text-gray-600" />
+                              </button>
+                              <button 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                title="Copy"
+                              >
+                                <Copy className="h-4 w-4 text-gray-600" />
+                              </button>
+                              {isOwnMessage && (
+                                <button 
+                                  className="p-1.5 hover:bg-red-100 rounded transition-colors"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Reaction Picker */}
+                          {showReactionsFor === message.id && (
+                            <div className={`absolute -top-12 ${isOwnMessage ? 'right-0' : 'left-0'} flex gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2`}>
+                              {['👍', '❤️', '😊', '👏', '🎉', '🔥'].map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  onClick={() => {
+                                    toast.success(`Reacted with ${emoji}`);
+                                    setShowReactionsFor(null);
+                                  }}
+                                  className="text-xl hover:scale-125 transition-transform p-1"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
+                            isOwnMessage
+                              ? 'bg-[#f97316] text-white rounded-br-md'
+                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
                           }`}>
-                            <span>
-                              {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true
-                              })}
-                            </span>
-                            {isOwnMessage && (
-                              <span className="ml-1">
-                                {message.isRead ? (
-                                  <CheckCheck className="h-3 w-3" />
-                                ) : (
-                                  <Check className="h-3 w-3" />
-                                )}
+                            <div className="break-words whitespace-pre-wrap">{message.message}</div>
+                            <div className={`flex items-center gap-1 mt-1 text-xs ${
+                              isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
+                            }`}>
+                              <span>
+                                {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
                               </span>
-                            )}
+                              {isOwnMessage && (
+                                <span className="ml-1">
+                                  {message.isRead ? (
+                                    <CheckCheck className="h-3 w-3" />
+                                  ) : (
+                                    <Check className="h-3 w-3" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
+
+                          {/* Display existing reactions */}
+                          {message.reactions && message.reactions.length > 0 && (
+                            <div className={`flex gap-1 mt-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                              {message.reactions.map((reaction, idx) => (
+                                <button
+                                  key={idx}
+                                  className="flex items-center gap-1 px-2 py-0.5 bg-white border border-gray-200 rounded-full text-xs hover:border-[#f97316] transition-colors"
+                                >
+                                  <span>{reaction.emoji}</span>
+                                  <span className="text-gray-600 font-medium">{reaction.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
