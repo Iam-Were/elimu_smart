@@ -6046,3 +6046,194 @@ require('./careerFunctions');
 // Payment & M-Pesa Integration Functions
 // ============================================
 require('./paymentFunctions');
+
+// Mark single notification as read
+Parse.Cloud.define('markNotificationAsRead', async (request) => {
+  const { notificationId } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  if (!notificationId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'notificationId is required');
+  }
+  
+  try {
+    const Notification = Parse.Object.extend('Notification');
+    const query = new Parse.Query(Notification);
+    
+    const notification = await query.get(notificationId, { useMasterKey: true });
+    
+    // Verify user owns this notification
+    const recipientId = notification.get('recipient')?.id;
+    if (recipientId !== user.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Cannot mark another user\'s notification');
+    }
+    
+    // Mark as read
+    notification.set('isRead', true);
+    notification.set('readAt', new Date());
+    await notification.save(null, { useMasterKey: true });
+    
+    return {
+      success: true,
+      message: 'Notification marked as read',
+      notificationId: notification.id
+    };
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to mark notification as read');
+  }
+});
+
+// Mark all notifications as read for current user
+Parse.Cloud.define('markAllNotificationsAsRead', async (request) => {
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  try {
+    const Notification = Parse.Object.extend('Notification');
+    const query = new Parse.Query(Notification);
+    
+    const userPointer = {
+      __type: 'Pointer',
+      className: '_User',
+      objectId: user.id
+    };
+    
+    query.equalTo('recipient', userPointer);
+    query.equalTo('isRead', false);
+    query.limit(1000); // Batch limit
+    
+    const unreadNotifications = await query.find({ useMasterKey: true });
+    
+    if (unreadNotifications.length === 0) {
+      return {
+        success: true,
+        message: 'No unread notifications',
+        count: 0
+      };
+    }
+    
+    // Mark all as read
+    const now = new Date();
+    unreadNotifications.forEach(notification => {
+      notification.set('isRead', true);
+      notification.set('readAt', now);
+    });
+    
+    await Parse.Object.saveAll(unreadNotifications, { useMasterKey: true });
+    
+    return {
+      success: true,
+      message: `Marked ${unreadNotifications.length} notifications as read`,
+      count: unreadNotifications.length
+    };
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to mark notifications as read');
+  }
+});
+
+// Get user work experience
+Parse.Cloud.define('getUserExperience', async (request) => {
+  const { userId } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  const targetUserId = userId || user.id;
+  
+  try {
+    const Experience = Parse.Object.extend('UserExperience');
+    const query = new Parse.Query(Experience);
+    
+    const userPointer = {
+      __type: 'Pointer',
+      className: '_User',
+      objectId: targetUserId
+    };
+    
+    query.equalTo('user', userPointer);
+    query.descending('startDate');
+    
+    const experiences = await query.find({ useMasterKey: true });
+    
+    return {
+      success: true,
+      experiences: experiences.map(exp => ({
+        id: exp.id,
+        title: exp.get('title'),
+        company: exp.get('company'),
+        location: exp.get('location'),
+        startDate: exp.get('startDate'),
+        endDate: exp.get('endDate'),
+        current: exp.get('current') || false,
+        description: exp.get('description'),
+        skills: exp.get('skills') || [],
+        achievements: exp.get('achievements') || []
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting user experience:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to get user experience');
+  }
+});
+
+// Get user projects/portfolio
+Parse.Cloud.define('getUserProjects', async (request) => {
+  const { userId } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  const targetUserId = userId || user.id;
+  
+  try {
+    const Project = Parse.Object.extend('UserProject');
+    const query = new Parse.Query(Project);
+    
+    const userPointer = {
+      __type: 'Pointer',
+      className: '_User',
+      objectId: targetUserId
+    };
+    
+    query.equalTo('user', userPointer);
+    query.descending('createdAt');
+    
+    const projects = await query.find({ useMasterKey: true });
+    
+    return {
+      success: true,
+      projects: projects.map(proj => ({
+        id: proj.id,
+        title: proj.get('title'),
+        description: proj.get('description'),
+        category: proj.get('category'),
+        technologies: proj.get('technologies') || [],
+        startDate: proj.get('startDate'),
+        endDate: proj.get('endDate'),
+        status: proj.get('status') || 'completed',
+        url: proj.get('url'),
+        repositoryUrl: proj.get('repositoryUrl'),
+        images: proj.get('images') || [],
+        achievements: proj.get('achievements') || [],
+        teamSize: proj.get('teamSize'),
+        role: proj.get('role')
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting user projects:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to get user projects');
+  }
+});
