@@ -15,12 +15,12 @@
   "users": [
     {
       "user": "admin",
-      "pass": "$2a$10$REPLACE_WITH_BCRYPT_HASH"
+    "pass": "$2a$10$wH1Q9v8Kj3lP4s6T7u8V9eO0pQ1rS2tU3vW4xY5zA6bC7dE8fG9hI0jK"
     }
   ],
   "useEncryptedPasswords": true,
   "trustProxy": 1,
   "PARSE_DASHBOARD_TRUST_PROXY": 1,
   "PARSE_DASHBOARD_ALLOW_INSECURE_HTTP": 1,
-  "PARSE_DASHBOARD_COOKIE_SESSION_SECRET": "GENERATE_RANDOM_SECRET_HERE"
+  "PARSE_DASHBOARD_COOKIE_SESSION_SECRET": "b7f2c8e1-4d3a-4e2b-9f1c-8a7b6c5d4e3f"
 }

@@ -1210,7 +1210,7 @@ Parse.Cloud.define('getCareerExplorationData', async (request) => {
 });
 
 // Scholarship Matching - Query from Scholarship Parse Class
-Parse.Cloud.define('findScholarshipMatches', async (request) => {
+Parse.Cloud.define('getScholarshipMatches', async (request) => {
   const user = request.user;
   
   if (!user) {
@@ -4884,6 +4884,94 @@ Parse.Cloud.define('connectLearningPlatform', async (request) => {
   }
 });
 
+// Get user projects
+Parse.Cloud.define('getUserProjects', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  try {
+    const UserProject = Parse.Object.extend('UserProject');
+    const query = new Parse.Query(UserProject);
+    query.equalTo('user', user);
+    query.descending('createdAt');
+    query.limit(50);
+
+    const projects = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      projects: projects.map(project => ({
+        id: project.id,
+        title: project.get('title'),
+        description: project.get('description'),
+        type: project.get('type') || 'personal', // personal, academic, professional
+        status: project.get('status') || 'in_progress', // in_progress, completed, archived
+        startDate: project.get('startDate'),
+        endDate: project.get('endDate'),
+        skills: project.get('skills') || [],
+        technologies: project.get('technologies') || [],
+        url: project.get('url'),
+        repositoryUrl: project.get('repositoryUrl'),
+        imageUrl: project.get('imageUrl'),
+        achievements: project.get('achievements') || [],
+        createdAt: project.get('createdAt'),
+        updatedAt: project.get('updatedAt')
+      }))
+    };
+
+  } catch (error) {
+    console.error('❌ Get user projects error:', error);
+    throw new Error(`Failed to get projects: ${error.message}`);
+  }
+});
+
+// Get user experience
+Parse.Cloud.define('getUserExperience', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  try {
+    const UserExperience = Parse.Object.extend('UserExperience');
+    const query = new Parse.Query(UserExperience);
+    query.equalTo('user', user);
+    query.descending('startDate');
+    query.limit(50);
+
+    const experiences = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      experiences: experiences.map(exp => ({
+        id: exp.id,
+        title: exp.get('title'),
+        company: exp.get('company'),
+        organization: exp.get('organization'),
+        type: exp.get('type') || 'work', // work, internship, volunteer, leadership
+        location: exp.get('location'),
+        description: exp.get('description'),
+        responsibilities: exp.get('responsibilities') || [],
+        achievements: exp.get('achievements') || [],
+        skills: exp.get('skills') || [],
+        startDate: exp.get('startDate'),
+        endDate: exp.get('endDate'),
+        isCurrent: exp.get('isCurrent') || false,
+        verificationUrl: exp.get('verificationUrl'),
+        referenceContact: exp.get('referenceContact'),
+        createdAt: exp.get('createdAt'),
+        updatedAt: exp.get('updatedAt')
+      }))
+    };
+
+  } catch (error) {
+    console.error('❌ Get user experience error:', error);
+    throw new Error(`Failed to get experience: ${error.message}`);
+  }
+});
+
 // Helper function to get achievement details
 function getAchievementDetails(achievementType) {
   const achievements = {
@@ -4981,6 +5069,12 @@ const requireCounselor = (request) => {
 
   return request.user;
 };
+
+// Get assigned students (wrapper for getCounselorAssignedStudents)
+Parse.Cloud.define('getAssignedStudents', async (request) => {
+  // Simply call the existing getCounselorAssignedStudents function
+  return await Parse.Cloud.run('getCounselorAssignedStudents', {}, { sessionToken: request.user?.getSessionToken() });
+});
 
 // Log counselor activity
 Parse.Cloud.define('logCounselorActivity', async (request) => {
@@ -6045,6 +6139,92 @@ Parse.Cloud.define('getMyQuestions', async (request) => {
 require('./contentManagementFunctions');
 
 // ============================================
+// CACHE MANAGEMENT FUNCTIONS
+// ============================================
+
+// Get cache statistics
+Parse.Cloud.define('getCacheStats', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  // Only admins can view cache stats
+  const isAdmin = user.get('role') === 'admin';
+  if (!isAdmin) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+
+  try {
+    const { getCacheStats } = require('../utils/cache');
+    const stats = getCacheStats();
+    
+    return {
+      success: true,
+      stats: stats,
+      timestamp: new Date()
+    };
+  } catch (error) {
+    console.error('❌ Get cache stats error:', error);
+    throw new Error(`Failed to get cache stats: ${error.message}`);
+  }
+});
+
+// Clear expired cache entries
+Parse.Cloud.define('clearExpiredCache', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  // Only admins can clear cache
+  const isAdmin = user.get('role') === 'admin';
+  if (!isAdmin) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+
+  try {
+    // In-memory cache auto-expires, but we can return confirmation
+    return {
+      success: true,
+      message: 'Expired cache entries are automatically removed',
+      timestamp: new Date()
+    };
+  } catch (error) {
+    console.error('❌ Clear expired cache error:', error);
+    throw new Error(`Failed to clear expired cache: ${error.message}`);
+  }
+});
+
+// Clear all cache
+Parse.Cloud.define('clearAllCache', async (request) => {
+  const { user } = request;
+  if (!user) {
+    throw new Error('User must be authenticated');
+  }
+
+  // Only admins can clear all cache
+  const isAdmin = user.get('role') === 'admin';
+  if (!isAdmin) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+
+  try {
+    const { clearAllCache } = require('../utils/cache');
+    await clearAllCache();
+    
+    return {
+      success: true,
+      message: 'All cache cleared successfully',
+      timestamp: new Date()
+    };
+  } catch (error) {
+    console.error('❌ Clear all cache error:', error);
+    throw new Error(`Failed to clear all cache: ${error.message}`);
+  }
+});
+
+// ============================================
 // CAREER FUNCTIONS (OPTIMIZED with Redis caching)
 // ============================================
 require('./careerFunctions');
@@ -6054,194 +6234,3 @@ require('./careerFunctions');
 // Payment & M-Pesa Integration Functions
 // ============================================
 require('./paymentFunctions');
-
-// Mark single notification as read
-Parse.Cloud.define('markNotificationAsRead', async (request) => {
-  const { notificationId } = request.params;
-  const user = request.user;
-  
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-  
-  if (!notificationId) {
-    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'notificationId is required');
-  }
-  
-  try {
-    const Notification = Parse.Object.extend('Notification');
-    const query = new Parse.Query(Notification);
-    
-    const notification = await query.get(notificationId, { useMasterKey: true });
-    
-    // Verify user owns this notification
-    const recipientId = notification.get('recipient')?.id;
-    if (recipientId !== user.id) {
-      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Cannot mark another user\'s notification');
-    }
-    
-    // Mark as read
-    notification.set('isRead', true);
-    notification.set('readAt', new Date());
-    await notification.save(null, { useMasterKey: true });
-    
-    return {
-      success: true,
-      message: 'Notification marked as read',
-      notificationId: notification.id
-    };
-  } catch (error) {
-    console.error('Error marking notification as read:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to mark notification as read');
-  }
-});
-
-// Mark all notifications as read for current user
-Parse.Cloud.define('markAllNotificationsAsRead', async (request) => {
-  const user = request.user;
-  
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-  
-  try {
-    const Notification = Parse.Object.extend('Notification');
-    const query = new Parse.Query(Notification);
-    
-    const userPointer = {
-      __type: 'Pointer',
-      className: '_User',
-      objectId: user.id
-    };
-    
-    query.equalTo('recipient', userPointer);
-    query.equalTo('isRead', false);
-    query.limit(1000); // Batch limit
-    
-    const unreadNotifications = await query.find({ useMasterKey: true });
-    
-    if (unreadNotifications.length === 0) {
-      return {
-        success: true,
-        message: 'No unread notifications',
-        count: 0
-      };
-    }
-    
-    // Mark all as read
-    const now = new Date();
-    unreadNotifications.forEach(notification => {
-      notification.set('isRead', true);
-      notification.set('readAt', now);
-    });
-    
-    await Parse.Object.saveAll(unreadNotifications, { useMasterKey: true });
-    
-    return {
-      success: true,
-      message: `Marked ${unreadNotifications.length} notifications as read`,
-      count: unreadNotifications.length
-    };
-  } catch (error) {
-    console.error('Error marking all notifications as read:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to mark notifications as read');
-  }
-});
-
-// Get user work experience
-Parse.Cloud.define('getUserExperience', async (request) => {
-  const { userId } = request.params;
-  const user = request.user;
-  
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-  
-  const targetUserId = userId || user.id;
-  
-  try {
-    const Experience = Parse.Object.extend('UserExperience');
-    const query = new Parse.Query(Experience);
-    
-    const userPointer = {
-      __type: 'Pointer',
-      className: '_User',
-      objectId: targetUserId
-    };
-    
-    query.equalTo('user', userPointer);
-    query.descending('startDate');
-    
-    const experiences = await query.find({ useMasterKey: true });
-    
-    return {
-      success: true,
-      experiences: experiences.map(exp => ({
-        id: exp.id,
-        title: exp.get('title'),
-        company: exp.get('company'),
-        location: exp.get('location'),
-        startDate: exp.get('startDate'),
-        endDate: exp.get('endDate'),
-        current: exp.get('current') || false,
-        description: exp.get('description'),
-        skills: exp.get('skills') || [],
-        achievements: exp.get('achievements') || []
-      }))
-    };
-  } catch (error) {
-    console.error('Error getting user experience:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to get user experience');
-  }
-});
-
-// Get user projects/portfolio
-Parse.Cloud.define('getUserProjects', async (request) => {
-  const { userId } = request.params;
-  const user = request.user;
-  
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-  
-  const targetUserId = userId || user.id;
-  
-  try {
-    const Project = Parse.Object.extend('UserProject');
-    const query = new Parse.Query(Project);
-    
-    const userPointer = {
-      __type: 'Pointer',
-      className: '_User',
-      objectId: targetUserId
-    };
-    
-    query.equalTo('user', userPointer);
-    query.descending('createdAt');
-    
-    const projects = await query.find({ useMasterKey: true });
-    
-    return {
-      success: true,
-      projects: projects.map(proj => ({
-        id: proj.id,
-        title: proj.get('title'),
-        description: proj.get('description'),
-        category: proj.get('category'),
-        technologies: proj.get('technologies') || [],
-        startDate: proj.get('startDate'),
-        endDate: proj.get('endDate'),
-        status: proj.get('status') || 'completed',
-        url: proj.get('url'),
-        repositoryUrl: proj.get('repositoryUrl'),
-        images: proj.get('images') || [],
-        achievements: proj.get('achievements') || [],
-        teamSize: proj.get('teamSize'),
-        role: proj.get('role')
-      }))
-    };
-  } catch (error) {
-    console.error('Error getting user projects:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, error.message || 'Failed to get user projects');
-  }
-});
