@@ -1,0 +1,31 @@
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-06T21:05:18.635Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-06T21:05:18.702Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-06T21:05:18.703Z"}
+{"level":"debug","message":"PG: performInitialization","timestamp":"2025-10-06T21:05:18.704Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.890Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.893Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.894Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.895Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.895Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.897Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.898Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:05:19.898Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:19.922Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.160Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.161Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.289Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.349Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.423Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.460Z"}
+{"level":"debug","message":"PG: schemaUpgrade","timestamp":"2025-10-06T21:05:20.480Z"}
+{"level":"debug","message":"PG: initializationDone in 48","timestamp":"2025-10-06T21:05:20.570Z"}
+{"level":"debug","message":"PG: find","timestamp":"2025-10-06T21:05:22.428Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for generateInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-06T21:05:22.538Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getBillingHistory. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-06T21:05:22.538Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceDetails. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-06T21:05:22.538Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for getInvoiceHTML. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-06T21:05:22.539Z"}
+{"level":"warn","message":"Warning: Duplicate cloud functions exist for resendInvoice. Only the last one will be used and the others will be ignored.","timestamp":"2025-10-06T21:05:22.539Z"}
+{"level":"warn","message":"DeprecationWarning: insecure adapter is deprecated and will be removed in a future version.","timestamp":"2025-10-06T21:05:22.550Z"}
+{"level":"warn","message":"DeprecationWarning: PublicAPIRouter is deprecated and will be removed in a future version. pages.enableRouter","timestamp":"2025-10-06T21:05:22.555Z"}
+{"level":"debug","message":"PG: find","timestamp":"2025-10-06T21:05:22.622Z"}
+{"level":"debug","message":"PG: createTable","timestamp":"2025-10-06T21:09:58.996Z"}

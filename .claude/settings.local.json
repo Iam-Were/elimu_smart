@@ -9,7 +9,15 @@
       "Bash(git -C /c/Users/c/Documents/GitHub/elimu_smart commit -m \"$(cat <<''EOF''\nFrontend: RIASEC Assessment API Integration\n\nUpdated RIASEC assessment to fetch questions from Parse Cloud Functions\ninstead of using hardcoded data.\n\nNew File:\n- frontend/src/lib/assessmentApi.ts: Assessment API service with type-safe\n  functions for getRiasecQuestions, getSkillsQuestions, saveAssessmentResult,\n  and getUserAssessments\n\nModified:\n- frontend/src/components/assessments/FreeRiasecAssessment.tsx:\n  - Added useEffect hook to load questions from API on mount\n  - Added loading state with spinner (Loader2 icon)\n  - Added error state with refresh button\n  - Replaced hardcoded iipRiasecQuestions array with dynamic questions state\n  - Maintains same interleaving logic for question order\n  - Updated all references from interleavedIipQuestions to questions state\n\nFeatures:\n- API-first: Questions loaded from database via Cloud Functions\n- Loading UX: Shows \"Fetching 96 questions from database\" message\n- Error handling: Graceful fallback with user-friendly error messages\n- Type-safe: Full TypeScript interfaces for API responses\n- Backward compatible: Same user experience, better data management\n\nImpact: Reduces frontend bundle size, enables centralized question updates\nwithout redeployment.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git add:*)",
       "Bash(nslookup:*)",
-      "Read(//root/**)"
+      "Read(//root/**)",
+      "Bash(ssh root@145.239.42.121 \"which code\")",
+      "Bash(ssh root@145.239.42.121 \"./code tunnel --accept-server-license-terms --name elimu-smart-production 2>&1 | head -20\")",
+      "Bash(ssh root@145.239.42.121 \"nohup ./code tunnel --accept-server-license-terms --name elimu-smart-production > tunnel.log 2>&1 & sleep 5 && cat tunnel.log\")",
+      "Bash(ssh root@145.239.42.121 \"cat tunnel.log 2>/dev/null || echo ''No log file found''\")",
+      "Bash(ssh root@145.239.42.121 \"pkill -9 -f ''code tunnel'' ; rm -f tunnel.log ; nohup ./code tunnel --accept-server-license-terms --name elimu-production > tunnel.log 2>&1 & sleep 8 && cat tunnel.log\")",
+      "Bash(ssh root@145.239.42.121 \"./code tunnel kill-all && sleep 2 && nohup ./code tunnel --accept-server-license-terms --name elimu-prod > tunnel.log 2>&1 & sleep 8 && tail -30 tunnel.log\")",
+      "Bash(ssh root@145.239.42.121 \"./code tunnel kill && sleep 2 && ./code tunnel --accept-server-license-terms --name elimu-prod 2>&1 &\")",
+      "Bash(ssh root@145.239.42.121 \"cd /root/elimu_smart && nohup /root/code tunnel --accept-server-license-terms --name elimu-prod > /root/tunnel.log 2>&1 & sleep 10 && tail -50 /root/tunnel.log\")"
     ],
     "deny": [],
     "ask": [],
