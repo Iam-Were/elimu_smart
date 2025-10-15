@@ -15,7 +15,7 @@
   "users": [
     {
       "user": "admin",
-    "pass": "$2a$10$wH1Q9v8Kj3lP4s6T7u8V9eO0pQ1rS2tU3vW4xY5zA6bC7dE8fG9hI0jK"
+      "pass": "$2b$10$5Ak3GWcQn8FGV9hHyqQ9xOkMtiC0Tj8DSEV61hMc7nCZFhVA3MfLW"
     }
   ],
   "useEncryptedPasswords": true,
