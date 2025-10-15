@@ -12,7 +12,8 @@ require('./billingFunctions');
 require('./assessmentFunctions');
 
 // Import seed users function (auto-registers cloud functions)
-require('./seedUsers');
+// REMOVED FOR PRODUCTION - No demo data in live environment
+// require('./seedUsers');
 
 // Import user preferences functions (auto-registers cloud functions)
 require('./userPreferencesFunctions');
@@ -340,16 +341,21 @@ Parse.Cloud.define('matchUniversityCourses', async (request) => {
   const { userId, cutoffPoints, interests } = request.params;
   
   try {
-    // Mock course matching logic - replace with real KUCCPS data
-    const mockCourses = [
-      { name: 'Computer Science', cutoff: 10.5, university: 'University of Nairobi' },
-      { name: 'Business Administration', cutoff: 9.0, university: 'Kenyatta University' },
-      { name: 'Engineering', cutoff: 11.0, university: 'JKUAT' },
-      { name: 'Medicine', cutoff: 11.8, university: 'University of Nairobi' },
-      { name: 'Education', cutoff: 7.5, university: 'Egerton University' }
-    ];
+    // Query courses from database
+    const Course = Parse.Object.extend('Course');
+    const query = new Parse.Query(Course);
+    query.equalTo('isActive', true);
+    query.lessThanOrEqualTo('cutoffPoints', cutoffPoints);
+    query.descending('cutoffPoints');
+    query.limit(50);
     
-    const eligibleCourses = mockCourses.filter(course => cutoffPoints >= course.cutoff);
+    const courses = await query.find({ useMasterKey: true });
+    
+    const eligibleCourses = courses.map(course => ({
+      name: course.get('name'),
+      cutoff: course.get('cutoffPoints'),
+      university: course.get('university')
+    }));
     
     return {
       eligibleCourses,
@@ -896,13 +902,48 @@ Parse.Cloud.define('logUserActivity', async (request) => {
       }, { useMasterKey: true });
     }
     
-    // Update user's career readiness score asynchronously
-    Parse.Cloud.run('updateCareerReadinessScore', { userId: user.id }, { useMasterKey: true });
+    // Note: Career readiness score will be recalculated on-demand when dashboard loads
+    // No need to update it here to avoid unnecessary compute
     
     return { success: true };
   } catch (error) {
     console.error('Log activity error:', error);
     throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to log user activity');
+  }
+});
+
+// Get User Activities - retrieve activity history for current user
+Parse.Cloud.define('getUserActivities', async (request) => {
+  const { limit = 50, skip = 0 } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  try {
+    const UserActivity = Parse.Object.extend('UserActivity');
+    const query = new Parse.Query(UserActivity);
+    query.equalTo('user', user);
+    query.descending('timestamp');
+    query.limit(limit);
+    query.skip(skip);
+    
+    const activities = await query.find({ useMasterKey: true });
+    
+    // Map to plain objects for JSON serialization
+    return activities.map(activity => ({
+      id: activity.id,
+      activityType: activity.get('activityType'),
+      data: activity.get('data') || {},
+      pageUrl: activity.get('pageUrl'),
+      duration: activity.get('duration') || 0,
+      timestamp: activity.get('timestamp'),
+      createdAt: activity.get('createdAt')
+    }));
+  } catch (error) {
+    console.error('Get user activities error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get user activities');
   }
 });
 
@@ -1168,7 +1209,7 @@ Parse.Cloud.define('getCareerExplorationData', async (request) => {
   }
 });
 
-// Scholarship Matching (Basic Implementation)
+// Scholarship Matching - Query from Scholarship Parse Class
 Parse.Cloud.define('getScholarshipMatches', async (request) => {
   const user = request.user;
   
@@ -1177,40 +1218,78 @@ Parse.Cloud.define('getScholarshipMatches', async (request) => {
   }
   
   try {
-    // For now, return mock data - will be replaced with real database
-    const scholarships = [
-      {
-        name: 'HELB Bursary',
-        amount: 'KSh 60,000',
-        deadline: '2025-03-15',
-        match: 95,
-        type: 'Government'
-      },
-      {
-        name: 'Equity Group Foundation',
-        amount: 'KSh 120,000',
-        deadline: '2025-02-28',
-        match: 87,
-        type: 'Private'
-      },
-      {
-        name: 'County Education Bursary',
-        amount: 'KSh 45,000',
-        deadline: '2025-04-10',
-        match: 92,
-        type: 'Local Government'
-      }
-    ];
+    // Query scholarships from database
+    const Scholarship = Parse.Object.extend('Scholarship');
+    const query = new Parse.Query(Scholarship);
+    query.equalTo('isActive', true);
+    query.greaterThan('deadline', new Date()); // Only future deadlines
+    query.ascending('deadline');
+    query.limit(20);
+    
+    const results = await query.find({ useMasterKey: true });
+    
+    if (results.length === 0) {
+      // Return empty result if no scholarships in database
+      return {
+        matches: 0,
+        newThisWeek: 0,
+        scholarships: [],
+        totalValue: 'KSh 0'
+      };
+    }
+    
+    const scholarships = results.map(scholarship => ({
+      name: scholarship.get('name'),
+      provider: scholarship.get('provider'),
+      amount: scholarship.get('amount'),
+      deadline: scholarship.get('deadline'),
+      match: scholarship.get('matchScore') || 80,
+      matchScore: scholarship.get('matchScore') || 80,
+      type: scholarship.get('type'),
+      category: scholarship.get('category'),
+      requirements: scholarship.get('requirements') || []
+    }));
+    
+    // Calculate total value
+    const totalValue = scholarships.reduce((sum, s) => {
+      const numericValue = parseInt(s.amount.replace(/[^0-9]/g, '')) || 0;
+      return sum + numericValue;
+    }, 0);
     
     return {
       matches: scholarships.length,
-      newThisWeek: 2,
+      newThisWeek: 0, // Would need createdAt comparison
       scholarships: scholarships,
-      totalValue: 'KSh 225,000'
+      totalValue: `KSh ${totalValue.toLocaleString()}`
     };
   } catch (error) {
     console.error('Get scholarship matches error:', error);
     throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get scholarship matches');
+  }
+});
+
+// Alias function for frontend compatibility - findScholarshipMatches
+Parse.Cloud.define('findScholarshipMatches', async (request) => {
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  try {
+    // Call the main function and format response for frontend
+    const result = await Parse.Cloud.run('getScholarshipMatches', {}, { user });
+    
+    // Return in format expected by frontend
+    return {
+      matches: result.scholarships || [],
+      totalMatches: result.matches || 0,
+      newThisWeek: result.newThisWeek || 0,
+      totalValue: result.totalValue || 'KSh 0'
+    };
+  } catch (error) {
+    console.error('Find scholarship matches error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to find scholarship matches');
   }
 });
 
@@ -2561,8 +2640,7 @@ Parse.Cloud.define('completeRiasecAssessment', async (request) => {
       }
     }, { useMasterKey: true });
     
-    // Trigger career readiness recalculation
-    Parse.Cloud.run('updateCareerReadinessScore', { userId: user.id }, { useMasterKey: true });
+    // Note: Career readiness score will be recalculated on-demand when dashboard loads
     
     // Send completion email
     try {
@@ -4345,8 +4423,8 @@ Parse.Cloud.define('getCareerJobData', async (request) => {
         };
       }
 
-      // Fallback to mock data if API fails
-      return generateMockJobData(careerTitle, location);
+      // Return null if API fails - no fallback data in production
+      return null;
 
     }, CACHE_TTL.CAREERJET_JOBS);
 
@@ -4362,101 +4440,13 @@ Parse.Cloud.define('getCareerJobData', async (request) => {
   } catch (error) {
     console.error('❌ CareerJet API error:', error.message);
 
-    // Fallback to mock data on error
-    return {
-      success: true,
-      career: careerTitle,
-      location: location,
-      data: generateMockJobData(careerTitle, location),
-      cached: false,
-      source: 'Fallback Mock Data',
-      note: 'Real API unavailable, using estimated data'
-    };
+    // Return error in production - no fallback mock data
+    throw new Parse.Error(
+      Parse.Error.SCRIPT_FAILED, 
+      'Job market data temporarily unavailable. Please try again later.'
+    );
   }
 });
-
-// Helper function to generate mock job data (replace with real CareerJet API)
-function generateMockJobData(careerTitle, location) {
-  const jobCounts = {
-    'Data Scientist': 45,
-    'Software Engineer': 120,
-    'Software Developer': 150,
-    'Medical Doctor': 80,
-    'Nurse': 200,
-    'Teacher': 300,
-    'Pharmacist': 60,
-    'Engineer': 90,
-    'Marketing Manager': 85,
-    'Business Analyst': 75,
-    'Lawyer': 40,
-    'Accountant': 110
-  };
-
-  const salaryRanges = {
-    'Data Scientist': 'KSh 120,000 - 280,000',
-    'Software Engineer': 'KSh 90,000 - 220,000',
-    'Software Developer': 'KSh 80,000 - 200,000',
-    'Medical Doctor': 'KSh 180,000 - 450,000',
-    'Nurse': 'KSh 45,000 - 90,000',
-    'Teacher': 'KSh 35,000 - 75,000',
-    'Pharmacist': 'KSh 70,000 - 140,000',
-    'Engineer': 'KSh 75,000 - 180,000',
-    'Marketing Manager': 'KSh 80,000 - 160,000',
-    'Business Analyst': 'KSh 70,000 - 150,000',
-    'Lawyer': 'KSh 90,000 - 250,000',
-    'Accountant': 'KSh 60,000 - 120,000'
-  };
-
-  const employers = {
-    'Data Scientist': ['Safaricom', 'KCB Bank', 'Equity Bank', 'NCBA', 'Deloitte'],
-    'Software Engineer': ['Safaricom', 'Microsoft Kenya', 'Google Kenya', 'iHub', 'Andela'],
-    'Software Developer': ['Craft Silicon', 'Cellulant', 'Ushahidi', 'BRCK', 'Liquid Telecom'],
-    'Medical Doctor': ['Kenyatta Hospital', 'Aga Khan Hospital', 'Nairobi Hospital', 'Moi Hospital'],
-    'Nurse': ['KNH', 'Aga Khan', 'MP Shah', 'Gertrudes Hospital', 'AAR Healthcare'],
-    'Teacher': ['Kenya High School', 'Alliance High', 'Brookhouse School', 'ISK', 'Makini Schools'],
-    'Pharmacist': ['Goodlife Pharmacy', 'Dawa Limited', 'Cosmos Limited', 'Beta Healthcare'],
-    'Engineer': ['Kenya Power', 'KenGen', 'Bamburi Cement', 'East African Portland'],
-    'Marketing Manager': ['Unilever Kenya', 'Coca-Cola', 'Tusker', 'Nation Media', 'Standard Group'],
-    'Business Analyst': ['KCB', 'Equity Bank', 'NCBA', 'Standard Chartered', 'Deloitte'],
-    'Lawyer': ['Anjarwalla & Khanna', 'Bowmans', 'Kaplan & Stratton', 'Walker Kontos'],
-    'Accountant': ['PwC Kenya', 'KPMG', 'EY', 'Deloitte', 'Grant Thornton']
-  };
-
-  const jobTitles = careerTitle.toLowerCase();
-  let matchedKey = Object.keys(jobCounts).find(key =>
-    jobTitles.includes(key.toLowerCase()) || key.toLowerCase().includes(jobTitles)
-  );
-
-  if (!matchedKey) {
-    // Default fallback
-    matchedKey = 'Software Engineer';
-  }
-
-  const totalJobs = jobCounts[matchedKey] || Math.floor(Math.random() * 50) + 10;
-  const demandLevel = totalJobs > 100 ? 'Very High' : totalJobs > 50 ? 'High' : 'Medium';
-
-  return {
-    totalJobs: totalJobs,
-    demandLevel: demandLevel,
-    salaryRange: salaryRanges[matchedKey] || 'KSh 50,000 - 120,000',
-    topEmployers: employers[matchedKey] || ['Various Companies', 'Local Employers'],
-    recentJobs: [
-      {
-        title: careerTitle,
-        company: employers[matchedKey]?.[0] || 'Leading Company',
-        location: location === 'kenya' ? 'Nairobi' : location,
-        postedDate: '2 days ago'
-      },
-      {
-        title: `Senior ${careerTitle}`,
-        company: employers[matchedKey]?.[1] || 'Major Employer',
-        location: location === 'kenya' ? 'Mombasa' : location,
-        postedDate: '5 days ago'
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  };
-}
 
 // Helper function to generate personalized insights
 function generatePersonalizedInsights(career, studentProfile) {

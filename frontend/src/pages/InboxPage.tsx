@@ -3,6 +3,7 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   MessageCircle,
   Search,
@@ -14,7 +15,10 @@ import {
   Circle,
   Loader2,
   Send,
-  Archive
+  Archive,
+  X,
+  Check,
+  CheckCheck
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,6 +49,10 @@ const InboxPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
+  const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Backend integration
@@ -156,7 +164,26 @@ const InboxPage: React.FC = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, searchConversations, user]);
 
-  const filteredConversations = searchTerm.trim() ? searchResults : linkedInConversations;
+  // Filter conversations based on active filter
+  const getFilteredConversations = () => {
+    let conversations = searchTerm.trim() ? searchResults : linkedInConversations;
+    
+    switch (activeFilter) {
+      case 'unread':
+        return conversations.filter(c => c.unreadCount > 0);
+      case 'starred':
+        // TODO: Implement starred logic when backend supports it
+        return conversations;
+      case 'archived':
+        // TODO: Load archived conversations from backend
+        return [];
+      case 'all':
+      default:
+        return conversations;
+    }
+  };
+
+  const filteredConversations = getFilteredConversations();
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -202,6 +229,12 @@ const InboxPage: React.FC = () => {
     }
   };
 
+  const handleCloseConversation = () => {
+    setSelectedConversation(null);
+    setCurrentRoom(undefined);
+    setNewMessage('');
+  };
+
   const handleArchive = async () => {
     if (!selectedConversation) return;
 
@@ -209,7 +242,7 @@ const InboxPage: React.FC = () => {
       const result = await archiveConversation(selectedConversation.id);
       if (result && result.success) {
         toast.success('Conversation archived');
-        setSelectedConversation(null);
+        handleCloseConversation();
       } else {
         toast.error('Failed to archive conversation');
       }
@@ -235,6 +268,44 @@ const InboxPage: React.FC = () => {
   };
 
   return (
+    <>
+      {/* Compose Modal - Simple version */}
+      {isComposeModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setIsComposeModalOpen(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">New Message</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsComposeModalOpen(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">To:</label>
+                <Input placeholder="Search for a counselor or mentor..." className="w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message:</label>
+                <Textarea placeholder="Type your message here..." rows={4} className="w-full" />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => setIsComposeModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button className="bg-[#f97316] hover:bg-[#ea580c] text-white">
+                  Send
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="h-screen flex bg-gray-50">
       {/* LinkedIn-style Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
@@ -245,10 +316,17 @@ const InboxPage: React.FC = () => {
               <MessageCircle className="h-5 w-5 text-[#f97316]" />
               Messaging
             </h1>
+            <Button
+              size="sm"
+              onClick={() => setIsComposeModalOpen(true)}
+              className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-full px-4"
+            >
+              ✉️ Compose
+            </Button>
           </div>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search messages..."
@@ -256,6 +334,29 @@ const InboxPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 border-gray-300 focus:border-[#f97316] focus:ring-[#f97316] rounded-md"
             />
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+            {(['all', 'unread', 'starred', 'archived'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={cn(
+                  "flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-colors capitalize",
+                  activeFilter === filter
+                    ? "bg-white text-[#f97316] shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                )}
+              >
+                {filter}
+                {filter === 'unread' && linkedInConversations.filter(c => c.unreadCount > 0).length > 0 && (
+                  <span className="ml-1 bg-[#f97316] text-white rounded-full px-1.5 py-0.5 text-[10px]">
+                    {linkedInConversations.filter(c => c.unreadCount > 0).length}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -375,6 +476,15 @@ const InboxPage: React.FC = () => {
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                     <MoreHorizontal className="h-4 w-4 text-gray-600" />
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                    onClick={handleCloseConversation}
+                    title="Close conversation"
+                  >
+                    <X className="h-4 w-4 text-gray-600" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -393,51 +503,90 @@ const InboxPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender.id === user?.id ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${
-                      message.sender.id === user?.id
-                        ? 'bg-[#f97316] text-white rounded-br-md'
-                        : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md'
-                    }`}>
-                      <div>{message.message}</div>
-                      <div className={`text-xs mt-1 ${
-                        message.sender.id === user?.id ? 'text-orange-200' : 'text-gray-500'
-                      }`}>
-                        {formatTime(message.timestamp)}
+                messages.map((message, index) => {
+                  const isOwnMessage = message.sender.id === user?.id;
+                  const showTimestamp = index === 0 || 
+                    (messages[index - 1] && 
+                     new Date(message.timestamp).getTime() - new Date(messages[index - 1].timestamp).getTime() > 300000); // 5 minutes
+                  
+                  return (
+                    <div key={message.id}>
+                      {showTimestamp && (
+                        <div className="text-center text-xs text-gray-500 my-4">
+                          {new Date(message.timestamp).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })}
+                        </div>
+                      )}
+                      <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
+                          isOwnMessage
+                            ? 'bg-[#f97316] text-white rounded-br-md'
+                            : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
+                        }`}>
+                          <div className="break-words whitespace-pre-wrap">{message.message}</div>
+                          <div className={`flex items-center gap-1 mt-1 text-xs ${
+                            isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
+                          }`}>
+                            <span>
+                              {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                            </span>
+                            {isOwnMessage && (
+                              <span className="ml-1">
+                                {message.isRead ? (
+                                  <CheckCheck className="h-3 w-3" title="Read" />
+                                ) : (
+                                  <Check className="h-3 w-3" title="Delivered" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Message Input */}
             <div className="p-4 border-t bg-white">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-full border border-gray-200 p-3">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full">
+              <div className="flex items-start gap-3 bg-gray-50 rounded-2xl border border-gray-200 p-3">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
                   <Paperclip className="h-4 w-4 text-gray-500" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
                   <Smile className="h-4 w-4 text-gray-500" />
                 </Button>
-                <Input
-                  placeholder="Write a message..."
+                <Textarea
+                  placeholder="Write a message... (Shift+Enter for new line)"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
                   disabled={isSending || isLoading}
-                  className="flex-1 border-none bg-transparent focus:ring-0 focus:border-none"
+                  className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
+                  rows={1}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || isSending || isLoading}
                   size="sm"
-                  className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full"
+                  className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
+                  title={isSending ? 'Sending...' : 'Send message (Enter)'}
                 >
                   {isSending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -446,11 +595,16 @@ const InboxPage: React.FC = () => {
                   )}
                 </Button>
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd> to send, 
+                <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs ml-1">Shift+Enter</kbd> for new line
+              </p>
             </div>
           </>
         )}
       </div>
     </div>
+    </>
   );
 };
 

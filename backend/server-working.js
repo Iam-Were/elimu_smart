@@ -124,28 +124,8 @@ async function startServer() {
       console.log('🌐 CORS: Frontend ports enabled');
       console.log(`🔐 Dashboard Login: ${process.env.DASHBOARD_USER || 'admin'} / ${process.env.DASHBOARD_PASS || 'admin123'}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ Ready! Using Sprint 22 working configuration');
-
-      // Check if demo data exists, if not, suggest seeding
-      try {
-        const userQuery = new Parse.Query(Parse.User);
-        userQuery.equalTo('email', 'student@elimu.com');
-        const demoUser = await userQuery.first({ useMasterKey: true });
-        
-        if (!demoUser) {
-          console.log('');
-          console.log('🌱 No demo data found!');
-          console.log('💡 To populate with demo data, run: npm run seed');
-          console.log('📋 This will create demo users for testing the dashboard');
-        } else {
-          console.log('');
-          console.log('✅ Demo data available - Dashboard should show users and data');
-        }
-      } catch (error) {
-        console.log('');
-        console.log('⚠️  Could not check for demo data - Dashboard may appear empty');
-        console.log('💡 To populate with demo data, run: npm run seed');
-      }
+      console.log('✅ Production server ready');
+      console.log('');
     });
     
   } catch (error) {
