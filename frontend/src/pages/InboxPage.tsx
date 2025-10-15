@@ -545,9 +545,9 @@ const InboxPage: React.FC = () => {
                             {isOwnMessage && (
                               <span className="ml-1">
                                 {message.isRead ? (
-                                  <CheckCheck className="h-3 w-3" title="Read" />
+                                  <CheckCheck className="h-3 w-3" aria-label="Read" />
                                 ) : (
-                                  <Check className="h-3 w-3" title="Delivered" />
+                                  <Check className="h-3 w-3" aria-label="Delivered" />
                                 )}
                               </span>
                             )}
