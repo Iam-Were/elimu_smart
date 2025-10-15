@@ -3,6 +3,33 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { initializeParse } from './config/parse';
 
+// Suppress browser extension errors (ad blockers, password managers, etc.)
+window.addEventListener('error', (event) => {
+  // Ignore extension-related errors
+  if (
+    event.message?.includes('message channel closed') ||
+    event.message?.includes('Extension context invalidated') ||
+    event.message?.includes('chrome.runtime') ||
+    event.filename?.includes('extension')
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+  }
+});
+
+// Suppress unhandled promise rejections from extensions
+window.addEventListener('unhandledrejection', (event) => {
+  if (
+    event.reason?.message?.includes('message channel closed') ||
+    event.reason?.message?.includes('Extension context invalidated') ||
+    event.reason?.message?.includes('chrome.runtime')
+  ) {
+    event.preventDefault();
+    return;
+  }
+});
+
 // Initialize Parse SDK before rendering app
 try {
   initializeParse();
