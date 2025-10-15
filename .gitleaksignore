@@ -1,0 +1,9 @@
+# GitLeaks Ignore File
+# Files with expected configuration secrets that are not actual credentials
+
+# Parse Dashboard config - contains bcrypt hash for dashboard login (not a real secret)
+backend/parse-dashboard-config.json:*
+
+# Environment example files
+*.env.example:*
+.env.example:*

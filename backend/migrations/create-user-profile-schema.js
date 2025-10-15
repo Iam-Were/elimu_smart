@@ -45,41 +45,16 @@ console.log(`🔗 Server URL: ${config.serverURL}\n`);
 Parse.initialize(config.appId, null, config.masterKey);
 Parse.serverURL = config.serverURL;
 
-async function createUserProjectSchema() {
+// Helper function to create or update schema with error handling
+async function createOrUpdateSchema(className, schemaBuilder, schemaDetails) {
   try {
-    console.log('📋 Creating UserProject schema...\n');
-
-    const schema = new Parse.Schema('UserProject');
-
-    // User reference (pointer to _User)
-    schema.addPointer('user', '_User');
-
-    // Project details
-    schema.addString('title');
-    schema.addString('description');
-    schema.addString('type'); // personal, academic, professional
-    schema.addString('status'); // in_progress, completed, archived
-
-    // Dates
-    schema.addDate('startDate');
-    schema.addDate('endDate');
-
-    // Technical details
-    schema.addArray('skills'); // Array of skill names
-    schema.addArray('technologies'); // Array of technologies used
-    schema.addArray('achievements'); // Array of achievement strings
-
-    // Links
-    schema.addString('url'); // Live project URL
-    schema.addString('repositoryUrl'); // GitHub/GitLab URL
-    schema.addString('imageUrl'); // Project screenshot/thumbnail
-
-    // Indexes for performance
-    schema.addIndex('user_index', { user: 1 });
-    schema.addIndex('user_status_index', { user: 1, status: 1 });
-
-    // Class-Level Permissions
-    const classLevelPermissions = {
+    console.log(`📋 Creating ${className} schema...\n`);
+    
+    const schema = new Parse.Schema(className);
+    schemaBuilder(schema);
+    
+    // Class-Level Permissions (same for all schemas)
+    schema.setCLP({
       find: { requiresAuthentication: true },
       get: { requiresAuthentication: true },
       create: { requiresAuthentication: true },
@@ -87,120 +62,96 @@ async function createUserProjectSchema() {
       delete: { requiresAuthentication: true },
       addField: {},
       protectedFields: {}
-    };
-
-    schema.setCLP(classLevelPermissions);
-
-    // Save schema
+    });
+    
     await schema.save();
-
-    console.log('✅ UserProject schema created successfully!\n');
+    
+    console.log(`✅ ${className} schema created successfully!\n`);
     console.log('📊 Schema Details:');
-    console.log('   - user (Pointer to _User)');
-    console.log('   - title, description, type, status (String)');
-    console.log('   - startDate, endDate (Date)');
-    console.log('   - skills, technologies, achievements (Array)');
-    console.log('   - url, repositoryUrl, imageUrl (String)');
-    console.log('\n🔒 Permissions: Authenticated users only');
-    console.log('🔍 Indexes: user, user+status\n');
-
+    schemaDetails.forEach(detail => console.log(`   ${detail}`));
+    console.log('\n🔒 Permissions: Authenticated users only\n');
+    
   } catch (error) {
     if (error.code === 103) {
-      console.log('⚠️  UserProject class already exists, updating schema...');
+      console.log(`⚠️  ${className} class already exists, updating schema...`);
       try {
-        const schema = new Parse.Schema('UserProject');
+        const schema = new Parse.Schema(className);
         await schema.update();
-        console.log('✅ UserProject schema updated successfully!\n');
+        console.log(`✅ ${className} schema updated successfully!\n`);
       } catch (updateError) {
-        console.error('❌ Failed to update UserProject schema:', updateError.message);
+        console.error(`❌ Failed to update ${className} schema:`, updateError.message);
         throw updateError;
       }
     } else {
-      console.error('❌ Failed to create UserProject schema:', error.message);
+      console.error(`❌ Failed to create ${className} schema:`, error.message);
       throw error;
     }
   }
 }
 
+async function createUserProjectSchema() {
+  return createOrUpdateSchema(
+    'UserProject',
+    (schema) => {
+      schema.addPointer('user', '_User');
+      schema.addString('title');
+      schema.addString('description');
+      schema.addString('type');
+      schema.addString('status');
+      schema.addDate('startDate');
+      schema.addDate('endDate');
+      schema.addArray('skills');
+      schema.addArray('technologies');
+      schema.addArray('achievements');
+      schema.addString('url');
+      schema.addString('repositoryUrl');
+      schema.addString('imageUrl');
+      schema.addIndex('user_index', { user: 1 });
+      schema.addIndex('user_status_index', { user: 1, status: 1 });
+    },
+    [
+      '- user (Pointer to _User)',
+      '- title, description, type, status (String)',
+      '- startDate, endDate (Date)',
+      '- skills, technologies, achievements (Array)',
+      '- url, repositoryUrl, imageUrl (String)',
+      '🔍 Indexes: user, user+status'
+    ]
+  );
+}
+
 async function createUserExperienceSchema() {
-  try {
-    console.log('📋 Creating UserExperience schema...\n');
-
-    const schema = new Parse.Schema('UserExperience');
-
-    // User reference (pointer to _User)
-    schema.addPointer('user', '_User');
-
-    // Experience details
-    schema.addString('title'); // Job title / Role
-    schema.addString('company'); // Company name
-    schema.addString('organization'); // Organization (for volunteer work)
-    schema.addString('type'); // work, internship, volunteer, leadership
-    schema.addString('location'); // City, Country or "Remote"
-    schema.addString('description'); // Overall description
-
-    // Details
-    schema.addArray('responsibilities'); // Array of responsibility strings
-    schema.addArray('achievements'); // Array of achievement strings
-    schema.addArray('skills'); // Skills gained/used
-
-    // Dates
-    schema.addDate('startDate');
-    schema.addDate('endDate');
-    schema.addBoolean('isCurrent'); // Currently working here
-
-    // Verification
-    schema.addString('verificationUrl'); // LinkedIn, certificate URL
-    schema.addString('referenceContact'); // Reference person's contact (optional)
-
-    // Indexes for performance
-    schema.addIndex('user_index', { user: 1 });
-    schema.addIndex('user_type_index', { user: 1, type: 1 });
-    schema.addIndex('user_current_index', { user: 1, isCurrent: 1 });
-
-    // Class-Level Permissions
-    const classLevelPermissions = {
-      find: { requiresAuthentication: true },
-      get: { requiresAuthentication: true },
-      create: { requiresAuthentication: true },
-      update: { requiresAuthentication: true },
-      delete: { requiresAuthentication: true },
-      addField: {},
-      protectedFields: {}
-    };
-
-    schema.setCLP(classLevelPermissions);
-
-    // Save schema
-    await schema.save();
-
-    console.log('✅ UserExperience schema created successfully!\n');
-    console.log('📊 Schema Details:');
-    console.log('   - user (Pointer to _User)');
-    console.log('   - title, company, organization, type, location, description (String)');
-    console.log('   - responsibilities, achievements, skills (Array)');
-    console.log('   - startDate, endDate (Date)');
-    console.log('   - isCurrent (Boolean)');
-    console.log('   - verificationUrl, referenceContact (String)');
-    console.log('\n🔒 Permissions: Authenticated users only');
-    console.log('🔍 Indexes: user, user+type, user+isCurrent\n');
-
-  } catch (error) {
-    if (error.code === 103) {
-      console.log('⚠️  UserExperience class already exists, updating schema...');
-      try {
-        const schema = new Parse.Schema('UserExperience');
-        await schema.update();
-        console.log('✅ UserExperience schema updated successfully!\n');
-      } catch (updateError) {
-        console.error('❌ Failed to update UserExperience schema:', updateError.message);
-        throw updateError;
-      }
-    } else {
-      console.error('❌ Failed to create UserExperience schema:', error.message);
-      throw error;
-    }
-  }
+  return createOrUpdateSchema(
+    'UserExperience',
+    (schema) => {
+      schema.addPointer('user', '_User');
+      schema.addString('title');
+      schema.addString('company');
+      schema.addString('organization');
+      schema.addString('type');
+      schema.addString('location');
+      schema.addString('description');
+      schema.addArray('responsibilities');
+      schema.addArray('achievements');
+      schema.addArray('skills');
+      schema.addDate('startDate');
+      schema.addDate('endDate');
+      schema.addBoolean('isCurrent');
+      schema.addString('verificationUrl');
+      schema.addString('referenceContact');
+      schema.addIndex('user_index', { user: 1 });
+      schema.addIndex('user_type_index', { user: 1, type: 1 });
+      schema.addIndex('user_current_index', { user: 1, isCurrent: 1 });
+    },
+    [
+      '- user (Pointer to _User)',
+      '- title, company, organization, type, location, description (String)',
+      '- responsibilities, achievements, skills (Array)',
+      '- startDate, endDate (Date), isCurrent (Boolean)',
+      '- verificationUrl, referenceContact (String)',
+      '🔍 Indexes: user, user+type, user+isCurrent'
+    ]
+  );
 }
 
 async function runMigration() {
