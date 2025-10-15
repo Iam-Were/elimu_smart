@@ -30,6 +30,7 @@ export interface ChatMessage {
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;
+  reactions?: Array<{ emoji: string; users: string[]; count: number; }>;
 }
 
 export interface ChatState {
