@@ -1,0 +1,13 @@
+# GitLeaks configuration to suppress false positives
+title = "Elimu Smart GitLeaks Config"
+
+[allowlist]
+description = "Allowlist for false positives"
+paths = [
+  '''frontend/src/hooks/useDynamicDashboard\.ts''',
+]
+
+# Suppress LinkedIn Client Secret false positives for TypeScript type names
+[[allowlist.regexes]]
+description = "Ignore TypeScript type name LinkedInInsights"
+regex = '''linkedinInsights:\s+LinkedInInsights'''

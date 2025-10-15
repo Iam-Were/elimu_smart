@@ -28,3 +28,4 @@ jobs:
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_TYPESCRIPT_STANDARD: false  # Disable ts-standard (we use project ESLint)
+          VALIDATE_JAVASCRIPT_STANDARD: false  # Disable js-standard (Parse Server uses semicolons)
