@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield } from 'lucide-react';
+import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
+import { BookingModal } from '../components/student/BookingModal';
 
 interface ProfileProject {
   id: string;
@@ -67,6 +68,7 @@ export const ProfilePage: React.FC = () => {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingExperience, setLoadingExperience] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
@@ -238,6 +240,15 @@ export const ProfilePage: React.FC = () => {
                   </div>
 
                   <div className="flex gap-2">
+                    {user?.role === 'counselor' && (
+                      <Button 
+                        onClick={() => setShowBookingModal(true)}
+                        className="gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
+                      >
+                        <Calendar className="h-4 w-4" />
+                        Book Session
+                      </Button>
+                    )}
                     <Button className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}>
                       {user?.role === 'counselor' ? 'Available for consultation' : 'Open to work'}
                     </Button>
@@ -784,6 +795,16 @@ export const ProfilePage: React.FC = () => {
           </Card>
         </div>
         </>
+        )}
+
+        {/* Booking Modal */}
+        {user?.role === 'counselor' && user.id && (
+          <BookingModal
+            counselorId={user.id}
+            counselorName={`${user.firstName} ${user.lastName}`}
+            isOpen={showBookingModal}
+            onClose={() => setShowBookingModal(false)}
+          />
         )}
       </div>
     </div>

@@ -4,6 +4,7 @@ import CounselorDashboardCards from '../../components/counselor/CounselorDashboa
 import CounselorAnalyticsCards from '../../components/counselor/CounselorAnalyticsCards';
 import { StudentRoster } from '../../components/counselor/StudentRoster';
 import { SessionManager } from '../../components/counselor/SessionManager';
+import { AvailabilitySettings } from '../../components/counselor/AvailabilitySettings';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import Button from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -28,7 +29,7 @@ const CounselorDashboardPage: React.FC = () => {
   // Update active tab based on URL hash
   useEffect(() => {
     const hash = location.hash.replace('#', '');
-    if (hash && ['overview', 'students', 'sessions', 'messages', 'analytics'].includes(hash)) {
+    if (hash && ['overview', 'students', 'sessions', 'messages', 'analytics', 'availability'].includes(hash)) {
       setActiveTab(hash);
     }
   }, [location.hash]);
@@ -91,7 +92,7 @@ const CounselorDashboardPage: React.FC = () => {
 
           {/* Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 Overview
@@ -107,6 +108,10 @@ const CounselorDashboardPage: React.FC = () => {
               <TabsTrigger value="students" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Students
+              </TabsTrigger>
+              <TabsTrigger value="availability" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Availability
               </TabsTrigger>
             </TabsList>
 
@@ -157,6 +162,11 @@ const CounselorDashboardPage: React.FC = () => {
             {/* Students Tab */}
             <TabsContent value="students" className="space-y-6">
               <StudentRoster />
+            </TabsContent>
+
+            {/* Availability Tab */}
+            <TabsContent value="availability" className="space-y-6">
+              <AvailabilitySettings />
             </TabsContent>
           </Tabs>
 
