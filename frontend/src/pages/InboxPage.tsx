@@ -46,6 +46,8 @@ import {
   Loader2,
   Circle,
   Forward,
+  Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useChat, type ChatRoom } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -201,6 +203,7 @@ const InboxPage: React.FC = () => {
     error,
     connectionStatus,
     sendMessage,
+    updateRoomMessagesStatus,
     setCurrentRoom,
     getInboxConversations,
     searchConversations,
@@ -226,6 +229,21 @@ const InboxPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [currentRoom, messages]);
+
+  // Auto-mark messages as read when room is opened
+  useEffect(() => {
+    if (currentRoom && user && updateRoomMessagesStatus) {
+      // Mark messages as delivered immediately
+      updateRoomMessagesStatus(currentRoom.id, 'delivered');
+      
+      // Mark as read after a short delay (user has time to see them)
+      const timer = setTimeout(() => {
+        updateRoomMessagesStatus(currentRoom.id, 'read');
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentRoom, user, updateRoomMessagesStatus]);
 
   useEffect(() => {
     if (error) {
@@ -1228,11 +1246,19 @@ const InboxPage: React.FC = () => {
                                 })}
                               </span>
                               {isOwnMessage && (
-                                <span className="ml-1">
-                                  {message.isRead ? (
-                                    <CheckCheck className="h-3 w-3" aria-label="Read" />
+                                <span className="ml-1" title={message.status || 'sent'}>
+                                  {message.status === 'read' || message.isRead ? (
+                                    <CheckCheck className="h-3 w-3 text-blue-400" aria-label="Read" />
+                                  ) : message.status === 'delivered' ? (
+                                    <CheckCheck className="h-3 w-3" aria-label="Delivered" />
+                                  ) : message.status === 'sent' ? (
+                                    <Check className="h-3 w-3" aria-label="Sent" />
+                                  ) : message.status === 'sending' ? (
+                                    <Clock className="h-3 w-3 animate-pulse" aria-label="Sending" />
+                                  ) : message.status === 'failed' ? (
+                                    <AlertCircle className="h-3 w-3 text-red-400" aria-label="Failed" />
                                   ) : (
-                                    <Check className="h-3 w-3" aria-label="Delivered" />
+                                    <Check className="h-3 w-3" aria-label="Sent" />
                                   )}
                                 </span>
                               )}

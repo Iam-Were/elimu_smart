@@ -427,6 +427,7 @@ Parse.Cloud.define('sendMessage', async (request) => {
   chatMessage.set('messageType', messageType);
   chatMessage.set('timestamp', new Date());
   chatMessage.set('isRead', false);
+  chatMessage.set('status', 'sent'); // Initial status
   
   const savedMessage = await chatMessage.save(null, { useMasterKey: true });
   
@@ -440,6 +441,71 @@ Parse.Cloud.define('sendMessage', async (request) => {
   await chatRoom.save(null, { useMasterKey: true });
   
   return savedMessage;
+});
+
+// Update message status (delivered/read)
+Parse.Cloud.define('updateMessageStatus', async (request) => {
+  const { messageId, status } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  if (!['delivered', 'read'].includes(status)) {
+    throw new Parse.Error(Parse.Error.INVALID_ARGUMENT, 'Invalid status. Must be "delivered" or "read"');
+  }
+  
+  const ChatMessage = Parse.Object.extend('ChatMessage');
+  const query = new Parse.Query(ChatMessage);
+  const message = await query.get(messageId, { useMasterKey: true });
+  
+  // Only update if user is recipient (not sender)
+  const sender = message.get('sender');
+  if (sender.id === user.id) {
+    return message; // Don't update own messages
+  }
+  
+  // Update status
+  message.set('status', status);
+  if (status === 'read') {
+    message.set('isRead', true);
+  }
+  
+  const savedMessage = await message.save(null, { useMasterKey: true });
+  return savedMessage;
+});
+
+// Bulk update message status for a room (mark all as delivered/read)
+Parse.Cloud.define('updateRoomMessagesStatus', async (request) => {
+  const { chatRoomId, status } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  if (!['delivered', 'read'].includes(status)) {
+    throw new Parse.Error(Parse.Error.INVALID_ARGUMENT, 'Invalid status');
+  }
+  
+  const ChatMessage = Parse.Object.extend('ChatMessage');
+  const query = new Parse.Query(ChatMessage);
+  query.equalTo('chatRoomId', chatRoomId);
+  query.notEqualTo('sender', user); // Don't update own messages
+  query.limit(1000);
+  
+  const messages = await query.find({ useMasterKey: true });
+  
+  messages.forEach(message => {
+    message.set('status', status);
+    if (status === 'read') {
+      message.set('isRead', true);
+    }
+  });
+  
+  await Parse.Object.saveAll(messages, { useMasterKey: true });
+  return { updated: messages.length };
 });
 
 // Get chat rooms for current user

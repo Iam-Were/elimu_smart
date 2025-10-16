@@ -28,6 +28,7 @@ export interface ChatMessage {
   messageType: 'text' | 'file' | 'image';
   timestamp: Date;
   isRead: boolean;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;
@@ -327,6 +328,44 @@ export const useChat = () => {
     }
   }, [user, loadMessages]);
 
+  // Update message status (delivered/read)
+  const updateMessageStatus = useCallback(async (messageId: string, status: 'delivered' | 'read') => {
+    if (!user) return;
+
+    try {
+      await ParseApi.callCloudFunction('updateMessageStatus', { messageId, status }, getSessionToken());
+      
+      // Update local state
+      setChatState(prev => ({
+        ...prev,
+        messages: prev.messages.map(msg => 
+          msg.id === messageId ? { ...msg, status, isRead: status === 'read' } : msg
+        )
+      }));
+    } catch (error) {
+      console.error('Failed to update message status:', error);
+    }
+  }, [user]);
+
+  // Mark all messages in room as delivered/read
+  const updateRoomMessagesStatus = useCallback(async (chatRoomId: string, status: 'delivered' | 'read') => {
+    if (!user) return;
+
+    try {
+      await ParseApi.callCloudFunction('updateRoomMessagesStatus', { chatRoomId, status }, getSessionToken());
+      
+      // Update local state
+      setChatState(prev => ({
+        ...prev,
+        messages: prev.messages.map(msg => 
+          msg.sender.id !== user.id ? { ...msg, status, isRead: status === 'read' } : msg
+        )
+      }));
+    } catch (error) {
+      console.error('Failed to update room messages status:', error);
+    }
+  }, [user]);
+
   // Real-time message updates with Parse Live Query
   useEffect(() => {
     if (!user || !chatState.currentRoom) return;
@@ -454,6 +493,8 @@ export const useChat = () => {
     connectionStatus: chatState.connectionStatus,
     sendMessage,
     sendMultimediaMessage,
+    updateMessageStatus,
+    updateRoomMessagesStatus,
     setCurrentRoom,
     loadChatRooms,
     getInboxConversations,
