@@ -35,6 +35,9 @@ export const CheckoutPage = () => {
   const [checkoutRequestId, setCheckoutRequestId] = useState('');
 
   useEffect(() => {
+    // Wait for plans to load before validating
+    if (plans.length === 0) return;
+
     const selectedPlan = plans.find(p => p.id === planId);
     if (!selectedPlan) {
       toast.error('Invalid plan selected');
