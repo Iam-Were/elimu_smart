@@ -89,7 +89,7 @@ SELECT
 FROM "_User";
 ```
 
-### Assessment Tables
+### Assessment Questions
 
 ```sql
 -- RIASEC questions count
