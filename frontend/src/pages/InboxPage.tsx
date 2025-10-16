@@ -18,6 +18,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Star,
   Archive,
@@ -120,6 +123,8 @@ const InboxPage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [autoMarkRead, setAutoMarkRead] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -228,6 +233,44 @@ const InboxPage: React.FC = () => {
       });
     }
   }, [error]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + N - New message
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        setIsComposeModalOpen(true);
+        toast.info('Compose new message', { description: 'Cmd+N' });
+      }
+      
+      // Cmd/Ctrl + K - Search (future implementation)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.querySelector<HTMLInputElement>('input[placeholder*="Search messages"]')?.focus();
+        toast.info('Search messages', { description: 'Cmd+K' });
+      }
+      
+      // Escape - Close conversation or modal
+      if (e.key === 'Escape') {
+        if (isComposeModalOpen) {
+          setIsComposeModalOpen(false);
+        } else if (selectedConversation) {
+          handleCloseConversation();
+          toast.info('Conversation closed', { description: 'Press Escape' });
+        }
+      }
+      
+      // Cmd/Ctrl + E - Focus emoji picker (when conversation open)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'e' && selectedConversation) {
+        e.preventDefault();
+        toast.info('Emoji picker', { description: 'Cmd+E (click smile icon)' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isComposeModalOpen, selectedConversation]);
 
   // Handle search with backend integration
   const [searchResults, setSearchResults] = useState<LinkedInConversation[]>([]);
@@ -646,35 +689,45 @@ const InboxPage: React.FC = () => {
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search messages..."
+              placeholder="Search messages... (Cmd+K)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 border-gray-300 focus:border-[#f97316] focus:ring-[#f97316] rounded-md"
             />
+            <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-0.5 text-[10px] bg-gray-100 border border-gray-200 rounded">
+              ⌘K
+            </kbd>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-            {(['all', 'unread', 'starred', 'archived'] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={cn(
-                  "flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-colors capitalize",
-                  activeFilter === filter
-                    ? "bg-white text-[#f97316] shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                )}
-              >
-                {filter}
-                {filter === 'unread' && linkedInConversations.filter(c => c.unreadCount > 0).length > 0 && (
-                  <span className="ml-1 bg-[#f97316] text-white rounded-full px-1.5 py-0.5 text-[10px]">
-                    {linkedInConversations.filter(c => c.unreadCount > 0).length}
-                  </span>
-                )}
-              </button>
-            ))}
+          {/* Keyboard Shortcuts Hint */}
+          <div className="mb-3 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-700">
+              💡 <strong>Tip:</strong> Press <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Cmd+N</kbd> for new message, <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Esc</kbd> to close
+            </p>
           </div>
+
+          {/* Filter Tabs - Shadcn Tabs Component */}
+          <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as typeof activeFilter)} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-100 h-9">
+              <TabsTrigger value="all" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                All
+              </TabsTrigger>
+              <TabsTrigger value="unread" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316] relative">
+                Unread
+                {linkedInConversations.filter(c => c.unreadCount > 0).length > 0 && (
+                  <Badge variant="default" className="ml-1 h-4 px-1.5 text-[10px] bg-[#f97316]">
+                    {linkedInConversations.filter(c => c.unreadCount > 0).length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="starred" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                Starred
+              </TabsTrigger>
+              <TabsTrigger value="archived" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                Archived
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Conversations List */}
@@ -820,9 +873,20 @@ const InboxPage: React.FC = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="font-medium text-gray-900">{selectedConversation.participant.name}</h2>
+                    <h2 className="font-medium text-gray-900 flex items-center gap-2">
+                      {selectedConversation.participant.name}
+                      <Badge 
+                        variant={selectedConversation.participant.isOnline ? "success" : "secondary"}
+                        className={cn(
+                          "text-[10px] h-5",
+                          selectedConversation.participant.isOnline && "bg-green-500 hover:bg-green-600"
+                        )}
+                      >
+                        {selectedConversation.participant.isOnline ? '● Online' : '○ Away'}
+                      </Badge>
+                    </h2>
                     <p className="text-xs text-gray-500">
-                      {selectedConversation.participant.isOnline ? 'Active now' : 'Away'}
+                      {selectedConversation.participant.isOnline ? 'Active now' : 'Last seen recently'}
                     </p>
                   </div>
                 </div>
@@ -894,7 +958,7 @@ const InboxPage: React.FC = () => {
                           <p>More options</p>
                         </TooltipContent>
                       </Tooltip>
-                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuContent align="end" className="w-64">
                         <DropdownMenuItem onClick={() => toast.info('View profile feature coming soon!')}>
                           <User className="mr-2 h-4 w-4" />
                           View Profile
@@ -907,6 +971,41 @@ const InboxPage: React.FC = () => {
                           <Archive className="mr-2 h-4 w-4" />
                           Archive
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        
+                        {/* Settings Section with Switch */}
+                        <div className="px-2 py-2 space-y-3">
+                          <p className="text-xs font-semibold text-gray-500 uppercase">Settings</p>
+                          
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="notifications" className="text-sm font-normal cursor-pointer">
+                              Notifications
+                            </Label>
+                            <Switch
+                              id="notifications"
+                              checked={notificationsEnabled}
+                              onCheckedChange={(checked) => {
+                                setNotificationsEnabled(checked);
+                                toast.success(checked ? 'Notifications enabled' : 'Notifications disabled');
+                              }}
+                            />
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="autoread" className="text-sm font-normal cursor-pointer">
+                              Auto-mark as read
+                            </Label>
+                            <Switch
+                              id="autoread"
+                              checked={autoMarkRead}
+                              onCheckedChange={(checked) => {
+                                setAutoMarkRead(checked);
+                                toast.success(checked ? 'Auto-mark enabled' : 'Auto-mark disabled');
+                              }}
+                            />
+                          </div>
+                        </div>
+                        
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           onClick={() => toast.info('Block feature coming soon!')}
