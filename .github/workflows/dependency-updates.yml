@@ -2,54 +2,132 @@ name: Auto-Update Dependencies
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight
+    - cron: '0 2 */4 * *'  # Every 4 days at 2 AM UTC
+  push:
+    branches:
+      - main
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
   workflow_dispatch:  # Manual trigger
 
 jobs:
   update-deps:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
 
       - name: Update frontend dependencies
+        id: frontend-update
+        continue-on-error: true
         run: |
           cd frontend
-          npm update
-          npm audit fix --force || true
+          echo "📦 Updating frontend dependencies..."
+          npm update 2>&1 | tee ../frontend-update.log
+          
+          echo "🔒 Running security audit..."
+          npm audit fix 2>&1 | tee ../frontend-audit.log || true
+          
+          # Check for vulnerabilities
+          VULN_COUNT=$(npm audit --json 2>/dev/null | jq -r '.metadata.vulnerabilities | add' || echo "0")
+          echo "vulnerabilities=$VULN_COUNT" >> $GITHUB_OUTPUT
 
       - name: Update backend dependencies
+        id: backend-update
+        continue-on-error: true
         run: |
           cd backend
-          npm update
-          npm audit fix --force || true
+          echo "📦 Updating backend dependencies..."
+          npm update 2>&1 | tee ../backend-update.log
+          
+          echo "🔒 Running security audit..."
+          npm audit fix 2>&1 | tee ../backend-audit.log || true
+          
+          # Check for vulnerabilities
+          VULN_COUNT=$(npm audit --json 2>/dev/null | jq -r '.metadata.vulnerabilities | add' || echo "0")
+          echo "vulnerabilities=$VULN_COUNT" >> $GITHUB_OUTPUT
 
-      - name: Run tests
+      - name: Run frontend build test
+        id: frontend-build
+        continue-on-error: true
         run: |
           cd frontend
-          npm run lint || true
-          npm run build || true
+          echo "🏗️ Testing frontend build..."
+          npm run build 2>&1 | tee ../frontend-build.log
+          echo "status=$?" >> $GITHUB_OUTPUT
+
+      - name: Self-Healing - Retry on failure
+        if: steps.frontend-build.outcome == 'failure'
+        run: |
+          echo "⚠️ Build failed, attempting self-healing..."
+          cd frontend
+          
+          # Clean install
+          rm -rf node_modules package-lock.json
+          npm install
+          
+          # Retry build
+          npm run build
+
+      - name: Generate update summary
+        id: summary
+        run: |
+          echo "## 📊 Dependency Update Summary" > update-summary.md
+          echo "" >> update-summary.md
+          echo "**Frontend Vulnerabilities:** ${{ steps.frontend-update.outputs.vulnerabilities }}" >> update-summary.md
+          echo "**Backend Vulnerabilities:** ${{ steps.backend-update.outputs.vulnerabilities }}" >> update-summary.md
+          echo "" >> update-summary.md
+          
+          if [ -f frontend-update.log ]; then
+            echo "### Frontend Updates" >> update-summary.md
+            echo '```' >> update-summary.md
+            tail -n 20 frontend-update.log >> update-summary.md
+            echo '```' >> update-summary.md
+          fi
+          
+          if [ -f backend-update.log ]; then
+            echo "### Backend Updates" >> update-summary.md
+            echo '```' >> update-summary.md
+            tail -n 20 backend-update.log >> update-summary.md
+            echo '```' >> update-summary.md
+          fi
+          
+          cat update-summary.md
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_TOKEN }}
-          commit-message: "chore: Update dependencies"
-          title: "🤖 Automated Dependency Updates"
-          body: |
-            ## Automated Dependency Updates
-
-            This PR contains automatic dependency updates:
-            - Updated npm packages to latest versions
-            - Applied security patches via npm audit fix
-            - Build and lint checks passed
-
-            **Please review before merging!**
+          commit-message: "chore: 🔒 Security updates - Automated dependency updates"
+          title: "🤖 Automated Security & Dependency Updates (Every 4 Days)"
+          body-path: update-summary.md
           branch: automated-dependency-updates
           delete-branch: true
+          labels: |
+            dependencies
+            security
+            automated
+          reviewers: ${{ github.repository_owner }}
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Dependency update workflow failed"
+          echo "Check logs for details"
+          exit 1
