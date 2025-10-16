@@ -54,7 +54,7 @@ jobs:
 
       - name: Trigger backend deployment
         run: |
-          RESPONSE=$(curl -X POST             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"             -w "\n%{http_code}"             https://elimu-smart.co.ke/webhooks/deploy/production)
+          RESPONSE=$(curl -X POST             -H "Authorization: Bearer ${{ secrets.GH_WEBHOOK_TOKEN }}"             -w "\n%{http_code}"             https://elimu-smart.co.ke/webhooks/deploy/production)
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
