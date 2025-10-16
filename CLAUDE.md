@@ -951,5 +951,5 @@ node migrations/seed-assessments.js
 **Monetization**: Freemium model (Free assessments + Paid counselor services)
 **External APIs**: All live with caching (CareerJet, LinkedIn, M-Pesa, ZeptoMail)
 **VPS Deployment**: ✅ Production (2 cluster instances) + Staging on TrueHosts VPS
-**Database**: PostgreSQL 17.6 with custom user fields and assessment tables
+**Database**: PostgreSQL 17.6 (RiasecQuestion, RiasecAssessment, Career, AssessmentProgress, _User)
 **SSL Certificates**: Valid until 2026-01-04 (auto-renewing)

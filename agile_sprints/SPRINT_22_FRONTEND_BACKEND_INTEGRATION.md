@@ -93,9 +93,9 @@ Acceptance Criteria:
 - [x] Add proper loading states while fetching user data from Parse Server
 
 Dashboard Data Sources:
-- User assessment completion status from Assessment table
-- Career recommendations from RIASEC and Skills assessment results
-- University matches from Course Finder assessment combined with KUCCPS data
+- User assessment completion status from RiasecAssessment and AssessmentProgress tables
+- Career recommendations from RIASEC assessment results
+- University matches from Course Finder combined with KUCCPS data
 - Scholarship opportunities filtered by user's profile and academic performance
 - Progress metrics calculated from actual user activity and assessment scores
 
