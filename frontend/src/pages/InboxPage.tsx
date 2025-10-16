@@ -4,27 +4,45 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  MessageCircle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import {
+  Star,
+  Archive,
+  Pin,
   Search,
-  Phone,
-  Video,
-  MoreHorizontal,
+  Send,
   Smile,
   Paperclip,
-  Circle,
-  Loader2,
-  Send,
-  Archive,
+  Phone,
+  Video,
   X,
-  Check,
-  CheckCheck,
-  Pin,
-  Star,
   Reply,
-  Forward,
   Copy,
-  Trash2
+  Trash2,
+  CheckCheck,
+  Check,
+  MoreVertical,
+  ArrowLeft,
+  User,
+  BellOff,
+  Ban,
+  MessageCircle,
+  Loader2,
+  Circle,
+  Forward,
 } from 'lucide-react';
 import { useChat, type ChatRoom } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -94,13 +112,16 @@ const InboxPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
-  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const [pinnedConversationIds, setPinnedConversationIds] = useState<string[]>([]);
   const [starredMessagesByConversation, setStarredMessagesByConversation] = useState<Record<string, string[]>>({});
   const [messageReactionsMap, setMessageReactionsMap] = useState<Record<string, MessageReaction[]>>({});
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load persisted preferences from localStorage
   useEffect(() => {
@@ -367,6 +388,53 @@ const InboxPage: React.FC = () => {
     }
   };
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large', {
+        description: 'Maximum file size is 10MB'
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type', {
+        description: 'Supported: Images, PDF, Word documents'
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsUploading(false);
+          toast.success(`${file.name} uploaded successfully`);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    setUploadProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -495,42 +563,65 @@ const InboxPage: React.FC = () => {
 
   return (
     <>
-      {/* Compose Modal - Simple version */}
-      {isComposeModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setIsComposeModalOpen(false)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">New Message</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsComposeModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+      {/* Compose Modal - Shadcn Dialog */}
+      <Dialog open={isComposeModalOpen} onOpenChange={setIsComposeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-[#f97316]" />
+              New Message
+            </DialogTitle>
+            <DialogDescription>
+              Send a message to a counselor or mentor
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="recipient" className="text-sm font-medium text-gray-700">
+                To:
+              </label>
+              <Input 
+                id="recipient"
+                placeholder="Search for a counselor or mentor..." 
+                className="w-full focus:ring-[#f97316] focus:border-[#f97316]" 
+              />
+              <p className="text-xs text-gray-500">Start typing to search...</p>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">To:</label>
-                <Input placeholder="Search for a counselor or mentor..." className="w-full" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message:</label>
-                <Textarea placeholder="Type your message here..." rows={4} className="w-full" />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => setIsComposeModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button className="bg-[#f97316] hover:bg-[#ea580c] text-white">
-                  Send
-                </Button>
-              </div>
+            <Separator />
+            <div className="space-y-2">
+              <label htmlFor="message" className="text-sm font-medium text-gray-700">
+                Message:
+              </label>
+              <Textarea 
+                id="message"
+                placeholder="Type your message here..." 
+                rows={5} 
+                className="w-full resize-none focus:ring-[#f97316] focus:border-[#f97316]" 
+              />
+              <p className="text-xs text-gray-500">Press Enter to add a new line</p>
             </div>
           </div>
-        </div>
-      )}
+          <div className="flex justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsComposeModalOpen(false)}
+              className="border-gray-300"
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="bg-[#f97316] hover:bg-[#ea580c] text-white"
+              onClick={() => {
+                toast.success('Message sent!');
+                setIsComposeModalOpen(false);
+              }}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send Message
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     <div className="h-screen flex bg-gray-50">
       {/* LinkedIn-style Sidebar */}
@@ -587,10 +678,21 @@ const InboxPage: React.FC = () => {
         </div>
 
         {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           {isLoading && filteredConversations.length === 0 ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
+            <div className="flex flex-col gap-1 p-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-4 border-b border-gray-100">
+                  <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-12" />
+                    </div>
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm px-4">
@@ -671,7 +773,7 @@ const InboxPage: React.FC = () => {
               </div>
             ))
           )}
-        </div>
+        </ScrollArea>
       </div>
 
       {/* LinkedIn-style Main Chat Area */}
@@ -692,6 +794,25 @@ const InboxPage: React.FC = () => {
             <div className="p-4 border-b border-gray-200 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  {/* Mobile Back Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 md:hidden hover:bg-gray-100"
+                          onClick={handleCloseConversation}
+                        >
+                          <ArrowLeft className="h-5 w-5 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Back to conversations</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={selectedConversation.participant.avatar} />
                     <AvatarFallback className="bg-gray-100 text-gray-600">
@@ -706,35 +827,115 @@ const InboxPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                    <Phone className="h-4 w-4 text-gray-600" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                    <Video className="h-4 w-4 text-gray-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-gray-100"
-                    onClick={handleArchive}
-                    title="Archive conversation"
-                  >
-                    <Archive className="h-4 w-4 text-gray-600" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                    <MoreHorizontal className="h-4 w-4 text-gray-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-gray-100"
-                    onClick={handleCloseConversation}
-                    title="Close conversation"
-                  >
-                    <X className="h-4 w-4 text-gray-600" />
-                  </Button>
-                </div>
+                <TooltipProvider>
+                  <div className="flex items-center gap-2">
+                    {/* Phone Call Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={() => toast.info('Voice call feature coming soon!')}
+                        >
+                          <Phone className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Start voice call</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Video Call Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={() => toast.info('Video call feature coming soon!')}
+                        >
+                          <Video className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Start video call</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Archive Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={handleArchive}
+                        >
+                          <Archive className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Archive conversation</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Conversation Menu */}
+                    <DropdownMenu>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                              <MoreVertical className="h-4 w-4 text-gray-600" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>More options</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => toast.info('View profile feature coming soon!')}>
+                          <User className="mr-2 h-4 w-4" />
+                          View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast.info('Mute feature coming soon!')}>
+                          <BellOff className="mr-2 h-4 w-4" />
+                          Mute Conversation
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleArchive}>
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => toast.info('Block feature coming soon!')}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Ban className="mr-2 h-4 w-4" />
+                          Block User
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Close Button (Desktop) */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="hidden md:flex h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={handleCloseConversation}
+                        >
+                          <X className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Close conversation</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
               </div>
 
               {/* In-conversation Search */}
@@ -751,7 +952,7 @@ const InboxPage: React.FC = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <ScrollArea className="flex-1 p-4 space-y-4 bg-gray-50">
               {isLoading && messages.length === 0 ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
@@ -796,91 +997,100 @@ const InboxPage: React.FC = () => {
                       )}
                       <div 
                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative`}
-                        onMouseEnter={() => setHoveredMessageId(message.id)}
-                        onMouseLeave={() => setHoveredMessageId(null)}
                       >
-                        {/* Message Hover Actions */}
-                        {hoveredMessageId === message.id && (
-                          <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-8 flex items-center gap-1 bg-white shadow-lg border border-gray-200 rounded-full px-2 py-1 z-10`}>
-                            <button 
-                              onClick={() => setShowReactionsFor(message.id)}
-                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              title="Add reaction"
-                            >
-                              <Smile className="h-4 w-4 text-gray-600" />
-                            </button>
-                            <button 
-                              onClick={() => {
-                                console.log('Reply to message', message.id);
-                                toast.info('Reply feature coming soon!');
-                              }}
-                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              title="Reply"
-                            >
-                              <Reply className="h-4 w-4 text-gray-600" />
-                            </button>
-                            <button 
-                              onClick={() => {
-                                console.log('Forward message', message.id);
-                                toast.info('Forward feature coming soon!');
-                              }}
-                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              title="Forward"
-                            >
-                              <Forward className="h-4 w-4 text-gray-600" />
-                            </button>
-                            <button 
-                              onClick={() => toggleStarMessage(selectedConversation.id, message.id)}
-                              className={cn(
-                                "p-1 hover:bg-gray-100 rounded-full transition-colors",
-                                isStarred && "text-yellow-500"
+                        {/* Message Actions DropdownMenu */}
+                        <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-4 opacity-0 group-hover:opacity-100 transition-opacity z-10`}>
+                          <DropdownMenu>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 w-7 p-0 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50"
+                                    >
+                                      <MoreVertical className="h-3.5 w-3.5 text-gray-600" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Message options</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'} className="w-48">
+                              <DropdownMenuItem onClick={() => setShowReactionsFor(message.id)}>
+                                <Smile className="mr-2 h-4 w-4" />
+                                Add Reaction
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => toast.info('Reply feature coming soon!')}>
+                                <Reply className="mr-2 h-4 w-4" />
+                                Reply
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => toast.info('Forward feature coming soon!')}>
+                                <Forward className="mr-2 h-4 w-4" />
+                                Forward
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => toggleStarMessage(selectedConversation.id, message.id)}>
+                                <Star className={cn("mr-2 h-4 w-4", isStarred && "fill-yellow-500 text-yellow-500")} />
+                                {isStarred ? 'Unstar' : 'Star'} Message
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  navigator.clipboard.writeText(message.message);
+                                  toast.success('Message copied to clipboard');
+                                }}
+                              >
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy Text
+                              </DropdownMenuItem>
+                              {isOwnMessage && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    onClick={() => toast.info('Delete feature coming soon!')}
+                                    className="text-red-600 focus:text-red-600"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete Message
+                                  </DropdownMenuItem>
+                                </>
                               )}
-                              title={isStarred ? "Unstar message" : "Star message"}
-                            >
-                              <Star className={cn("h-4 w-4", isStarred && "fill-yellow-500")} />
-                            </button>
-                            <button 
-                              onClick={() => {
-                                navigator.clipboard.writeText(message.message);
-                                toast.success('Message copied to clipboard');
-                              }}
-                              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                              title="Copy message"
-                            >
-                              <Copy className="h-4 w-4 text-gray-600" />
-                            </button>
-                            {isOwnMessage && (
-                              <button 
-                                onClick={() => {
-                                  console.log('Delete message', message.id);
-                                  toast.info('Delete feature coming soon!');
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                title="Delete message"
-                              >
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </button>
-                            )}
-                          </div>
-                        )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
 
-                        {/* Reaction Picker */}
-                        {showReactionsFor === message.id && (
-                          <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-12 flex items-center gap-1 bg-white shadow-xl border border-gray-200 rounded-full px-3 py-2 z-20`}>
-                            {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) => (
-                              <button
-                                key={emoji}
-                                onClick={() => {
-                                  toggleReaction(message.id, emoji);
-                                  setShowReactionsFor(null);
-                                }}
-                                className="text-xl hover:scale-125 transition-transform"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        {/* Reaction Picker Popover */}
+                        <Popover 
+                          open={showReactionsFor === message.id} 
+                          onOpenChange={(open) => !open && setShowReactionsFor(null)}
+                        >
+                          <PopoverTrigger asChild>
+                            <span className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-10 invisible`} />
+                          </PopoverTrigger>
+                          <PopoverContent 
+                            className="w-auto p-2 bg-white shadow-xl border border-gray-200 rounded-full"
+                            align={isOwnMessage ? 'end' : 'start'}
+                            side="top"
+                          >
+                            <div className="flex items-center gap-1">
+                              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  onClick={() => {
+                                    toggleReaction(message.id, emoji);
+                                    setShowReactionsFor(null);
+                                  }}
+                                  className="text-xl hover:scale-125 transition-transform p-1 hover:bg-gray-100 rounded-full"
+                                  title={`React with ${emoji}`}
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
 
                         <div className="relative">
                           <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
@@ -944,17 +1154,105 @@ const InboxPage: React.FC = () => {
                 })
               )}
               <div ref={messagesEndRef} />
-            </div>
+            </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-4 border-t bg-white">
+            <div className="p-4 border-t bg-white space-y-3">
+              {/* File Upload Preview */}
+              {uploadedFile && (
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Paperclip className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-700 font-medium">{uploadedFile.name}</span>
+                      <span className="text-xs text-gray-500">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeUploadedFile}
+                      className="h-6 w-6 p-0 hover:bg-gray-200"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {isUploading && (
+                    <div className="space-y-1">
+                      <Progress value={uploadProgress} className="h-2" />
+                      <p className="text-xs text-gray-500">Uploading... {uploadProgress}%</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-start gap-3 bg-gray-50 rounded-2xl border border-gray-200 p-3">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
-                  <Paperclip className="h-4 w-4 text-gray-500" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
-                  <Smile className="h-4 w-4 text-gray-500" />
-                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileSelect}
+                  accept="image/*,.pdf,.doc,.docx"
+                  className="hidden"
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Paperclip className="h-4 w-4 text-gray-500" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Attach file (Images, PDF, Documents)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <Popover>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
+                            <Smile className="h-4 w-4 text-gray-500" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Add emoji</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <PopoverContent className="w-80 p-4" align="start">
+                    <div className="grid grid-cols-8 gap-2">
+                      {['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+                        '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+                        '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+                        '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+                        '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+                        '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+                        '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
+                        '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌',
+                        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+                        '💯', '💢', '💥', '💫', '💦', '💨', '🕊️', '🦋',
+                        '🌟', '✨', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇'].map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => {
+                            setNewMessage(prev => prev + emoji);
+                          }}
+                          className="text-2xl hover:bg-gray-100 rounded p-1 transition-colors"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
                 <Textarea
                   placeholder="Write a message... (Shift+Enter for new line)"
                   value={newMessage}
@@ -969,19 +1267,27 @@ const InboxPage: React.FC = () => {
                   className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
                   rows={1}
                 />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || isSending || isLoading}
-                  size="sm"
-                  className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
-                  title={isSending ? 'Sending...' : 'Send message (Enter)'}
-                >
-                  {isSending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={!newMessage.trim() || isSending || isLoading}
+                        size="sm"
+                        className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
+                      >
+                        {isSending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isSending ? 'Sending...' : 'Send message (Enter)'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <p className="text-xs text-gray-500 mt-2 text-center">
                 Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd> to send, 
