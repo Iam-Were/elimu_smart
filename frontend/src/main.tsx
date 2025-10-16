@@ -32,15 +32,36 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Initialize Parse SDK before rendering app
 try {
+  console.log('🚀 Starting application initialization...');
   initializeParse();
+  console.log('✅ Application initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Parse SDK:', error);
-  // Show error to user
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
+  
+  // Show detailed error to user
   document.getElementById('root')!.innerHTML = `
-    <div style="padding: 20px; font-family: system-ui; color: #dc2626;">
+    <div style="padding: 20px; max-width: 800px; margin: 0 auto; font-family: system-ui; color: #dc2626;">
       <h2>❌ Application Initialization Error</h2>
-      <p>Failed to initialize Parse SDK. Please refresh the page or contact support.</p>
-      <pre style="background: #fee; padding: 10px; border-radius: 4px; overflow: auto;">${error}</pre>
+      <p>Failed to initialize Parse SDK. Please check the console for more details or contact support.</p>
+      <div style="background: #fee; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <h3 style="margin-top: 0; font-size: 14px; color: #991b1b;">Error Message:</h3>
+        <pre style="overflow: auto; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
+      </div>
+      <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 15px; color: #92400e;">
+        <h3 style="margin-top: 0; font-size: 14px;">💡 Troubleshooting:</h3>
+        <ul style="margin: 0; padding-left: 20px; font-size: 12px;">
+          <li>Try refreshing the page (Ctrl+F5 or Cmd+Shift+R)</li>
+          <li>Clear your browser cache and reload</li>
+          <li>Check your internet connection</li>
+          <li>Check browser console for detailed logs</li>
+        </ul>
+      </div>
+      <details style="margin-top: 15px; font-size: 12px;">
+        <summary style="cursor: pointer; color: #7c2d12;">Show Stack Trace</summary>
+        <pre style="background: #fef3c7; padding: 10px; border-radius: 4px; overflow: auto; margin-top: 10px;">${errorStack}</pre>
+      </details>
     </div>
   `;
   throw error;
