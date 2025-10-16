@@ -73,7 +73,7 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
+      GH_MODELS_API: ${{ secrets.GH_MODELS_API }}
 
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GH_MODELS_TOKEN}`
+                'Authorization': `Bearer ${process.env.GH_MODELS_API}`
               },
               body: JSON.stringify({
                 model: 'gpt-4o',
