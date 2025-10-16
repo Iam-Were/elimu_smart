@@ -24,6 +24,7 @@
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
+    "encoding": "^0.1.13",
     "express": "^5.1.0",
     "parse": "^7.0.1",
     "parse-dashboard": "^7.5.0",
