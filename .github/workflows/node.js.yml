@@ -1,13 +1,21 @@
 # Self-Healing CI/CD with GPT-4o (GitHub Models - FREE)
 # Auto-fixes TypeScript and ESLint errors using AI
 
-name: Node.js CI
+name: Node.js CI with Self-Healing
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - '**.js'
+      - '**.ts'
+      - '**.tsx'
+      - 'package*.json'
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:

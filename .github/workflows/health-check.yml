@@ -1,29 +1,161 @@
-name: Health Check & Monitoring
+name: Health Check & Self-Healing Monitor
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Every 30 minutes
+    - cron: '*/15 * * * *'  # Every 15 minutes (more frequent monitoring)
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/health-check.yml'
 
 jobs:
   health-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check Production Health
+        id: health
+        continue-on-error: true
         run: |
+          echo "🔍 Checking production health..."
+          
+          # Check Parse Server
           PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
-          if [ "$PROD_STATUS" != "200" ]; then
-            echo "❌ Production health check failed: $PROD_STATUS"
+          echo "parse_status=$PROD_STATUS" >> $GITHUB_OUTPUT
+          
+          # Check Frontend
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+          echo "frontend_status=$FRONTEND_STATUS" >> $GITHUB_OUTPUT
+          
+          # Check response time
+          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" https://elimu-smart.co.ke/parse/health)
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+          
+          if [ "$PROD_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
+            echo "❌ Health check failed - Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS"
+            echo "healthy=false" >> $GITHUB_OUTPUT
             exit 1
           fi
-          echo "✅ Production healthy: $PROD_STATUS"
+          
+          echo "✅ Production healthy - Backend: $PROD_STATUS, Frontend: $FRONTEND_STATUS, Response: ${RESPONSE_TIME}s"
+          echo "healthy=true" >> $GITHUB_OUTPUT
 
       - name: Check Webhook Agent
+        id: webhook
+        continue-on-error: true
         run: |
           WEBHOOK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/webhooks/health)
+          echo "webhook_status=$WEBHOOK_STATUS" >> $GITHUB_OUTPUT
+          
           if [ "$WEBHOOK_STATUS" != "200" ]; then
             echo "⚠️ Webhook agent health check failed: $WEBHOOK_STATUS"
+            echo "webhook_healthy=false" >> $GITHUB_OUTPUT
           else
             echo "✅ Webhook agent healthy: $WEBHOOK_STATUS"
+            echo "webhook_healthy=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Self-Healing - Restart Services
+        if: steps.health.outputs.healthy == 'false'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🔧 Self-healing initiated - Restarting services..."
+            
+            # Restart Parse Server
+            echo "♻️  Restarting Parse Server..."
+            pm2 restart parse-server-prod
+            
+            # Wait for startup
+            sleep 30
+            
+            # Verify recovery
+            if curl -s -f https://elimu-smart.co.ke/parse/health > /dev/null; then
+              echo "✅ Parse Server recovered"
+            else
+              echo "❌ Parse Server still unhealthy"
+              
+              # Try full PM2 restart
+              echo "🔄 Attempting full PM2 restart..."
+              pm2 restart all
+              sleep 30
+            fi
+            
+            # Final verification
+            if curl -s -f https://elimu-smart.co.ke/parse/health > /dev/null; then
+              echo "✅ Services recovered successfully"
+            else
+              echo "❌ Self-healing failed - manual intervention required"
+              exit 1
+            fi
+
+      - name: Verify Self-Healing
+        if: steps.health.outputs.healthy == 'false'
+        run: |
+          echo "⏳ Verifying self-healing recovery..."
+          sleep 10
+          
+          # Retry health check
+          RETRY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
+          RETRY_FRONTEND=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+          
+          if [ "$RETRY_STATUS" = "200" ] && [ "$RETRY_FRONTEND" = "200" ]; then
+            echo "✅ Self-healing successful - Services recovered"
+            echo "recovery=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Self-healing failed - Backend: $RETRY_STATUS, Frontend: $RETRY_FRONTEND"
+            echo "recovery=failed" >> $GITHUB_OUTPUT
+            
+            # Create an issue for manual intervention
+            echo "📧 Automated recovery failed - manual intervention required"
+            exit 1
+          fi
+
+      - name: Log Performance Metrics
+        if: always()
+        run: |
+          echo "## 📊 Health Check Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Parse Server**: ${{ steps.health.outputs.parse_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: ${{ steps.health.outputs.frontend_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Webhook Agent**: ${{ steps.webhook.outputs.webhook_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Response Time**: ${{ steps.health.outputs.response_time }}s" >> $GITHUB_STEP_SUMMARY
+          echo "- **Overall Status**: ${{ steps.health.outputs.healthy == 'true' && '✅ Healthy' || '❌ Unhealthy' }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.health.outputs.healthy }}" = "false" ]; then
+            echo "- **Self-Healing**: ${{ steps.verify.outputs.recovery || 'Not attempted' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Create incident issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Production Health Check Failed',
+              body: `## 🚨 Production Service Failure
+              
+              **Time**: ${new Date().toISOString()}
+              **Parse Server Status**: ${{ steps.health.outputs.parse_status }}
+              **Frontend Status**: ${{ steps.health.outputs.frontend_status }}
+              **Webhook Status**: ${{ steps.webhook.outputs.webhook_status }}
+              
+              **Self-Healing Attempted**: Yes
+              **Recovery Status**: Failed
+              
+              ### Action Required
+              Manual intervention needed to restore services.
+              
+              **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`,
+              labels: ['incident', 'production', 'urgent']
+            });
+            console.log('Created issue:', issue.data.html_url);
