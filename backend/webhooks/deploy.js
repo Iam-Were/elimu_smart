@@ -3,12 +3,20 @@
  * Handles GitHub Actions deployment triggers
  */
 
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
 const { execSync } = require('child_process');
 const app = express();
 
 app.use(express.json());
+
+// Log loaded environment for debugging
+console.log('🔐 Webhook server starting with:', {
+  hasWebhookToken: !!process.env.GH_WEBHOOK_TOKEN,
+  hasGHToken: !!process.env.GH_TOKEN,
+  env: process.env.NODE_ENV
+});
 
 // Middleware to verify GitHub token
 const verifyToken = (req, res, next) => {
