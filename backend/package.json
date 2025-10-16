@@ -27,7 +27,7 @@
     "express": "^5.1.0",
     "parse": "^7.0.1",
     "parse-dashboard": "^7.5.0",
-    "parse-server": "^7.5.1",
+    "parse-server": "^8.2.5",
     "pg": "^8.16.3",
     "zeptomail": "^6.2.1"
   },
