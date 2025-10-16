@@ -4,7 +4,7 @@
  * RBAC: Operations and Platform admins only
  */
 
-const Parse = require('parse/node');
+module.exports = function(Parse) {
 
 // ============================================
 // UNIVERSITY CRUD OPERATIONS
@@ -979,6 +979,4 @@ Parse.Cloud.define('deleteAssessmentQuestion', async (request) => {
   }
 });
 
-module.exports = {
-  // Exported for testing/documentation purposes
-};
+}; // End of module.exports function

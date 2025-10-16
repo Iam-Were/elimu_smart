@@ -6136,7 +6136,7 @@ Parse.Cloud.define('getMyQuestions', async (request) => {
 // ============================================
 // CONTENT MANAGEMENT FUNCTIONS
 // ============================================
-require('./contentManagementFunctions');
+require('./contentManagementFunctions')(Parse);
 
 // ============================================
 // CACHE MANAGEMENT FUNCTIONS
