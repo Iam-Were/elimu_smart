@@ -97,6 +97,7 @@ jobs:
             fi
 
       - name: Verify Self-Healing
+        id: verify
         if: steps.health.outputs.healthy == 'false'
         run: |
           echo "⏳ Verifying self-healing recovery..."
