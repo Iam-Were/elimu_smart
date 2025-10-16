@@ -35,5 +35,16 @@
   "devDependencies": {
     "nodemon": "^3.1.10",
     "sqlite3": "^5.1.7"
+  },
+  "overrides": {
+    "@babel/runtime": "^7.26.10",
+    "@babel/runtime-corejs3": "^7.26.10",
+    "crypto-js": "^4.2.0",
+    "ws": "^8.18.0",
+    "passport": "^0.7.0",
+    "cookie": "^0.7.2",
+    "tough-cookie": "^5.0.0",
+    "form-data": "^4.0.1",
+    "request": "npm:postman-request@^2.88.1-postman.39"
   }
 }
