@@ -948,7 +948,7 @@ export const FreeRiasecAssessment: React.FC = () => {
               <h3 className="text-lg font-semibold text-red-800">Unable to Start Assessment</h3>
               <p className="text-red-600">{error}</p>
               <Button 
-                onClick={startAssessment}
+                onClick={() => startAssessment()}
                 className="mt-2"
               >
                 Try Again
