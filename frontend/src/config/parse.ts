@@ -1,9 +1,7 @@
 // Parse SDK configuration for browser environment
 // Using static import to avoid Vite bundler issues
-import * as ParseSDK from 'parse';
-
-// Type-safe Parse reference
-const Parse = ParseSDK.default || ParseSDK;
+// Build: 1760631402
+import Parse from 'parse';
 
 let parseInitialized = false;
 
@@ -19,8 +17,6 @@ export const initializeParse = () => {
 
   console.log('🔧 Starting Parse SDK initialization...', {
     parseExists: !!Parse,
-    parseDefault: !!ParseSDK.default,
-    parseSDK: !!ParseSDK,
     hasInitialize: typeof Parse?.initialize === 'function',
     envVars: {
       appId: import.meta.env.VITE_PARSE_APP_ID || 'NOT_SET',
@@ -35,7 +31,6 @@ export const initializeParse = () => {
     if (!Parse || typeof Parse.initialize !== 'function') {
       console.error('❌ Parse SDK validation failed:', {
         Parse,
-        ParseSDK,
         typeofParse: typeof Parse,
         typeofInitialize: typeof Parse?.initialize
       });
