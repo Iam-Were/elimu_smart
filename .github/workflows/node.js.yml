@@ -73,6 +73,7 @@ jobs:
       contents: write
       pull-requests: write
     env:
+      # Secret configured in GitHub: https://github.com/Iam-Were/elimu_smart/settings/secrets/actions
       GH_MODELS_API: ${{ secrets.GH_MODELS_API }}
 
     steps:
