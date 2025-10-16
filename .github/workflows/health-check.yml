@@ -63,6 +63,7 @@ jobs:
         if: steps.health.outputs.healthy == 'false'
         uses: appleboy/ssh-action@v1.0.0
         with:
+          # Secrets configured in GitHub: https://github.com/Iam-Were/elimu_smart/settings/secrets/actions
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
