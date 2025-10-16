@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Parse from 'parse';
 import { useAuth } from './useAuth';
 import ParseApi from '../lib/parseApi';
 
@@ -52,6 +53,11 @@ export const useChat = () => {
     unreadCount: 0
   });
 
+  // Get session token for authenticated requests
+  const getSessionToken = useCallback(() => {
+    return Parse.User.current()?.getSessionToken() || undefined;
+  }, []);
+
   // Convert API response to ChatRoom
   const parseRoomToRoom = useCallback((data: Record<string, unknown>): ChatRoom => {
     const createdBy = data.createdBy as Record<string, unknown> | string | undefined;
@@ -98,7 +104,7 @@ export const useChat = () => {
     setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const result = await ParseApi.callCloudFunction('getChatRooms', {});
+      const result = await ParseApi.callCloudFunction('getChatRooms', {}, getSessionToken());
       const rooms = Array.isArray(result) ? result : [];
       const chatRooms = rooms.map(parseRoomToRoom);
 
@@ -125,7 +131,7 @@ export const useChat = () => {
     setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const result = await ParseApi.callCloudFunction('getChatMessages', { chatRoomId });
+      const result = await ParseApi.callCloudFunction('getChatMessages', { chatRoomId }, getSessionToken());
       const messages = Array.isArray(result) ? result : [];
       const chatMessages = messages.map(parseMessageToMessage);
 
@@ -137,7 +143,7 @@ export const useChat = () => {
 
       // Mark messages as read
       try {
-        await ParseApi.callCloudFunction('markMessagesAsRead', { chatRoomId });
+        await ParseApi.callCloudFunction('markMessagesAsRead', { chatRoomId }, getSessionToken());
       } catch (error) {
         console.warn('Failed to mark messages as read:', error);
       }
@@ -161,7 +167,7 @@ export const useChat = () => {
         chatRoomId,
         message,
         messageType
-      });
+      }, getSessionToken());
 
       // Reload messages to show the new message
       await loadMessages(chatRoomId);
@@ -185,7 +191,7 @@ export const useChat = () => {
         participantIds: [...participantIds, user.id],
         type,
         title
-      });
+      }, getSessionToken());
 
       const newRoom = parseRoomToRoom(result as unknown as Record<string, unknown>);
       setChatState(prev => ({
@@ -228,7 +234,7 @@ export const useChat = () => {
     setChatState(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const result = await ParseApi.callCloudFunction('getInboxConversations', { limit, skip });
+      const result = await ParseApi.callCloudFunction('getInboxConversations', { limit, skip }, getSessionToken());
       const conversations = Array.isArray(result) ? result : [];
 
       // Transform to ChatRoom format with unread counts
@@ -260,7 +266,7 @@ export const useChat = () => {
     if (!user || !searchTerm.trim()) return [];
 
     try {
-      const result = await ParseApi.callCloudFunction('searchConversations', { searchTerm, limit });
+      const result = await ParseApi.callCloudFunction('searchConversations', { searchTerm, limit }, getSessionToken());
       const rooms = Array.isArray(result) ? result : [];
       return rooms.map(parseRoomToRoom);
     } catch (error) {
@@ -274,7 +280,7 @@ export const useChat = () => {
     if (!user) return { success: false };
 
     try {
-      const result = await ParseApi.callCloudFunction('archiveConversation', { chatRoomId });
+      const result = await ParseApi.callCloudFunction('archiveConversation', { chatRoomId }, getSessionToken());
 
       // Remove archived room from state
       setChatState(prev => ({
@@ -304,7 +310,7 @@ export const useChat = () => {
     if (!user) return;
 
     try {
-      const result = await ParseApi.callCloudFunction('sendMultimediaMessage', params);
+      const result = await ParseApi.callCloudFunction('sendMultimediaMessage', params, getSessionToken());
 
       // Reload messages to show the new message
       await loadMessages(params.chatRoomId);
