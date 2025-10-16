@@ -905,6 +905,7 @@ Parse.Cloud.define('sendMultimediaMessage', async (request) => {
   chatMessage.set('messageType', messageType);
   chatMessage.set('timestamp', new Date());
   chatMessage.set('isRead', false);
+  chatMessage.set('status', 'sent'); // Initial status
   
   // Add multimedia fields if present
   if (fileUrl) {
@@ -933,6 +934,48 @@ Parse.Cloud.define('sendMultimediaMessage', async (request) => {
   await chatRoom.save(null, { useMasterKey: true });
   
   return savedMessage;
+});
+
+// Generate secure file upload URL
+Parse.Cloud.define('getFileUploadUrl', async (request) => {
+  const { fileName, fileType, fileSize } = request.params;
+  const user = request.user;
+  
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+  
+  // Validate file size (max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (fileSize > maxSize) {
+    throw new Parse.Error(Parse.Error.FILE_TOO_LARGE, 'File size exceeds 10MB limit');
+  }
+  
+  // Validate file type
+  const allowedTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+    'application/pdf', 
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain'
+  ];
+  
+  if (!allowedTypes.includes(fileType)) {
+    throw new Parse.Error(Parse.Error.INVALID_FILE_NAME, 'File type not allowed');
+  }
+  
+  // Generate unique filename
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(7);
+  const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const uniqueFileName = `${user.id}_${timestamp}_${randomStr}_${sanitizedName}`;
+  
+  // Return upload URL (Parse Server handles file storage)
+  return {
+    fileName: uniqueFileName,
+    uploadUrl: `${request.config.serverURL}/files/${uniqueFileName}`,
+    fileType: fileType
+  };
 });
 
 // ===== DYNAMIC DASHBOARD SYSTEM =====

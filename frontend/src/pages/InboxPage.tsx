@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import Parse from 'parse';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -51,6 +52,7 @@ import {
 } from 'lucide-react';
 import { useChat, type ChatRoom } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
+import ParseApi from '@/lib/parseApi';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -203,6 +205,7 @@ const InboxPage: React.FC = () => {
     error,
     connectionStatus,
     sendMessage,
+    sendMultimediaMessage,
     updateRoomMessagesStatus,
     setCurrentRoom,
     getInboxConversations,
@@ -402,11 +405,30 @@ const InboxPage: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !currentRoom || !user) return;
+    if ((!newMessage.trim() && !uploadedFile) || !currentRoom || !user) return;
 
     setIsSending(true);
     try {
-      await sendMessage(currentRoom.id, newMessage);
+      // Check if there's a file to send
+      if (uploadedFile && (uploadedFile as any).url) {
+        const fileType = uploadedFile.type.startsWith('image/') ? 'image' : 'file';
+        await sendMultimediaMessage({
+          chatRoomId: currentRoom.id,
+          message: newMessage.trim() || `Sent a ${fileType}`,
+          messageType: fileType,
+          fileUrl: (uploadedFile as any).url,
+          fileName: uploadedFile.name,
+          fileSize: uploadedFile.size
+        });
+        setUploadedFile(null);
+        setUploadProgress(0);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } else {
+        await sendMessage(currentRoom.id, newMessage);
+      }
+      
       setNewMessage('');
       toast.success('Message sent');
     } catch (error) {
@@ -463,10 +485,10 @@ const InboxPage: React.FC = () => {
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Invalid file type', {
-        description: 'Supported: Images, PDF, Word documents'
+        description: 'Supported: Images, PDF, Word documents, Text'
       });
       return;
     }
@@ -475,18 +497,55 @@ const InboxPage: React.FC = () => {
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          toast.success(`${file.name} uploaded successfully`);
-          return 100;
-        }
-        return prev + 10;
+    try {
+      // Get upload URL from backend
+      const uploadData = await ParseApi.callCloudFunction('getFileUploadUrl', {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      }) as any; // Type assertion for uploadData
+
+      // Simulate upload progress (in real implementation, use XMLHttpRequest for progress)
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      // Upload file to Parse Server (simplified - in production use multipart upload)
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        const parseFile = new Parse.File(uploadData.fileName, { base64: base64.split(',')[1] });
+        await parseFile.save();
+        
+        clearInterval(interval);
+        setUploadProgress(100);
+        setIsUploading(false);
+        
+        // Store file URL for sending
+        setUploadedFile({ 
+          ...file, 
+          url: parseFile.url(), 
+          parseFileName: uploadData.fileName 
+        } as any);
+        
+        toast.success(`${file.name} uploaded successfully`);
+      };
+      reader.readAsDataURL(file);
+      
+    } catch (error) {
+      console.error('File upload failed:', error);
+      setIsUploading(false);
+      setUploadedFile(null);
+      toast.error('Upload failed', {
+        description: 'Could not upload file. Please try again.'
       });
-    }, 200);
+    }
   };
 
   const removeUploadedFile = () => {

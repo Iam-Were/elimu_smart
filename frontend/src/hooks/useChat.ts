@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Parse from 'parse';
 import { useAuth } from './useAuth';
 import ParseApi from '../lib/parseApi';
+import { offlineQueue, isOnline, setupOfflineHandlers } from '../lib/offlineQueue';
 
 export interface ChatRoom {
   id: string;
@@ -165,6 +166,40 @@ export const useChat = () => {
   const sendMessage = useCallback(async (chatRoomId: string, message: string, messageType: 'text' | 'file' | 'image' = 'text') => {
     if (!user) return;
 
+    // Check if online
+    if (!isOnline()) {
+      console.log('📴 Offline: Queueing message');
+      const queueId = offlineQueue.enqueue({
+        chatRoomId,
+        message,
+        messageType,
+        timestamp: new Date()
+      });
+      
+      // Add optimistic message to UI
+      const optimisticMessage = {
+        id: queueId,
+        chatRoomId,
+        sender: {
+          id: user.id,
+          firstName: user.firstName || 'You',
+          lastName: user.lastName || ''
+        },
+        message,
+        messageType,
+        timestamp: new Date(),
+        isRead: false,
+        status: 'sending' as const
+      };
+      
+      setChatState(prev => ({
+        ...prev,
+        messages: [...prev.messages, optimisticMessage]
+      }));
+      
+      return;
+    }
+
     try {
       const result = await ParseApi.callCloudFunction('sendMessage', {
         chatRoomId,
@@ -177,6 +212,18 @@ export const useChat = () => {
       return result;
     } catch (error) {
       console.error('Failed to send message:', error);
+      
+      // If network error, queue the message
+      if (error instanceof Error && error.message.includes('network')) {
+        console.log('📴 Network error: Queueing message');
+        offlineQueue.enqueue({
+          chatRoomId,
+          message,
+          messageType,
+          timestamp: new Date()
+        });
+      }
+      
       setChatState(prev => ({
         ...prev,
         error: 'Failed to send message. Please try again.'
@@ -483,6 +530,34 @@ export const useChat = () => {
     };
   }, [user, chatState.currentRoom, parseMessageToMessage]);
 
+  // Process offline queue when connection restored
+  useEffect(() => {
+    const cleanup = setupOfflineHandlers(
+      () => {
+        // Online - process queue
+        console.log('🟢 Connection restored, processing offline queue');
+        offlineQueue.processQueue(async (queuedMsg) => {
+          await ParseApi.callCloudFunction('sendMessage', {
+            chatRoomId: queuedMsg.chatRoomId,
+            message: queuedMsg.message,
+            messageType: queuedMsg.messageType
+          }, getSessionToken());
+          
+          // Reload messages for the room if it's currently active
+          if (chatState.currentRoom?.id === queuedMsg.chatRoomId) {
+            await loadMessages(queuedMsg.chatRoomId);
+          }
+        });
+      },
+      () => {
+        // Offline
+        console.log('🔴 Connection lost - messages will be queued');
+      }
+    );
+
+    return cleanup;
+  }, [chatState.currentRoom, loadMessages]);
+
   return {
     rooms: chatState.rooms,
     currentRoom: chatState.currentRoom,
@@ -491,6 +566,7 @@ export const useChat = () => {
     error: chatState.error,
     unreadCount: chatState.unreadCount,
     connectionStatus: chatState.connectionStatus,
+    offlineQueueSize: offlineQueue.size(),
     sendMessage,
     sendMultimediaMessage,
     updateMessageStatus,
