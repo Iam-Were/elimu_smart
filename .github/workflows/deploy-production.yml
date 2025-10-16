@@ -79,6 +79,18 @@ jobs:
             rm -rf /tmp/elimu-deploy
             echo "✅ Frontend deployed"
 
+      - name: Run post-deployment restart script
+        id: post_deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🔄 Running post-deployment cache flush and restart..."
+            cd /root/elimu_smart/backend/scripts
+            bash post-deployment-restart.sh deployment-successful
+
       - name: Verify deployment
         id: verify
         continue-on-error: true
