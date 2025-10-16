@@ -199,6 +199,7 @@ const InboxPage: React.FC = () => {
     messages,
     isLoading,
     error,
+    connectionStatus,
     sendMessage,
     setCurrentRoom,
     getInboxConversations,
@@ -675,6 +676,14 @@ const InboxPage: React.FC = () => {
             <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-[#f97316]" />
               Messaging
+              {currentRoom && (
+                <Badge 
+                  variant={connectionStatus === 'connected' ? 'default' : connectionStatus === 'connecting' ? 'secondary' : 'destructive'}
+                  className="text-[10px] px-1.5 py-0"
+                >
+                  {connectionStatus === 'connected' ? '🟢' : connectionStatus === 'connecting' ? '🟡' : '🔴'}
+                </Badge>
+              )}
             </h1>
             <Button
               size="sm"

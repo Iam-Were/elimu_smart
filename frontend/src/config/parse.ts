@@ -50,12 +50,16 @@ export const initializeParse = () => {
     // Initialize Parse SDK with credentials
     Parse.initialize(appId, jsKey);
     Parse.serverURL = serverURL;
+    
+    // Enable Live Query WebSocket connection
+    Parse.liveQueryServerURL = import.meta.env.VITE_LIVE_QUERY_URL || 'ws://localhost:1337';
 
     parseInitialized = true;
     
     console.log('✅ Parse SDK initialized successfully:', {
       appId: Parse.applicationId,
       serverURL: Parse.serverURL,
+      liveQueryURL: Parse.liveQueryServerURL,
       environment: import.meta.env.MODE || 'production'
     });
     

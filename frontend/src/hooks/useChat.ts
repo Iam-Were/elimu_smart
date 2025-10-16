@@ -41,6 +41,7 @@ export interface ChatState {
   isLoading: boolean;
   error?: string;
   unreadCount: number;
+  connectionStatus: 'connected' | 'connecting' | 'disconnected';
 }
 
 export const useChat = () => {
@@ -49,6 +50,7 @@ export const useChat = () => {
     rooms: [],
     messages: [],
     isLoading: false,
+    connectionStatus: 'disconnected',
     error: undefined,
     unreadCount: 0
   });
@@ -325,18 +327,122 @@ export const useChat = () => {
     }
   }, [user, loadMessages]);
 
-  // Auto-refresh messages in current room (simple polling)
+  // Real-time message updates with Parse Live Query
   useEffect(() => {
     if (!user || !chatState.currentRoom) return;
 
-    const pollInterval = setInterval(() => {
-      loadMessages(chatState.currentRoom!.id);
-    }, 10000); // Poll every 10 seconds
+    const currentRoomId = chatState.currentRoom.id;
+    let subscription: any; // LiveQuerySubscription type not exported from Parse
+    let retryCount = 0;
+    let retryTimeout: NodeJS.Timeout;
+    let isUnmounting = false;
 
-    return () => {
-      clearInterval(pollInterval);
+    // Create query for messages in current room
+    const query = new Parse.Query('ChatMessage');
+    query.equalTo('chatRoomId', currentRoomId);
+
+    // Subscribe to live updates (async)
+    const setupSubscription = async () => {
+      if (isUnmounting) return;
+
+      try {
+        setChatState(prev => ({ ...prev, connectionStatus: 'connecting' }));
+        subscription = await query.subscribe();
+
+        // Reset retry count on successful connection
+        retryCount = 0;
+
+        // Connection established
+        subscription.on('open', () => {
+          setChatState(prev => ({ ...prev, connectionStatus: 'connected' }));
+          console.log(`🟢 Live Query connected for room: ${currentRoomId}`);
+        });
+
+        // Connection closed - attempt reconnect with exponential backoff
+        subscription.on('close', () => {
+          setChatState(prev => ({ ...prev, connectionStatus: 'disconnected' }));
+          console.log(`🔴 Live Query disconnected for room: ${currentRoomId}`);
+          
+          if (!isUnmounting) {
+            // Exponential backoff: 1s, 2s, 4s, 8s, 16s (max)
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 16000);
+            retryCount++;
+            
+            console.log(`⏳ Reconnecting in ${delay}ms (attempt ${retryCount})...`);
+            retryTimeout = setTimeout(() => setupSubscription(), delay);
+          }
+        });
+
+        // Handle new messages
+        subscription.on('create', (parseMessage: Parse.Object) => {
+          const newMessage = parseMessageToMessage(parseMessage.toJSON() as Record<string, unknown>);
+          
+          setChatState(prev => {
+            // Avoid duplicates
+            if (prev.messages.some(msg => msg.id === newMessage.id)) {
+              return prev;
+            }
+            return {
+              ...prev,
+              messages: [...prev.messages, newMessage]
+            };
+          });
+        });
+
+        // Handle message updates (reactions, edits, read status)
+        subscription.on('update', (parseMessage: Parse.Object) => {
+          const updatedMessage = parseMessageToMessage(parseMessage.toJSON() as Record<string, unknown>);
+          
+          setChatState(prev => ({
+            ...prev,
+            messages: prev.messages.map(msg => 
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            )
+          }));
+        });
+
+        // Handle message deletions
+        subscription.on('delete', (parseMessage: Parse.Object) => {
+          const deletedMessageId = parseMessage.id;
+          
+          setChatState(prev => ({
+            ...prev,
+            messages: prev.messages.filter(msg => msg.id !== deletedMessageId)
+          }));
+        });
+
+        // Handle subscription errors
+        subscription.on('error', (error: Error) => {
+          console.error('Live Query subscription error:', error);
+          // Optionally show error to user or fallback to polling
+        });
+
+        console.log(`🔴 Live Query subscription active for room: ${currentRoomId}`);
+      } catch (error) {
+        console.error('Failed to setup Live Query subscription:', error);
+        
+        // Retry on error with exponential backoff
+        if (!isUnmounting) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 16000);
+          retryCount++;
+          console.log(`⏳ Retrying in ${delay}ms after error...`);
+          retryTimeout = setTimeout(() => setupSubscription(), delay);
+        }
+      }
     };
-  }, [user, chatState.currentRoom, loadMessages]);
+
+    setupSubscription();
+
+    // Cleanup subscription on unmount or room change
+    return () => {
+      isUnmounting = true;
+      clearTimeout(retryTimeout);
+      if (subscription) {
+        subscription.unsubscribe();
+        console.log(`🔴 Live Query subscription closed for room: ${currentRoomId}`);
+      }
+    };
+  }, [user, chatState.currentRoom, parseMessageToMessage]);
 
   return {
     rooms: chatState.rooms,
@@ -345,6 +451,7 @@ export const useChat = () => {
     isLoading: chatState.isLoading,
     error: chatState.error,
     unreadCount: chatState.unreadCount,
+    connectionStatus: chatState.connectionStatus,
     sendMessage,
     sendMultimediaMessage,
     setCurrentRoom,

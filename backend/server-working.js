@@ -50,7 +50,7 @@ async function startServer() {
 
       // Enable live query for real-time updates
       liveQuery: {
-        classNames: ['User', 'StudentProgress', 'UniversityPlacement', 'CareerProgress', 'ChatMessage', 'CounselorSession']
+        classNames: ['User', 'StudentProgress', 'UniversityPlacement', 'CareerProgress', 'ChatMessage', 'ChatRoom', 'CounselorSession']
       },
 
       sessionLength: 31536000, // 1 year in seconds
@@ -111,17 +111,25 @@ async function startServer() {
 
     // Start the server
     const port = process.env.PORT || 1337;
-    app.listen(port, async () => {
+    const httpServer = require('http').createServer(app);
+    
+    // Create Live Query WebSocket server
+    const parseLiveQueryServer = ParseServer.createLiveQueryServer(httpServer);
+    console.log('✅ Parse Live Query WebSocket server created');
+    
+    httpServer.listen(port, async () => {
       console.log('✅ Elimu Smart Parse Server (Working Version) Started!');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log(`🔗 Parse Server: http://localhost:${port}/parse`);
-      console.log(`📊 Parse Dashboard: http://localhost:${port}/dashboard`);
+      console.log(`� Live Query WS: ws://localhost:${port}/`);
+      console.log(`�📊 Parse Dashboard: http://localhost:${port}/dashboard`);
       console.log(`🏥 Health Check: http://localhost:${port}/health`);
       console.log(`🧪 Test API: http://localhost:${port}/api/test`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('📊 Database: PostgreSQL (password="password")');
       console.log('☁️ Cloud Functions: Loaded (1881+ lines)');
       console.log('🌐 CORS: Frontend ports enabled');
+      console.log('🔴 Real-time: Live Query enabled for ChatMessage, ChatRoom');
       console.log(`🔐 Dashboard Login: ${process.env.DASHBOARD_USER || 'admin'} / ${process.env.DASHBOARD_PASS || 'admin123'}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('✅ Production server ready');
