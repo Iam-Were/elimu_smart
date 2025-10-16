@@ -1,6 +1,9 @@
 // Parse SDK configuration for browser environment
 // Using static import to avoid Vite bundler issues
-import Parse from 'parse';
+import * as ParseSDK from 'parse';
+
+// Type-safe Parse reference
+const Parse = ParseSDK.default || ParseSDK;
 
 let parseInitialized = false;
 
@@ -14,20 +17,25 @@ export const initializeParse = () => {
   }
 
   try {
+    // Validate Parse SDK is available
+    if (!Parse || typeof Parse.initialize !== 'function') {
+      throw new Error('Parse SDK not properly loaded. Check if parse package is installed correctly.');
+    }
+
     // Initialize Parse SDK with credentials
     Parse.initialize(
-      import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
-      import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
+      import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-production',
+      import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key'
     );
     
-    Parse.serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse';
+    Parse.serverURL = import.meta.env.VITE_PARSE_SERVER_URL || 'https://elimu-smart.co.ke/parse';
 
     parseInitialized = true;
     
     console.log('✅ Parse SDK initialized successfully:', {
       appId: Parse.applicationId,
       serverURL: Parse.serverURL,
-      environment: 'browser'
+      environment: import.meta.env.MODE || 'production'
     });
     
     return Parse;
@@ -55,3 +63,6 @@ export const isParseInitialized = () => parseInitialized;
 
 // Export Parse for direct use
 export { Parse };
+
+// Default export for compatibility
+export default Parse;
