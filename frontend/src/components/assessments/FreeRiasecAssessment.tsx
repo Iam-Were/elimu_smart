@@ -353,30 +353,48 @@ export const FreeRiasecAssessment: React.FC = () => {
   const [results, setResults] = useState<RiasecResults | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Separate loading states to prevent race conditions
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [assessmentLoading, setAssessmentLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMilestone, setShowMilestone] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
 
-  // Load questions from API on mount
+  // Combined loading state for UI
+  const isLoading = questionsLoading || assessmentLoading;
+
+  // Load questions from API on mount with timeout protection
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        setIsLoading(true);
-        const apiQuestions = await getRiasecQuestions();
-        const interleavedQuestions = interleaveQuestions(apiQuestions as RiasecQuestion[]);
-        setQuestions(interleavedQuestions);
+        setQuestionsLoading(true);
         setError(null);
+
+        // Add 10-second timeout protection
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+        );
+
+        const questionsPromise = getRiasecQuestions();
+
+        const apiQuestions = await Promise.race([
+          questionsPromise,
+          timeoutPromise
+        ]) as RiasecQuestion[];
+
+        const interleavedQuestions = interleaveQuestions(apiQuestions);
+        setQuestions(interleavedQuestions);
+        console.log(`✅ Loaded ${apiQuestions.length} RIASEC questions successfully`);
       } catch (err) {
         console.error('Failed to load RIASEC questions:', err);
-        setError('Failed to load assessment questions. Please refresh the page.');
+        setError('Failed to load assessment questions. Please refresh the page or try again.');
       } finally {
-        setIsLoading(false);
+        setQuestionsLoading(false);
       }
     };
 
     loadQuestions();
-  }, []);
+  }, []); // No dependencies - run once on mount
 
   const totalQuestions = questions.length;
   const progressPercentage = totalQuestions > 0 ? (currentQuestion / totalQuestions) * 100 : 0;
@@ -392,7 +410,7 @@ export const FreeRiasecAssessment: React.FC = () => {
   };
 
   const startAssessment = useCallback(async (forceNew: boolean = false) => {
-    setIsLoading(true);
+    setAssessmentLoading(true);
     setError(null);
 
     try {
@@ -410,8 +428,7 @@ export const FreeRiasecAssessment: React.FC = () => {
             resumedResponses[parseInt(qId)] = index;
           });
           setResponses(resumedResponses);
-          // No console logging - assessment resumes quietly
-          setIsLoading(false);
+          console.log(`✅ Resumed assessment ${resumeResult.assessment.id} at question ${resumeResult.assessment.currentQuestion}`);
           return; // Exit early - don't start new assessment
         }
       }
@@ -420,26 +437,34 @@ export const FreeRiasecAssessment: React.FC = () => {
       const result = await startRiasecAssessment();
       setAssessmentId(result.assessmentId);
 
-      // Log activity
+      // Log activity with local variable to avoid dependency
+      const currentTotalQuestions = questions.length;
       logActivity('free_riasec_assessment_started', {
         assessmentId: result.assessmentId,
-        totalQuestions,
+        totalQuestions: currentTotalQuestions,
         version: 'IIP_RIASEC_Markers',
         timestamp: new Date().toISOString(),
         isResume: false
       });
+      console.log(`✅ Started new assessment ${result.assessmentId} with ${currentTotalQuestions} questions`);
     } catch (error) {
-      console.warn('Failed to start/resume assessment, continuing with local:', error);
-      // Fallback to local assessment
-      setAssessmentId(`local-${Date.now()}`);
+      console.warn('Failed to start/resume assessment, using local fallback:', error);
+      // Always provide fallback to prevent blocking
+      const fallbackId = `local-${Date.now()}`;
+      setAssessmentId(fallbackId);
+      setError('Assessment initialized in offline mode. Your progress will be saved locally.');
+    } finally {
+      // Always clear loading state
+      setAssessmentLoading(false);
     }
+  }, [logActivity, questions.length]);
 
-    setIsLoading(false);
-  }, [logActivity, totalQuestions]);
-
+  // Start assessment ONLY after questions are loaded
   useEffect(() => {
-    startAssessment();
-  }, [startAssessment]);
+    if (!questionsLoading && questions.length > 0 && !assessmentId) {
+      startAssessment();
+    }
+  }, [questionsLoading, questions.length, assessmentId, startAssessment]);
 
   const handleResponse = async (questionId: number, response: number) => {
     const newResponses = { ...responses, [questionId]: response };
@@ -515,7 +540,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
 
     try {
-      setIsLoading(true);
+      setAssessmentLoading(true);
       const result = await completeRiasecAssessment(assessmentId);
 
       // Transform backend results to match frontend interface
@@ -546,7 +571,7 @@ export const FreeRiasecAssessment: React.FC = () => {
       // Fallback to local calculation
       calculateResults(responses);
     } finally {
-      setIsLoading(false);
+      setAssessmentLoading(false);
     }
   };
 
