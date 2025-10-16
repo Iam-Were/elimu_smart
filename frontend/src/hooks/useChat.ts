@@ -3,6 +3,8 @@ import Parse from 'parse';
 import { useAuth } from './useAuth';
 import ParseApi from '../lib/parseApi';
 import { offlineQueue, isOnline, setupOfflineHandlers } from '../lib/offlineQueue';
+import { pushNotificationService, shouldShowNotification } from '../lib/pushNotifications';
+import { chatAnalytics } from '../lib/chatAnalytics';
 
 export interface ChatRoom {
   id: string;
@@ -206,6 +208,10 @@ export const useChat = () => {
         message,
         messageType
       }, getSessionToken());
+
+      // Track analytics
+      chatAnalytics.trackMessageSent(messageType);
+      chatAnalytics.trackConversationActivity(chatRoomId);
 
       // Reload messages to show the new message
       await loadMessages(chatRoomId);
@@ -463,6 +469,29 @@ export const useChat = () => {
         subscription.on('create', (parseMessage: Parse.Object) => {
           const newMessage = parseMessageToMessage(parseMessage.toJSON() as Record<string, unknown>);
           
+          // Track analytics for received messages (not own messages)
+          if (user && newMessage.sender.id !== user.id) {
+            chatAnalytics.trackMessageReceived(newMessage.messageType);
+            chatAnalytics.trackConversationActivity(newMessage.chatRoomId);
+          }
+          
+          // Show notification if from another user and tab not focused
+          if (user && shouldShowNotification(newMessage.sender.id, user.id)) {
+            if (newMessage.messageType === 'text') {
+              pushNotificationService.notifyNewMessage(
+                `${newMessage.sender.firstName} ${newMessage.sender.lastName}`,
+                newMessage.message,
+                newMessage.chatRoomId
+              );
+            } else {
+              pushNotificationService.notifyNewFile(
+                `${newMessage.sender.firstName} ${newMessage.sender.lastName}`,
+                newMessage.fileName || 'File',
+                newMessage.chatRoomId
+              );
+            }
+          }
+          
           setChatState(prev => {
             // Avoid duplicates
             if (prev.messages.some(msg => msg.id === newMessage.id)) {
@@ -558,6 +587,17 @@ export const useChat = () => {
     return cleanup;
   }, [chatState.currentRoom, loadMessages]);
 
+  // Request notification permission
+  const requestNotificationPermission = useCallback(async () => {
+    const permission = await pushNotificationService.requestPermission();
+    return permission === 'granted';
+  }, []);
+
+  // Get analytics summary
+  const getAnalyticsSummary = useCallback(() => {
+    return chatAnalytics.getSummaryReport();
+  }, []);
+
   return {
     rooms: chatState.rooms,
     currentRoom: chatState.currentRoom,
@@ -567,6 +607,9 @@ export const useChat = () => {
     unreadCount: chatState.unreadCount,
     connectionStatus: chatState.connectionStatus,
     offlineQueueSize: offlineQueue.size(),
+    notificationPermission: pushNotificationService.getPermission(),
+    requestNotificationPermission,
+    getAnalyticsSummary,
     sendMessage,
     sendMultimediaMessage,
     updateMessageStatus,
