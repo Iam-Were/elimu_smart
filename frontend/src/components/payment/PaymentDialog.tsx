@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import {
   Dialog,
   DialogContent,
@@ -47,9 +48,97 @@ export function PaymentDialog({
 }: PaymentDialogProps) {
   const [open, setOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [checkoutRequestId, setCheckoutRequestId] = useState('');
+  const [paymentStep, setPaymentStep] = useState<'idle' | 'initiating' | 'waiting' | 'verifying'>('idle');
+
+  // Trigger confetti on payment success
+  useEffect(() => {
+    if (paymentStatus === 'success') {
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+
+      const randomInRange = (min: number, max: number) => {
+        return Math.random() * (max - min) + min;
+      };
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          return;
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        confetti({
+          particleCount,
+          startVelocity: 30,
+          spread: 360,
+          origin: {
+            x: randomInRange(0.1, 0.3),
+            y: Math.random() - 0.2
+          },
+          colors: ['#f97316', '#22c55e', '#3b82f6', '#eab308']
+        });
+        confetti({
+          particleCount,
+          startVelocity: 30,
+          spread: 360,
+          origin: {
+            x: randomInRange(0.7, 0.9),
+            y: Math.random() - 0.2
+          },
+          colors: ['#f97316', '#22c55e', '#3b82f6', '#eab308']
+        });
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
+  }, [paymentStatus]);
+
+  // Auto-format phone number as user types
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+
+    // Handle different input formats
+    let formatted = digits;
+    if (digits.startsWith('0')) {
+      // Convert 07XX to 2547XX
+      formatted = '254' + digits.slice(1);
+    } else if (digits.startsWith('254')) {
+      // Already in correct format
+      formatted = digits;
+    } else if (digits.startsWith('7') || digits.startsWith('1')) {
+      // Add 254 prefix
+      formatted = '254' + digits;
+    }
+
+    // Limit to 12 digits (254XXXXXXXXX)
+    return formatted.slice(0, 12);
+  };
+
+  // Validate phone number in real-time
+  const validatePhoneNumber = (value: string) => {
+    const phoneRegex = /^254[17]\d{8}$/;
+    return phoneRegex.test(value);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+    setIsPhoneValid(validatePhoneNumber(formatted));
+
+    // Clear error when user starts typing
+    if (errorMessage) {
+      setErrorMessage('');
+      setPaymentStatus('idle');
+    }
+  };
 
   const handlePayment = async () => {
     // Validate phone number
@@ -68,10 +157,11 @@ export function PaymentDialog({
     }
 
     setPaymentStatus('processing');
+    setPaymentStep('initiating');
     setErrorMessage('');
 
     try {
-      // Initiate payment
+      // Step 1: Initiate payment
       const Parse = await import('parse').then(m => m.default);
       const result = await Parse.Cloud.run('initiateSubscriptionPayment', {
         planId: plan.id,
@@ -80,6 +170,7 @@ export function PaymentDialog({
 
       if (result.success) {
         setCheckoutRequestId(result.checkoutRequestId);
+        setPaymentStep('waiting');
         // Start polling for payment status
         pollPaymentStatus(result.subscriptionId);
       } else {
@@ -90,6 +181,7 @@ export function PaymentDialog({
       const message = error instanceof Error ? error.message : 'Payment failed. Please try again.';
       setErrorMessage(message);
       setPaymentStatus('error');
+      setPaymentStep('idle');
       onError?.(message);
     }
   };
@@ -101,6 +193,11 @@ export function PaymentDialog({
     const poll = setInterval(async () => {
       attempts++;
 
+      // Update step after 10 seconds (user likely entering PIN)
+      if (attempts === 2) {
+        setPaymentStep('verifying');
+      }
+
       try {
         const Parse = await import('parse').then(m => m.default);
         const status = await Parse.Cloud.run('checkSubscriptionPaymentStatus', {
@@ -110,22 +207,26 @@ export function PaymentDialog({
         if (status.success && status.status === 'active') {
           clearInterval(poll);
           setPaymentStatus('success');
+          setPaymentStep('idle');
           setTimeout(() => {
             setOpen(false);
             onSuccess?.();
             // Reset form
             setPhoneNumber('');
+            setIsPhoneValid(false);
             setPaymentStatus('idle');
             setCheckoutRequestId('');
           }, 3000); // Show success for 3 seconds
         } else if (status.status === 'failed') {
           clearInterval(poll);
           setPaymentStatus('error');
+          setPaymentStep('idle');
           setErrorMessage(status.message || 'Payment failed');
           onError?.(status.message || 'Payment failed');
         } else if (attempts >= maxAttempts) {
           clearInterval(poll);
           setPaymentStatus('error');
+          setPaymentStep('idle');
           setErrorMessage('Payment timeout. Please check your subscription status.');
           onError?.('Payment timeout');
         }
@@ -134,6 +235,7 @@ export function PaymentDialog({
         if (attempts >= maxAttempts) {
           clearInterval(poll);
           setPaymentStatus('error');
+          setPaymentStep('idle');
           setErrorMessage('Unable to verify payment status');
           onError?.('Status check failed');
         }
@@ -200,35 +302,70 @@ export function PaymentDialog({
               M-Pesa Phone Number
             </Label>
             <div className="relative">
-              <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <span className="text-sm font-medium text-muted-foreground">🇰🇪 +254</span>
+              </div>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="254712345678"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="text-base h-12 pl-11"
+                placeholder="712345678"
+                value={phoneNumber.startsWith('254') ? phoneNumber.slice(3) : phoneNumber}
+                onChange={handlePhoneChange}
+                className="text-base h-12 pl-20 pr-10"
                 disabled={paymentStatus === 'processing'}
                 autoFocus
                 autoComplete="tel"
               />
+              {phoneNumber && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {isPhoneValid ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-orange-500" />
+                  )}
+                </div>
+              )}
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Info className="h-3 w-3" />
-              Format: 254XXXXXXXXX (include country code)
+              Enter your Safaricom number (7XX or 1XX format)
             </p>
           </div>
 
-          {/* Status Feedback */}
+          {/* Status Feedback with Progressive Steps */}
           {paymentStatus === 'processing' && (
             <Alert className="bg-blue-50 border-blue-200">
               <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
               <AlertDescription className="text-blue-900 ml-2">
-                <div className="space-y-1">
-                  <p className="font-semibold">STK Push Sent</p>
-                  <p className="text-sm">
-                    Check your phone and enter your M-Pesa PIN to complete payment
-                  </p>
+                <div className="space-y-2">
+                  {paymentStep === 'initiating' && (
+                    <>
+                      <p className="font-semibold">Step 1/3: Initiating Payment</p>
+                      <p className="text-sm">
+                        Sending M-Pesa prompt to {phoneNumber}...
+                      </p>
+                    </>
+                  )}
+                  {paymentStep === 'waiting' && (
+                    <>
+                      <p className="font-semibold">Step 2/3: Waiting for Confirmation</p>
+                      <p className="text-sm">
+                        Check your phone for M-Pesa notification and enter your PIN
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-blue-700">
+                        <Smartphone className="h-3 w-3" />
+                        <span>Look for a popup on your phone screen</span>
+                      </div>
+                    </>
+                  )}
+                  {paymentStep === 'verifying' && (
+                    <>
+                      <p className="font-semibold">Step 3/3: Verifying Payment</p>
+                      <p className="text-sm">
+                        Confirming payment with Safaricom M-Pesa...
+                      </p>
+                    </>
+                  )}
                   {checkoutRequestId && (
                     <p className="text-xs text-blue-700 mt-2">
                       Transaction ID: {checkoutRequestId.slice(0, 8)}...
@@ -240,13 +377,29 @@ export function PaymentDialog({
           )}
 
           {paymentStatus === 'success' && (
-            <Alert className="bg-green-50 border-green-200">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <Alert className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-300">
+              <CheckCircle2 className="h-6 w-6 text-green-600 animate-pulse" />
               <AlertDescription className="text-green-900 ml-2">
-                <p className="font-semibold">Payment Successful!</p>
-                <p className="text-sm mt-1">
-                  Your subscription is now active. Redirecting...
-                </p>
+                <div className="space-y-2">
+                  <p className="font-bold text-lg">🎉 Congratulations! Payment Successful!</p>
+                  <p className="text-sm">
+                    Welcome to <span className="font-semibold">{plan.name}</span>! Your premium features are now unlocked.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-3 text-xs">
+                    <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded-md">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Unlimited assessments</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded-md">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Counselor sessions</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded-md">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Priority support</span>
+                    </div>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
           )}
