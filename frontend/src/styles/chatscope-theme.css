@@ -1,0 +1,176 @@
+/* Chatscope Theme - Role-Agnostic with CSS Variables */
+
+/* Import Chatscope default styles */
+@import '@chatscope/chat-ui-kit-react/dist/default/styles.min.css';
+
+/* CSS Variables for Role-Based Theming */
+:root {
+  /* Student Theme (Orange - Default) */
+  --chat-primary: #f97316;
+  --chat-primary-hover: #ea580c;
+  --chat-primary-light: #fff5ed;
+  --chat-border-focus: #f97316;
+  --chat-ring-color: rgba(249, 115, 22, 0.1);
+}
+
+[data-theme='counselor'] {
+  /* Counselor Theme (Yellow) */
+  --chat-primary: #eab308;
+  --chat-primary-hover: #ca8a04;
+  --chat-primary-light: #fef9c3;
+  --chat-border-focus: #eab308;
+  --chat-ring-color: rgba(234, 179, 8, 0.1);
+}
+
+[data-theme='admin'] {
+  /* Admin Theme (Purple) */
+  --chat-primary: #9333ea;
+  --chat-primary-hover: #7e22ce;
+  --chat-primary-light: #f3e8ff;
+  --chat-border-focus: #9333ea;
+  --chat-ring-color: rgba(147, 51, 234, 0.1);
+}
+
+/* Override Chatscope Default Styles with Theme Variables */
+
+/* Outgoing Messages (User's messages) - Gradient background */
+.cs-message--outgoing .cs-message__content {
+  background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-primary-hover) 100%) !important;
+  color: white !important;
+  border-radius: 20px 20px 4px 20px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Incoming Messages (Other person's messages) */
+.cs-message--incoming .cs-message__content {
+  background: white !important;
+  color: #1f2937 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 20px 20px 20px 4px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Active Conversation Highlight */
+.cs-conversation--active {
+  background: var(--chat-primary-light) !important;
+  border-left: 4px solid var(--chat-primary) !important;
+}
+
+.cs-conversation:hover {
+  background: #f9fafb !important;
+}
+
+/* Message Input Focus State */
+.cs-message-input__content-editor-wrapper:focus-within {
+  border-color: var(--chat-border-focus) !important;
+  box-shadow: 0 0 0 3px var(--chat-ring-color) !important;
+}
+
+/* Send Button */
+.cs-button--send {
+  background: var(--chat-primary) !important;
+  color: white !important;
+}
+
+.cs-button--send:hover:not(:disabled) {
+  background: var(--chat-primary-hover) !important;
+}
+
+/* Typing Indicator */
+.cs-typing-indicator__dot {
+  background-color: var(--chat-primary) !important;
+}
+
+/* Scrollbar Styling */
+.cs-message-list__scroll-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cs-message-list__scroll-wrapper::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.cs-message-list__scroll-wrapper::-webkit-scrollbar-thumb {
+  background: var(--chat-primary);
+  border-radius: 10px;
+}
+
+.cs-message-list__scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--chat-primary-hover);
+}
+
+/* Conversation List Styling */
+.cs-conversation-list {
+  background: white !important;
+}
+
+/* Avatar Online Status */
+.cs-avatar__status--available {
+  background: #10b981 !important;
+}
+
+.cs-avatar__status--unavailable {
+  background: #6b7280 !important;
+}
+
+/* Message Timestamps */
+.cs-message__sent-time {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.75rem !important;
+}
+
+.cs-message--incoming .cs-message__sent-time {
+  color: #6b7280 !important;
+}
+
+/* Unread Badge */
+.cs-conversation__unread-dot {
+  background: var(--chat-primary) !important;
+}
+
+/* Search Input */
+.cs-search__input {
+  border-color: #e5e7eb !important;
+  border-radius: 8px !important;
+}
+
+.cs-search__input:focus {
+  border-color: var(--chat-border-focus) !important;
+  box-shadow: 0 0 0 3px var(--chat-ring-color) !important;
+  outline: none !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .cs-main-container {
+    height: 100vh !important;
+  }
+
+  .cs-sidebar {
+    width: 100% !important;
+  }
+
+  .cs-chat-container {
+    width: 100% !important;
+  }
+}
+
+/* Accessibility - Focus Indicators */
+.cs-button:focus-visible,
+.cs-conversation:focus-visible {
+  outline: 2px solid var(--chat-border-focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Smooth Transitions */
+.cs-conversation,
+.cs-message,
+.cs-button {
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Message Hover Effects */
+.cs-message:hover .cs-message__content {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}

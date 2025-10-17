@@ -31,6 +31,7 @@ const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(m =>
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
+const UnifiedInboxPage = lazy(() => import('./pages/UnifiedInboxPage'));
 
 // Assessment pages
 const FreeRiasecAssessment = lazy(() => import('./components/assessments/FreeRiasecAssessment'));
@@ -137,6 +138,7 @@ const AppContent: React.FC = () => {
           <Route path="/guidance/crisis" element={<CrisisSupport />} />
           <Route path="/guidance/book-session" element={<BookSession />} />
           <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/messages" element={<UnifiedInboxPage />} />
           <Route path="/student/quick-questions" element={<QuickQuestions />} />
           <Route path="/student/mentorship-matching" element={<MentorshipMatching />} />
           <Route path="/student/scholarship-search" element={<ScholarshipSearch />} />
