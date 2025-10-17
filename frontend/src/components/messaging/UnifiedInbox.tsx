@@ -19,10 +19,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useThemeContext } from '@/hooks/useThemeContext';
 import { toast } from 'sonner';
 import type { ThemeRole } from '@/types';
+import {
+  togglePinConversation as apiTogglePin,
+  toggleStarMessage as apiToggleStar,
+  toggleReaction as apiToggleReaction,
+  getUserChatPreferences,
+  migrateLocalStorageToBackend,
+} from '@/lib/chatPreferencesApi';
 
 const PINNED_STORAGE_KEY = 'elimu_smart_pinned_conversations';
 const STARRED_STORAGE_KEY = 'elimu_smart_starred_messages';
 const REACTIONS_STORAGE_KEY = 'elimu_smart_message_reactions';
+const MIGRATION_KEY = 'elimu_smart_preferences_migrated';
 
 interface MessageReaction {
   emoji: string;
@@ -59,169 +67,253 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
     document.documentElement.setAttribute('data-theme', currentTheme);
   }, [currentTheme]);
 
-  // Load persisted preferences from localStorage
+  // Load persisted preferences from backend (with migration)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !user) return;
 
-    try {
-      const storedPinned = localStorage.getItem(PINNED_STORAGE_KEY);
-      if (storedPinned) {
-        const parsed = JSON.parse(storedPinned) as string[];
-        if (Array.isArray(parsed)) {
-          setPinnedConversationIds(parsed);
+    const loadPreferences = async () => {
+      try {
+        // Check if migration has run
+        const hasMigrated = localStorage.getItem(MIGRATION_KEY);
+
+        if (!hasMigrated) {
+          console.log('🔄 Migrating localStorage preferences to backend...');
+          const result = await migrateLocalStorageToBackend();
+
+          if (result.success) {
+            localStorage.setItem(MIGRATION_KEY, 'true');
+            console.log(`✅ Migration complete: ${result.migrated} items migrated`);
+
+            // Clear old localStorage data after successful migration
+            localStorage.removeItem(PINNED_STORAGE_KEY);
+            localStorage.removeItem(STARRED_STORAGE_KEY);
+            localStorage.removeItem(REACTIONS_STORAGE_KEY);
+          }
+        }
+
+        // Load preferences from backend
+        const prefs = await getUserChatPreferences(currentRoom?.id);
+        setPinnedConversationIds(prefs.pinnedConversations);
+        setStarredMessagesByConversation(prefs.starredMessages);
+
+        console.log('✅ Loaded preferences from backend:', {
+          pinnedCount: prefs.pinnedConversations.length,
+          starredCount: Object.keys(prefs.starredMessages).length
+        });
+      } catch (error) {
+        console.warn('Failed to load backend preferences, using localStorage fallback:', error);
+
+        // Fallback to localStorage if backend fails
+        try {
+          const storedPinned = localStorage.getItem(PINNED_STORAGE_KEY);
+          if (storedPinned) {
+            const parsed = JSON.parse(storedPinned) as string[];
+            if (Array.isArray(parsed)) {
+              setPinnedConversationIds(parsed);
+            }
+          }
+
+          const storedStarred = localStorage.getItem(STARRED_STORAGE_KEY);
+          if (storedStarred) {
+            const parsed = JSON.parse(storedStarred) as Record<string, string[]>;
+            if (parsed && typeof parsed === 'object') {
+              setStarredMessagesByConversation(parsed);
+            }
+          }
+        } catch {
+          console.warn('localStorage fallback also failed');
         }
       }
+    };
 
-      const storedStarred = localStorage.getItem(STARRED_STORAGE_KEY);
-      if (storedStarred) {
-        const parsed = JSON.parse(storedStarred) as Record<string, string[]>;
-        if (parsed && typeof parsed === 'object') {
-          setStarredMessagesByConversation(parsed);
-        }
-      }
+    loadPreferences();
+  }, [user, currentRoom?.id]);
 
-      const storedReactions = localStorage.getItem(REACTIONS_STORAGE_KEY);
-      if (storedReactions) {
-        const parsed = JSON.parse(storedReactions) as Record<string, MessageReaction[]>;
-        if (parsed && typeof parsed === 'object') {
-          setMessageReactionsMap(parsed);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to load chat preferences:', error);
-    }
-  }, []);
+  // Removed localStorage persistence - now using backend sync
 
-  // Persist pinned conversations
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(pinnedConversationIds));
-    } catch {
-      console.warn('Failed to persist pinned conversations');
-    }
-  }, [pinnedConversationIds]);
+  // Handler: Toggle pinned conversation (optimistic UI + backend sync)
+  const togglePinnedConversation = useCallback(async (conversationId: string) => {
+    // Optimistic UI update
+    const previousState = pinnedConversationIds;
+    const isPinned = previousState.includes(conversationId);
 
-  // Persist starred messages
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STARRED_STORAGE_KEY, JSON.stringify(starredMessagesByConversation));
-    } catch {
-      console.warn('Failed to persist starred messages');
-    }
-  }, [starredMessagesByConversation]);
-
-  // Persist reactions
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(messageReactionsMap));
-    } catch {
-      console.warn('Failed to persist reactions');
-    }
-  }, [messageReactionsMap]);
-
-  // Handler: Toggle pinned conversation
-  const togglePinnedConversation = useCallback((conversationId: string) => {
     setPinnedConversationIds((prev) => {
-      const isPinned = prev.includes(conversationId);
       if (isPinned) {
-        toast.success('Conversation unpinned');
         return prev.filter(id => id !== conversationId);
       } else {
-        toast.success('Conversation pinned');
         return [conversationId, ...prev];
       }
     });
-  }, []);
 
-  // Handler: Toggle starred message
-  const toggleStarMessage = useCallback((messageId: string) => {
+    // Sync to backend
+    try {
+      const result = await apiTogglePin(conversationId);
+
+      if (result.success) {
+        toast.success(result.isPinned ? 'Conversation pinned' : 'Conversation unpinned');
+      }
+    } catch (error) {
+      console.warn('Failed to sync pin to backend, reverting:', error);
+
+      // Revert on error
+      setPinnedConversationIds(previousState);
+      toast.error('Failed to update pin status');
+    }
+  }, [pinnedConversationIds]);
+
+  // Handler: Toggle starred message (optimistic UI + backend sync)
+  const toggleStarMessage = useCallback(async (messageId: string) => {
     if (!currentRoom) return;
 
-    setStarredMessagesByConversation((prev) => {
-      const conversationStars = prev[currentRoom.id] || [];
-      const isStarred = conversationStars.includes(messageId);
+    // Optimistic UI update
+    const previousState = starredMessagesByConversation;
+    const conversationStars = previousState[currentRoom.id] || [];
+    const isStarred = conversationStars.includes(messageId);
 
+    setStarredMessagesByConversation((prev) => {
       if (isStarred) {
-        toast.success('Message unstarred');
         return {
           ...prev,
           [currentRoom.id]: conversationStars.filter(id => id !== messageId),
         };
       } else {
-        toast.success('Message starred');
         return {
           ...prev,
           [currentRoom.id]: [...conversationStars, messageId],
         };
       }
     });
-  }, [currentRoom]);
 
-  // Handler: Toggle reaction on message
-  const toggleReaction = useCallback((messageId: string, emoji: string) => {
+    // Sync to backend
+    try {
+      const result = await apiToggleStar(messageId, currentRoom.id);
+
+      if (result.success) {
+        toast.success(result.isStarred ? 'Message starred' : 'Message unstarred');
+      }
+    } catch (error) {
+      console.warn('Failed to sync star to backend, reverting:', error);
+
+      // Revert on error
+      setStarredMessagesByConversation(previousState);
+      toast.error('Failed to update star status');
+    }
+  }, [currentRoom, starredMessagesByConversation]);
+
+  // Handler: Toggle reaction on message (optimistic UI + backend sync)
+  const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
     if (!user?.id) return;
 
-    setMessageReactionsMap((prev) => {
-      const existingReactions = prev[messageId] || [];
-      const reactionIndex = existingReactions.findIndex(r => r.emoji === emoji);
+    // Optimistic UI update
+    const previousState = messageReactionsMap;
+    const existingReactions = previousState[messageId] || [];
+    const reactionIndex = existingReactions.findIndex(r => r.emoji === emoji);
 
-      if (reactionIndex === -1) {
-        // Add new reaction
-        return {
-          ...prev,
-          [messageId]: [...existingReactions, { emoji, users: [user.id], count: 1 }],
+    let optimisticState: Record<string, MessageReaction[]>;
+    let wasAdded = false;
+
+    if (reactionIndex === -1) {
+      // Add new reaction
+      optimisticState = {
+        ...previousState,
+        [messageId]: [...existingReactions, { emoji, users: [user.id], count: 1 }],
+      };
+      wasAdded = true;
+    } else {
+      // Toggle user in existing reaction
+      const reaction = existingReactions[reactionIndex];
+      const userIndex = reaction.users.indexOf(user.id);
+
+      if (userIndex === -1) {
+        // Add user to reaction
+        const updatedReaction = {
+          ...reaction,
+          users: [...reaction.users, user.id],
+          count: reaction.count + 1,
         };
+        optimisticState = {
+          ...previousState,
+          [messageId]: [
+            ...existingReactions.slice(0, reactionIndex),
+            updatedReaction,
+            ...existingReactions.slice(reactionIndex + 1),
+          ],
+        };
+        wasAdded = true;
       } else {
-        // Toggle user in existing reaction
-        const reaction = existingReactions[reactionIndex];
-        const userIndex = reaction.users.indexOf(user.id);
-
-        if (userIndex === -1) {
-          // Add user to reaction
+        // Remove user from reaction
+        const updatedUsers = reaction.users.filter(id => id !== user.id);
+        if (updatedUsers.length === 0) {
+          // Remove reaction if no users left
+          optimisticState = {
+            ...previousState,
+            [messageId]: existingReactions.filter((_, idx) => idx !== reactionIndex),
+          };
+        } else {
           const updatedReaction = {
             ...reaction,
-            users: [...reaction.users, user.id],
-            count: reaction.count + 1,
+            users: updatedUsers,
+            count: updatedUsers.length,
           };
-          return {
-            ...prev,
+          optimisticState = {
+            ...previousState,
             [messageId]: [
               ...existingReactions.slice(0, reactionIndex),
               updatedReaction,
               ...existingReactions.slice(reactionIndex + 1),
             ],
           };
-        } else {
-          // Remove user from reaction
-          const updatedUsers = reaction.users.filter(id => id !== user.id);
-          if (updatedUsers.length === 0) {
-            // Remove reaction if no users left
+        }
+        wasAdded = false;
+      }
+    }
+
+    setMessageReactionsMap(optimisticState);
+
+    // Sync to backend
+    try {
+      const result = await apiToggleReaction(messageId, emoji);
+
+      // Update with backend count (handles concurrent reactions from other users)
+      if (result.success) {
+        setMessageReactionsMap((prev) => {
+          const reactions = prev[messageId] || [];
+          const idx = reactions.findIndex(r => r.emoji === emoji);
+
+          if (result.reactionCount === 0) {
+            // Remove reaction entirely
             return {
               ...prev,
-              [messageId]: existingReactions.filter((_, idx) => idx !== reactionIndex),
+              [messageId]: reactions.filter(r => r.emoji !== emoji),
+            };
+          } else if (idx === -1) {
+            // Add new reaction with backend count
+            return {
+              ...prev,
+              [messageId]: [...reactions, { emoji, users: [user.id], count: result.reactionCount }],
             };
           } else {
-            const updatedReaction = {
-              ...reaction,
-              users: updatedUsers,
-              count: updatedUsers.length,
-            };
+            // Update existing reaction count
+            const updated = { ...reactions[idx], count: result.reactionCount };
             return {
               ...prev,
               [messageId]: [
-                ...existingReactions.slice(0, reactionIndex),
-                updatedReaction,
-                ...existingReactions.slice(reactionIndex + 1),
+                ...reactions.slice(0, idx),
+                updated,
+                ...reactions.slice(idx + 1),
               ],
             };
           }
-        }
+        });
       }
-    });
-  }, [user?.id]);
+    } catch (error) {
+      console.warn('Failed to sync reaction to backend, reverting:', error);
+
+      // Revert on error
+      setMessageReactionsMap(previousState);
+      toast.error('Failed to update reaction');
+    }
+  }, [user?.id, messageReactionsMap]);
 
   // Handler: Delete message (own messages only)
   const handleDeleteMessage = useCallback(async (_messageId: string) => {
