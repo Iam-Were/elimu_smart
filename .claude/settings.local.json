@@ -39,7 +39,8 @@
       "Bash(npm run lint:*)",
       "Read(//c/Users/c/Documents/elimu-smart/components/**)",
       "Read(//c/Users/c/Documents/elimu-smart/**)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git stash pop)"
     ],
     "deny": [],
     "ask": [],
