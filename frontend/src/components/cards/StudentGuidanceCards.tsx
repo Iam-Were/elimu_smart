@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
+import { useSubscription } from '@/hooks/useSubscription';
+import { SubscriptionPaywall } from '@/components/subscription/SubscriptionPaywall';
 
 interface StudentGuidanceCard {
   id: string;
@@ -128,6 +130,9 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { logActivity } = useDynamicDashboard();
+  const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallFeature, setPaywallFeature] = useState<'messaging' | 'sessions' | 'premium'>('messaging');
 
   // Update cards with backend data
   const getUpdatedCards = () => {
@@ -149,20 +154,58 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
 
   const displayedCards = getUpdatedCards().slice(0, showAll ? undefined : maxCards);
 
+  // Check if user has active subscription
+  const hasActiveSubscription = () => {
+    if (subscriptionLoading) return false;
+    if (!userSubscription) return false;
+
+    const isActive = userSubscription.status === 'active';
+    const notExpired = userSubscription.expiresAt
+      ? new Date(userSubscription.expiresAt) > new Date()
+      : false;
+
+    return isActive && notExpired;
+  };
+
   const handleCardClick = (card: StudentGuidanceCard) => {
     try {
       logActivity('guidance_card_click', {
         cardId: card.id,
-        cardTitle: card.title
+        cardTitle: card.title,
+        isPremium: card.isPremium,
+        hasSubscription: hasActiveSubscription()
       });
     } catch (error) {
       console.warn('Failed to log activity:', error);
     }
+
+    // Check if premium feature requires subscription
+    if (card.isPremium && !hasActiveSubscription()) {
+      // Determine paywall feature type
+      if (card.id === 'counselor-inbox') {
+        setPaywallFeature('messaging');
+      } else if (card.id === 'book-session') {
+        setPaywallFeature('sessions');
+      } else {
+        setPaywallFeature('premium');
+      }
+      setPaywallOpen(true);
+      return;
+    }
+
+    // Navigate normally if not premium or has subscription
     navigate(card.actionLink);
   };
 
   return (
     <div className={cn('space-y-4', className)}>
+      {/* Subscription Paywall Modal */}
+      <SubscriptionPaywall
+        isOpen={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        feature={paywallFeature}
+      />
+
       {/* Clean card grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {displayedCards.map((card) => (
@@ -208,13 +251,20 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
               </div>
               <Button
                 size="sm"
-                className="w-full bg-orange-600 hover:bg-orange-700"
+                className={cn(
+                  "w-full",
+                  card.isPremium && !hasActiveSubscription()
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                    : "bg-orange-600 hover:bg-orange-700"
+                )}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCardClick(card);
                 }}
               >
-                {card.actionText}
+                {card.isPremium && !hasActiveSubscription()
+                  ? card.actionText
+                  : card.actionText.replace('Upgrade to ', '').replace('View Pricing', 'Open')}
               </Button>
             </CardContent>
           </Card>
