@@ -224,13 +224,13 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
   }, [user?.id]);
 
   // Handler: Delete message (own messages only)
-  const handleDeleteMessage = useCallback(async (messageId: string) => {
+  const handleDeleteMessage = useCallback(async (_messageId: string) => {
     // TODO: Implement backend message deletion
     toast.error('Delete functionality coming soon');
   }, []);
 
   // Handler: Reply to message
-  const handleReplyToMessage = useCallback((messageId: string) => {
+  const handleReplyToMessage = useCallback((_messageId: string) => {
     // TODO: Implement reply functionality with message threading
     toast.info('Reply feature coming soon');
   }, []);
@@ -286,7 +286,7 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
         minute: '2-digit',
         hour12: true,
       }),
-      sender: msg.sender.name,
+      sender: `${msg.sender.firstName} ${msg.sender.lastName}`,
       direction: msg.sender.id === user?.id ? ('outgoing' as const) : ('incoming' as const),
       position: 'single' as const,
     }));
