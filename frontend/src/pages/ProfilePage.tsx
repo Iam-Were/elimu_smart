@@ -69,6 +69,10 @@ export const ProfilePage: React.FC = () => {
   const [loadingExperience, setLoadingExperience] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showImageUploader, setShowImageUploader] = useState(false);
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [_showAddProjectDialog, _setShowAddProjectDialog] = useState(false);
+  const [_showAddExperienceDialog, _setShowAddExperienceDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
@@ -135,6 +139,39 @@ export const ProfilePage: React.FC = () => {
     loadExperience();
   }, []);
 
+  // Calculate profile completion percentage
+  useEffect(() => {
+    if (!user) return;
+
+    let completionScore = 0;
+    const maxScore = 100;
+
+    // Profile picture (15 points)
+    if (user.profileImage) completionScore += 15;
+
+    // Basic info (25 points)
+    if (user.firstName && user.lastName) completionScore += 10;
+    if (user.email) completionScore += 10;
+    if (editFormData.location) completionScore += 5;
+
+    // About/Bio (15 points)
+    if (editFormData.bio && editFormData.bio.length > 50) completionScore += 15;
+
+    // Projects (20 points)
+    if (projects.length > 0) completionScore += 10;
+    if (projects.length >= 2) completionScore += 10;
+
+    // Experience (15 points)
+    if (experience.length > 0) completionScore += 10;
+    if (experience.length >= 2) completionScore += 5;
+
+    // Skills (10 points)
+    if (skills.length > 0) completionScore += 5;
+    if (skills.length >= 5) completionScore += 5;
+
+    setProfileCompletion(Math.min(completionScore, maxScore));
+  }, [user, projects, experience, skills, editFormData]);
+
   // Handle form input changes
   const handleInputChange = (field: keyof typeof editFormData, value: string) => {
     setEditFormData(prev => ({
@@ -200,21 +237,67 @@ export const ProfilePage: React.FC = () => {
           {/* Profile Section */}
           <CardContent className="relative -mt-16 pb-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Profile Picture */}
-              <div className="relative">
-                <Avatar className="h-32 w-32 border-4 border-white bg-white">
+              {/* Profile Picture with Completion Ring */}
+              <div className="relative group">
+                {/* Completion Ring (SVG Circle) */}
+                <svg className="absolute inset-0 w-36 h-36 -left-2 -top-2" viewBox="0 0 144 144">
+                  {/* Background circle */}
+                  <circle
+                    cx="72"
+                    cy="72"
+                    r="68"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="4"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="72"
+                    cy="72"
+                    r="68"
+                    fill="none"
+                    stroke={profileCompletion >= 80 ? '#10b981' : profileCompletion >= 50 ? '#f59e0b' : '#f97316'}
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(profileCompletion / 100) * 427} 427`}
+                    transform="rotate(-90 72 72)"
+                    className="transition-all duration-500"
+                  />
+                </svg>
+
+                {/* Avatar */}
+                <Avatar className="h-32 w-32 border-4 border-white bg-white relative z-10">
                   <AvatarImage src={user?.profileImage} />
                   <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-2xl`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
                   </AvatarFallback>
                 </Avatar>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-white"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
+
+                {/* Completion Badge */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20">
+                  <Badge
+                    className={`text-xs font-semibold px-2 py-0.5 ${
+                      profileCompletion >= 80
+                        ? 'bg-green-100 text-green-700 border-green-300'
+                        : profileCompletion >= 50
+                        ? 'bg-amber-100 text-amber-700 border-amber-300'
+                        : 'bg-orange-100 text-orange-700 border-orange-300'
+                    }`}
+                  >
+                    {profileCompletion}%
+                  </Badge>
+                </div>
+
+                {/* Camera Button - Shows on Hover */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+                  <Button
+                    size="sm"
+                    onClick={() => setShowImageUploader(!showImageUploader)}
+                    className="h-10 w-10 p-0 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm"
+                  >
+                    <Camera className="h-5 w-5 text-gray-700" />
+                  </Button>
+                </div>
               </div>
 
               {/* Profile Info */}
@@ -259,53 +342,51 @@ export const ProfilePage: React.FC = () => {
                           Edit profile
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
+                      <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                           <DialogTitle>Edit Profile</DialogTitle>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="firstName" className="text-right">
-                              First Name
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName">First Name</Label>
                             <Input
                               id="firstName"
                               value={editFormData.firstName}
                               onChange={(e) => handleInputChange('firstName', e.target.value)}
-                              className="col-span-3"
+                              placeholder="Enter your first name"
                             />
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="lastName" className="text-right">
-                              Last Name
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName">Last Name</Label>
                             <Input
                               id="lastName"
                               value={editFormData.lastName}
                               onChange={(e) => handleInputChange('lastName', e.target.value)}
-                              className="col-span-3"
+                              placeholder="Enter your last name"
                             />
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="location" className="text-right">
-                              Location
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor="location">Location</Label>
                             <Input
                               id="location"
                               value={editFormData.location}
                               onChange={(e) => handleInputChange('location', e.target.value)}
-                              className="col-span-3"
+                              placeholder="e.g., Nairobi, Kenya"
                             />
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="bio" className="text-right">
-                              Bio
+                          <div className="space-y-2">
+                            <Label htmlFor="bio">
+                              About
+                              <span className="text-xs text-muted-foreground ml-2">
+                                ({editFormData.bio.length}/200 characters)
+                              </span>
                             </Label>
                             <Textarea
                               id="bio"
                               value={editFormData.bio}
                               onChange={(e) => handleInputChange('bio', e.target.value)}
-                              className="col-span-3"
+                              className="min-h-[100px]"
+                              maxLength={200}
                               placeholder={user?.role === 'counselor'
                                 ? 'Share your experience and approach to career counseling...'
                                 : 'Tell us about yourself and your career goals...'}
@@ -325,7 +406,7 @@ export const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quick Stats */}
+                {/* Quick Stats - Dynamic Data */}
                 <div className="flex gap-6 mt-4 pt-4 border-t">
                   {user?.role === 'counselor' ? (
                     <>
@@ -349,19 +430,25 @@ export const ProfilePage: React.FC = () => {
                   ) : (
                     <>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">3</div>
+                        <div className="text-lg font-semibold">{loadingProjects ? '...' : projects.length}</div>
                         <div className="text-xs text-gray-500">Projects</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">2</div>
+                        <div className="text-lg font-semibold">{loadingExperience ? '...' : experience.length}</div>
                         <div className="text-xs text-gray-500">Experiences</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">8</div>
+                        <div className="text-lg font-semibold">{skills.length}</div>
                         <div className="text-xs text-gray-500">Skills</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">82%</div>
+                        <div className={`text-lg font-semibold ${
+                          profileCompletion >= 80 ? 'text-green-600' :
+                          profileCompletion >= 50 ? 'text-amber-600' :
+                          'text-orange-600'
+                        }`}>
+                          {profileCompletion}%
+                        </div>
                         <div className="text-xs text-gray-500">Profile strength</div>
                       </div>
                     </>
@@ -371,6 +458,89 @@ export const ProfilePage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Image Uploader - Collapsible */}
+        {showImageUploader && user?.role !== 'counselor' && (
+          <Card className="mb-6 border-orange-200 bg-gradient-to-br from-orange-50/50 to-white">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-orange-600" />
+                  Update Profile Picture
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowImageUploader(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ImageUploader
+                currentImage={user?.profileImage}
+                userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
+                onUploadSuccess={handleImageUpload}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Profile Completion Suggestions */}
+        {profileCompletion < 100 && user?.role !== 'counselor' && (
+          <Card className="mb-6 border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Target className="h-5 w-5 text-blue-600" />
+                Strengthen Your Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                {!user?.profileImage && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <button
+                      onClick={() => setShowImageUploader(true)}
+                      className="hover:underline text-left"
+                    >
+                      Add a profile picture (+15%)
+                    </button>
+                  </div>
+                )}
+                {(!editFormData.bio || editFormData.bio.length < 50) && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span>Write an About section (+15%)</span>
+                  </div>
+                )}
+                {projects.length === 0 && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span>Add your first project (+10%)</span>
+                  </div>
+                )}
+                {experience.length === 0 && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span>Add work experience or internship (+10%)</span>
+                  </div>
+                )}
+                {skills.length === 0 && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span>List your skills (+5%)</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Complete profiles get 3x more views from counselors and opportunities
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Counselor-specific content */}
         {user?.role === 'counselor' ? (
@@ -464,24 +634,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Keep existing student content for non-counselor users */}
-
-            {/* Profile Picture Card */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-5 w-5 text-orange-600" />
-                  Profile Picture
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageUploader
-                  currentImage={user?.profileImage}
-                  userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
-                  onUploadSuccess={handleImageUpload}
-                />
-              </CardContent>
-            </Card>
+            {/* Student Profile Content */}
 
             <Card className="mb-6">
           <CardHeader>
@@ -521,7 +674,12 @@ export const ProfilePage: React.FC = () => {
                 <Code className="h-5 w-5 text-orange-600" />
                 Projects
               </CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => _setShowAddProjectDialog(true)}
+              >
                 <Code className="h-4 w-4" />
                 Add project
               </Button>
@@ -533,10 +691,21 @@ export const ProfilePage: React.FC = () => {
                 Loading projects...
               </div>
             ) : projects.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Code className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium mb-1">No projects yet</p>
-                <p className="text-sm">Add your first project to showcase your work</p>
+              <div className="text-center py-12 bg-gradient-to-br from-orange-50/30 to-white rounded-lg border-2 border-dashed border-orange-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                  <Code className="h-8 w-8 text-white" />
+                </div>
+                <p className="font-semibold text-lg mb-2">Showcase Your Work</p>
+                <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Add projects to demonstrate your skills and stand out to counselors and universities
+                </p>
+                <Button
+                  onClick={() => _setShowAddProjectDialog(true)}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
+                >
+                  <Code className="h-4 w-4 mr-2" />
+                  Add Your First Project
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -587,7 +756,12 @@ export const ProfilePage: React.FC = () => {
                 <Briefcase className="h-5 w-5 text-orange-600" />
                 Experience
               </CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => _setShowAddExperienceDialog(true)}
+              >
                 <Briefcase className="h-4 w-4" />
                 Add experience
               </Button>
@@ -599,10 +773,21 @@ export const ProfilePage: React.FC = () => {
                 Loading experience...
               </div>
             ) : experience.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium mb-1">No experience yet</p>
-                <p className="text-sm">Add your work experience, internships, or volunteer work</p>
+              <div className="text-center py-12 bg-gradient-to-br from-blue-50/30 to-white rounded-lg border-2 border-dashed border-blue-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <Briefcase className="h-8 w-8 text-white" />
+                </div>
+                <p className="font-semibold text-lg mb-2">Build Your Experience</p>
+                <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Add internships, volunteer work, or part-time jobs to strengthen your profile
+                </p>
+                <Button
+                  onClick={() => _setShowAddExperienceDialog(true)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
+                >
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  Add Your First Experience
+                </Button>
               </div>
             ) : (
               <div className="space-y-6">
@@ -649,10 +834,20 @@ export const ProfilePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             {skills.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium mb-1">No skills yet</p>
-                <p className="text-sm">Add your technical and soft skills</p>
+              <div className="text-center py-12 bg-gradient-to-br from-green-50/30 to-white rounded-lg border-2 border-dashed border-green-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
+                <p className="font-semibold text-lg mb-2">Highlight Your Skills</p>
+                <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Add technical and soft skills to show what you're good at
+                </p>
+                <Button
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  Add Your Skills
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

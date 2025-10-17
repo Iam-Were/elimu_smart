@@ -36,12 +36,13 @@ export const useTheme = (): UseThemeReturn => {
   });
 
   const [isDark, setIsDark] = useState(() => {
-    // Get initial dark mode from localStorage or system preference
+    // Get initial dark mode from localStorage
     const savedDarkMode = localStorage.getItem('elimu-dark-mode');
     if (savedDarkMode !== null) {
       return savedDarkMode === 'true';
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Default to light mode (don't use system preference to avoid mobile issues)
+    return false;
   });
 
   // Apply theme when component mounts or theme changes
@@ -52,28 +53,27 @@ export const useTheme = (): UseThemeReturn => {
 
   // Apply dark mode when it changes
   useEffect(() => {
+    const root = document.documentElement;
     if (isDark) {
       document.body.classList.add('dark');
+      root.classList.add('dark');
     } else {
       document.body.classList.remove('dark');
+      root.classList.remove('dark');
     }
     localStorage.setItem('elimu-dark-mode', String(isDark));
   }, [isDark]);
 
-  // Listen for system dark mode changes
+  // Remove system dark mode listener to prevent mobile conflicts
+  // Users must explicitly toggle dark mode instead of following system preference
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if user hasn't manually set dark mode preference
-      const savedDarkMode = localStorage.getItem('elimu-dark-mode');
-      if (savedDarkMode === null) {
-        setIsDark(e.matches);
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    // Force light mode on initial load if no preference is saved (mobile fix)
+    const savedDarkMode = localStorage.getItem('elimu-dark-mode');
+    if (savedDarkMode === null) {
+      const root = document.documentElement;
+      document.body.classList.remove('dark');
+      root.classList.remove('dark');
+    }
   }, []);
 
   const setTheme = useCallback((theme: ThemeRole) => {

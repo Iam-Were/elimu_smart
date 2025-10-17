@@ -522,6 +522,62 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         </CardContent>
       </Card>
 
+      {/* Resume Where You Left Off - For In-Progress Assessments */}
+      {dynamicCards.filter(card => card.status === 'in-progress' && card.progress > 0 && card.progress < 100).length > 0 && (
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold text-blue-900">Resume Where You Left Off</CardTitle>
+                <p className="text-sm text-blue-700">Continue your assessments to unlock personalized insights</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dynamicCards
+                .filter(card => card.status === 'in-progress' && card.progress > 0 && card.progress < 100)
+                .map((card) => (
+                  <div
+                    key={card.id}
+                    onClick={() => handleCardClick(card)}
+                    className="group p-4 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-12 h-12 rounded-lg flex items-center justify-center shadow-md flex-shrink-0",
+                        `bg-gradient-to-br ${card.iconGradient}`
+                      )}>
+                        {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-slate-800 mb-1">{card.title}</h4>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                            <Clock className="h-3 w-3 mr-1" />
+                            In Progress
+                          </Badge>
+                          <span className="text-xs text-slate-600">{card.timeCommitment} remaining</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-600 font-medium">{card.progress}% complete</span>
+                            <span className="text-blue-600 font-bold">Continue →</span>
+                          </div>
+                          <Progress value={card.progress} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Student Assessment Cards Grid - Bento Layout */}
       <div className={getBentoGridClasses()}>
         {displayCards.map((card) => {
@@ -546,17 +602,17 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               )}
               
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
+              <CardHeader className="pb-4 text-center">
+                <div className="flex flex-col items-center gap-3">
                   <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
                     `bg-gradient-to-br ${card.iconGradient}`
                   )}>
                     {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
                   </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold text-slate-800">{card.title}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 w-full">
+                    <CardTitle className="text-lg font-semibold text-slate-800 text-center">{card.title}</CardTitle>
+                    <div className="flex items-center justify-center gap-2 mt-1">
                       <Badge
                         variant="secondary"
                         className={cn(statusConfig.className, "text-xs")}
@@ -569,13 +625,13 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-3">
-                <CardDescription className="text-sm text-slate-600">
+              <CardContent className="space-y-3 text-center">
+                <CardDescription className="text-sm text-slate-600 text-center">
                   {card.studentFocusedDescription}
                 </CardDescription>
 
                 {/* Student Benefit */}
-                <p className="text-sm text-orange-700 font-medium">{card.studentBenefit}</p>
+                <p className="text-sm text-orange-700 font-medium text-center">{card.studentBenefit}</p>
 
                 {/* Match Score for completed assessments */}
                 {card.matchScore !== undefined && card.status === 'completed' && (

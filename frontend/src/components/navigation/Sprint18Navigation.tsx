@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   NavigationMenu,
@@ -50,6 +50,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { currentTheme } = useThemeContext();
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const getThemeColor = (theme: ThemeRole) => {
     return getRoleColor(theme);
@@ -63,17 +65,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     };
   };
 
-  const getActiveTailwindClasses = () => {
-    // Get base color name from current theme for Tailwind classes
-    const colorMap = {
-      'student': 'orange',
-      'counselor': 'yellow',
-      'admin': 'purple'
-    } as const;
-
-    const colorName = colorMap[currentTheme] || 'orange';
-    return `bg-gradient-to-r from-${colorName}-500 to-${colorName}-600 text-white hover:from-${colorName}-600 hover:to-${colorName}-700`;
-  };
+  // Removed unused function - using getActiveNavStyles() with inline styles instead
 
   const getHeaderStyles = () => {
     const baseColor = getThemeColor(currentTheme);
@@ -121,6 +113,32 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     return location.pathname.startsWith(path);
   };
 
+  // Scroll detection for header animations (LinkedIn style)
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      // Clear existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
+      // Set new timeout to show header after scrolling stops
+      const newTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 150);
+
+      setScrollTimeout(newTimeout);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+    };
+  }, [scrollTimeout]);
 
   return (
     <>
@@ -154,8 +172,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           }}
         ></div>
         <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
-        {/* Enhanced Logo with glass effects */}
-        <div className="flex items-center space-x-4">
+        {/* Enhanced Logo with glass effects - Scroll-based animations */}
+        <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
           <Link to="/" className="flex items-center space-x-2 group">
             <div
               className="glass-card flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
@@ -174,84 +192,87 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           </Link>
         </div>
 
-        {/* 4-Section Navigation - Sprint 18 Requirement */}
-        <NavigationMenu className="hidden md:flex">
+        {/* 4-Section Navigation - Sprint 18 Requirement - Scroll-based animations */}
+        <NavigationMenu className={cn("hidden md:flex transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
           <NavigationMenuList className="gap-1">
-            {/* Home Section */}
+            {/* Home Section - Icon Above Label (LinkedIn Style) */}
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link
                   to={user?.role === 'counselor' ? '/counselor/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                   className={cn(
-                    "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && `bg-gradient-to-r from-${getThemeColor(currentTheme).replace('#', '')}-500 to-${getThemeColor(currentTheme).replace('#', '')}-600 text-white hover:from-${getThemeColor(currentTheme).replace('#', '')}-600 hover:to-${getThemeColor(currentTheme).replace('#', '')}-700`
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && "shadow-md scale-110"
                   )}
                   style={
                     (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) ? getActiveNavStyles() : {}
                   }
                 >
-                  <Home className="mr-2 h-4 w-4" />
-                  {user?.role === 'admin' ? 'Admin Panel' : 'Home'}
+                  <Home className="h-6 w-6" />
+                  <span className="text-xs font-medium mt-1">{user?.role === 'admin' ? 'Admin Panel' : 'Home'}</span>
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
 
             {/* Role-specific navigation sections */}
             {user?.role !== 'counselor' && user?.role !== 'admin' && (
-              /* Assessment Section - Students Only - Simplified Single Link */
+              /* Assessment Section - Students Only - Icon Above Label */
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <Link
                     to="/assessment"
                     className={cn(
-                      "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                      isActive("/assessment") && getActiveTailwindClasses()
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive("/assessment") && "shadow-md scale-110"
                     )}
+                    style={isActive("/assessment") ? getActiveNavStyles() : {}}
                   >
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Assessment
+                    <GraduationCap className="h-6 w-6" />
+                    <span className="text-xs font-medium mt-1">Assessment</span>
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             )}
 
             {user?.role !== 'counselor' && user?.role !== 'admin' && (
-              /* Guidance Section - Students Only */
+              /* Guidance Section - Students Only - Icon Above Label */
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <Link
                     to="/guidance"
                     className={cn(
-                      "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                      isActive("/guidance") && getActiveTailwindClasses()
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive("/guidance") && "shadow-md scale-110"
                     )}
+                    style={isActive("/guidance") ? getActiveNavStyles() : {}}
                   >
-                    <Users className="mr-2 h-4 w-4" />
-                    Guidance
+                    <Users className="h-6 w-6" />
+                    <span className="text-xs font-medium mt-1">Guidance</span>
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             )}
 
-            {/* Messages Section - All Users */}
+            {/* Messages Section - All Users - Icon Above Label */}
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link
                   to="/inbox"
                   className={cn(
-                    "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
-                    isActive("/inbox") && getActiveTailwindClasses()
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                    isActive("/inbox") && "shadow-md scale-110"
                   )}
+                  style={isActive("/inbox") ? getActiveNavStyles() : {}}
                 >
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Messages
+                  <MessageSquare className="h-6 w-6" />
+                  <span className="text-xs font-medium mt-1">Messages</span>
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
 
 
 
-            {/* Counselor-specific navigation */}
+            {/* Counselor-specific navigation - Icon Above Label */}
             {user?.role === 'counselor' && (
               <>
                 <NavigationMenuItem>
@@ -259,49 +280,52 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/students"
                       className={cn(
-                        "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/counselor") && getActiveTailwindClasses()
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        isActive("/counselor") && "shadow-md scale-110"
                       )}
+                      style={isActive("/counselor") ? getActiveNavStyles() : {}}
                     >
-                      <Users className="mr-2 h-4 w-4" />
-                      My Students
+                      <Users className="h-6 w-6" />
+                      <span className="text-xs font-medium mt-1">My Students</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
-                
+
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
                       to="/counselor/sessions"
                       className={cn(
-                        "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#sessions" && getActiveTailwindClasses()
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        location.pathname.includes("counselor") && location.hash === "#sessions" && "shadow-md scale-110"
                       )}
+                      style={location.pathname.includes("counselor") && location.hash === "#sessions" ? getActiveNavStyles() : {}}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Sessions
+                      <Calendar className="h-6 w-6" />
+                      <span className="text-xs font-medium mt-1">Sessions</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
-                
+
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
                       to="/counselor/analytics"
                       className={cn(
-                        "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#analytics" && getActiveTailwindClasses()
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        location.pathname.includes("counselor") && location.hash === "#analytics" && "shadow-md scale-110"
                       )}
+                      style={location.pathname.includes("counselor") && location.hash === "#analytics" ? getActiveNavStyles() : {}}
                     >
-                      <BarChart3 className="mr-2 h-4 w-4" />
-                      Analytics
+                      <BarChart3 className="h-6 w-6" />
+                      <span className="text-xs font-medium mt-1">Analytics</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               </>
             )}
 
-            {/* Admin-specific navigation */}
+            {/* Admin-specific navigation - Icon Above Label */}
             {user?.role === 'admin' && (
               <>
                 <NavigationMenuItem>
@@ -309,27 +333,29 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/admin/users"
                       className={cn(
-                        "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/admin/users") && "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        isActive("/admin/users") && "shadow-md scale-110"
                       )}
+                      style={isActive("/admin/users") ? getActiveNavStyles() : {}}
                     >
-                      <Users className="mr-2 h-4 w-4" />
-                      User Management
+                      <Users className="h-6 w-6" />
+                      <span className="text-xs font-medium mt-1">User Mgmt</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
-                
+
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
                       to="/admin/analytics"
                       className={cn(
-                        "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/admin/analytics") && "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        isActive("/admin/analytics") && "shadow-md scale-110"
                       )}
+                      style={isActive("/admin/analytics") ? getActiveNavStyles() : {}}
                     >
-                      <BarChart3 className="mr-2 h-4 w-4" />
-                      System Analytics
+                      <BarChart3 className="h-6 w-6" />
+                      <span className="text-xs font-medium mt-1">Analytics</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -339,8 +365,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* LinkedIn-Style Profile Section - Sprint 18 Requirement */}
-        <div className="flex items-center space-x-2">
+        {/* LinkedIn-Style Profile Section - Sprint 18 Requirement - Scroll-based animations */}
+        <div className={cn("flex items-center space-x-2 transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
           {/* Notifications */}
           <NotificationCenter />
 

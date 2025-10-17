@@ -171,57 +171,51 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             className="cursor-pointer hover:shadow-lg transition-all duration-200 border-orange-200"
             onClick={() => handleCardClick(card)}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center space-x-3">
-                <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110",
-                  `bg-gradient-to-br ${card.iconGradient}`
-                )}>
-                  {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
-                </div>
-                <div>
-                  <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                    {card.title}
-                    {card.isPremium && (
-                      <Lock className="h-4 w-4 text-amber-500" />
-                    )}
-                  </CardTitle>
-                  <p className="text-sm text-slate-600">{card.description}</p>
-                </div>
+            <CardHeader className="flex flex-col items-center text-center space-y-3 pb-4">
+              <div className={cn(
+                "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110",
+                `bg-gradient-to-br ${card.iconGradient}`
+              )}>
+                {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
               </div>
-              <div className="flex flex-col items-end space-y-1">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    getStatusColor(card.status),
-                    card.isPremium && "bg-amber-50 border-amber-300"
+              <div className="w-full">
+                <CardTitle className="text-base font-semibold text-slate-800 flex items-center justify-center gap-2">
+                  {card.title}
+                  {card.isPremium && (
+                    <Lock className="h-4 w-4 text-amber-500" />
                   )}
-                >
-                  {card.isPremium ? 'Premium' : card.status}
-                </Badge>
+                </CardTitle>
+                <p className="text-sm text-slate-600 text-center mt-1">{card.description}</p>
               </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  getStatusColor(card.status),
+                  card.isPremium && "bg-amber-50 border-amber-300"
+                )}
+              >
+                {card.isPremium ? 'Premium' : card.status}
+              </Badge>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-lg font-bold text-slate-800">
-                    {card.value || 'Ready'}
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    {card.change || 'Click to access'}
-                  </p>
+            <CardContent className="text-center space-y-3">
+              <div>
+                <div className="text-lg font-bold text-slate-800">
+                  {card.value || 'Ready'}
                 </div>
-                <Button
-                  size="sm"
-                  className="bg-orange-600 hover:bg-orange-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCardClick(card);
-                  }}
-                >
-                  {card.actionText}
-                </Button>
+                <p className="text-xs text-slate-500">
+                  {card.change || 'Click to access'}
+                </p>
               </div>
+              <Button
+                size="sm"
+                className="w-full bg-orange-600 hover:bg-orange-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(card);
+                }}
+              >
+                {card.actionText}
+              </Button>
             </CardContent>
           </Card>
         ))}

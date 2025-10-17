@@ -482,18 +482,16 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
               {/* Glass overlay effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <div className="flex items-center space-x-3">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-                    `bg-gradient-to-br ${card.iconGradient}`
-                  )}>
-                    {React.createElement(card.icon, { className: "h-5 w-5 text-white" })}
-                  </div>
-                  <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
-                    {card.title}
-                  </CardTitle>
+              <CardHeader className="flex flex-col items-center justify-center space-y-2 pb-3 relative z-10 text-center">
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                  `bg-gradient-to-br ${card.iconGradient}`
+                )}>
+                  {React.createElement(card.icon, { className: "h-5 w-5 text-white" })}
                 </div>
+                <CardTitle className="text-sm font-semibold text-slate-800 leading-tight text-center">
+                  {card.title}
+                </CardTitle>
               </CardHeader>
 
               <CardContent className="relative z-10 text-center py-4">

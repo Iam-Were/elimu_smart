@@ -224,3 +224,4 @@ const CardDescription: React.FC<CardDescriptionProps> = ({ children, className =
 };
 
 export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription, StatsCard };
+export default Card;

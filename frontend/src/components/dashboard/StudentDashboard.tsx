@@ -21,9 +21,10 @@ interface ParseUserData {
 }
 
 const StudentDashboard: React.FC = () => {
-  const { careerReadinessScore, kuccpsTimeline, loading } = useDynamicDashboard();
+  const { careerReadinessScore, kuccpsTimeline, loading, userActivities } = useDynamicDashboard();
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [lastActivity, setLastActivity] = useState<string>('');
 
   // Fetch Parse User data
   useEffect(() => {
@@ -83,6 +84,46 @@ const StudentDashboard: React.FC = () => {
     fetchUserData();
   }, []);
 
+  // Calculate last activity
+  useEffect(() => {
+    if (userActivities && userActivities.length > 0) {
+      const mostRecent = userActivities[0];
+      const activityDate = new Date(mostRecent.timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - activityDate.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      let timeAgo = '';
+      if (diffMins < 1) {
+        timeAgo = 'just now';
+      } else if (diffMins < 60) {
+        timeAgo = `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+      } else if (diffHours < 24) {
+        timeAgo = `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+      } else if (diffDays < 7) {
+        timeAgo = `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+      } else {
+        timeAgo = activityDate.toLocaleDateString();
+      }
+
+      // Map activity type to human-readable text
+      const activityTypeMap: Record<string, string> = {
+        'career_assessment_click': 'working on Career Discovery',
+        'subject_mapping_click': 'mapping subjects to careers',
+        'skills_assessment_click': 'discovering your strengths',
+        'course_finder_click': 'exploring university courses',
+        'career_exploration_click': 'researching careers',
+        'profile_update': 'updating your profile',
+        'guidance_request': 'seeking counselor guidance'
+      };
+
+      const activityText = activityTypeMap[mostRecent.activityType] || 'exploring the platform';
+      setLastActivity(`Last active ${timeAgo}: ${activityText}`);
+    }
+  }, [userActivities]);
+
   // Mock urgent items (would come from backend in production)
   const urgentItems = [];
 
@@ -116,153 +157,95 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="space-y-6 sm:space-y-8 pb-6 sm:pb-8 px-4 sm:px-0">
 
-      {/* Hero KPI - Career Readiness Score with Profile */}
+      {/* Hero KPI - Compact Career Readiness Score */}
       <Card className="border-orange-200 bg-gradient-to-br from-white to-orange-50/30">
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4 sm:gap-6">
-              {/* Profile Picture with completion indicator */}
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              {/* Compact Profile Picture */}
               <div className="flex-shrink-0 relative">
                 {loadingUser ? (
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border-4 border-orange-200 bg-orange-100 animate-pulse" />
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-200 bg-orange-100 animate-pulse" />
                 ) : (
-                  <>
-                    <img
-                      src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=150`}
-                      alt="Student profile"
-                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border-4 border-orange-200 object-cover shadow-lg"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=150`;
-                      }}
-                    />
-                    {/* Profile completion indicator */}
-                    {userData?.profileCompletion !== undefined && userData.profileCompletion < 100 && (
-                      <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md">
-                        <div className="relative w-8 h-8">
-                          <svg className="w-8 h-8 transform -rotate-90">
-                            <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-gray-200" />
-                            <circle
-                              cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="3" fill="transparent"
-                              strokeDasharray={`${2 * Math.PI * 14}`}
-                              strokeDashoffset={`${2 * Math.PI * 14 * (1 - userData.profileCompletion / 100)}`}
-                              className="text-orange-500 transition-all duration-500"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[10px] font-bold text-orange-600">{userData.profileCompletion}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  <img
+                    src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=100`}
+                    alt="Student profile"
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-200 object-cover shadow-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=100`;
+                    }}
+                  />
                 )}
               </div>
 
-              {/* Welcome Message & Score */}
+              {/* Welcome Message with Last Activity */}
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-800 mb-0.5 truncate">
                   Welcome back, {userData?.firstName || 'Student'}! 👋
                 </h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
-                      <TrendingUp className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base sm:text-lg font-semibold text-slate-800">Career Readiness Score</CardTitle>
-                      <p className="text-xs sm:text-sm text-muted-foreground">Your preparation for university success</p>
-                    </div>
-                  </div>
-                </div>
+                {lastActivity ? (
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{lastActivity}</p>
+                ) : (
+                  <p className="text-xs sm:text-sm text-muted-foreground">Ready to continue your career journey?</p>
+                )}
               </div>
             </div>
 
-            {/* Status Badge */}
+            {/* Compact Score Display */}
             {careerReadinessScore && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-sm px-3 py-1 flex-shrink-0",
-                  careerReadinessScore.overall >= 70 ? "text-green-600 border-green-600" :
-                  careerReadinessScore.overall >= 40 ? "text-amber-600 border-amber-600" :
-                  "text-red-600 border-red-600"
-                )}
-              >
-                {careerReadinessScore.overall >= 70 ? "On Track" :
-                 careerReadinessScore.overall >= 40 ? "Building Up" : "Getting Started"}
-              </Badge>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs text-muted-foreground">Career Readiness</p>
+                  <p className="text-2xl font-bold text-orange-600">{careerReadinessScore.overall}%</p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs px-2 py-1",
+                    careerReadinessScore.overall >= 70 ? "text-green-600 border-green-600 bg-green-50" :
+                    careerReadinessScore.overall >= 40 ? "text-amber-600 border-amber-600 bg-amber-50" :
+                    "text-red-600 border-red-600 bg-red-50"
+                  )}
+                >
+                  {careerReadinessScore.overall >= 70 ? "On Track" :
+                   careerReadinessScore.overall >= 40 ? "Building Up" : "Getting Started"}
+                </Badge>
+              </div>
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading your progress...</div>
+            <div className="text-center py-4 text-muted-foreground text-sm">Loading your progress...</div>
           ) : careerReadinessScore ? (
-            <div className="space-y-6">
-              {/* Main Score Circle */}
-              <div className="flex items-center gap-8">
-                <div className="relative w-32 h-32">
-                  <svg className="w-32 h-32 transform -rotate-90">
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      className="text-orange-100"
-                    />
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - careerReadinessScore.overall / 100)}`}
-                      className="text-orange-500 transition-all duration-1000"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-orange-600">{careerReadinessScore.overall}%</div>
-                    </div>
-                  </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-600">Assessments</span>
+                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.assessmentCompletion}%</span>
                 </div>
-
-                {/* Component Breakdown */}
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-600">Assessment Completion</span>
-                      <span className="font-semibold text-slate-800">{careerReadinessScore.breakdown.assessmentCompletion}%</span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-600">Career Research</span>
-                      <span className="font-semibold text-slate-800">{careerReadinessScore.breakdown.careerResearch}%</span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-600">Course Exploration</span>
-                      <span className="font-semibold text-slate-800">{careerReadinessScore.breakdown.courseExploration}%</span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-600">Actions Taken</span>
-                      <span className="font-semibold text-slate-800">{careerReadinessScore.breakdown.actionsTaken}%</span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-2" />
-                  </div>
+                <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-1.5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-600">Research</span>
+                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.careerResearch}%</span>
                 </div>
+                <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-1.5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-600">Exploration</span>
+                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.courseExploration}%</span>
+                </div>
+                <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-1.5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-600">Actions</span>
+                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.actionsTaken}%</span>
+                </div>
+                <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-1.5" />
               </div>
             </div>
           ) : (

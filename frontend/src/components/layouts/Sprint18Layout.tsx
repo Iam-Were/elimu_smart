@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
 import { LinkedInStyleChat } from '../chat/LinkedInStyleChat';
 import { cn } from '@/lib/utils';
+import { useThemeContext } from '../../hooks/useThemeContext';
+import { getRoleColor } from '../../constants/theme';
 
 interface Sprint18LayoutProps {
   children?: React.ReactNode;
@@ -14,6 +16,11 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
   className,
 }) => {
   const location = useLocation();
+  const { currentTheme } = useThemeContext();
+
+  const getThemeColor = () => {
+    return getRoleColor(currentTheme);
+  };
 
   // Get page title based on current route
   const getPageTitle = (pathname: string) => {
@@ -49,12 +56,20 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       
       {/* Main Content Area */}
       <main className="relative">
-        {/* Page Header - Only show for non-dashboard pages */}
+        {/* Page Header - Only show for non-dashboard pages - Theme-colored title */}
         {location.pathname !== '/' && location.pathname !== '/dashboard' && (
           <div className="border-b border-border/40 bg-muted/20">
             <div className="container max-w-5xl mx-auto py-8">
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
+                <h1
+                  className="text-3xl font-bold tracking-tight"
+                  style={{
+                    background: `linear-gradient(to right, ${getThemeColor()}, ${getThemeColor()}dd)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
                   {getPageTitle(location.pathname)}
                 </h1>
                 <p className="text-muted-foreground">
