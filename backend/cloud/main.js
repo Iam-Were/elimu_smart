@@ -6343,3 +6343,222 @@ require('./careerFunctions');
 // Payment & M-Pesa Integration Functions
 // ============================================
 require('./paymentFunctions');
+
+// ============================================
+// Review & Rating System
+// ============================================
+
+/**
+ * Submit a counselor review after a session
+ * Students can rate counselors and leave comments
+ */
+Parse.Cloud.define('submitCounselorReview', async (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
+  }
+
+  const { counselorId, rating, comment, sessionId } = request.params;
+
+  // Validation
+  if (!counselorId || !rating) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Counselor ID and rating are required');
+  }
+
+  if (rating < 1 || rating > 5) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Rating must be between 1 and 5');
+  }
+
+  try {
+    // Check if user is a student
+    const userRole = request.user.get('role');
+    if (userRole !== 'student') {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Only students can submit reviews');
+    }
+
+    // Verify counselor exists
+    const counselorQuery = new Parse.Query(Parse.User);
+    const counselor = await counselorQuery.get(counselorId, { useMasterKey: true });
+
+    if (!counselor || counselor.get('role') !== 'counselor') {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Counselor not found');
+    }
+
+    // Check if student already reviewed this counselor (prevent duplicates per session)
+    if (sessionId) {
+      const CounselorReview = Parse.Object.extend('CounselorReview');
+      const existingReviewQuery = new Parse.Query(CounselorReview);
+      existingReviewQuery.equalTo('student', request.user);
+      existingReviewQuery.equalTo('counselor', counselor);
+      existingReviewQuery.equalTo('sessionId', sessionId);
+      const existingReview = await existingReviewQuery.first({ useMasterKey: true });
+
+      if (existingReview) {
+        throw new Parse.Error(Parse.Error.DUPLICATE_VALUE, 'You have already reviewed this session');
+      }
+    }
+
+    // Create review
+    const CounselorReview = Parse.Object.extend('CounselorReview');
+    const review = new CounselorReview();
+    review.set('student', request.user);
+    review.set('counselor', counselor);
+    review.set('rating', rating);
+    review.set('comment', comment || '');
+    review.set('sessionId', sessionId || 'general');
+    review.set('isVerified', !!sessionId); // Verified if linked to a session
+    review.set('isVisible', true);
+    
+    // Set ACL: Student and counselor can read, only student can edit (within 24h)
+    const acl = new Parse.ACL();
+    acl.setReadAccess(request.user, true);
+    acl.setWriteAccess(request.user, true);
+    acl.setReadAccess(counselorId, true);
+    acl.setPublicReadAccess(true); // Public can read reviews
+    review.setACL(acl);
+
+    await review.save(null, { useMasterKey: true });
+
+    // Update counselor's average rating
+    await updateCounselorRating(counselorId);
+
+    console.log('✅ Review submitted:', {
+      reviewId: review.id,
+      counselorId,
+      rating,
+      student: request.user.id
+    });
+
+    return {
+      success: true,
+      reviewId: review.id,
+      message: 'Review submitted successfully'
+    };
+  } catch (error) {
+    console.error('❌ Review submission failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Failed to submit review: ${error.message}`
+    );
+  }
+});
+
+/**
+ * Get counselor reviews with pagination
+ * Public endpoint - anyone can view reviews
+ */
+Parse.Cloud.define('getCounselorReviews', async (request) => {
+  const { counselorId, limit = 10, skip = 0 } = request.params;
+
+  if (!counselorId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Counselor ID required');
+  }
+
+  try {
+    // Verify counselor exists
+    const counselorQuery = new Parse.Query(Parse.User);
+    const counselor = await counselorQuery.get(counselorId, { useMasterKey: true });
+
+    if (!counselor) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Counselor not found');
+    }
+
+    // Query reviews
+    const CounselorReview = Parse.Object.extend('CounselorReview');
+    const reviewQuery = new Parse.Query(CounselorReview);
+    reviewQuery.equalTo('counselor', counselor);
+    reviewQuery.equalTo('isVisible', true);
+    reviewQuery.include('student');
+    reviewQuery.descending('createdAt');
+    reviewQuery.limit(limit);
+    reviewQuery.skip(skip);
+
+    const reviews = await reviewQuery.find({ useMasterKey: true });
+
+    // Count total reviews
+    const countQuery = new Parse.Query(CounselorReview);
+    countQuery.equalTo('counselor', counselor);
+    countQuery.equalTo('isVisible', true);
+    const totalCount = await countQuery.count({ useMasterKey: true });
+
+    // Format reviews
+    const formattedReviews = reviews.map(review => {
+      const student = review.get('student');
+      return {
+        id: review.id,
+        rating: review.get('rating'),
+        comment: review.get('comment'),
+        isVerified: review.get('isVerified'),
+        createdAt: review.get('createdAt'),
+        studentName: student ? `${student.get('firstName')} ${student.get('lastName').charAt(0)}.` : 'Anonymous',
+        studentAvatar: student?.get('avatar') || null
+      };
+    });
+
+    // Get rating statistics
+    const avgRating = counselor.get('averageRating') || 0;
+    const totalReviews = counselor.get('totalReviews') || 0;
+
+    return {
+      success: true,
+      reviews: formattedReviews,
+      statistics: {
+        averageRating: avgRating,
+        totalReviews: totalReviews,
+        totalCount: totalCount
+      },
+      pagination: {
+        limit,
+        skip,
+        hasMore: skip + reviews.length < totalCount
+      }
+    };
+  } catch (error) {
+    console.error('❌ Get reviews failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Failed to get reviews: ${error.message}`
+    );
+  }
+});
+
+/**
+ * Update counselor's average rating (internal helper)
+ * Called after each new review is submitted
+ */
+async function updateCounselorRating(counselorId) {
+  try {
+    const counselorQuery = new Parse.Query(Parse.User);
+    const counselor = await counselorQuery.get(counselorId, { useMasterKey: true });
+
+    const CounselorReview = Parse.Object.extend('CounselorReview');
+    const reviewQuery = new Parse.Query(CounselorReview);
+    reviewQuery.equalTo('counselor', counselor);
+    reviewQuery.equalTo('isVisible', true);
+
+    const reviews = await reviewQuery.find({ useMasterKey: true });
+    
+    if (reviews.length === 0) {
+      counselor.set('averageRating', 0);
+      counselor.set('totalReviews', 0);
+      await counselor.save(null, { useMasterKey: true });
+      return;
+    }
+
+    // Calculate average rating
+    const totalRating = reviews.reduce((sum, review) => sum + review.get('rating'), 0);
+    const avgRating = totalRating / reviews.length;
+
+    // Update counselor profile
+    counselor.set('averageRating', Math.round(avgRating * 10) / 10); // Round to 1 decimal
+    counselor.set('totalReviews', reviews.length);
+    await counselor.save(null, { useMasterKey: true });
+
+    console.log('✅ Updated counselor rating:', {
+      counselorId,
+      averageRating: counselor.get('averageRating'),
+      totalReviews: reviews.length
+    });
+  } catch (error) {
+    console.error('❌ Failed to update counselor rating:', error);
+  }
+}

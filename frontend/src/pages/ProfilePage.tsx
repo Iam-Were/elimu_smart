@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
+import { ReviewsSection } from '../components/counselor/ReviewsSection';
 
 interface ProfileProject {
   id: string;
@@ -990,6 +991,13 @@ export const ProfilePage: React.FC = () => {
           </Card>
         </div>
         </>
+        )}
+
+        {/* Reviews Section - Only for counselors */}
+        {user?.role === 'counselor' && user.id && (
+          <div className="mt-8">
+            <ReviewsSection counselorId={user.id} />
+          </div>
         )}
 
         {/* Booking Modal */}
