@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
 import { LinkedInStyleChat } from '../chat/LinkedInStyleChat';
+import { MobileBottomNav } from '../navigation/MobileBottomNav';
 import { cn } from '@/lib/utils';
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { getRoleColor } from '../../constants/theme';
@@ -81,7 +82,7 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
         )}
 
         {/* Content Container */}
-        <div className="container max-w-5xl mx-auto">
+        <div className="container max-w-5xl mx-auto pb-20 md:pb-0">
           {children || <Outlet />}
         </div>
       </main>
@@ -136,6 +137,9 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
 
       {/* LinkedIn-Style Chat - Only for student routes */}
       <LinkedInStyleChat />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

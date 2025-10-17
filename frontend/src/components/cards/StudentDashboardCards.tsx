@@ -372,66 +372,61 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
         </div>
       )}
 
-      {/* Overall Progress Summary - Enhanced with Glass Morphism */}
-      <Card className="glass-card-primary border-orange-200/30 mb-6 relative overflow-hidden">
-        {/* Multi-layer floating decorative elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-orange-300/10 rounded-full -mr-16 -mt-16 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-400/15 to-orange-200/8 rounded-full -ml-12 -mb-12"></div>
-        
-        <CardHeader className="relative z-10">
+      {/* Overall Progress Summary - Clean Design */}
+      <Card className="bg-white/90 dark:bg-slate-900 border-orange-200/30 mb-6 shadow-lg">
+        <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <div className="p-3 rounded-xl glass-card bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg">
               <Trophy className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-xl font-bold bg-gradient-to-r from-orange-800 to-orange-600 bg-clip-text text-transparent">
+              <div className="text-xl font-bold text-slate-800 dark:text-white">
                 Overall Progress Summary
               </div>
-              <div className="text-sm text-orange-600/80 font-medium">
+              <div className="text-sm text-orange-600 dark:text-orange-300 font-medium">
                 Real-time career readiness tracking
               </div>
             </div>
           </CardTitle>
         </CardHeader>
         
-        <CardContent className="relative z-10">
+        <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="glass-card-success p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
-              <div className="text-3xl font-bold text-emerald-600 drop-shadow-sm">
+            <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform shadow">
+              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'positive').length}
               </div>
-              <div className="text-sm font-medium text-emerald-700">Positive Trends</div>
+              <div className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Positive Trends</div>
             </div>
             
-            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
-              <div className="text-3xl font-bold text-orange-600 drop-shadow-sm">
+            <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform shadow">
+              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'neutral').length}
               </div>
-              <div className="text-sm font-medium text-orange-700">Stable Areas</div>
+              <div className="text-sm font-medium text-orange-700 dark:text-orange-300">Stable Areas</div>
             </div>
             
-            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform border-red-200/30">
-              <div className="text-3xl font-bold text-red-600 drop-shadow-sm">
+            <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform shadow border-red-200/30">
+              <div className="text-3xl font-bold text-red-600 dark:text-red-400 drop-shadow-sm">
                 {studentDashboardCards.filter(card => card.changeType === 'negative').length}
               </div>
-              <div className="text-sm font-medium text-red-700">Need Attention</div>
+              <div className="text-sm font-medium text-red-700 dark:text-red-300">Need Attention</div>
             </div>
             
-            <div className="glass-card p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform">
-              <div className="text-3xl font-bold text-slate-700 drop-shadow-sm">
+            <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 hover:scale-105 transition-transform shadow">
+              <div className="text-3xl font-bold text-slate-700 dark:text-slate-300 drop-shadow-sm">
                 {studentDashboardCards.length}
               </div>
-              <div className="text-sm font-medium text-slate-600">Total Areas</div>
+              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Areas</div>
             </div>
           </div>
           
-          <div className="mt-6 glass-card-primary p-4 rounded-xl border-orange-200/30 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-orange-400/20 to-orange-200/10 rounded-full -mr-8 -mt-8"></div>
-            <h4 className="font-semibold text-orange-700 mb-2 relative z-10 flex items-center gap-2">
+          <div className="mt-6 bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-200 dark:border-orange-800">
+            <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2 flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
               Daily Career Tip
             </h4>
-            <p className="text-sm text-orange-600 relative z-10 leading-relaxed">
+            <p className="text-sm text-orange-600 dark:text-orange-400 leading-relaxed">
               Spend just 10 minutes each day on career planning. Small consistent actions create life-changing results. 
               Focus on urgent items first, then work on areas that need attention.
             </p>
@@ -466,7 +461,7 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
                 }
               }}
               className={cn(
-                "glass-dashboard-card transition-all duration-300",
+                "bg-white/90 dark:bg-slate-900 transition-all duration-300 border border-orange-200/30 rounded-xl",
                 getCardSizeClasses(),
                 allowRearrange && "cursor-grab active:cursor-grabbing",
                 !allowRearrange && "cursor-pointer",
