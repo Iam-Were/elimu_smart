@@ -30,7 +30,6 @@ const Sprint18GuidancePage = lazy(() => import('./pages/Sprint18GuidancePage'));
 const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
-const InboxPage = lazy(() => import('./pages/InboxPage'));
 const UnifiedInboxPage = lazy(() => import('./pages/UnifiedInboxPage'));
 
 // Assessment pages
