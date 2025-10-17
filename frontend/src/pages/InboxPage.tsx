@@ -22,6 +22,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Star,
   Archive,
@@ -118,6 +120,7 @@ const InboxPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
   const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
@@ -446,6 +449,7 @@ const InboxPage: React.FC = () => {
     if (room) {
       setCurrentRoom(room);
       setSelectedConversation(conversation);
+      setIsMobileSheetOpen(true); // Open sheet on mobile
     }
   };
 
@@ -453,6 +457,7 @@ const InboxPage: React.FC = () => {
     setSelectedConversation(null);
     setCurrentRoom(undefined);
     setNewMessage('');
+    setIsMobileSheetOpen(false); // Close sheet on mobile
   };
 
   const handleArchive = async () => {
@@ -744,11 +749,11 @@ const InboxPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-    <div className="h-screen flex bg-gray-50">
-      {/* LinkedIn-style Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="h-screen flex bg-gray-50 p-2 md:p-4 gap-2 md:gap-4">
+      {/* LinkedIn-style Sidebar Card - Visible on mobile and desktop */}
+      <Card className="w-full md:w-80 flex flex-col shadow-lg border-r h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)]">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
+        <CardHeader className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-[#f97316]" />
@@ -814,10 +819,11 @@ const InboxPage: React.FC = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        </div>
+        </CardHeader>
 
         {/* Conversations List */}
-        <ScrollArea className="flex-1">
+        <CardContent className="flex-1 p-0">
+          <ScrollArea className="h-full">
           {isLoading && filteredConversations.length === 0 ? (
             <div className="flex flex-col gap-1 p-2">
               {[...Array(5)].map((_, i) => (
@@ -912,11 +918,12 @@ const InboxPage: React.FC = () => {
               </div>
             ))
           )}
-        </ScrollArea>
-      </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
-      {/* LinkedIn-style Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white">
+      {/* LinkedIn-style Main Chat Area Card - Desktop only, mobile uses Sheet */}
+      <Card className="hidden md:flex flex-1 flex-col shadow-lg h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)]">
         {!selectedConversation ? (
           /* No conversation selected */
           <div className="flex-1 flex items-center justify-center">
@@ -930,7 +937,7 @@ const InboxPage: React.FC = () => {
           /* Active conversation */
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200 bg-white">
+            <CardHeader className="p-4 border-b border-gray-200 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Mobile Back Button */}
@@ -1134,10 +1141,11 @@ const InboxPage: React.FC = () => {
                   className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
                 />
               </div>
-            </div>
+            </CardHeader>
 
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4 space-y-4 bg-gray-50">
+            {/* Messages - Enhanced with subtle background pattern */}
+            <CardContent className="flex-1 p-0 overflow-hidden">
+              <ScrollArea className="h-full p-4 space-y-4 bg-gradient-to-b from-gray-50/80 to-white">
               {isLoading && messages.length === 0 ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
@@ -1181,10 +1189,10 @@ const InboxPage: React.FC = () => {
                         </div>
                       )}
                       <div 
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative`}
+                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative animate-in fade-in slide-in-from-bottom-2 duration-300`}
                       >
                         {/* Message Actions DropdownMenu */}
-                        <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-4 opacity-0 group-hover:opacity-100 transition-opacity z-10`}>
+                        <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-4 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10`}>
                           <DropdownMenu>
                             <TooltipProvider>
                               <Tooltip>
@@ -1277,16 +1285,16 @@ const InboxPage: React.FC = () => {
                           </PopoverContent>
                         </Popover>
 
-                        <div className="relative">
-                          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
+                        <div className="relative group/message">
+                          <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-md transition-all duration-200 hover:shadow-lg ${
                             isOwnMessage
-                              ? 'bg-[#f97316] text-white rounded-br-md'
-                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
+                              ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm'
+                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm shadow-sm hover:border-gray-300'
                           }`}>
                             {/* Star Indicator */}
                             {isStarred && (
                               <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
-                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 drop-shadow-md" />
                               </div>
                             )}
                             
@@ -1294,8 +1302,8 @@ const InboxPage: React.FC = () => {
                               className="break-words whitespace-pre-wrap"
                               dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
                             />
-                            <div className={`flex items-center gap-1 mt-1 text-xs ${
-                              isOwnMessage ? 'text-orange-200 justify-end' : 'text-gray-500'
+                            <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${
+                              isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'
                             }`}>
                               <span>
                                 {new Date(message.timestamp).toLocaleTimeString('en-US', {
@@ -1307,17 +1315,17 @@ const InboxPage: React.FC = () => {
                               {isOwnMessage && (
                                 <span className="ml-1" title={message.status || 'sent'}>
                                   {message.status === 'read' || message.isRead ? (
-                                    <CheckCheck className="h-3 w-3 text-blue-400" aria-label="Read" />
+                                    <CheckCheck className="h-4 w-4 text-blue-300 drop-shadow-sm" aria-label="Read" />
                                   ) : message.status === 'delivered' ? (
-                                    <CheckCheck className="h-3 w-3" aria-label="Delivered" />
+                                    <CheckCheck className="h-4 w-4 text-orange-100" aria-label="Delivered" />
                                   ) : message.status === 'sent' ? (
-                                    <Check className="h-3 w-3" aria-label="Sent" />
+                                    <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
                                   ) : message.status === 'sending' ? (
-                                    <Clock className="h-3 w-3 animate-pulse" aria-label="Sending" />
+                                    <Clock className="h-4 w-4 animate-pulse text-orange-100" aria-label="Sending" />
                                   ) : message.status === 'failed' ? (
-                                    <AlertCircle className="h-3 w-3 text-red-400" aria-label="Failed" />
+                                    <AlertCircle className="h-4 w-4 text-red-300" aria-label="Failed" />
                                   ) : (
-                                    <Check className="h-3 w-3" aria-label="Sent" />
+                                    <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
                                   )}
                                 </span>
                               )}
@@ -1326,12 +1334,12 @@ const InboxPage: React.FC = () => {
 
                           {/* Message Reactions */}
                           {messageReactions.length > 0 && (
-                            <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`flex flex-wrap gap-1.5 mt-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                               {messageReactions.map((reaction) => (
                                 <button
                                   key={reaction.emoji}
                                   onClick={() => toggleReaction(message.id, reaction.emoji)}
-                                  className="flex items-center gap-1 px-2 py-0.5 bg-white border border-gray-200 rounded-full text-xs hover:border-[#f97316] transition-colors"
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-sm hover:shadow-md"
                                   title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
                                 >
                                   <span>{reaction.emoji}</span>
@@ -1347,38 +1355,41 @@ const InboxPage: React.FC = () => {
                 })
               )}
               <div ref={messagesEndRef} />
-            </ScrollArea>
+              </ScrollArea>
+            </CardContent>
 
-            {/* Message Input */}
+            {/* Message Input - Modern Floating Design */}
             <div className="p-4 border-t bg-white space-y-3">
               {/* File Upload Preview */}
               {uploadedFile && (
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-3 border border-orange-200 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Paperclip className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-700 font-medium">{uploadedFile.name}</span>
-                      <span className="text-xs text-gray-500">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
+                      <div className="bg-orange-500 p-1.5 rounded-lg">
+                        <Paperclip className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <span className="text-sm text-gray-800 font-medium">{uploadedFile.name}</span>
+                      <span className="text-xs text-gray-600">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={removeUploadedFile}
-                      className="h-6 w-6 p-0 hover:bg-gray-200"
+                      className="h-7 w-7 p-0 hover:bg-orange-200/70 rounded-full transition-colors"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-4 w-4 text-gray-700" />
                     </Button>
                   </div>
                   {isUploading && (
                     <div className="space-y-1">
                       <Progress value={uploadProgress} className="h-2" />
-                      <p className="text-xs text-gray-500">Uploading... {uploadProgress}%</p>
+                      <p className="text-xs text-gray-600">Uploading... {uploadProgress}%</p>
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="flex items-start gap-3 bg-gray-50 rounded-2xl border border-gray-200 p-3">
+              <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-sm">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1392,10 +1403,10 @@ const InboxPage: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1"
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-full flex-shrink-0 mt-0.5 transition-all duration-200"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Paperclip className="h-4 w-4 text-gray-500" />
+                        <Paperclip className="h-5 w-5 text-gray-500" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -1409,8 +1420,8 @@ const InboxPage: React.FC = () => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full flex-shrink-0 mt-1">
-                            <Smile className="h-4 w-4 text-gray-500" />
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-full flex-shrink-0 mt-0.5 transition-all duration-200">
+                            <Smile className="h-5 w-5 text-gray-500" />
                           </Button>
                         </PopoverTrigger>
                       </TooltipTrigger>
@@ -1489,7 +1500,217 @@ const InboxPage: React.FC = () => {
             </div>
           </>
         )}
-      </div>
+      </Card>
+
+      {/* Mobile Sheet for Chat */}
+      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+        <SheetContent side="right" className="w-full p-0 md:hidden">
+          {selectedConversation && (
+            <div className="flex flex-col h-full">
+              {/* Chat Header */}
+              <SheetHeader className="p-4 border-b border-gray-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={selectedConversation.participant.avatar} alt={selectedConversation.participant.name} />
+                      <AvatarFallback className="bg-[#f97316] text-white">
+                        {selectedConversation.participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <SheetTitle className="text-base font-semibold text-gray-900">
+                        {selectedConversation.participant.name}
+                      </SheetTitle>
+                      <div className="flex items-center gap-1 text-xs">
+                        {selectedConversation.participant.isOnline ? (
+                          <>
+                            <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+                            <span className="text-green-600">Active now</span>
+                          </>
+                        ) : (
+                          <span className="text-gray-500">Last seen recently</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* In-conversation Search */}
+                <div className="mt-3 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search in conversation..."
+                    value={messageSearchTerm}
+                    onChange={(e) => setMessageSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                  />
+                </div>
+              </SheetHeader>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full p-4 space-y-4 bg-gradient-to-b from-gray-50/80 to-white">
+                  {isLoading && messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-32">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
+                      <div className="text-center">
+                        <MessageCircle className="h-8 w-8 mb-2 text-gray-300 mx-auto" />
+                        <span>Start a conversation...</span>
+                      </div>
+                    </div>
+                  ) : filteredMessages.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
+                      <div className="text-center">
+                        <Search className="h-8 w-8 mb-2 text-gray-300 mx-auto" />
+                        <span>No messages match your search</span>
+                      </div>
+                    </div>
+                  ) : (
+                    filteredMessages.map((message, index) => {
+                      const isOwnMessage = message.sender.id === user?.id;
+                      const previousMessage = index > 0 ? filteredMessages[index - 1] : null;
+                      const showTimestamp = index === 0 || 
+                        (previousMessage && 
+                         new Date(message.timestamp).getTime() - new Date(previousMessage.timestamp).getTime() > 300000);
+                      
+                      const messageReactions = messageReactionsMap[message.id] || [];
+                      const isStarred = starredMessageSet.has(message.id);
+                      
+                      return (
+                        <div key={message.id}>
+                          {showTimestamp && (
+                            <div className="text-center text-xs text-gray-500 my-4">
+                              {new Date(message.timestamp).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                            </div>
+                          )}
+                          <div 
+                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div className="relative">
+                              <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-md ${
+                                isOwnMessage
+                                  ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm'
+                                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm shadow-sm'
+                              }`}>
+                                {isStarred && (
+                                  <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
+                                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 drop-shadow-md" />
+                                  </div>
+                                )}
+                                
+                                <div 
+                                  className="break-words whitespace-pre-wrap"
+                                  dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
+                                />
+                                <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${
+                                  isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'
+                                }`}>
+                                  <span>
+                                    {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                                      hour: 'numeric',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                  </span>
+                                  {isOwnMessage && (
+                                    <span className="ml-1" title={message.status || 'sent'}>
+                                      {message.status === 'read' || message.isRead ? (
+                                        <CheckCheck className="h-4 w-4 text-blue-300 drop-shadow-sm" aria-label="Read" />
+                                      ) : message.status === 'delivered' ? (
+                                        <CheckCheck className="h-4 w-4 text-orange-100" aria-label="Delivered" />
+                                      ) : message.status === 'sent' ? (
+                                        <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
+                                      ) : message.status === 'sending' ? (
+                                        <Clock className="h-4 w-4 animate-pulse text-orange-100" aria-label="Sending" />
+                                      ) : message.status === 'failed' ? (
+                                        <AlertCircle className="h-4 w-4 text-red-300" aria-label="Failed" />
+                                      ) : (
+                                        <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {messageReactions.length > 0 && (
+                                <div className={`flex flex-wrap gap-1.5 mt-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                  {messageReactions.map((reaction) => (
+                                    <button
+                                      key={reaction.emoji}
+                                      onClick={() => toggleReaction(message.id, reaction.emoji)}
+                                      className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-sm"
+                                      title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
+                                    >
+                                      <span>{reaction.emoji}</span>
+                                      <span className="text-gray-600">{reaction.count}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </ScrollArea>
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 border-t bg-white space-y-3">
+                <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-sm">
+                  <Textarea
+                    placeholder="Write a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    disabled={isSending || isLoading}
+                    className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
+                    rows={1}
+                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={!newMessage.trim() || isSending || isLoading}
+                          size="sm"
+                          className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
+                        >
+                          {isSending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{isSending ? 'Sending...' : 'Send message (Enter)'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
     </>
   );
