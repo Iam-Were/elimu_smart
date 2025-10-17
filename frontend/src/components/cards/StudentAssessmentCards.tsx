@@ -523,7 +523,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
       </Card>
 
       {/* Resume Where You Left Off - For In-Progress Assessments */}
-      {dynamicCards.filter(card => card.status === 'in-progress' && card.progress > 0 && card.progress < 100).length > 0 && (
+      {dynamicCards.filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100).length > 0 && (
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -539,7 +539,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {dynamicCards
-                .filter(card => card.status === 'in-progress' && card.progress > 0 && card.progress < 100)
+                .filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100)
                 .map((card) => (
                   <div
                     key={card.id}
