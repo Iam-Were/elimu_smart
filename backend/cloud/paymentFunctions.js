@@ -354,6 +354,223 @@ Parse.Cloud.define('checkSubscriptionPaymentStatus', async (request) => {
   }
 });
 
+/**
+ * Initiate M-Pesa payment for counselor session booking
+ * Creates payment record and initiates STK Push
+ */
+Parse.Cloud.define('initiateMpesaPayment', async (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
+  }
+
+  const { phoneNumber, amount, sessionName, counselorName, counselorId, sessionId } = request.params;
+
+  if (!phoneNumber || !amount || !sessionName || !counselorId || !sessionId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Missing required parameters');
+  }
+
+  try {
+    // Create Session Booking Payment record
+    const SessionPayment = Parse.Object.extend('SessionPayment');
+    const payment = new SessionPayment();
+    payment.set('student', request.user);
+    payment.set('counselorId', counselorId);
+    payment.set('sessionId', sessionId);
+    payment.set('sessionName', sessionName);
+    payment.set('amount', amount);
+    payment.set('phoneNumber', phoneNumber);
+    payment.set('status', 'pending');
+    payment.set('paymentMethod', 'mpesa');
+    await payment.save(null, { useMasterKey: true });
+
+    // Initiate M-Pesa STK Push
+    const paymentResult = await mpesaService.initiateSTKPush({
+      phoneNumber,
+      amount,
+      accountReference: `SESSION-${sessionId.substr(0, 8)}`,
+      transactionDesc: `${sessionName} with ${counselorName}`,
+      userId: request.user.id,
+      subscriptionId: payment.id, // Reuse field for session payment ID
+      ipAddress: request.ip || 'unknown',
+      userAgent: request.headers?.['user-agent'] || 'unknown'
+    });
+
+    // Update payment with checkout request ID
+    payment.set('checkoutRequestId', paymentResult.checkoutRequestId);
+    payment.set('merchantRequestId', paymentResult.merchantRequestId);
+    await payment.save(null, { useMasterKey: true });
+
+    // Store in payment vault as well
+    await queryPaymentDB(`
+      INSERT INTO "PaymentTransaction" (
+        "objectId",
+        "userId",
+        "subscriptionId",
+        "checkoutRequestId",
+        "merchantRequestId",
+        "phoneNumber",
+        "amount",
+        "status",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ) VALUES (
+        uuid_generate_v4(),
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        NOW(),
+        NOW()
+      )
+    `, [
+      request.user.id,
+      payment.id, // Use payment.id as subscriptionId field
+      paymentResult.checkoutRequestId,
+      paymentResult.merchantRequestId,
+      phoneNumber,
+      amount,
+      'pending',
+      `${sessionName} with ${counselorName}`
+    ]);
+
+    console.log('✅ Session payment initiated:', {
+      paymentId: payment.id,
+      checkoutRequestId: paymentResult.checkoutRequestId,
+      amount,
+      sessionName
+    });
+
+    return {
+      success: true,
+      paymentId: payment.id,
+      checkoutRequestId: paymentResult.checkoutRequestId,
+      message: paymentResult.customerMessage || 'Please check your phone for M-Pesa prompt'
+    };
+  } catch (error) {
+    console.error('❌ Session payment initiation failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Payment initiation failed: ${error.message}`
+    );
+  }
+});
+
+/**
+ * Check M-Pesa payment status for session booking
+ * Frontend polls this to check if payment is complete
+ */
+Parse.Cloud.define('checkMpesaPaymentStatus', async (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
+  }
+
+  const { checkoutRequestId } = request.params;
+
+  if (!checkoutRequestId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Checkout request ID required');
+  }
+
+  try {
+    // Query payment vault for status
+    const paymentQuery = await queryPaymentDB(`
+      SELECT "status", "mpesaReceiptNumber", "transactionDate", "resultDescription"
+      FROM "PaymentTransaction"
+      WHERE "checkoutRequestId" = $1
+      LIMIT 1
+    `, [checkoutRequestId]);
+
+    if (paymentQuery.rows.length === 0) {
+      // Check main database
+      const SessionPayment = Parse.Object.extend('SessionPayment');
+      const query = new Parse.Query(SessionPayment);
+      query.equalTo('checkoutRequestId', checkoutRequestId);
+      const payment = await query.first({ useMasterKey: true });
+
+      if (!payment) {
+        throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Payment not found');
+      }
+
+      const status = payment.get('status');
+
+      return {
+        status: status === 'completed' ? 'success' : status,
+        message: status === 'completed' ? 'Payment successful!' : 'Payment pending'
+      };
+    }
+
+    const paymentData = paymentQuery.rows[0];
+    const status = paymentData.status;
+
+    if (status === 'completed') {
+      // Update main database payment record
+      const SessionPayment = Parse.Object.extend('SessionPayment');
+      const query = new Parse.Query(SessionPayment);
+      query.equalTo('checkoutRequestId', checkoutRequestId);
+      const payment = await query.first({ useMasterKey: true });
+
+      if (payment && payment.get('status') !== 'completed') {
+        payment.set('status', 'completed');
+        payment.set('mpesaReceiptNumber', paymentData.mpesaReceiptNumber);
+        payment.set('transactionDate', new Date(paymentData.transactionDate));
+        payment.set('completedAt', new Date());
+        await payment.save(null, { useMasterKey: true });
+
+        // Send confirmation email to student
+        try {
+          const student = payment.get('student');
+          await student.fetch({ useMasterKey: true });
+
+          const sessionName = payment.get('sessionName');
+          const amount = payment.get('amount');
+
+          await emailService.sendEmail({
+            to: student.get('email'),
+            toName: `${student.get('firstName')} ${student.get('lastName')}`,
+            subject: 'Payment Successful - Session Booking Confirmed',
+            htmlContent: `
+              <h2>Payment Successful!</h2>
+              <p>Your payment for ${sessionName} has been processed successfully.</p>
+              <p><strong>Amount Paid:</strong> KES ${amount.toLocaleString()}</p>
+              <p><strong>M-Pesa Receipt:</strong> ${paymentData.mpesaReceiptNumber}</p>
+              <p>You can now proceed to book your session time slot.</p>
+            `
+          });
+        } catch (emailError) {
+          console.error('⚠️  Email sending failed:', emailError.message);
+        }
+      }
+
+      return {
+        status: 'success',
+        mpesaReceiptNumber: paymentData.mpesaReceiptNumber,
+        transactionDate: paymentData.transactionDate,
+        message: 'Payment successful!'
+      };
+    } else if (status === 'failed') {
+      return {
+        status: 'failed',
+        message: paymentData.resultDescription || 'Payment failed'
+      };
+    } else {
+      return {
+        status: 'pending',
+        message: 'Payment is still pending'
+      };
+    }
+  } catch (error) {
+    console.error('❌ Payment status check failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Failed to check payment status: ${error.message}`
+    );
+  }
+});
+
 module.exports = {
   // Exported for testing
 };
