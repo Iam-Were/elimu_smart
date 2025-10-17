@@ -210,7 +210,6 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
     const reactionIndex = existingReactions.findIndex(r => r.emoji === emoji);
 
     let optimisticState: Record<string, MessageReaction[]>;
-    let wasAdded = false;
 
     if (reactionIndex === -1) {
       // Add new reaction
@@ -218,7 +217,6 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
         ...previousState,
         [messageId]: [...existingReactions, { emoji, users: [user.id], count: 1 }],
       };
-      wasAdded = true;
     } else {
       // Toggle user in existing reaction
       const reaction = existingReactions[reactionIndex];
@@ -239,7 +237,6 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
             ...existingReactions.slice(reactionIndex + 1),
           ],
         };
-        wasAdded = true;
       } else {
         // Remove user from reaction
         const updatedUsers = reaction.users.filter(id => id !== user.id);
@@ -264,7 +261,6 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
             ],
           };
         }
-        wasAdded = false;
       }
     }
 
