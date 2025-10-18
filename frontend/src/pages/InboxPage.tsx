@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import {
   Archive,
   Search,
@@ -49,7 +49,7 @@ const InboxPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
 
   const { user } = useAuth();
-  const { rooms, messages, isLoading, sendMessage } = useChat(selectedConversation?.id);
+  const { rooms, messages, isLoading, sendMessage } = useChat();
 
   // Transform rooms to conversations
   const linkedInConversations: LinkedInConversation[] = rooms.map(room => ({
@@ -79,7 +79,7 @@ const InboxPage: React.FC = () => {
 
     setIsSending(true);
     try {
-      await sendMessage(newMessage.trim());
+      await sendMessage(selectedConversation.id, newMessage.trim());
       setNewMessage('');
       toast.success('Message sent');
     } catch (error) {
