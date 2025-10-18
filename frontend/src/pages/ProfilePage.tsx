@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
@@ -886,26 +887,25 @@ export const ProfilePage: React.FC = () => {
         </Card>
 
         {/* Experience Section Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-orange-600" />
-                Experience
-              </CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => _setShowAddExperienceDialog(true)}
-              >
-                <Briefcase className="h-4 w-4" />
-                Add experience
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingExperience ? (
+        {/* Use Accordion for Experience, Skills, and Security on mobile to reduce page length */}
+        <Accordion type="multiple" defaultValue={["experience", "skills"]} className="space-y-6">
+          {/* Experience Section */}
+          <AccordionItem value="experience" className="border-0">
+            <Card className="mb-0">
+              <CardHeader>
+                <AccordionTrigger className="hover:no-underline py-0">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold">Experience</span>
+                    {experience.length > 0 && (
+                      <Badge variant="secondary" className="ml-2">{experience.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent>
+                <CardContent className="pt-0">
+                  {loadingExperience ? (
               <div className="text-center py-8 text-muted-foreground">
                 Loading experience...
               </div>
@@ -952,24 +952,27 @@ export const ProfilePage: React.FC = () => {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
 
-        {/* Skills Section Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-orange-600" />
-                Skills
-              </CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Target className="h-4 w-4" />
-                Add skill
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+        {/* Skills Section */}
+          <AccordionItem value="skills" className="border-0">
+            <Card className="mb-0">
+              <CardHeader>
+                <AccordionTrigger className="hover:no-underline py-0">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold">Skills</span>
+                    {skills.length > 0 && (
+                      <Badge variant="secondary" className="ml-2">{skills.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent>
+                <CardContent className="pt-0">
             {skills.length === 0 ? (
               <div className="text-center py-12 bg-gradient-to-br from-green-50/30 to-white rounded-lg border-2 border-dashed border-green-200">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1003,24 +1006,24 @@ export const ProfilePage: React.FC = () => {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
 
-        {/* Security Section Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-orange-600" />
-                Privacy & Security
-              </CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Shield className="h-4 w-4" />
-                Manage
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+        {/* Security Section */}
+          <AccordionItem value="security" className="border-0">
+            <Card className="mb-0">
+              <CardHeader>
+                <AccordionTrigger className="hover:no-underline py-0">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold">Privacy & Security</span>
+                  </div>
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent>
+                <CardContent className="pt-0">
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
@@ -1044,8 +1047,11 @@ export const ProfilePage: React.FC = () => {
                 <Badge variant="outline">Public</Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
+        </Accordion>
 
 
 
