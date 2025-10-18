@@ -105,7 +105,10 @@ const InboxPage: React.FC = () => {
       <Card className="w-full max-w-7xl mx-auto h-[calc(100vh-2rem)] shadow-2xl border border-gray-200 overflow-hidden">
         <div className="flex h-full">
           {/* Left Sidebar - Conversations List */}
-          <div className="w-full md:w-80 flex flex-col border-r border-gray-200 bg-white">
+          <div className={cn(
+            "w-full md:w-80 flex flex-col border-r border-gray-200 bg-white",
+            selectedConversation && "hidden md:flex"
+          )}>
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
@@ -186,7 +189,10 @@ const InboxPage: React.FC = () => {
           </div>
 
           {/* Right Panel - Chat Area */}
-          <div className="hidden md:flex flex-1 flex-col bg-white">
+          <div className={cn(
+            "flex-1 flex-col bg-white",
+            selectedConversation ? "flex" : "hidden md:flex"
+          )}>
             {!selectedConversation ? (
               <div className="flex-1 flex items-center justify-center bg-gray-50">
                 <div className="text-center">

@@ -82,7 +82,7 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
   // PREMIUM TIER (2 cards) - Medium emphasis (important paid features)
   {
     id: 'counselor-inbox',
-    title: 'Message Counselor',
+    title: 'Messages',
     description: 'Private 1-on-1 guidance',
     icon: MessageSquare,
     iconEmphasis: 'medium', // Premium feature - medium
