@@ -1,0 +1,324 @@
+/* 
+ * Accessibility Styles
+ * Enhanced keyboard navigation and screen reader support
+ * WCAG 2.1 AA Compliant
+ */
+
+/* =========================
+   Keyboard Focus Indicators
+   ========================= */
+
+/* Global focus ring - visible for keyboard users */
+*:focus-visible {
+  outline: 2px solid #f97316; /* Orange-600 */
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced focus for interactive elements */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2);
+}
+
+/* Focus within containers */
+[role="navigation"]:focus-within,
+[role="menu"]:focus-within,
+[role="dialog"]:focus-within {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+/* Remove default browser outline but keep focus-visible */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* =========================
+   Skip Navigation Link
+   ========================= */
+
+.skip-to-main {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 9999;
+  padding: 12px 24px;
+  background: #f97316;
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-to-main:focus {
+  top: 0;
+  outline: 2px solid white;
+  outline-offset: -4px;
+}
+
+/* =========================
+   Screen Reader Only
+   ========================= */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* =========================
+   High Contrast Mode Support
+   ========================= */
+
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+  
+  button,
+  a,
+  [role="button"],
+  [role="link"] {
+    border: 2px solid currentColor;
+  }
+}
+
+/* =========================
+   Reduced Motion
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================
+   Focus Trap (for modals)
+   ========================= */
+
+.focus-trap-active {
+  overflow: hidden;
+}
+
+[data-focus-trap] {
+  position: relative;
+}
+
+/* =========================
+   Keyboard Navigation Hints
+   ========================= */
+
+.keyboard-hint {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+body.keyboard-navigation .keyboard-hint {
+  display: block;
+}
+
+/* =========================
+   Enhanced Link Indicators
+   ========================= */
+
+a:not([class]) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:not([class]):hover {
+  text-decoration-thickness: 2px;
+}
+
+a:not([class]):focus-visible {
+  text-decoration-thickness: 2px;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+/* =========================
+   Button States
+   ========================= */
+
+button[disabled],
+[role="button"][aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button[aria-pressed="true"] {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: #f97316;
+}
+
+/* =========================
+   Form Field States
+   ========================= */
+
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+}
+
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+/* =========================
+   Live Region Announcements
+   ========================= */
+
+[aria-live] {
+  position: relative;
+}
+
+[aria-live="polite"]::before,
+[aria-live="assertive"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #f97316;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+[aria-live="polite"][data-announce="true"]::before,
+[aria-live="assertive"][data-announce="true"]::before {
+  opacity: 1;
+}
+
+/* =========================
+   Modal / Dialog Focus
+   ========================= */
+
+[role="dialog"],
+[role="alertdialog"] {
+  position: fixed;
+  z-index: 9998;
+}
+
+[role="dialog"]:focus,
+[role="alertdialog"]:focus {
+  outline: none;
+}
+
+[role="dialog"] [data-focus-initial],
+[role="alertdialog"] [data-focus-initial] {
+  /* First focusable element in modal */
+}
+
+/* =========================
+   Tab Focus Order Indicators
+   ========================= */
+
+body.show-tab-order *:focus-visible::after {
+  content: attr(tabindex);
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #f97316;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  z-index: 10000;
+}
+
+/* =========================
+   Accordion Accessibility
+   ========================= */
+
+[role="button"][aria-expanded="false"] {
+  /* Collapsed state indicator */
+}
+
+[role="button"][aria-expanded="true"] {
+  /* Expanded state indicator */
+}
+
+/* =========================
+   Loading States
+   ========================= */
+
+[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 2px solid #f97316;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [aria-busy="true"]::after {
+    animation: none;
+    border-top-color: #f97316;
+  }
+}

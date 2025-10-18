@@ -92,7 +92,7 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       <Sprint18Navigation />
       
       {/* Main Content Area */}
-      <main className="relative">
+      <main id="main-content" className="relative" role="main" aria-label="Main content">
         {/* Page Header - Only show for non-dashboard pages - Theme-colored title */}
         {location.pathname !== '/' && location.pathname !== '/dashboard' && (
           <div className="border-b border-border/40 bg-muted/20">

@@ -12,6 +12,9 @@ import { LoadingOverlay } from './components/common/LoadingOverlay';
 import { Toaster } from './components/ui/sonner';
 import { Sprint18Layout } from './components/layouts/Sprint18Layout';
 import { useAuth } from './hooks/useAuth';
+import SkipNavigation from './components/common/SkipNavigation';
+import { useKeyboardNavigation } from './hooks/useAccessibility';
+import './styles/accessibility.css';
 
 // Critical auth pages (synchronous - loaded immediately)
 import LandingPage from './pages/LandingPageReplication';
@@ -169,18 +172,23 @@ const AppContent: React.FC = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
-  );
-};
-
 const App: React.FC = () => {
+  // Enable keyboard navigation detection globally
+  useKeyboardNavigation();
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <Router>
+          {/* Skip Navigation Link - WCAG 2.1 AA: 2.4.1 Bypass Blocks */}
+          <SkipNavigation />
           <AppContent />
           <Toaster />
         </Router>
       </ThemeProvider>
+    </ErrorBoundary>
+  );
+};    </ThemeProvider>
     </ErrorBoundary>
   );
 };
