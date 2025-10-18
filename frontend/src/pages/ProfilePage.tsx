@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar } from 'lucide-react';
+import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar, Plus, Upload } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
 
@@ -71,11 +71,8 @@ export const ProfilePage: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
-  const [showWallpaperUploader, setShowWallpaperUploader] = useState(false);
-  const [wallpaperUrl, setWallpaperUrl] = useState<string | null>(null);
-  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
+  const [showFABMenu, setShowFABMenu] = useState(false);
   const [profileCompletion, setProfileCompletion] = useState(0);
-  const wallpaperInputRef = useRef<HTMLInputElement>(null);
   const [_showAddProjectDialog, _setShowAddProjectDialog] = useState(false);
   const [_showAddExperienceDialog, _setShowAddExperienceDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -83,14 +80,6 @@ export const ProfilePage: React.FC = () => {
     lastName: '',
     bio: '',
     location: '',
-  });
-  const [isEditingBio, setIsEditingBio] = useState(false);
-  const [isEditingAcademic, setIsEditingAcademic] = useState(false);
-  const [academicData, setAcademicData] = useState({
-    grade: 'Form 4',
-    school: 'Not specified',
-    stream: 'Sciences',
-    kcseYear: '2024',
   });
   const { user } = useAuth();
   const { currentTheme } = useThemeContext();
@@ -219,51 +208,6 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  // Handle wallpaper upload
-  const handleWallpaperUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      alert('Please upload a JPG, PNG, or WebP image');
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      alert('Image size must be less than 5MB');
-      return;
-    }
-
-    setUploadingWallpaper(true);
-
-    try {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const base64Data = reader.result as string;
-
-        // Upload to backend
-        const Parse = await getParse();
-        const result = await Parse.Cloud.run('uploadWallpaperImage', {
-          imageData: base64Data,
-          fileName: file.name,
-        });
-
-        setWallpaperUrl(result.url);
-        setShowWallpaperUploader(false);
-      };
-    } catch (error) {
-      console.error('Failed to upload wallpaper:', error);
-      alert('Failed to upload wallpaper. Please try again.');
-    } finally {
-      setUploadingWallpaper(false);
-    }
-  };
-
 
   const getThemeColor = (theme: string) => {
     switch (theme) {
@@ -287,44 +231,9 @@ export const ProfilePage: React.FC = () => {
 
         {/* LinkedIn-Style Header Card */}
         <Card className="mb-8 overflow-hidden">
-          {/* Cover Photo with Upload */}
-          <div className="relative group">
-            {/* Wallpaper Image or Gradient */}
-            {wallpaperUrl ? (
-              <div
-                className="h-48 md:h-56 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${wallpaperUrl})` }}
-              >
-                <div className="absolute inset-0 bg-black/20"></div>
-              </div>
-            ) : (
-              <div className={`h-48 md:h-56 bg-gradient-to-r ${getThemeColor(currentTheme)} relative`}>
-                <div className="absolute inset-0 bg-black/10"></div>
-              </div>
-            )}
-
-            {/* Camera Icon Overlay - Shows on Hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
-              <Button
-                onClick={() => wallpaperInputRef.current?.click()}
-                disabled={uploadingWallpaper}
-                className="bg-white/95 hover:bg-white text-gray-900 font-semibold shadow-2xl gap-2"
-                size="lg"
-              >
-                <Camera className="h-5 w-5" />
-                {uploadingWallpaper ? 'Uploading...' : 'Change Cover Photo'}
-              </Button>
-            </div>
-
-            {/* Hidden File Input */}
-            <input
-              ref={wallpaperInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleWallpaperUpload}
-              className="hidden"
-              aria-label="Upload cover photo"
-            />
+          {/* Cover Photo */}
+          <div className={`h-32 bg-gradient-to-r ${getThemeColor(currentTheme)} relative`}>
+            <div className="absolute inset-0 bg-black/10"></div>
           </div>
 
           {/* Profile Section */}
@@ -736,71 +645,26 @@ export const ProfilePage: React.FC = () => {
                 <User className="h-5 w-5 text-orange-600" />
                 About
               </CardTitle>
-              {!isEditingBio ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => setIsEditingBio(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingBio(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
-                    onClick={() => {
-                      // Save bio logic here
-                      setIsEditingBio(false);
-                    }}
-                  >
-                    Save
-                  </Button>
-                </div>
-              )}
+              <Button variant="outline" size="sm" className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            {isEditingBio ? (
-              <div className="space-y-4">
-                <Textarea
-                  value={editFormData.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
-                  className="min-h-[120px] resize-none"
-                  placeholder="Tell us about yourself, your interests, and career aspirations..."
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {editFormData.bio.length}/500 characters
-                </p>
-              </div>
-            ) : (
-              <>
-                <p className="text-sm leading-relaxed text-gray-700 mb-4">
-                  {editFormData.bio ||
-                    'Aspiring software developer with hands-on experience in web development and data analysis. Currently pursuing secondary education while building practical skills through internships and personal projects. Passionate about using technology to solve real-world problems, particularly in education and data visualization.'}
-                </p>
+            <p className="text-sm leading-relaxed text-gray-700 mb-4">
+              Aspiring software developer with hands-on experience in web development and data analysis.
+              Currently pursuing secondary education while building practical skills through internships and personal projects.
+              Passionate about using technology to solve real-world problems, particularly in education and data visualization.
+            </p>
 
-                <div className="flex flex-wrap gap-2">
-                  {['Software Development', 'Data Science', 'Web Development', 'Mobile Apps', 'AI/ML', 'Education Technology'].map(
-                    (interest) => (
-                      <Badge key={interest} variant="secondary" className="text-xs">
-                        {interest}
-                      </Badge>
-                    )
-                  )}
-                </div>
-              </>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {['Software Development', 'Data Science', 'Web Development', 'Mobile Apps', 'AI/ML', 'Education Technology'].map((interest) => (
+                <Badge key={interest} variant="secondary" className="text-xs">
+                  {interest}
+                </Badge>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -1144,6 +1008,63 @@ export const ProfilePage: React.FC = () => {
             onClose={() => setShowBookingModal(false)}
           />
         )}
+
+        {/* Sticky Floating Action Button (FAB) - Mobile Only */}
+        <div className="fixed bottom-20 right-4 z-40 md:hidden">
+          {/* FAB Menu Items - Show when expanded */}
+          {showFABMenu && (
+            <div className="absolute bottom-16 right-0 flex flex-col gap-3 mb-2 animate-in fade-in slide-in-from-bottom-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setIsEditDialogOpen(true);
+                  setShowFABMenu(false);
+                }}
+                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  _setShowAddProjectDialog(true);
+                  setShowFABMenu(false);
+                }}
+                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
+              >
+                <Code className="h-4 w-4" />
+                Add Project
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowImageUploader(true);
+                  setShowFABMenu(false);
+                }}
+                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
+              >
+                <Upload className="h-4 w-4" />
+                Upload Photo
+              </Button>
+            </div>
+          )}
+
+          {/* Main FAB Button */}
+          <Button
+            size="lg"
+            onClick={() => setShowFABMenu(!showFABMenu)}
+            className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-200 ${
+              showFABMenu
+                ? 'bg-gradient-to-br from-red-500 to-red-600 rotate-45'
+                : 'bg-gradient-to-br from-orange-500 to-orange-600'
+            }`}
+            aria-label={showFABMenu ? 'Close quick actions menu' : 'Open quick actions menu'}
+            aria-expanded={showFABMenu}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
       </div>
     </div>
   );
