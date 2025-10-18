@@ -24,10 +24,10 @@ const navItems: NavItem[] = [
     path: '/assessment',
   },
   {
-    id: 'chat',
-    label: 'Chat',
+    id: 'messages',
+    label: 'Messages',
     icon: <MessageCircle className="h-5 w-5" />,
-    path: '/chat',
+    path: '/inbox',
   },
   {
     id: 'bookings',
@@ -55,7 +55,7 @@ export const MobileBottomNav: React.FC = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-lg">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -67,7 +67,7 @@ export const MobileBottomNav: React.FC = () => {
                 'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all duration-200 min-w-[64px]',
                 active
                   ? 'bg-orange-500 text-white'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  : 'text-gray-600 hover:bg-gray-100'
               )}
             >
               {item.icon}

@@ -757,7 +757,7 @@ const InboxPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-[#f97316]" />
-              Messaging
+              Messages
               {currentRoom && (
                 <Badge 
                   variant={connectionStatus === 'connected' ? 'default' : connectionStatus === 'connecting' ? 'secondary' : 'destructive'}
@@ -1504,14 +1504,14 @@ const InboxPage: React.FC = () => {
 
       {/* Mobile Sheet for Chat */}
       <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-        <SheetContent side="right" className="w-full p-0 md:hidden bg-white dark:bg-slate-900">
+        <SheetContent side="right" className="w-full p-0 md:hidden bg-white">
           {selectedConversation && (
             <div className="flex flex-col h-full">
               {/* Chat Header */}
-              <SheetHeader className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <SheetHeader className="p-4 border-b border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700 shadow-lg">
+                    <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-lg">
                       <AvatarImage src={selectedConversation.participant.avatar} alt={selectedConversation.participant.name} />
                       <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
                         {selectedConversation.participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -1535,21 +1535,21 @@ const InboxPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* In-conversation Search - Glassmorphism */}
+                {/* In-conversation Search */}
                 <div className="mt-3 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search in conversation..."
                     value={messageSearchTerm}
                     onChange={(e) => setMessageSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
               </SheetHeader>
 
               {/* Messages */}
-              <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
+              <div className="flex-1 overflow-hidden bg-gray-50">
                 <ScrollArea className="h-full p-4 space-y-4">
                   {isLoading && messages.length === 0 ? (
                     <div className="flex items-center justify-center h-32">
@@ -1600,7 +1600,7 @@ const InboxPage: React.FC = () => {
                               <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-lg ${
                                 isOwnMessage
                                   ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm shadow-orange-500/20'
-                                  : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm'
+                                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
                               }`}>
                                 {isStarred && (
                                   <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
@@ -1648,7 +1648,7 @@ const InboxPage: React.FC = () => {
                                     <button
                                       key={reaction.emoji}
                                       onClick={() => toggleReaction(message.id, reaction.emoji)}
-                                      className="flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 shadow-md"
+                                      className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-md"
                                       title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
                                     >
                                       <span>{reaction.emoji}</span>
@@ -1668,8 +1668,8 @@ const InboxPage: React.FC = () => {
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 space-y-3">
-                <div className="flex items-start gap-3 bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-500 focus-within:border-orange-500 dark:focus-within:border-orange-400 focus-within:ring-4 focus-within:ring-orange-100 dark:focus-within:ring-orange-500/20 transition-all duration-200 p-3 shadow-lg">
+              <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-lg">
                   <Textarea
                     placeholder="Write a message..."
                     value={newMessage}
