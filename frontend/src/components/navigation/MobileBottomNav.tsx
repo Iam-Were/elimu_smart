@@ -4,20 +4,23 @@ import {
   Home,
   ClipboardCheck,
   MessageCircle,
-  User,
+  Heart,
   Menu,
   X,
-  Library,
-  HelpCircle,
+  Search,
+  User,
   Settings,
+  HelpCircle,
   LogOut,
   Bell,
+  Library,
   Network,
-  Shield
+  Shield,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import Button from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NavItem {
@@ -29,47 +32,53 @@ interface NavItem {
   badgeCount?: number;
 }
 
-// Primary 4 navigation items (always visible)
+// Primary 4 navigation items (always visible) - matches desktop nav
 const primaryNavItems: NavItem[] = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: 'home',
+    label: 'Home',
     icon: Home,
     path: '/dashboard',
   },
   {
-    id: 'assessments',
-    label: 'Assessments',
+    id: 'assessment',
+    label: 'Assessment',
     icon: ClipboardCheck,
     path: '/assessment',
   },
   {
-    id: 'guidance',
-    label: 'Guidance',
-    icon: MessageCircle,
-    path: '/guidance',
-  },
-  {
-    id: 'profile',
-    label: 'Profile',
-    icon: User,
-    path: '/profile',
-  },
-];
-
-// Secondary navigation items (inside hamburger menu)
-const secondaryNavItems: NavItem[] = [
-  {
-    id: 'inbox',
-    label: 'Inbox',
+    id: 'messages',
+    label: 'Messages',
     icon: MessageCircle,
     path: '/inbox',
     showBadge: true,
     badgeCount: 3,
   },
   {
+    id: 'guidance',
+    label: 'Guidance',
+    icon: Heart,
+    path: '/guidance',
+  },
+];
+
+// Secondary navigation items (inside hamburger menu)
+const secondaryNavItems: NavItem[] = [
+  {
+    id: 'profile',
+    label: 'Profile',
+    icon: User,
+    path: '/profile',
+  },
+  {
+    id: 'bookings',
+    label: 'My Bookings',
+    icon: Calendar,
+    path: '/guidance/book-session',
+  },
+  {
     id: 'resources',
-    label: 'Resources',
+    label: 'Career Resources',
     icon: Library,
     path: '/guidance/resources',
   },
@@ -94,16 +103,16 @@ const secondaryNavItems: NavItem[] = [
     badgeCount: 5,
   },
   {
-    id: 'help',
-    label: 'Help Center',
-    icon: HelpCircle,
-    path: '/help',
-  },
-  {
     id: 'settings',
     label: 'Settings',
     icon: Settings,
     path: '/settings',
+  },
+  {
+    id: 'help',
+    label: 'Help Center',
+    icon: HelpCircle,
+    path: '/help',
   },
 ];
 
@@ -112,6 +121,8 @@ export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
@@ -130,15 +141,53 @@ export const MobileBottomNav: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
+  };
+
   return (
     <>
-      {/* Hamburger Menu Overlay */}
+      {/* Overlay for menu */}
       {isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setIsMenuOpen(false)}
           aria-label="Close menu"
         />
+      )}
+
+      {/* Search Bar Overlay - Non-persistent, triggered by magnifying glass */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 md:hidden backdrop-blur-sm" onClick={() => setIsSearchOpen(false)}>
+          <div 
+            className="absolute top-0 left-0 right-0 bg-white shadow-lg p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <Search className="h-5 w-5 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Search careers, courses, resources..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                className="p-2 text-gray-600 hover:text-gray-900"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Sliding Menu Panel */}
@@ -201,8 +250,8 @@ export const MobileBottomNav: React.FC = () => {
 
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-lg safe-area-pb">
-        <div className="flex items-center justify-around px-2 py-2.5">
-          {/* 4 Primary Navigation Items */}
+        <div className="flex items-center justify-between px-2 py-2.5">
+          {/* 4 Primary Navigation Items - matches desktop */}
           {primaryNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
@@ -225,6 +274,13 @@ export const MobileBottomNav: React.FC = () => {
                   {item.label}
                 </span>
 
+                {/* Badge for messages */}
+                {item.showBadge && item.badgeCount && item.badgeCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-red-500 hover:bg-red-500 flex items-center justify-center font-semibold ring-2 ring-white">
+                    {item.badgeCount}
+                  </Badge>
+                )}
+
                 {/* Active indicator dot */}
                 {active && (
                   <div className="absolute bottom-1 w-1 h-1 bg-white rounded-full shadow-sm" />
@@ -233,11 +289,29 @@ export const MobileBottomNav: React.FC = () => {
             );
           })}
 
-          {/* Hamburger Menu Button (5th item) */}
+          {/* Search Icon - triggers search overlay */}
+          <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className={cn(
+              'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px] min-h-[56px]',
+              isSearchOpen
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg scale-105'
+                : 'text-gray-600 hover:bg-gray-100 active:scale-95'
+            )}
+            aria-label="Search"
+            aria-expanded={isSearchOpen}
+          >
+            <Search className={cn('h-6 w-6', isSearchOpen ? 'drop-shadow-sm' : '')} />
+            <span className={cn('text-xs font-medium', isSearchOpen ? 'font-semibold' : '')}>
+              Search
+            </span>
+          </button>
+
+          {/* Hamburger Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={cn(
-              'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[70px] min-h-[56px] relative',
+              'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px] min-h-[56px] relative',
               isMenuOpen
                 ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg scale-105'
                 : 'text-gray-600 hover:bg-gray-100 active:scale-95'
@@ -254,7 +328,7 @@ export const MobileBottomNav: React.FC = () => {
               Menu
             </span>
 
-            {/* Notification badge on menu icon */}
+            {/* Total notification badge on menu icon */}
             <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-red-500 hover:bg-red-500 flex items-center justify-center font-semibold ring-2 ring-white">
               8
             </Badge>
