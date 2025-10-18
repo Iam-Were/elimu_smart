@@ -13,6 +13,7 @@ import {
   ClockIcon,
   BarChartIcon,
   GlobeIcon,
+  DashboardIcon,
 } from '@radix-ui/react-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
