@@ -25,6 +25,7 @@ const StudentDashboard: React.FC = () => {
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   // Fetch Parse User data
   useEffect(() => {
@@ -346,7 +347,22 @@ const StudentDashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* Main Dashboard Cards */}
+      {/* Main Dashboard Section - Grouped with Clear Hierarchy */}
+      <div className="space-y-6">
+        {/* Section Header */}
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <Target className="h-6 w-6 text-orange-600" />
+              Your Career Journey
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Track progress, explore careers, and get personalized guidance
+            </p>
+          </div>
+        </div>
+
+        {/* Main Dashboard Cards */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
