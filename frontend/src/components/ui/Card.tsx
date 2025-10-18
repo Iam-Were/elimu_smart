@@ -140,7 +140,7 @@ const CardFooter: React.FC<CardFooterProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+    <div className={`flex items-center justify-between mt-4 pt-4 ${className}`}>
       {children}
     </div>
   );

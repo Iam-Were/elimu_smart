@@ -126,7 +126,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
       
       <DropdownMenuContent align="end" className="w-80 bg-background/95 backdrop-blur-sm">
         {/* User Header */}
-        <div className="p-4 border-b bg-muted/50">
+        <div className="p-4 bg-muted/50">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.profileImage} />

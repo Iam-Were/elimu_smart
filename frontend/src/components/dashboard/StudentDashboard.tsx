@@ -348,7 +348,15 @@ const StudentDashboard: React.FC = () => {
 
       {/* Main Dashboard Cards */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-700">Your Progress Overview</h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
+            <Target className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">Your Progress Overview</h2>
+            <p className="text-sm text-slate-600">Track your career readiness journey</p>
+          </div>
+        </div>
         <StudentDashboardCards />
       </div>
 
@@ -356,18 +364,18 @@ const StudentDashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-              <Target className="h-6 w-6" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <Target className="h-6 w-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-800">Career Assessments</h2>
-              <p className="text-muted-foreground">Discover your perfect career path</p>
+              <p className="text-sm text-slate-600">Discover your perfect career path</p>
             </div>
           </div>
-          <Button asChild variant="secondary" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
+          <Button asChild variant="secondary" className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 flex items-center gap-2">
             <Link to="/assessment">
               View All Assessments
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -379,18 +387,18 @@ const StudentDashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-              <Heart className="h-6 w-6" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+              <Heart className="h-6 w-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-800">Guidance & Support</h2>
-              <p className="text-muted-foreground">Get help with your academic and career journey</p>
+              <p className="text-sm text-slate-600">Get help with your academic and career journey</p>
             </div>
           </div>
-          <Button asChild variant="secondary" className="hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300">
+          <Button asChild variant="secondary" className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 flex items-center gap-2">
             <Link to="/guidance">
               View All Services
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>

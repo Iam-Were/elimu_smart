@@ -23,7 +23,7 @@ import {
   ChevronDown,
   User,
       <header
-        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full border-b border-border shadow-sm", className)}
+        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full shadow-sm", className)}
         style={getHeaderStyles()}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
@@ -147,7 +147,7 @@ import {
       </div>
       
       <header
-        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full border-b border-border shadow-sm", className)}
+        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full shadow-sm", className)}
         style={getHeaderStyles()}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
