@@ -9,13 +9,13 @@ const Parse = require('parse/node');
 require('dotenv').config();
 
 // Initialize Parse with master key
+const masterKey = process.env.MASTER_KEY || process.env.PARSE_MASTER_KEY || 'elimu-smart-master-key-dev';
 Parse.initialize(
-  process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
-  process.env.PARSE_JAVASCRIPT_KEY || 'unused',
-  process.env.PARSE_MASTER_KEY || 'master_key_2024_secure'
+  process.env.APP_ID || process.env.PARSE_APP_ID || 'elimu-smart-app',
+  process.env.JAVASCRIPT_KEY || process.env.PARSE_JAVASCRIPT_KEY || 'unused',
+  masterKey
 );
-Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
-Parse.Cloud.useMasterKey();
+Parse.serverURL = process.env.SERVER_URL || process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
 
 async function createChatSchema() {
   console.log('🔧 Creating Chat System Schema...\n');
