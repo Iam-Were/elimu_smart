@@ -1472,6 +1472,8 @@ const InboxPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       </Card>
     </div>
