@@ -23,7 +23,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Star,
   Archive,
@@ -120,7 +119,6 @@ const InboxPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'starred' | 'archived'>('all');
-  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
   const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
@@ -451,7 +449,6 @@ const InboxPage: React.FC = () => {
     if (room) {
       setCurrentRoom(room);
       setSelectedConversation(conversation);
-      setIsMobileSheetOpen(true); // Open sheet on mobile
     }
   };
 
@@ -459,7 +456,6 @@ const InboxPage: React.FC = () => {
     setSelectedConversation(null);
     setCurrentRoom(undefined);
     setNewMessage('');
-    setIsMobileSheetOpen(false); // Close sheet on mobile
   };
 
   const handleArchive = async () => {

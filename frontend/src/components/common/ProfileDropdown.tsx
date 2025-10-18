@@ -101,14 +101,14 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
           className="flex items-center gap-3 p-2 h-auto hover:bg-accent"
         >
           <div className="relative">
-            <Avatar className="h-8 w-8 ring-2 ring-white/50 dark:ring-slate-700/50 shadow-lg">
+            <Avatar className="h-8 w-8 ring-2 ring-white shadow-lg">
               <AvatarImage src={user.profileImage} />
               <AvatarFallback className={getAvatarColor()}>
                 {user.firstName?.[0]}{user.lastName?.[0]}
               </AvatarFallback>
             </Avatar>
-            {/* Online status indicator - Glassmorphism */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full shadow-sm" />
+            {/* Online status indicator */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
           </div>
 
           <div className="flex flex-col items-start min-w-0">
@@ -126,13 +126,13 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
       
       <DropdownMenuContent
         align="end"
-        className="w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl"
+        className="w-80 bg-white border border-gray-200 shadow-2xl"
       >
         {/* User Header */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+        <div className="p-4 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Avatar className="h-12 w-12 ring-2 ring-slate-200 dark:ring-slate-700 shadow-xl">
+              <Avatar className="h-12 w-12 ring-2 ring-gray-200 shadow-xl">
                 <AvatarImage src={user.profileImage} />
                 <AvatarFallback className={getAvatarColor()}>
                   {user.firstName?.[0]}{user.lastName?.[0]}
@@ -157,10 +157,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         </div>
 
         {/* Profile Section */}
-        <DropdownMenuLabel className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profile</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile</DropdownMenuLabel>
         <DropdownMenuItem
           onClick={() => handleNavigation('/profile')}
-          className="cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+          className="cursor-pointer transition-all hover:bg-gray-50"
         >
           <PersonIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
@@ -170,11 +170,11 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         </DropdownMenuItem>
 
         {/* Account Settings */}
-        <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
-        <DropdownMenuLabel className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Account Settings</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-200" />
+        <DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account Settings</DropdownMenuLabel>
         <DropdownMenuItem
           onClick={() => handleNavigation('/settings/preferences')}
-          className="cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+          className="cursor-pointer transition-all hover:bg-gray-50"
         >
           <GearIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
@@ -184,7 +184,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleNavigation('/settings/security')}
-          className="cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+          className="cursor-pointer transition-all hover:bg-gray-50"
         >
           <LockClosedIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
@@ -196,22 +196,22 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         {/* Admin Section */}
         {isAdmin && (
           <>
-            <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
-            <DropdownMenuLabel className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Administration</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-gray-200" />
+            <DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => handleNavigation('/admin/dashboard')}
-              className="cursor-pointer transition-all hover:bg-purple-50 dark:hover:bg-purple-900/20"
+              className="cursor-pointer transition-all hover:bg-purple-50"
             >
               <DashboardIcon className="mr-2 h-4 w-4" />
               <div className="flex-1">
                 <div className="text-sm font-medium">System Administration</div>
                 <div className="text-xs text-muted-foreground">Platform management</div>
               </div>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Admin</Badge>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">Admin</Badge>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleNavigation('/admin/users')}
-              className="cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="cursor-pointer transition-all hover:bg-gray-50"
             >
               <PersonIcon className="mr-2 h-4 w-4" />
               <div className="flex-1">
@@ -221,7 +221,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleNavigation('/admin/audit-log')}
-              className="cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="cursor-pointer transition-all hover:bg-gray-50"
             >
               <ActivityLogIcon className="mr-2 h-4 w-4" />
               <div className="flex-1">
@@ -233,10 +233,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         )}
 
         {/* Preferences */}
-        <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
-        <DropdownMenuLabel className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Preferences</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-200" />
+        <DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Preferences</DropdownMenuLabel>
         <div className="px-2 py-2">
-          <div className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+          <div className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-all">
             <div className="flex items-center gap-2">
               {isDark ? (
                 <SunIcon className="h-4 w-4 text-muted-foreground" />
@@ -253,10 +253,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
         </div>
 
         {/* Sign Out */}
-        <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+        <DropdownMenuSeparator className="bg-gray-200" />
         <DropdownMenuItem
           onClick={handleLogout}
-          className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer transition-all"
+          className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer transition-all"
         >
           <ExitIcon className="mr-2 h-4 w-4" />
           <div className="flex-1">
