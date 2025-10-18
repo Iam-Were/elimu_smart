@@ -399,10 +399,10 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               Welcome back, Student!
             </h1>
             <div className="flex gap-2 flex-wrap justify-center md:justify-start mb-2">
-              <Badge className="bg-white/20 text-white font-semibold backdrop-blur-sm">
+              <Badge className="bg-white/30 text-white font-semibold">
                 Profile 85% Complete
               </Badge>
-              <Badge className="bg-white/20 text-white font-semibold backdrop-blur-sm">
+              <Badge className="bg-white/30 text-white font-semibold">
                 Focus: Form 4
               </Badge>
             </div>
