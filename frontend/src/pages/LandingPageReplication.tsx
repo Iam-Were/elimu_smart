@@ -581,121 +581,105 @@ const LandingPage: React.FC = () => {
       <footer className="bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Direct Footer Content with Inner Cards */}
+          {/* Footer Content Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 
-                {/* Company Info Card */}
+                {/* Company Info */}
                 <div>
-                  <Card className="bg-gray-50 border-gray-200 h-full">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                          <GraduationCap className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="font-bold text-xl text-gray-900">Elimu Smart</span>
-                      </div>
-                      <p className="text-gray-600 mb-4 leading-relaxed">
-                        Empowering Kenyan students with intelligent career guidance and university pathway discovery.
-                      </p>
-                      <div className="flex items-center space-x-1">
-                        <Shield className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-gray-600">Secure & Private</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                      <GraduationCap className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="font-bold text-xl text-gray-900">Elimu Smart</span>
+                  </div>
+                  <p className="text-gray-600 mb-4 leading-relaxed">
+                    Empowering Kenyan students with intelligent career guidance and university pathway discovery.
+                  </p>
+                  <div className="flex items-center space-x-1">
+                    <Shield className="h-4 w-4 text-green-500" />
+                    <span className="text-sm text-gray-600">Secure & Private</span>
+                  </div>
                 </div>
                 
-                {/* Quick Links Card */}
+                {/* Quick Links */}
                 <div>
-                  <Card className="bg-gray-50 border-gray-200 h-full">
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
-                      <ul className="space-y-3 text-gray-600">
-                        <li><a href="#features" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <ArrowRight className="h-3 w-3 mr-2" />
-                          Features
-                        </a></li>
-                        <li><a href="#testimonials" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <ArrowRight className="h-3 w-3 mr-2" />
-                          Success Stories
-                        </a></li>
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <ArrowRight className="h-3 w-3 mr-2" />
-                          About Us
-                        </a></li>
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <ArrowRight className="h-3 w-3 mr-2" />
-                          Contact
-                        </a></li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
+                  <ul className="space-y-3 text-gray-600">
+                    <li><a href="#features" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <ArrowRight className="h-3 w-3 mr-2" />
+                      Features
+                    </a></li>
+                    <li><a href="#testimonials" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <ArrowRight className="h-3 w-3 mr-2" />
+                      Success Stories
+                    </a></li>
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <ArrowRight className="h-3 w-3 mr-2" />
+                      About Us
+                    </a></li>
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <ArrowRight className="h-3 w-3 mr-2" />
+                      Contact
+                    </a></li>
+                  </ul>
                 </div>
                 
-                {/* Support Card */}
+                {/* Support */}
                 <div>
-                  <Card className="bg-gray-50 border-gray-200 h-full">
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
-                      <ul className="space-y-3 text-gray-600">
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <MessageCircle className="h-3 w-3 mr-2" />
-                          Help Center
-                        </a></li>
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <Shield className="h-3 w-3 mr-2" />
-                          Privacy Policy
-                        </a></li>
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <BookOpen className="h-3 w-3 mr-2" />
-                          Terms of Service
-                        </a></li>
-                        <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
-                          <Target className="h-3 w-3 mr-2" />
-                          FAQs
-                        </a></li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
+                  <ul className="space-y-3 text-gray-600">
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <MessageCircle className="h-3 w-3 mr-2" />
+                      Help Center
+                    </a></li>
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <Shield className="h-3 w-3 mr-2" />
+                      Privacy Policy
+                    </a></li>
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <BookOpen className="h-3 w-3 mr-2" />
+                      Terms of Service
+                    </a></li>
+                    <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
+                      <Target className="h-3 w-3 mr-2" />
+                      FAQs
+                    </a></li>
+                  </ul>
                 </div>
                 
-                {/* Contact Card */}
-                <div>
-                  <Card className="bg-orange-50 border-orange-200 h-full">
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-4">Get in Touch</h3>
-                      <ul className="space-y-3 text-gray-700">
-                        <li className="flex items-center">
-                          <MessageCircle className="h-4 w-4 text-orange-600 mr-3" />
-                          support@elimusmart.co.ke
-                        </li>
-                        <li className="flex items-center">
-                          <svg className="h-4 w-4 text-orange-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                          </svg>
-                          +254 700 123 456
-                        </li>
-                        <li className="flex items-center">
-                          <svg className="h-4 w-4 text-orange-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
-                          Nairobi, Kenya
-                        </li>
-                      </ul>
-                      
-                      <div className="mt-4 pt-4 border-t border-orange-200">
-                        <Badge className="bg-orange-100 text-orange-800 text-xs">
-                          🔥 24/7 Student Support
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {/* Contact */}
+                <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
+                  <h3 className="font-semibold text-gray-900 mb-4">Get in Touch</h3>
+                  <ul className="space-y-3 text-gray-700">
+                    <li className="flex items-center">
+                      <MessageCircle className="h-4 w-4 text-orange-600 mr-3 flex-shrink-0" />
+                      <span className="text-sm">support@elimusmart.co.ke</span>
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="h-4 w-4 text-orange-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      <span className="text-sm">+254 700 123 456</span>
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="h-4 w-4 text-orange-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm">Nairobi, Kenya</span>
+                    </li>
+                  </ul>
+                  
+                  <div className="mt-4 pt-4 border-t border-orange-200">
+                    <Badge className="bg-orange-100 text-orange-800 text-xs">
+                      🔥 24/7 Student Support
+                    </Badge>
+                  </div>
                 </div>
                 
               </div>
               
               {/* Footer Bottom */}
-              <div className="border-t border-gray-200 mt-8 pt-8 text-center">
+              <div className="border-t border-gray-200 pt-8 text-center">
                 <p className="text-gray-600">&copy; 2024 Elimu Smart. All rights reserved. Empowering Kenyan students to achieve their dreams.</p>
               </div>
               

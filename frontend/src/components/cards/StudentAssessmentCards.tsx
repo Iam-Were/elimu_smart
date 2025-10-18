@@ -371,14 +371,12 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
 
   // Bento grid: Variable height cards based on information complexity
   const getBentoGridClasses = () => {
-    return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-[minmax(280px,auto)]";
+    return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6";
   };
 
-  // Get row-span class based on card display size
+  // Get row-span class based on card display size - REMOVED for uniform heights
   const getCardRowSpan = (card: StudentAssessmentCard) => {
-    if (card.displaySize === 'tall') return 'md:row-span-2';
-    if (card.displaySize === 'standard') return 'md:row-span-1';
-    return ''; // compact cards auto-fit
+    return ''; // All cards same height
   };
 
   return (
@@ -521,7 +519,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         </div>
       )}
 
-      {/* Student Assessment Cards Grid - Bento Layout */}
+      {/* Student Assessment Cards Grid - Uniform Height Layout */}
       <div className={getBentoGridClasses()}>
         {displayCards.map((card) => {
           const statusConfig = getStatusConfig(card.status, card.urgency);
@@ -534,8 +532,8 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               className={cn(
                 "group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-lg",
                 "bg-white/90 dark:bg-slate-900 border border-slate-200/30 dark:border-slate-700/30 rounded-xl",
-                card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10",
-                getCardRowSpan(card)
+                "flex flex-col h-full min-h-[520px]",
+                card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10"
               )}
             >
               {/* Priority Indicator */}
@@ -546,7 +544,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               )}
 
               {/* Hero Image Section */}
-              <div className="relative h-48 w-full overflow-hidden">
+              <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
                 <ImageWithFallback
                   src={`https://images.unsplash.com/photo-${card.id === 'discover-my-career' ? '1506744038136-46273834b3fb' : card.id === 'subject-to-career-mapper' ? '1523050854a88' : card.id === 'skills-strength-finder' ? '1522071820081' : card.id === 'university-course-finder' ? '1498243691581' : '1465101046530-73398c7f28ca'}?auto=format&fit=crop&w=600&q=80`}
                   alt={card.title}
@@ -586,13 +584,13 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-3">
-                <CardDescription className="text-sm text-slate-600 dark:text-slate-300">
+              <CardContent className="space-y-3 flex-1">
+                <CardDescription className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
                   {card.studentFocusedDescription}
                 </CardDescription>
 
                 {/* Student Benefit */}
-                <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">{card.studentBenefit}</p>
+                <p className="text-sm text-orange-700 dark:text-orange-300 font-medium line-clamp-2">{card.studentBenefit}</p>
 
                 {/* Match Score for completed assessments */}
                 {card.matchScore !== undefined && card.status === 'completed' && (
@@ -636,7 +634,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               </CardContent>
 
-              <CardFooter className="pt-3">
+              <CardFooter className="pt-3 mt-auto">
                 <Button
                   data-testid="card-action"
                   onClick={() => handleCardClick(card)}
