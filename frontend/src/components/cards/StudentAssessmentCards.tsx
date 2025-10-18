@@ -374,11 +374,6 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
     return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6";
   };
 
-  // Get row-span class based on card display size - REMOVED for uniform heights
-  const getCardRowSpan = (card: StudentAssessmentCard) => {
-    return ''; // All cards same height
-  };
-
   return (
     <div className={cn("space-y-6", className)}>
       {/* Hero Banner - Clean gradient design */}
