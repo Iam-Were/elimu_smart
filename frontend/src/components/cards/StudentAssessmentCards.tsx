@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription }
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { IconContainer } from '@/components/ui/icon-container';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import {
   ArrowRight,
@@ -17,6 +18,7 @@ import {
   GraduationCap,
   Map,
   User,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -26,8 +28,8 @@ interface StudentAssessmentCard {
   id: string;
   title: string;
   studentFocusedDescription: string; // <100 chars
-  icon: React.ReactNode;
-  iconGradient: string; // Gradient for icon container
+  icon: LucideIcon;
+  iconEmphasis: 'subtle' | 'medium' | 'high'; // Icon emphasis level (90% subtle, 8% medium, 2% high)
   status: 'not-started' | 'in-progress' | 'completed' | 'needs-attention';
 
   // Action/Progress fields
@@ -58,8 +60,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'discover-my-career',
     title: 'Career Discovery',
     studentFocusedDescription: 'Discover careers that match your personality with the RIASEC assessment',
-    icon: <Brain className="h-6 w-6" />,
-    iconGradient: 'from-purple-500 to-purple-600',
+    icon: Brain,
+    iconEmphasis: 'medium', // Active assessment - medium emphasis
     status: 'not-started',
     actionText: 'Start Discovery',
     actionLink: '/assessment/career',
@@ -77,8 +79,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'subject-to-career-mapper',
     title: 'Subject Mapper',
     studentFocusedDescription: 'Map your subjects to careers',
-    icon: <Map className="h-6 w-6" />,
-    iconGradient: 'from-blue-500 to-blue-600',
+    icon: Map,
+    iconEmphasis: 'medium', // Active mapping task
     status: 'in-progress',
     actionText: 'Complete Mapping',
     actionLink: '/assessment/subjects',
@@ -96,8 +98,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'skills-strength-finder',
     title: 'Skills & Strengths',
     studentFocusedDescription: 'Discover your talents and strengths',
-    icon: <Trophy className="h-6 w-6" />,
-    iconGradient: 'from-green-500 to-green-600',
+    icon: Trophy,
+    iconEmphasis: 'subtle', // Informational - subtle emphasis
     status: 'not-started',
     actionText: 'Find Strengths',
     actionLink: '/assessment/skills',
@@ -115,8 +117,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'university-course-finder',
     title: 'University Course Finder',
     studentFocusedDescription: 'Find university courses that match your goals',
-    icon: <GraduationCap className="h-6 w-6" />,
-    iconGradient: 'from-indigo-500 to-indigo-600',
+    icon: GraduationCap,
+    iconEmphasis: 'medium', // Important for Form 4
     status: 'not-started',
     actionText: 'Explore Courses',
     actionLink: '/assessment/university',
@@ -134,8 +136,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'career-exploration-journey',
     title: 'Career Deep Dive',
     studentFocusedDescription: 'Learn what different careers are really like beyond just the job title',
-    icon: <Brain className="h-6 w-6" />,
-    iconGradient: 'from-amber-500 to-amber-600',
+    icon: Brain,
+    iconEmphasis: 'subtle', // Browsing/exploration - subtle
     status: 'in-progress',
     actionText: 'Continue Exploring',
     actionLink: '/assessment/explore',
@@ -153,8 +155,8 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
     id: 'assessment-results',
     title: 'My Results',
     studentFocusedDescription: 'Your complete career profile and personalized recommendations',
-    icon: <Award className="h-6 w-6" />,
-    iconGradient: 'from-orange-500 to-orange-600',
+    icon: Award,
+    iconEmphasis: 'high', // Major milestone - high emphasis with gradient
     status: 'not-started',
     actionText: 'View My Results',
     actionLink: '/profile/results',
@@ -174,35 +176,35 @@ const studentAssessmentCards: StudentAssessmentCard[] = [
 // Student-specific styling with orange theme
 const getStatusConfig = (status: string, urgency: string) => {
   const baseConfig = {
-    'not-started': { 
+    'not-started': {
       icon: <Play className="h-4 w-4" />,
       badge: 'Ready to Start',
-      className: 'bg-orange-50 text-orange-700'
+      className: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
     },
-    'in-progress': { 
+    'in-progress': {
       icon: <Clock className="h-4 w-4" />,
       badge: 'In Progress',
-      className: 'bg-blue-50 text-blue-700'
+      className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
     },
-    'completed': { 
+    'completed': {
       icon: <CheckCircle className="h-4 w-4" />,
       badge: 'Completed',
-      className: 'bg-green-50 text-green-700'
+      className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
     },
-    'needs-attention': { 
+    'needs-attention': {
       icon: <Star className="h-4 w-4" />,
       badge: 'Needs Update',
-      className: 'bg-red-50 text-red-700'
+      className: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
     },
   };
 
   const config = baseConfig[status as keyof typeof baseConfig] || baseConfig['not-started'];
-  
+
   // Add urgency styling
   if (urgency === 'high') {
     config.className += ' ring-2 ring-orange-300';
   }
-  
+
   return config;
 };
 
@@ -230,7 +232,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
   // Transform static cards with dynamic data
   const getDynamicCards = (): StudentAssessmentCard[] => {
     const baseCards = [...studentAssessmentCards];
-    
+
     // First apply real backend progress data
     if (assessmentProgress && Object.keys(assessmentProgress).length > 0) {
       baseCards.forEach(card => {
@@ -268,45 +270,45 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
           }
 
           case 'subject-to-career-mapper': {
-            const subjectActivities = userActivities.filter(a => 
-              a.activityType === 'subject_mapping_click' || 
+            const subjectActivities = userActivities.filter(a =>
+              a.activityType === 'subject_mapping_click' ||
               a.activityType === 'grade_input_completion'
             );
             card.progress = Math.min(subjectActivities.length * 15, 100);
-            card.status = subjectActivities.length === 0 ? 'not-started' : 
+            card.status = subjectActivities.length === 0 ? 'not-started' :
                          subjectActivities.length < 7 ? 'in-progress' : 'completed';
             break;
           }
 
           case 'skills-strength-finder': {
-            const skillsActivities = userActivities.filter(a => 
-              a.activityType === 'skills_assessment_click' || 
+            const skillsActivities = userActivities.filter(a =>
+              a.activityType === 'skills_assessment_click' ||
               a.activityType === 'strength_discovery_completion'
             );
             card.progress = Math.min(skillsActivities.length * 25, 100);
-            card.status = skillsActivities.length === 0 ? 'not-started' : 
+            card.status = skillsActivities.length === 0 ? 'not-started' :
                          skillsActivities.length < 4 ? 'in-progress' : 'completed';
             break;
           }
 
           case 'university-course-finder': {
-            const courseActivities = userActivities.filter(a => 
-              a.activityType === 'course_finder_click' || 
+            const courseActivities = userActivities.filter(a =>
+              a.activityType === 'course_finder_click' ||
               a.activityType === 'university_exploration'
             );
             card.progress = Math.min(courseActivities.length * 10, 100);
-            card.status = courseActivities.length === 0 ? 'not-started' : 
+            card.status = courseActivities.length === 0 ? 'not-started' :
                          courseActivities.length < 10 ? 'in-progress' : 'completed';
             break;
           }
 
           case 'career-exploration-journey': {
-            const explorationActivities = userActivities.filter(a => 
-              a.activityType === 'career_exploration_click' || 
+            const explorationActivities = userActivities.filter(a =>
+              a.activityType === 'career_exploration_click' ||
               a.activityType === 'professional_interview_view'
             );
             card.progress = Math.min(explorationActivities.length * 5, 100);
-            card.status = explorationActivities.length === 0 ? 'not-started' : 
+            card.status = explorationActivities.length === 0 ? 'not-started' :
                          explorationActivities.length < 20 ? 'in-progress' : 'completed';
             break;
           }
@@ -348,7 +350,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
     try {
       // Update progress - mark as started if not already
       const newProgress = card.progress === 0 ? 20 : Math.min((card.progress || 0) + 10, 100);
-      
+
       // Log activity with progress update
       logActivity('assessment_card_click', {
         cardId: card.id,
@@ -366,7 +368,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
     // Navigate to the route
     navigate(card.actionLink);
   };
-  
+
   // Bento grid: Variable height cards based on information complexity
   const getBentoGridClasses = () => {
     return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-[minmax(280px,auto)]";
@@ -381,9 +383,8 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
 
   return (
     <div className={cn("space-y-6", className)}>
-
-  {/* Hero Banner - Replaces glassmorphism progress card */}
-  <Card className="border-0 bg-gradient-to-r from-orange-500 to-orange-400 shadow-lg overflow-hidden relative">
+      {/* Hero Banner - Clean gradient design */}
+      <Card className="border-0 bg-gradient-to-r from-orange-500 to-orange-400 shadow-lg overflow-hidden relative">
         <CardContent className="flex flex-col md:flex-row items-center md:items-end p-6 md:p-8 gap-4 md:gap-8">
           {/* Avatar - hidden on mobile for cleaner look */}
           <div className="hidden md:flex flex-col items-center justify-end">
@@ -391,11 +392,11 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               <User className="h-20 w-20 text-orange-300" />
             </div>
           </div>
-          
+
           {/* Greeting & Quick Actions */}
           <div className="flex-1 flex flex-col items-center md:items-start">
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center md:text-left">
-              Welcome back, Student! 👋
+              Welcome back, Student!
             </h1>
             <div className="flex gap-2 flex-wrap justify-center md:justify-start mb-2">
               <Badge className="bg-white/20 text-white font-semibold backdrop-blur-sm">
@@ -406,113 +407,118 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               </Badge>
             </div>
             <p className="text-white/80 text-sm text-center md:text-left">
+              AI-powered career journey tracking
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-              {/* Resume Where You Left Off - For In-Progress Assessments */}
-              {dynamicCards.filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100).length > 0 && (
-                <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                        <Clock className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg font-bold text-blue-900">Resume Where You Left Off</CardTitle>
-                        <p className="text-sm text-blue-700">Continue your assessments to unlock personalized insights</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {dynamicCards
-                        .filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100)
-                        .map((card) => (
-                          <div
-                            key={card.id}
-                            onClick={() => handleCardClick(card)}
-                            className="group p-4 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center shadow-md flex-shrink-0",
-                                `bg-gradient-to-br ${card.iconGradient}`
-                              )}>
-                                {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-slate-800 mb-1">{card.title}</h4>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-300">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    In Progress
-                                  </Badge>
-                                  <span className="text-xs text-slate-600">{card.timeCommitment} remaining</span>
-                                </div>
-                                <div className="space-y-1">
-                                  <div className="flex items-center justify-between text-xs">
-                                    <span className="text-slate-600 font-medium">{card.progress}% complete</span>
-                                    <span className="text-blue-600 font-bold">Continue →</span>
-                                  </div>
-                                  <Progress value={card.progress} className="h-2" />
-                                </div>
-                              </div>
-                            </div>
+      {/* Resume Where You Left Off - For In-Progress Assessments */}
+      {dynamicCards.filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100).length > 0 && (
+        <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-900/20 dark:to-slate-900">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <IconContainer
+                icon={Clock}
+                emphasis="medium"
+                theme="neutral"
+                size="lg"
+              />
+              <div>
+                <CardTitle className="text-lg font-bold text-blue-900 dark:text-blue-300">Resume Where You Left Off</CardTitle>
+                <p className="text-sm text-blue-700 dark:text-blue-400">Continue your assessments to unlock personalized insights</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dynamicCards
+                .filter(card => card.status === 'in-progress' && (card.progress ?? 0) > 0 && (card.progress ?? 0) < 100)
+                .map((card) => (
+                  <div
+                    key={card.id}
+                    onClick={() => handleCardClick(card)}
+                    className="group p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start gap-3">
+                      <IconContainer
+                        icon={card.icon}
+                        emphasis="medium"
+                        theme="student"
+                        size="md"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-1">{card.title}</h4>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300">
+                            <Clock className="h-3 w-3 mr-1" />
+                            In Progress
+                          </Badge>
+                          <span className="text-xs text-slate-600 dark:text-slate-400">{card.timeCommitment} remaining</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-600 dark:text-slate-400 font-medium">{card.progress}% complete</span>
+                            <span className="text-blue-600 dark:text-blue-400 font-bold">Continue →</span>
                           </div>
-                        ))}
+                          <Progress value={card.progress} className="h-2" />
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              {/* Stat Cards - Centered, clean design (always shown below resume section) */}
-              {loading ? (
-                <div className="flex items-center justify-center py-8 bg-white/90 dark:bg-slate-900 rounded-xl">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                  <span className="ml-2 text-sm text-orange-700 font-medium">Loading your progress...</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                  <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
-                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
-                      {dynamicCards.filter(card => card.progress === 100 || card.status === 'completed').length}
-                    </div>
-                    <div className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                      Assessments Completed
-                    </div>
-                  </div>
-          
-                  <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 drop-shadow-sm">
-                      {careerReadinessScore?.overall || Math.round(
-                        dynamicCards.reduce((sum, card) => sum + (card.progress || 0), 0) / 
-                        dynamicCards.length
-                      )}%
-                    </div>
-                    <div className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                      {careerReadinessScore ? 'Career Readiness' : 'Overall Progress'}
-                    </div>
-                  </div>
-          
-                  <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
-                    <div className="text-3xl font-bold text-red-600 dark:text-red-400 drop-shadow-sm">
-                      {dynamicCards.filter(card => card.urgency === 'high').length}
-                    </div>
-                    <div className="text-sm font-medium text-red-700 dark:text-red-300">
-                      Priority Items
-                    </div>
-                  </div>
-          
-                  <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 drop-shadow-sm">
-                      {userActivities.length}
-                    </div>
-                    <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                      Total Activities
-                    </div>
-                  </div>
-                </div>
-              )}
+      {/* Stat Cards - Centered, clean design */}
+      {loading ? (
+        <div className="flex items-center justify-center py-8 bg-white/90 dark:bg-slate-900 rounded-xl">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          <span className="ml-2 text-sm text-orange-700 dark:text-orange-300 font-medium">Loading your progress...</span>
         </div>
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
+              {dynamicCards.filter(card => card.progress === 100 || card.status === 'completed').length}
+            </div>
+            <div className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              Assessments Completed
+            </div>
+          </div>
+
+          <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 drop-shadow-sm">
+              {careerReadinessScore?.overall || Math.round(
+                dynamicCards.reduce((sum, card) => sum + (card.progress || 0), 0) /
+                dynamicCards.length
+              )}%
+            </div>
+            <div className="text-sm font-medium text-orange-700 dark:text-orange-300">
+              {careerReadinessScore ? 'Career Readiness' : 'Overall Progress'}
+            </div>
+          </div>
+
+          <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
+            <div className="text-3xl font-bold text-red-600 dark:text-red-400 drop-shadow-sm">
+              {dynamicCards.filter(card => card.urgency === 'high').length}
+            </div>
+            <div className="text-sm font-medium text-red-700 dark:text-red-300">
+              Priority Items
+            </div>
+          </div>
+
+          <div className="bg-white/90 dark:bg-slate-900 p-4 rounded-xl text-center space-y-2 shadow hover:scale-105 transition-transform">
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 drop-shadow-sm">
+              {userActivities.length}
+            </div>
+            <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Total Activities
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Student Assessment Cards Grid - Bento Layout */}
@@ -527,7 +533,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               data-card-id={card.id}
               className={cn(
                 "group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-lg",
-                "bg-white/90 dark:bg-slate-900 border border-orange-200/30 rounded-xl",
+                "bg-white/90 dark:bg-slate-900 border border-slate-200/30 dark:border-slate-700/30 rounded-xl",
                 card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10",
                 getCardRowSpan(card)
               )}
@@ -538,17 +544,13 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                   Priority
                 </div>
               )}
-              
-<<<<<<< HEAD
-              <CardHeader className="pb-4 text-center">
-                <div className="flex flex-col items-center gap-3">
-=======
+
               {/* Hero Image Section */}
               <div className="relative h-48 w-full overflow-hidden">
                 <ImageWithFallback
                   src={`https://images.unsplash.com/photo-${card.id === 'discover-my-career' ? '1506744038136-46273834b3fb' : card.id === 'subject-to-career-mapper' ? '1523050854a88' : card.id === 'skills-strength-finder' ? '1522071820081' : card.id === 'university-course-finder' ? '1498243691581' : '1465101046530-73398c7f28ca'}?auto=format&fit=crop&w=600&q=80`}
                   alt={card.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   fallbackSrc="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80"
                 />
                 {/* Progress badge overlay */}
@@ -560,25 +562,18 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                   </div>
                 )}
               </div>
-              
+
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-                    `bg-gradient-to-br ${card.iconGradient}`
-                  )}>
-                    {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
-                  </div>
-<<<<<<< HEAD
-                  <div className="flex-1 w-full">
-                    <CardTitle className="text-lg font-semibold text-slate-800 text-center">{card.title}</CardTitle>
-                    <div className="flex items-center justify-center gap-2 mt-1">
-=======
+                  <IconContainer
+                    icon={card.icon}
+                    emphasis={card.iconEmphasis}
+                    theme="student"
+                    size="lg"
+                  />
                   <div className="flex-1">
                     <CardTitle className="text-lg font-semibold text-slate-800 dark:text-white">{card.title}</CardTitle>
                     <div className="flex items-center gap-2 mt-1">
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
                       <Badge
                         variant="secondary"
                         className={cn(statusConfig.className, "text-xs")}
@@ -591,38 +586,29 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               </CardHeader>
 
-<<<<<<< HEAD
-              <CardContent className="space-y-3 text-center">
-                <CardDescription className="text-sm text-slate-600 text-center">
-=======
               <CardContent className="space-y-3">
                 <CardDescription className="text-sm text-slate-600 dark:text-slate-300">
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
                   {card.studentFocusedDescription}
                 </CardDescription>
 
                 {/* Student Benefit */}
-<<<<<<< HEAD
-                <p className="text-sm text-orange-700 font-medium text-center">{card.studentBenefit}</p>
-=======
                 <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">{card.studentBenefit}</p>
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
 
                 {/* Match Score for completed assessments */}
                 {card.matchScore !== undefined && card.status === 'completed' && (
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 p-3 rounded-lg border border-green-200 dark:border-green-700">
+                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 p-3 rounded-lg border border-emerald-200 dark:border-emerald-700">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 text-green-600 fill-green-600" />
-                        <span className="text-sm font-semibold text-green-800 dark:text-green-300">Career Match Score</span>
+                        <Star className="h-5 w-5 text-emerald-600 fill-emerald-600 dark:text-emerald-400 dark:fill-emerald-400" />
+                        <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Career Match Score</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-green-600 dark:text-green-300">{card.matchScore}%</span>
-                        {card.matchScore >= 90 && <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-300" />}
+                        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{card.matchScore}%</span>
+                        {card.matchScore >= 90 && <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />}
                       </div>
                     </div>
                     {card.matchScore >= 90 && (
-                      <p className="text-xs text-green-700 dark:text-green-300 mt-1">Excellent match! This aligns perfectly with your profile.</p>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">Excellent match! This aligns perfectly with your profile.</p>
                     )}
                   </div>
                 )}
@@ -644,7 +630,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                     <Clock className="h-4 w-4" />
                     <span className="font-medium">{card.timeCommitment}</span>
                   </div>
-                  <span className="text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">
                     {card.requirements?.grade || 'Any form'}
                   </span>
                 </div>
@@ -655,7 +641,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                   data-testid="card-action"
                   onClick={() => handleCardClick(card)}
                   className={cn(
-                    "w-full gap-2 font-medium",
+                    "w-full gap-2 font-semibold",
                     card.urgency === 'high'
                       ? "bg-orange-600 hover:bg-orange-700 text-white"
                       : "bg-orange-500 hover:bg-orange-600 text-white"

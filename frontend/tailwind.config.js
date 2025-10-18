@@ -130,12 +130,57 @@ export default {
         'card-hover': '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
         'btn-primary': '0 4px 8px rgba(255, 107, 53, 0.3)',
       },
+      keyframes: {
+        // Design System V2 - Gradients & Subtle Motion
+        "fade-in-up": {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        "shimmer": {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        // Existing animations
+        'skeleton-loading': {
+          '0%': { opacity: '0.6' },
+          '50%': { opacity: '1' },
+          '100%': { opacity: '0.6' },
+        },
+        'success-scale': {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'error-shake': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(4px)' },
+        },
+        'progressive-reveal': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
       animation: {
+        // Design System V2 - Motion-safe animations
+        'fade-in-up': 'fade-in-up 200ms cubic-bezier(0, 0, 0.2, 1) both',
+        'fade-in-up-fast': 'fade-in-up 120ms cubic-bezier(0, 0, 0.2, 1) both',
+        'shimmer-slow': 'shimmer 1.8s linear infinite',
         // Custom animations matching globals.css
         'skeleton-loading': 'skeleton-loading 1.5s ease-in-out infinite',
         'success-scale': 'success-scale 0.3s ease-out',
         'error-shake': 'error-shake 0.5s ease-in-out',
         'progressive-reveal': 'progressive-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) both',
+      },
+      transitionDuration: {
+        // Design System V2 - Motion timings
+        'fast': '120ms',
+        'medium': '200ms',
+        'slow': '320ms',
+      },
+      transitionTimingFunction: {
+        // Design System V2 - Easing
+        'default': 'cubic-bezier(0, 0, 0.2, 1)',
       },
     },
   },

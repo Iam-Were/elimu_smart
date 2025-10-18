@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { IconContainer } from '@/components/ui/icon-container';
 import { useCounselorDashboard } from '@/hooks/useCounselorDashboard';
 import {
   Users,
@@ -11,14 +12,15 @@ import {
   FileText,
   AlertTriangle,
   Bell,
+  type LucideIcon,
 } from 'lucide-react';
 
 interface CounselorDashboardCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
-  iconGradient: string;
+  icon: LucideIcon;
+  iconEmphasis: 'subtle' | 'medium' | 'high';
   status: 'active' | 'attention' | 'completed' | 'scheduled';
   priority: 'high' | 'medium' | 'low';
   actionText: string;
@@ -42,8 +44,8 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     id: 'premium-students',
     title: 'Premium Students',
     description: 'Active paying clients',
-    icon: <Users className="h-6 w-6" />,
-    iconGradient: 'from-yellow-500 to-yellow-600',
+    icon: Users,
+    iconEmphasis: 'high', // Revenue-critical - high emphasis
     status: 'attention',
     priority: 'high',
     actionText: 'View Students',
@@ -64,8 +66,8 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     id: 'premium-inbox',
     title: 'Premium Inbox',
     description: 'Messages from paid students',
-    icon: <MessageSquare className="h-6 w-6" />,
-    iconGradient: 'from-green-500 to-green-600',
+    icon: MessageSquare,
+    iconEmphasis: 'medium', // Active communication - medium
     status: 'active',
     priority: 'high',
     actionText: 'Open Inbox',
@@ -86,8 +88,8 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     id: 'paid-sessions',
     title: 'Booked Sessions',
     description: 'Scheduled paid counseling sessions',
-    icon: <Calendar className="h-6 w-6" />,
-    iconGradient: 'from-blue-500 to-blue-600',
+    icon: Calendar,
+    iconEmphasis: 'medium', // Scheduled work - medium
     status: 'scheduled',
     priority: 'high',
     actionText: 'View Sessions',
@@ -107,8 +109,8 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     id: 'community-qa',
     title: 'Community Q&A',
     description: 'Answer free tier questions (optional)',
-    icon: <FileText className="h-6 w-6" />,
-    iconGradient: 'from-purple-500 to-purple-600',
+    icon: FileText,
+    iconEmphasis: 'subtle', // Optional activity - subtle
     status: 'active',
     priority: 'medium',
     actionText: 'Browse Questions',
@@ -129,8 +131,8 @@ const counselorDashboardCards: CounselorDashboardCard[] = [
     id: 'counseling-analytics',
     title: 'Performance',
     description: 'Track effectiveness & retention',
-    icon: <BarChart3 className="h-6 w-6" />,
-    iconGradient: 'from-amber-500 to-amber-600',
+    icon: BarChart3,
+    iconEmphasis: 'subtle', // Metrics review - subtle
     status: 'completed',
     priority: 'medium',
     actionText: 'View Stats',
@@ -466,10 +468,13 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               {/* LinkedIn-style simplified header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110 bg-gradient-to-br ${card.iconGradient}`}>
-                    {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "h-5 w-5 text-white" })}
-                  </div>
-                  <CardTitle className="text-sm font-semibold text-slate-800 leading-tight">
+                  <IconContainer
+                    icon={card.icon}
+                    emphasis={card.iconEmphasis}
+                    theme="counselor"
+                    size="md"
+                  />
+                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
                     {card.title}
                   </CardTitle>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
+import { IconContainer } from '@/components/ui/icon-container';
 import {
   Target,
   GraduationCap,
@@ -10,6 +11,7 @@ import {
   Loader2,
   Trophy,
   Award,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -19,8 +21,8 @@ interface StudentDashboardCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  iconGradient: string;
+  icon: LucideIcon;
+  iconEmphasis: 'subtle' | 'medium' | 'high';
   changeType: 'positive' | 'negative' | 'neutral';
   value: string | number;
   change: string;
@@ -36,7 +38,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'Career Readiness',
     description: 'Overall progress',
     icon: Target,
-    iconGradient: 'from-orange-500 to-orange-600',
+    iconEmphasis: 'medium', // Important metric - medium emphasis
     changeType: 'positive',
     value: 'Loading...',
     change: 'Live tracking',
@@ -49,7 +51,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'University & Scholarships',
     description: 'KUCCPS & funding',
     icon: GraduationCap,
-    iconGradient: 'from-indigo-500 to-indigo-600',
+    iconEmphasis: 'medium', // Important for Form 4 - medium
     changeType: 'positive',
     value: 'Loading...',
     change: 'Checking options',
@@ -62,7 +64,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'Assessments',
     description: 'Career discovery',
     icon: Briefcase,
-    iconGradient: 'from-purple-500 to-purple-600',
+    iconEmphasis: 'subtle', // Informational metric - subtle
     changeType: 'positive',
     value: 'Loading...',
     change: 'New insights',
@@ -75,7 +77,7 @@ const studentDashboardCards: StudentDashboardCard[] = [
     title: 'Achievements',
     description: 'Milestones unlocked',
     icon: Award,
-    iconGradient: 'from-yellow-500 to-amber-600',
+    iconEmphasis: 'subtle', // Secondary metric - subtle
     changeType: 'positive',
     value: 'Loading...',
     change: 'Keep it up!',
@@ -373,12 +375,16 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
       )}
 
       {/* Overall Progress Summary - Clean Design */}
-      <Card className="bg-white/90 dark:bg-slate-900 border-orange-200/30 mb-6 shadow-lg">
+      <Card className="bg-white/90 dark:bg-slate-900 border-orange-200/30 dark:border-orange-700/30 mb-6 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg">
-              <Trophy className="h-6 w-6" />
-            </div>
+            <IconContainer
+              icon={Trophy}
+              emphasis="high"
+              theme="student"
+              size="lg"
+              glow={true}
+            />
             <div>
               <div className="text-xl font-bold text-slate-800 dark:text-white">
                 Overall Progress Summary
@@ -478,13 +484,13 @@ export const StudentDashboardCards: React.FC<StudentDashboardCardsProps> = ({
               <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               
               <CardHeader className="flex flex-col items-center justify-center space-y-2 pb-3 relative z-10 text-center">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-                  `bg-gradient-to-br ${card.iconGradient}`
-                )}>
-                  {React.createElement(card.icon, { className: "h-5 w-5 text-white" })}
-                </div>
-                <CardTitle className="text-sm font-semibold text-slate-800 leading-tight text-center">
+                <IconContainer
+                  icon={card.icon}
+                  emphasis={card.iconEmphasis}
+                  theme="student"
+                  size="md"
+                />
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight text-center">
                   {card.title}
                 </CardTitle>
               </CardHeader>

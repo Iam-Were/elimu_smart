@@ -22,28 +22,34 @@ import {
   Users,
   ChevronDown,
   User,
-      <header
-        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full shadow-sm", className)}
-        style={getHeaderStyles()}
-        role="banner"
-        aria-label={`Navigation for ${user?.role || 'user'} role`}
-      >
-        {/* Subtle floating background elements (low opacity gradients) */}
-        <div
-          className="absolute top-0 left-1/4 w-32 h-32 rounded-full -mt-16 pointer-events-none"
-          style={{
-            background: `linear-gradient(to bottom right, ${getThemeColor(currentTheme)}0d, ${getThemeColor(currentTheme)}08)`
-          }}
-        />
-        <div
-          className="absolute top-0 right-1/3 w-24 h-24 rounded-full -mt-12 pointer-events-none"
-          style={{
-            background: `linear-gradient(to bottom left, ${getThemeColor(currentTheme)}14, ${getThemeColor(currentTheme)}0a)`
-          }}
-        />
-        <div className={cn("container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10", "transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
-        {/* Logo */}
-        <div className="flex items-center space-x-4">
+  Settings,
+  CreditCard,
+  HelpCircle,
+  Shield,
+  LogOut,
+  Brain,
+  BarChart3,
+  Calendar,
+  MessageSquare,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '../../hooks/useAuth';
+import { useThemeContext } from '../../hooks/useThemeContext';
+import type { ThemeRole, User as UserType } from '../../types';
+import { NotificationCenter } from '../common/NotificationCenter';
+import { getRoleColor } from '../../constants/theme';
+
+interface Sprint18NavigationProps {
+  className?: string;
+}
+
+export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
+  className,
+}) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { currentTheme } = useThemeContext();
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
 
@@ -147,32 +153,30 @@ import {
       </div>
       
       <header
-        className={cn("bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50 w-full shadow-sm", className)}
+        className={cn("glass-nav sticky top-0 z-50 w-full border-b relative overflow-hidden", className)}
         style={getHeaderStyles()}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
       >
-<<<<<<< HEAD
-          {/* Subtle floating background elements (low opacity gradients) */}
-          <div
-            className="absolute top-0 left-1/4 w-32 h-32 rounded-full -mt-16 pointer-events-none"
-            style={{
-              background: `linear-gradient(to bottom right, ${getThemeColor(currentTheme)}0d, ${getThemeColor(currentTheme)}08)`
-            }}
-          />
-          <div
-            className="absolute top-0 right-1/3 w-24 h-24 rounded-full -mt-12 pointer-events-none"
-            style={{
-              background: `linear-gradient(to bottom left, ${getThemeColor(currentTheme)}14, ${getThemeColor(currentTheme)}0a)`
-            }}
-          />
-          <div className={cn("container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10", "transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
-          {/* Logo */}
-          <div className="flex items-center space-x-4">
->>>>>>> 5380120 (docs(design): add gradients & subtle motion guidelines, Tailwind snippets, and role-specific examples)
+        {/* Subtle floating background elements */}
+        <div
+          className="absolute top-0 left-1/4 w-32 h-32 rounded-full -mt-16 animate-pulse"
+          style={{
+            background: `linear-gradient(to bottom right, ${getThemeColor(currentTheme)}0d, ${getThemeColor(currentTheme)}08)`
+          }}
+        ></div>
+        <div
+          className="absolute top-0 right-1/3 w-24 h-24 rounded-full -mt-12"
+          style={{
+            background: `linear-gradient(to bottom left, ${getThemeColor(currentTheme)}14, ${getThemeColor(currentTheme)}0a)`
+          }}
+        ></div>
+        <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
+        {/* Enhanced Logo with glass effects - Scroll-based animations */}
+        <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
           <Link to="/" className="flex items-center space-x-2 group">
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
+              className="glass-card flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
               style={getLogoStyles()}
             >
               <Brain className="h-6 w-6 text-white drop-shadow-sm" />

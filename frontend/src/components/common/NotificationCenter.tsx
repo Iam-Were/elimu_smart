@@ -81,21 +81,24 @@ export const NotificationCenter: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
+      <DropdownMenuContent
+        align="end"
+        className="w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl"
+      >
+        <DropdownMenuLabel className="flex items-center justify-between text-sm font-semibold bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <span>Notifications</span>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
-              className="h-6 px-2 text-xs"
+              className="h-6 px-2 text-xs hover:bg-white dark:hover:bg-slate-700 transition-all"
             >
               Mark all read
             </Button>
           )}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -114,8 +117,10 @@ export const NotificationCenter: React.FC = () => {
             {notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`flex items-start gap-3 p-3 cursor-pointer ${
-                  !notification.read ? 'bg-blue-50 hover:bg-blue-100' : ''
+                className={`flex items-start gap-3 p-3 cursor-pointer transition-all ${
+                  !notification.read
+                    ? 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
@@ -145,9 +150,9 @@ export const NotificationCenter: React.FC = () => {
 
         {notifications.length > 0 && (
           <>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
             <DropdownMenuItem
-              className="text-center justify-center text-sm font-medium cursor-pointer"
+              className="text-center justify-center text-sm font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
               onClick={() => navigate('/notifications')}
             >
               View all notifications

@@ -6,6 +6,7 @@ import { MobileBottomNav } from '../navigation/MobileBottomNav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Button from '@/components/ui/button';
+import { IconContainer } from '@/components/ui/icon-container';
 import {
   GraduationCap,
   Target,
@@ -34,7 +35,9 @@ import {
   Info,
   Briefcase,
   Newspaper,
-  Building
+  Building,
+  Send,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useThemeContext } from '../../hooks/useThemeContext';
@@ -350,6 +353,72 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
                       <p className="text-xs text-slate-400 mb-1">Location</p>
                       <p className="text-white font-medium text-sm">Nairobi, Kenya</p>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Newsletter Section - Design System V2 */}
+          <div className="mb-16">
+            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 shadow-2xl overflow-hidden">
+              <CardContent className="p-8 md:p-12 relative">
+                {/* Background decoration */}
+                <div className="absolute inset-0 bg-[var(--shine-overlay)] opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="grid md:grid-cols-2 gap-8 items-center relative z-10">
+                  {/* Left side - Icon & Text */}
+                  <div className="text-center md:text-left space-y-4">
+                    <div className="flex items-center justify-center md:justify-start gap-3 motion-safe:animate-fade-in-up">
+                      <IconContainer
+                        icon={Bell}
+                        emphasis="high"
+                        theme="student"
+                        size="xl"
+                        glow={true}
+                        className="mx-auto md:mx-0"
+                      />
+                      <h3 className="text-2xl md:text-3xl font-bold text-white">
+                        Stay Updated
+                      </h3>
+                    </div>
+                    <p className="text-orange-50 leading-relaxed max-w-md mx-auto md:mx-0">
+                      Get weekly career tips, scholarship alerts, and KUCCPS deadline reminders delivered to your inbox.
+                    </p>
+                    <div className="flex items-center gap-2 text-orange-100 text-sm justify-center md:justify-start">
+                      <Shield className="w-4 h-4" />
+                      <span>No spam. Unsubscribe anytime.</span>
+                    </div>
+                  </div>
+
+                  {/* Right side - Newsletter Form */}
+                  <div className="space-y-4">
+                    <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const email = formData.get('email');
+                      console.log('Newsletter signup:', email);
+                      // TODO: Integrate with backend newsletter API
+                      alert('Thanks for subscribing! Check your email to confirm.');
+                    }}>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email address"
+                        required
+                        className="flex-1 px-4 py-3 rounded-lg bg-white/95 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                      />
+                      <Button
+                        type="submit"
+                        className="bg-white text-orange-600 hover:bg-orange-50 font-semibold px-6 py-3 rounded-lg inline-flex items-center justify-center gap-2 transition-all active:scale-95"
+                      >
+                        <Send className="w-4 h-4" />
+                        Subscribe
+                      </Button>
+                    </form>
+                    <p className="text-xs text-orange-100 text-center sm:text-left">
+                      Join 2,000+ students getting career guidance in their inbox every week.
+                    </p>
                   </div>
                 </div>
               </CardContent>

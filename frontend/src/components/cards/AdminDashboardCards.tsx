@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { IconContainer } from '@/components/ui/icon-container';
 import {
   Users,
   Shield,
@@ -24,10 +25,11 @@ import {
   Flag,
   CreditCard,
   Star,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { 
-  type AdminRoleType, 
+import {
+  type AdminRoleType,
   getAccessibleCardIds
 } from '../../utils/adminPermissions';
 import { useAdminDashboard } from '@/hooks/useAdminDashboard';
@@ -36,7 +38,8 @@ interface AdminCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
+  iconEmphasis: 'subtle' | 'medium' | 'high';
   value?: string | number;
   change?: string;
   status?: 'normal' | 'warning' | 'critical' | 'good';
@@ -77,7 +80,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'business-analytics',
       title: 'Business Intelligence',
       description: 'Revenue, growth metrics, and strategic insights for platform optimization',
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: BarChart3,
+      iconEmphasis: 'high', // Strategic business metrics - high
       value: '₹4.2M',
       change: '+23%',
       status: 'good',
@@ -94,7 +98,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'platform-overview',
       title: 'Platform Overview',
       description: 'High-level platform performance and user growth tracking',
-      icon: <TrendingUp className="h-5 w-5" />,
+      icon: TrendingUp,
+      iconEmphasis: 'medium', // Platform growth - medium
       value: '2,847',
       change: '+12%',
       status: 'good',
@@ -111,7 +116,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'provider-management',
       title: 'Service Provider Network',
       description: 'Counselor verification, performance tracking, and network optimization',
-      icon: <UserCheck className="h-5 w-5" />,
+      icon: UserCheck,
+      iconEmphasis: 'medium', // Provider quality - medium
       value: '45',
       change: '+3',
       status: 'normal',
@@ -128,7 +134,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'revenue-optimization',
       title: 'Revenue & Pricing',
       description: 'Platform monetization, pricing strategy, and financial performance',
-      icon: <CreditCard className="h-5 w-5" />,
+      icon: CreditCard,
+      iconEmphasis: 'high', // Financial metrics - high
       value: '₹45.2K',
       change: '+18%',
       status: 'good',
@@ -149,7 +156,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'system-health',
       title: 'System Monitoring',
       description: 'Real-time system performance, uptime, and infrastructure monitoring',
-      icon: <Server className="h-5 w-5" />,
+      icon: Server,
+      iconEmphasis: 'high', // System critical - high
       value: '99.7%',
       change: 'Uptime',
       status: 'good',
@@ -166,7 +174,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'user-support',
       title: 'Customer Support',
       description: 'User assistance, technical troubleshooting, and support ticket management',
-      icon: <HeadphonesIcon className="h-5 w-5" />,
+      icon: HeadphonesIcon,
+      iconEmphasis: 'medium', // Support activity - medium
       value: '23',
       change: 'Open',
       status: 'warning',
@@ -183,7 +192,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'technical-maintenance',
       title: 'System Maintenance',
       description: 'Platform updates, security patches, and infrastructure optimization',
-      icon: <Settings className="h-5 w-5" />,
+      icon: Settings,
+      iconEmphasis: 'subtle', // Routine maintenance - subtle
       value: '4',
       change: 'Pending',
       status: 'normal',
@@ -200,7 +210,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'content-operations',
       title: 'Content Management',
       description: 'Content moderation, quality assurance, and policy enforcement',
-      icon: <FileText className="h-5 w-5" />,
+      icon: FileText,
+      iconEmphasis: 'medium', // Content review - medium
       value: '12',
       change: 'Flagged',
       status: 'warning',
@@ -221,7 +232,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'provider-verification',
       title: 'Provider Verification',
       description: 'Counselor credentialing, background checks, and professional validation',
-      icon: <Shield className="h-5 w-5" />,
+      icon: Shield,
+      iconEmphasis: 'high', // Security critical - high
       value: '8',
       change: 'Pending',
       status: 'normal',
@@ -238,7 +250,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'student-safety',
       title: 'Student Safety',
       description: 'Child protection, safety monitoring, and incident response protocols',
-      icon: <UserCheck className="h-5 w-5" />,
+      icon: UserCheck,
+      iconEmphasis: 'high', // Student safety - high priority
       value: '2,456',
       change: 'Protected',
       status: 'good',
@@ -255,7 +268,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'trust-safety',
       title: 'Trust & Safety',
       description: 'Platform safety, abuse prevention, and community standards enforcement',
-      icon: <Flag className="h-5 w-5" />,
+      icon: Flag,
+      iconEmphasis: 'high', // Trust & safety - critical high
       value: '3',
       change: 'Active',
       status: 'critical',
@@ -272,7 +286,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'provider-success',
       title: 'Provider Success',
       description: 'Counselor onboarding, training, performance tracking, and retention',
-      icon: <Star className="h-5 w-5" />,
+      icon: Star,
+      iconEmphasis: 'subtle', // Provider success metrics - subtle
       value: '4.6',
       change: 'Avg Rating',
       status: 'good',
@@ -293,7 +308,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'audit-log',
       title: 'Activity Audit',
       description: 'Complete audit trail of all admin actions and system events',
-      icon: <Activity className="h-5 w-5" />,
+      icon: Activity,
+      iconEmphasis: 'subtle', // Activity logs - informational
       value: '1,234',
       change: 'Today',
       status: 'normal',
@@ -310,7 +326,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'security-monitoring',
       title: 'Security Center',
       description: 'Threat detection, security alerts, and incident response management',
-      icon: <Lock className="h-5 w-5" />,
+      icon: Lock,
+      iconEmphasis: 'high', // Security alerts - high
       value: '2',
       change: 'Alerts',
       status: 'warning',
@@ -327,7 +344,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'user-management',
       title: 'User Administration',
       description: 'Comprehensive user management, roles, and access control',
-      icon: <Users className="h-5 w-5" />,
+      icon: Users,
+      iconEmphasis: 'medium', // User admin - medium
       value: '2,847',
       change: 'Total',
       status: 'normal',
@@ -344,7 +362,8 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
       id: 'system-configuration',
       title: 'Platform Settings',
       description: 'System configuration, feature flags, and platform customization',
-      icon: <Database className="h-5 w-5" />,
+      icon: Database,
+      iconEmphasis: 'subtle', // System config - subtle
       value: '156',
       change: 'Settings',
       status: 'normal',
@@ -608,9 +627,12 @@ export const AdminDashboardCards: React.FC<AdminDashboardCardsProps> = ({
           <CardHeader title={card.title} className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
-                  {card.icon}
-                </div>
+                <IconContainer
+                  icon={card.icon}
+                  emphasis={card.iconEmphasis}
+                  theme="admin"
+                  size="md"
+                />
                 <div className="space-y-1">
                   {card.badge && (
                     <Badge className={cn("text-xs", getBadgeColor(card.badge))}>

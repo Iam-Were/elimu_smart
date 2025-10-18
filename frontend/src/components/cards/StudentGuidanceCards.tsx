@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { IconContainer } from '@/components/ui/icon-container';
 import {
   Users,
   MessageSquare,
@@ -10,6 +11,7 @@ import {
   BookOpen,
   Calendar,
   Lock,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -20,8 +22,8 @@ interface StudentGuidanceCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
-  iconGradient: string;
+  icon: LucideIcon;
+  iconEmphasis: 'subtle' | 'medium' | 'high';
   status: 'available' | 'active' | 'urgent' | 'premium';
   actionText: string;
   actionLink: string;
@@ -33,13 +35,13 @@ interface StudentGuidanceCard {
 
 // Freemium guidance cards - Free tier + Premium tier
 const studentGuidanceCards: StudentGuidanceCard[] = [
-  // FREE TIER (3 cards)
+  // FREE TIER (3 cards) - Subtle emphasis
   {
     id: 'community-qa',
     title: 'Ask Community',
     description: 'Get answers from counselors & peers',
-    icon: <Users className="h-6 w-6" />,
-    iconGradient: 'from-purple-500 to-purple-600',
+    icon: Users,
+    iconEmphasis: 'subtle', // Free informational - subtle
     status: 'available',
     actionText: 'Ask Question',
     actionLink: '/guidance/community-qa',
@@ -52,8 +54,8 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     id: 'career-resources',
     title: 'Career Resources',
     description: 'Guides, videos, and planning tools',
-    icon: <BookOpen className="h-6 w-6" />,
-    iconGradient: 'from-blue-500 to-blue-600',
+    icon: BookOpen,
+    iconEmphasis: 'subtle', // Free browsing - subtle
     status: 'available',
     actionText: 'Browse Resources',
     actionLink: '/guidance/resources',
@@ -66,8 +68,8 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     id: 'crisis-support',
     title: 'Crisis Resources',
     description: 'Verified 24/7 helplines',
-    icon: <Heart className="h-6 w-6" />,
-    iconGradient: 'from-red-500 to-red-600',
+    icon: Heart,
+    iconEmphasis: 'medium', // Urgent but free - medium emphasis
     status: 'urgent',
     actionText: 'Get Help Now',
     actionLink: '/guidance/crisis',
@@ -77,13 +79,13 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     isPremium: false
   },
 
-  // PREMIUM TIER (2 cards)
+  // PREMIUM TIER (2 cards) - Medium emphasis (important paid features)
   {
     id: 'counselor-inbox',
     title: 'Message Counselor',
     description: 'Private 1-on-1 guidance',
-    icon: <MessageSquare className="h-6 w-6" />,
-    iconGradient: 'from-green-500 to-green-600',
+    icon: MessageSquare,
+    iconEmphasis: 'medium', // Premium feature - medium
     status: 'premium',
     actionText: 'Upgrade to Message',
     actionLink: '/inbox',
@@ -96,8 +98,8 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     id: 'book-session',
     title: 'Book Session',
     description: 'Schedule video/phone meeting',
-    icon: <Calendar className="h-6 w-6" />,
-    iconGradient: 'from-amber-500 to-amber-600',
+    icon: Calendar,
+    iconEmphasis: 'medium', // Premium feature - medium
     status: 'premium',
     actionText: 'View Pricing',
     actionLink: '/guidance/book-session',
@@ -110,10 +112,10 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'urgent': return 'text-red-600';
-    case 'premium': return 'text-amber-600';
-    case 'active': return 'text-blue-600';
-    default: return 'text-green-600';
+    case 'urgent': return 'text-red-600 dark:text-red-400';
+    case 'premium': return 'text-amber-600 dark:text-amber-400';
+    case 'active': return 'text-blue-600 dark:text-blue-400';
+    default: return 'text-green-600 dark:text-green-400';
   }
 };
 
@@ -211,30 +213,35 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
         {displayedCards.map((card) => (
           <Card
             key={card.id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 border-orange-200"
+            className={cn(
+              "cursor-pointer hover:shadow-lg transition-all duration-200",
+              "border-slate-200/30 dark:border-slate-700/30",
+              "hover:scale-[1.02]",
+              card.isPremium && !hasActiveSubscription() && "ring-2 ring-amber-300/50 dark:ring-amber-500/50"
+            )}
             onClick={() => handleCardClick(card)}
           >
             <CardHeader className="flex flex-col items-center text-center space-y-3 pb-4">
-              <div className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-110",
-                `bg-gradient-to-br ${card.iconGradient}`
-              )}>
-                {React.cloneElement(card.icon as React.ReactElement<{ className?: string }>, { className: "w-6 h-6 text-white" })}
-              </div>
+              <IconContainer
+                icon={card.icon}
+                emphasis={card.iconEmphasis}
+                theme={card.isPremium ? 'neutral' : 'student'}
+                size="lg"
+              />
               <div className="w-full">
-                <CardTitle className="text-base font-semibold text-slate-800 flex items-center justify-center gap-2">
+                <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-center gap-2">
                   {card.title}
                   {card.isPremium && (
-                    <Lock className="h-4 w-4 text-amber-500" />
+                    <Lock className="h-4 w-4 text-amber-500 dark:text-amber-400" />
                   )}
                 </CardTitle>
-                <p className="text-sm text-slate-600 text-center mt-1">{card.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 text-center mt-1">{card.description}</p>
               </div>
               <Badge
                 variant="outline"
                 className={cn(
                   getStatusColor(card.status),
-                  card.isPremium && "bg-amber-50 border-amber-300"
+                  card.isPremium && "bg-amber-50 border-amber-300 dark:bg-amber-900/30 dark:border-amber-700"
                 )}
               >
                 {card.isPremium ? 'Premium' : card.status}
@@ -242,20 +249,20 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
             </CardHeader>
             <CardContent className="text-center space-y-3">
               <div>
-                <div className="text-lg font-bold text-slate-800">
+                <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
                   {card.value || 'Ready'}
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {card.change || 'Click to access'}
                 </p>
               </div>
               <Button
                 size="sm"
                 className={cn(
-                  "w-full",
+                  "w-full font-semibold",
                   card.isPremium && !hasActiveSubscription()
-                    ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-                    : "bg-orange-600 hover:bg-orange-700"
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                    : "bg-orange-600 hover:bg-orange-700 text-white"
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -273,19 +280,19 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
 
       {/* Summary stats */}
       {!showAll && studentGuidanceCards.length > maxCards && (
-        <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+        <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {studentGuidanceCards.filter(card => card.status === 'available').length}
               </div>
-              <div className="text-sm text-orange-700">Available Now</div>
+              <div className="text-sm text-orange-700 dark:text-orange-300">Available Now</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {studentGuidanceCards.filter(card => card.value === 'Free').length}
               </div>
-              <div className="text-sm text-orange-700">Free Services</div>
+              <div className="text-sm text-orange-700 dark:text-orange-300">Free Services</div>
             </div>
           </div>
         </div>

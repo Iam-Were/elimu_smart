@@ -40,7 +40,12 @@
       "Read(//c/Users/c/Documents/elimu-smart/components/**)",
       "Read(//c/Users/c/Documents/elimu-smart/**)",
       "Bash(git pull:*)",
-      "Bash(git stash pop)"
+      "Bash(git stash pop)",
+      "Bash(cat /c/Users/c/Documents/GitHub/elimu_smart/DESIGN_SYSTEM_V2.md)",
+      "Bash(cat /c/Users/c/Documents/GitHub/elimu_smart/frontend/tailwind.config.js)",
+      "Bash(cat /c/Users/c/Documents/GitHub/elimu_smart/CLAUDE.md)",
+      "Bash(git checkout HEAD -- frontend/src/components/navigation/Sprint18Navigation.tsx)",
+      "Bash(git checkout 2d95ff5 -- frontend/src/components/navigation/Sprint18Navigation.tsx)"
     ],
     "deny": [],
     "ask": [],
