@@ -775,9 +775,10 @@ const InboxPage: React.FC = () => {
                 <Button
                   size="sm"
                   onClick={() => setIsComposeModalOpen(true)}
-                  className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-full px-4"
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg px-4 shadow-sm"
                 >
-                  ✉️ Compose
+                  <MessageCircle className="h-4 w-4 mr-1.5" />
+                  Compose
                 </Button>
               </div>
 
