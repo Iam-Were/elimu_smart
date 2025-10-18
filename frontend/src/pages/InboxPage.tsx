@@ -125,13 +125,15 @@ const InboxPage: React.FC = () => {
   const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const [pinnedConversationIds, setPinnedConversationIds] = useState<string[]>([]);
-  const [starredMessagesByConversation, setStarredMessagesByConversation] = useState<Record<string, string[]>>({});
-  const [messageReactionsMap, setMessageReactionsMap] = useState<Record<string, MessageReaction[]>>({});
+
+  const [starredMessagesByConversation, setStarredMessagesByConversation] = useState<Record<string, string[]>>({} as Record<string, string[]>);
+  const [messageReactionsMap, setMessageReactionsMap] = useState<Record<string, MessageReaction[]>>({} as Record<string, MessageReaction[]>);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoMarkRead, setAutoMarkRead] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -301,7 +303,7 @@ const InboxPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<LinkedInConversation[]>([]);
 
   useEffect(() => {
-  const performSearch = async () => {
+    const performSearch = async () => {
       if (!searchTerm.trim()) {
         setSearchResults([]);
         return;
@@ -431,7 +433,7 @@ const InboxPage: React.FC = () => {
       } else {
         await sendMessage(currentRoom.id, newMessage);
       }
-      
+
       setNewMessage('');
       toast.success('Message sent');
     } catch (error) {
@@ -527,22 +529,22 @@ const InboxPage: React.FC = () => {
         const base64 = e.target?.result as string;
         const parseFile = new Parse.File(uploadData.fileName, { base64: base64.split(',')[1] });
         await parseFile.save();
-        
+
         clearInterval(interval);
         setUploadProgress(100);
         setIsUploading(false);
-        
+
         // Store file URL for sending
         setUploadedFile({ 
           ...file, 
           url: parseFile.url(), 
           parseFileName: uploadData.fileName 
         } as any);
-        
+
         toast.success(`${file.name} uploaded successfully`);
       };
       reader.readAsDataURL(file);
-      
+
     } catch (error) {
       console.error('File upload failed:', error);
       setIsUploading(false);
@@ -706,7 +708,7 @@ const InboxPage: React.FC = () => {
               <label htmlFor="recipient" className="text-sm font-medium text-gray-700">
                 To:
               </label>
-              <Input 
+              <Input
                 id="recipient"
                 placeholder="Search for a counselor or mentor..." 
                 className="w-full focus:ring-[#f97316] focus:border-[#f97316]" 
@@ -718,7 +720,7 @@ const InboxPage: React.FC = () => {
               <label htmlFor="message" className="text-sm font-medium text-gray-700">
                 Message:
               </label>
-              <Textarea 
+              <Textarea
                 id="message"
                 placeholder="Type your message here..." 
                 rows={5} 
@@ -749,808 +751,400 @@ const InboxPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-    <div className="h-screen flex bg-gray-50 p-2 md:p-4 gap-2 md:gap-4">
-      {/* LinkedIn-style Sidebar Card - Visible on mobile and desktop */}
-      <Card className="w-full md:w-80 flex flex-col shadow-lg border-r h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)]">
-        {/* Header */}
-        <CardHeader className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-[#f97316]" />
-              Messages
-              {currentRoom && (
-                <Badge 
-                  variant={connectionStatus === 'connected' ? 'default' : connectionStatus === 'connecting' ? 'secondary' : 'destructive'}
-                  className="text-[10px] px-1.5 py-0"
-                >
-                  {connectionStatus === 'connected' ? '🟢' : connectionStatus === 'connecting' ? '🟡' : '🔴'}
-                </Badge>
-              )}
-            </h1>
-            <Button
-              size="sm"
-              onClick={() => setIsComposeModalOpen(true)}
-              className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-full px-4"
-            >
-              ✉️ Compose
-            </Button>
-          </div>
-
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search messages... (Cmd+K)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-gray-300 focus:border-[#f97316] focus:ring-[#f97316] rounded-md"
-            />
-            <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-0.5 text-[10px] bg-gray-100 border border-gray-200 rounded">
-              ⌘K
-            </kbd>
-          </div>
-
-          {/* Keyboard Shortcuts Hint */}
-          <div className="mb-3 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-700">
-              💡 <strong>Tip:</strong> Press <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Cmd+N</kbd> for new message, <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Esc</kbd> to close
-            </p>
-          </div>
-
-          {/* Filter Tabs - Shadcn Tabs Component */}
-          <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as typeof activeFilter)} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-gray-100 h-9">
-              <TabsTrigger value="all" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
-                All
-              </TabsTrigger>
-              <TabsTrigger value="unread" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316] relative">
-                Unread
-                {linkedInConversations.filter(c => c.unreadCount > 0).length > 0 && (
-                  <Badge variant="default" className="ml-1 h-4 px-1.5 text-[10px] bg-[#f97316]">
-                    {linkedInConversations.filter(c => c.unreadCount > 0).length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="starred" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
-                Starred
-              </TabsTrigger>
-              <TabsTrigger value="archived" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
-                Archived
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </CardHeader>
-
-        {/* Conversations List */}
-        <CardContent className="flex-1 p-0">
-          <ScrollArea className="h-full">
-          {isLoading && filteredConversations.length === 0 ? (
-            <div className="flex flex-col gap-1 p-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-4 border-b border-gray-100">
-                  <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-12" />
-                    </div>
-                    <Skeleton className="h-3 w-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredConversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm px-4">
-              <MessageCircle className="h-8 w-8 mb-2 text-gray-300" />
-              <span>No conversations yet</span>
-              <span className="text-xs text-gray-400 mt-1">Start connecting with counselors and mentors</span>
-            </div>
-          ) : (
-            filteredConversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                className={cn(
-                  "group relative flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors",
-                  selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]",
-                  conversation.isPinned && "bg-blue-50/50"
-                )}
-                onClick={() => handleConversationClick(conversation)}
-              >
-                {/* Pin Indicator */}
-                {conversation.isPinned && (
-                  <div className="absolute top-2 right-2">
-                    <Pin className="h-3 w-3 text-blue-500 fill-blue-500" />
-                  </div>
-                )}
-
-                {/* Pin Toggle Button (on hover) */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePinnedConversation(conversation.id);
-                  }}
-                  className="absolute top-2 right-8 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-200"
-                  title={conversation.isPinned ? "Unpin conversation" : "Pin conversation"}
-                >
-                  <Pin className={cn(
-                    "h-3.5 w-3.5",
-                    conversation.isPinned ? "text-blue-500 fill-blue-500" : "text-gray-400"
-                  )} />
-                </button>
-
-                <div className="relative">
-                  <Avatar className="h-12 w-12 border border-gray-200">
-                    <AvatarImage src={conversation.participant.avatar} />
-                    <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
-                      {conversation.participant.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  {conversation.participant.isOnline && (
-                    <Circle className="absolute -bottom-1 -right-1 h-4 w-4 fill-green-500 text-green-500 border-2 border-white rounded-full" />
+      <div className="h-screen flex bg-gray-50 p-2 md:p-4">
+        {/* Unified LinkedIn-style Card - Single container for both sidebar and chat */}
+        <Card className="w-full flex shadow-lg border-r h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)]">
+          
+          {/* Sidebar Section - Left side of unified card */}
+          <div className="w-full md:w-80 flex flex-col border-r border-gray-200">
+            {/* Header */}
+            <CardHeader className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-[#f97316]" />
+                  Messages
+                  {currentRoom && (
+                    <Badge
+                      variant={connectionStatus === 'connected' ? 'default' : connectionStatus === 'connecting' ? 'secondary' : 'destructive'}
+                      className="text-[10px] px-1.5 py-0"
+                    >
+                      {connectionStatus === 'connected' ? '🟢' : connectionStatus === 'connecting' ? '🟡' : '🔴'}
+                    </Badge>
                   )}
-                </div>
+                </h1>
+                <Button
+                  size="sm"
+                  onClick={() => setIsComposeModalOpen(true)}
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-full px-4"
+                >
+                  ✉️ Compose
+                </Button>
+              </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm truncate text-gray-900">
-                        {conversation.participant.name}
-                      </h4>
-                      <Badge className={`text-xs px-2 py-0 rounded-full ${getRoleColor(conversation.participant.role)}`}>
-                        {getRoleIcon(conversation.participant.role)}
-                      </Badge>
-                    </div>
-                    <span className="text-xs text-gray-500 ml-2">
-                      {formatTime(conversation.lastMessage.timestamp)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-600 truncate flex-1">
-                      {conversation.lastMessage.content}
-                    </p>
-                    {conversation.unreadCount > 0 && (
-                      <Badge className="bg-[#f97316] text-white text-xs h-5 w-5 rounded-full flex items-center justify-center ml-2">
-                        {conversation.unreadCount}
+              {/* Search */}
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search messages... (Cmd+K)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 border-gray-300 focus:border-[#f97316] focus:ring-[#f97316] rounded-md"
+                />
+                <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-0.5 text-[10px] bg-gray-100 border border-gray-200 rounded">
+                  ⌘K
+                </kbd>
+              </div>
+
+              {/* Keyboard Shortcuts Hint */}
+              <div className="mb-3 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-700">
+                  💡 <strong>Tip:</strong> Press <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Cmd+N</kbd> for new message, <kbd className="px-1 py-0.5 bg-white border border-blue-300 rounded text-[10px]">Esc</kbd> to close
+                </p>
+              </div>
+
+              {/* Filter Tabs - Shadcn Tabs Component */}
+              <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as typeof activeFilter)} className="w-full">
+                <TabsList className="grid w-full grid-cols-4 bg-gray-100 h-9">
+                  <TabsTrigger value="all" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger value="unread" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316] relative">
+                    Unread
+                    {linkedInConversations.filter(c => c.unreadCount > 0).length > 0 && (
+                      <Badge variant="default" className="ml-1 h-4 px-1.5 text-[10px] bg-[#f97316]">
+                        {linkedInConversations.filter(c => c.unreadCount > 0).length}
                       </Badge>
                     )}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      {/* LinkedIn-style Main Chat Area Card - Desktop only, mobile uses Sheet */}
-      <Card className="hidden md:flex flex-1 flex-col shadow-lg h-[calc(100vh-1rem)] md:h-[calc(100vh-2rem)]">
-        {!selectedConversation ? (
-          /* No conversation selected */
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
-              <p className="text-gray-500">Choose a conversation from the sidebar to start messaging</p>
-            </div>
-          </div>
-        ) : (
-          /* Active conversation */
-          <>
-            {/* Chat Header */}
-            <CardHeader className="p-4 border-b border-gray-200 bg-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Mobile Back Button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 md:hidden hover:bg-gray-100"
-                          onClick={handleCloseConversation}
-                        >
-                          <ArrowLeft className="h-5 w-5 text-gray-600" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Back to conversations</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={selectedConversation.participant.avatar} />
-                    <AvatarFallback className="bg-gray-100 text-gray-600">
-                      {selectedConversation.participant.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="font-medium text-gray-900 flex items-center gap-2">
-                      {selectedConversation.participant.name}
-                      <Badge 
-                        variant={selectedConversation.participant.isOnline ? "success" : "secondary"}
-                        className={cn(
-                          "text-[10px] h-5",
-                          selectedConversation.participant.isOnline && "bg-green-500 hover:bg-green-600"
-                        )}
-                      >
-                        {selectedConversation.participant.isOnline ? '● Online' : '○ Away'}
-                      </Badge>
-                    </h2>
-                    <p className="text-xs text-gray-500">
-                      {selectedConversation.participant.isOnline ? 'Active now' : 'Last seen recently'}
-                    </p>
-                  </div>
-                </div>
-
-                <TooltipProvider>
-                  <div className="flex items-center gap-2">
-                    {/* Phone Call Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-gray-100"
-                          onClick={() => toast.info('Voice call feature coming soon!')}
-                        >
-                          <Phone className="h-4 w-4 text-gray-600" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Start voice call</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Video Call Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-gray-100"
-                          onClick={() => toast.info('Video call feature coming soon!')}
-                        >
-                          <Video className="h-4 w-4 text-gray-600" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Start video call</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Archive Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 hover:bg-gray-100"
-                          onClick={handleArchive}
-                        >
-                          <Archive className="h-4 w-4 text-gray-600" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Archive conversation</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Conversation Menu */}
-                    <DropdownMenu>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                              <MoreVertical className="h-4 w-4 text-gray-600" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>More options</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuItem onClick={() => toast.info('View profile feature coming soon!')}>
-                          <User className="mr-2 h-4 w-4" />
-                          View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info('Mute feature coming soon!')}>
-                          <BellOff className="mr-2 h-4 w-4" />
-                          Mute Conversation
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleArchive}>
-                          <Archive className="mr-2 h-4 w-4" />
-                          Archive
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        
-                        {/* Settings Section with Switch */}
-                        <div className="px-2 py-2 space-y-3">
-                          <p className="text-xs font-semibold text-gray-500 uppercase">Settings</p>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="notifications" className="text-sm font-normal cursor-pointer">
-                              Notifications
-                            </Label>
-                            <Switch
-                              id="notifications"
-                              checked={notificationsEnabled}
-                              onCheckedChange={(checked) => {
-                                setNotificationsEnabled(checked);
-                                toast.success(checked ? 'Notifications enabled' : 'Notifications disabled');
-                              }}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="autoread" className="text-sm font-normal cursor-pointer">
-                              Auto-mark as read
-                            </Label>
-                            <Switch
-                              id="autoread"
-                              checked={autoMarkRead}
-                              onCheckedChange={(checked) => {
-                                setAutoMarkRead(checked);
-                                toast.success(checked ? 'Auto-mark enabled' : 'Auto-mark disabled');
-                              }}
-                            />
-                          </div>
-                        </div>
-                        
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => toast.info('Block feature coming soon!')}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Ban className="mr-2 h-4 w-4" />
-                          Block User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Close Button (Desktop) */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="hidden md:flex h-8 w-8 p-0 hover:bg-gray-100"
-                          onClick={handleCloseConversation}
-                        >
-                          <X className="h-4 w-4 text-gray-600" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Close conversation</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TooltipProvider>
-              </div>
-
-              {/* In-conversation Search */}
-              <div className="mt-3 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search in conversation..."
-                  value={messageSearchTerm}
-                  onChange={(e) => setMessageSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
-                />
-              </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="starred" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                    Starred
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#f97316]">
+                    Archived
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </CardHeader>
 
-            {/* Messages - Enhanced with subtle background pattern */}
-            <CardContent className="flex-1 p-0 overflow-hidden">
-              <ScrollArea className="h-full p-4 space-y-4 bg-gradient-to-b from-gray-50/80 to-white">
-              {isLoading && messages.length === 0 ? (
-                <div className="flex items-center justify-center h-32">
-                  <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
+            {/* Conversations List */}
+            <CardContent className="flex-1 p-0">
+              <ScrollArea className="h-full">
+              {isLoading && filteredConversations.length === 0 ? (
+                <div className="flex flex-col gap-1 p-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-4 border-b border-gray-100">
+                      <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-12" />
+                        </div>
+                        <Skeleton className="h-3 w-full" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ) : messages.length === 0 ? (
-                <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
-                  <div className="text-center">
-                    <MessageCircle className="h-8 w-8 mb-2 text-gray-300 mx-auto" />
-                    <span>Start a conversation...</span>
-                  </div>
-                </div>
-              ) : filteredMessages.length === 0 ? (
-                <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
-                  <div className="text-center">
-                    <Search className="h-8 w-8 mb-2 text-gray-300 mx-auto" />
-                    <span>No messages match your search</span>
-                  </div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-gray-500 text-sm px-4">
+                  <MessageCircle className="h-8 w-8 mb-2 text-gray-300" />
+                  <span>No conversations yet</span>
+                  <span className="text-xs text-gray-400 mt-1">Start connecting with counselors and mentors</span>
                 </div>
               ) : (
-                filteredMessages.map((message, index) => {
-                  const isOwnMessage = message.sender.id === user?.id;
-                  const previousMessage = index > 0 ? filteredMessages[index - 1] : null;
-                  const showTimestamp = index === 0 || 
-                    (previousMessage && 
-                     new Date(message.timestamp).getTime() - new Date(previousMessage.timestamp).getTime() > 300000); // 5 minutes
-                  
-                  const messageReactions = messageReactionsMap[message.id] || [];
-                  const isStarred = starredMessageSet.has(message.id);
-                  
-                  return (
-                    <div key={message.id}>
-                      {showTimestamp && (
-                        <div className="text-center text-xs text-gray-500 my-4">
-                          {new Date(message.timestamp).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </div>
+                filteredConversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className={cn(
+                      "group relative flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors",
+                      selectedConversation?.id === conversation.id && "bg-[#f97316]/10 border-l-4 border-l-[#f97316]",
+                      conversation.isPinned && "bg-blue-50/50"
+                    )}
+                    onClick={() => handleConversationClick(conversation)}
+                  >
+                    {/* Pin Indicator */}
+                    {conversation.isPinned && (
+                      <div className="absolute top-2 right-2">
+                        <Pin className="h-3 w-3 text-blue-500 fill-blue-500" />
+                      </div>
+                    )}
+
+                    {/* Pin Toggle Button (on hover) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePinnedConversation(conversation.id);
+                      }}
+                      className="absolute top-2 right-8 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-200"
+                      title={conversation.isPinned ? "Unpin conversation" : "Pin conversation"}
+                    >
+                      <Pin className={cn(
+                        "h-3.5 w-3.5",
+                        conversation.isPinned ? "text-blue-500 fill-blue-500" : "text-gray-400"
+                      )} />
+                    </button>
+
+                    <div className="relative">
+                      <Avatar className="h-12 w-12 border border-gray-200">
+                        <AvatarImage src={conversation.participant.avatar} />
+                        <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
+                          {conversation.participant.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      {conversation.participant.isOnline && (
+                        <Circle className="absolute -bottom-1 -right-1 h-4 w-4 fill-green-500 text-green-500 border-2 border-white rounded-full" />
                       )}
-                      <div 
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                      >
-                        {/* Message Actions DropdownMenu */}
-                        <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-4 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10`}>
-                          <DropdownMenu>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50"
-                                    >
-                                      <MoreVertical className="h-3.5 w-3.5 text-gray-600" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Message options</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'} className="w-48">
-                              <DropdownMenuItem onClick={() => setShowReactionsFor(message.id)}>
-                                <Smile className="mr-2 h-4 w-4" />
-                                Add Reaction
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toast.info('Reply feature coming soon!')}>
-                                <Reply className="mr-2 h-4 w-4" />
-                                Reply
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toast.info('Forward feature coming soon!')}>
-                                <Forward className="mr-2 h-4 w-4" />
-                                Forward
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toggleStarMessage(selectedConversation.id, message.id)}>
-                                <Star className={cn("mr-2 h-4 w-4", isStarred && "fill-yellow-500 text-yellow-500")} />
-                                {isStarred ? 'Unstar' : 'Star'} Message
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(message.message);
-                                  toast.success('Message copied to clipboard');
-                                }}
-                              >
-                                <Copy className="mr-2 h-4 w-4" />
-                                Copy Text
-                              </DropdownMenuItem>
-                              {isOwnMessage && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    onClick={() => toast.info('Delete feature coming soon!')}
-                                    className="text-red-600 focus:text-red-600"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete Message
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-sm truncate text-gray-900">
+                            {conversation.participant.name}
+                          </h4>
+                          <Badge className={`text-xs px-2 py-0 rounded-full ${getRoleColor(conversation.participant.role)}`}>
+                            {getRoleIcon(conversation.participant.role)}
+                          </Badge>
                         </div>
-
-                        {/* Reaction Picker Popover */}
-                        <Popover 
-                          open={showReactionsFor === message.id} 
-                          onOpenChange={(open) => !open && setShowReactionsFor(null)}
-                        >
-                          <PopoverTrigger asChild>
-                            <span className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-10 invisible`} />
-                          </PopoverTrigger>
-                          <PopoverContent 
-                            className="w-auto p-2 bg-white shadow-xl border border-gray-200 rounded-full"
-                            align={isOwnMessage ? 'end' : 'start'}
-                            side="top"
-                          >
-                            <div className="flex items-center gap-1">
-                              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) => (
-                                <button
-                                  key={emoji}
-                                  onClick={() => {
-                                    toggleReaction(message.id, emoji);
-                                    setShowReactionsFor(null);
-                                  }}
-                                  className="text-xl hover:scale-125 transition-transform p-1 hover:bg-gray-100 rounded-full"
-                                  title={`React with ${emoji}`}
-                                >
-                                  {emoji}
-                                </button>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-
-                        <div className="relative group/message">
-                          <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-md transition-all duration-200 hover:shadow-lg ${
-                            isOwnMessage
-                              ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm'
-                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm shadow-sm hover:border-gray-300'
-                          }`}>
-                            {/* Star Indicator */}
-                            {isStarred && (
-                              <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
-                                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 drop-shadow-md" />
-                              </div>
-                            )}
-                            
-                            <div 
-                              className="break-words whitespace-pre-wrap"
-                              dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
-                            />
-                            <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${
-                              isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'
-                            }`}>
-                              <span>
-                                {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })}
-                              </span>
-                              {isOwnMessage && (
-                                <span className="ml-1" title={message.status || 'sent'}>
-                                  {message.status === 'read' || message.isRead ? (
-                                    <CheckCheck className="h-4 w-4 text-blue-300 drop-shadow-sm" aria-label="Read" />
-                                  ) : message.status === 'delivered' ? (
-                                    <CheckCheck className="h-4 w-4 text-orange-100" aria-label="Delivered" />
-                                  ) : message.status === 'sent' ? (
-                                    <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
-                                  ) : message.status === 'sending' ? (
-                                    <Clock className="h-4 w-4 animate-pulse text-orange-100" aria-label="Sending" />
-                                  ) : message.status === 'failed' ? (
-                                    <AlertCircle className="h-4 w-4 text-red-300" aria-label="Failed" />
-                                  ) : (
-                                    <Check className="h-4 w-4 text-orange-100" aria-label="Sent" />
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Message Reactions */}
-                          {messageReactions.length > 0 && (
-                            <div className={`flex flex-wrap gap-1.5 mt-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                              {messageReactions.map((reaction) => (
-                                <button
-                                  key={reaction.emoji}
-                                  onClick={() => toggleReaction(message.id, reaction.emoji)}
-                                  className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-sm hover:shadow-md"
-                                  title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
-                                >
-                                  <span>{reaction.emoji}</span>
-                                  <span className="text-gray-600">{reaction.count}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        <span className="text-xs text-gray-500 ml-2">
+                          {formatTime(conversation.lastMessage.timestamp)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600 truncate flex-1">
+                          {conversation.lastMessage.content}
+                        </p>
+                        {conversation.unreadCount > 0 && (
+                          <Badge className="bg-[#f97316] text-white text-xs h-5 w-5 rounded-full flex items-center justify-center ml-2">
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  );
-                })
+                  </div>
+                ))
               )}
-              <div ref={messagesEndRef} />
               </ScrollArea>
             </CardContent>
+          </div>
 
-            {/* Message Input - Modern Floating Design */}
-            <div className="p-4 border-t bg-white space-y-3">
-              {/* File Upload Preview */}
-              {uploadedFile && (
-                <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-3 border border-orange-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-orange-500 p-1.5 rounded-lg">
-                        <Paperclip className="h-3.5 w-3.5 text-white" />
-                      </div>
-                      <span className="text-sm text-gray-800 font-medium">{uploadedFile.name}</span>
-                      <span className="text-xs text-gray-600">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={removeUploadedFile}
-                      className="h-7 w-7 p-0 hover:bg-orange-200/70 rounded-full transition-colors"
-                    >
-                      <X className="h-4 w-4 text-gray-700" />
-                    </Button>
-                  </div>
-                  {isUploading && (
-                    <div className="space-y-1">
-                      <Progress value={uploadProgress} className="h-2" />
-                      <p className="text-xs text-gray-600">Uploading... {uploadProgress}%</p>
-                    </div>
-                  )}
+          {/* Main Chat Area - Right side of unified card */}
+          <div className="hidden md:flex flex-1 flex-col">
+            {!selectedConversation ? (
+              /* No conversation selected */
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
+                  <p className="text-gray-500">Choose a conversation from the sidebar to start messaging</p>
                 </div>
-              )}
-
-              <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-sm">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileSelect}
-                  accept="image/*,.pdf,.doc,.docx"
-                  className="hidden"
-                />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-full flex-shrink-0 mt-0.5 transition-all duration-200"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Paperclip className="h-5 w-5 text-gray-500" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Attach file (Images, PDF, Documents)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <Popover>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-full flex-shrink-0 mt-0.5 transition-all duration-200">
-                            <Smile className="h-5 w-5 text-gray-500" />
-                          </Button>
-                        </PopoverTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Add emoji</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <PopoverContent className="w-80 p-4" align="start">
-                    <div className="grid grid-cols-8 gap-2">
-                      {['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-                        '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-                        '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-                        '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-                        '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-                        '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-                        '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
-                        '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌',
-                        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-                        '💯', '💢', '💥', '💫', '💦', '💨', '🕊️', '🦋',
-                        '🌟', '✨', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇'].map((emoji) => (
-                        <button
-                          key={emoji}
-                          onClick={() => {
-                            setNewMessage(prev => prev + emoji);
-                          }}
-                          className="text-2xl hover:bg-gray-100 rounded p-1 transition-colors"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
-                <Textarea
-                  placeholder="Write a message... (Shift+Enter for new line)"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  disabled={isSending || isLoading}
-                  className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
-                  rows={1}
-                />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isSending || isLoading}
-                        size="sm"
-                        className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
-                      >
-                        {isSending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isSending ? 'Sending...' : 'Send message (Enter)'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd> to send, 
-                <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs ml-1">Shift+Enter</kbd> for new line
-              </p>
-            </div>
-          </>
-        )}
-      </Card>
+            ) : (
+              <>
+                {/* Chat Header */}
+                <CardHeader className="p-4 border-b border-gray-200 bg-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Mobile Back Button - Design System V2: Subtle emphasis */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 md:hidden bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                              onClick={handleCloseConversation}
+                            >
+                              <ArrowLeft className="h-5 w-5 text-gray-700" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Back to conversations</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
 
-      {/* Mobile Sheet for Chat */}
-      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-        <SheetContent side="right" className="w-full p-0 md:hidden bg-white">
-          {selectedConversation && (
-            <div className="flex flex-col h-full">
-              {/* Chat Header */}
-              <SheetHeader className="p-4 border-b border-gray-200 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-lg">
-                      <AvatarImage src={selectedConversation.participant.avatar} alt={selectedConversation.participant.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-                        {selectedConversation.participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <SheetTitle className="text-base font-semibold text-gray-900">
-                        {selectedConversation.participant.name}
-                      </SheetTitle>
-                      <div className="flex items-center gap-1 text-xs">
-                        {selectedConversation.participant.isOnline ? (
-                          <>
-                            <Circle className="h-2 w-2 fill-green-500 text-green-500" />
-                            <span className="text-green-600">Active now</span>
-                          </>
-                        ) : (
-                          <span className="text-gray-500">Last seen recently</span>
-                        )}
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={selectedConversation.participant.avatar} />
+                        <AvatarFallback className="bg-gray-100 text-gray-600">
+                          {selectedConversation.participant.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h2 className="font-medium text-gray-900 flex items-center gap-2">
+                          {selectedConversation.participant.name}
+                          <Badge variant={selectedConversation.participant.isOnline ? "success" : "secondary"}
+                            className={cn(
+                              "text-[10px] h-5",
+                              selectedConversation.participant.isOnline && "bg-green-500 hover:bg-green-600"
+                            )}>
+                            {selectedConversation.participant.isOnline ? '● Online' : '○ Away'}
+                          </Badge>
+                        </h2>
+                        <p className="text-xs text-gray-500">
+                          {selectedConversation.participant.isOnline ? 'Active now' : 'Last seen recently'}
+                        </p>
                       </div>
                     </div>
+
+                    <TooltipProvider>
+                      <div className="flex items-center gap-2">
+                        {/* Phone Call Button - Design System V2: Subtle emphasis */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                              onClick={() => toast.info('Voice call feature coming soon!')}
+                            >
+                              <Phone className="h-5 w-5 text-gray-700" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Start voice call</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {/* Video Call Button - Design System V2: Subtle emphasis */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                              onClick={() => toast.info('Video call feature coming soon!')}
+                            >
+                              <Video className="h-5 w-5 text-gray-700" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Start video call</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {/* Archive Button - Design System V2: Subtle emphasis */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                              onClick={handleArchive}
+                            >
+                              <Archive className="h-5 w-5 text-gray-700" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Archive conversation</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                        {/* Conversation Menu - Design System V2: Subtle emphasis */}
+                        <DropdownMenu>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
+                                  <MoreVertical className="h-5 w-5 text-gray-700" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>More options</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <DropdownMenuContent align="end" className="w-64">
+                            <DropdownMenuItem onClick={() => toast.info('View profile feature coming soon!')}>
+                              <User className="mr-2 h-4 w-4" />
+                              View Profile
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast.info('Mute feature coming soon!')}>
+                              <BellOff className="mr-2 h-4 w-4" />
+                              Mute Conversation
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleArchive}>
+                              <Archive className="mr-2 h-4 w-4" />
+                              Archive
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            
+                            {/* Settings Section with Switch */}
+                            <div className="px-2 py-2 space-y-3">
+                              <p className="text-xs font-semibold text-gray-500 uppercase">Settings</p>
+                              
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="notifications" className="text-sm font-normal cursor-pointer">
+                                  Notifications
+                                </Label>
+                                <Switch
+                                  id="notifications"
+                                  checked={notificationsEnabled}
+                                  onCheckedChange={(checked) => {
+                                    setNotificationsEnabled(checked);
+                                    toast.success(checked ? 'Notifications enabled' : 'Notifications disabled');
+                                  }}
+                                />
+                              </div>
+                              
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="autoread" className="text-sm font-normal cursor-pointer">
+                                  Auto-mark as read
+                                </Label>
+                                <Switch
+                                  id="autoread"
+                                  checked={autoMarkRead}
+                                  onCheckedChange={(checked) => {
+                                    setAutoMarkRead(checked);
+                                    toast.success(checked ? 'Auto-mark enabled' : 'Auto-mark disabled');
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => toast.info('Block feature coming soon!')} className="text-red-600 focus:text-red-600">
+                              <Ban className="mr-2 h-4 w-4" />
+                              Block User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {/* Close Button (Desktop) - Design System V2: Subtle emphasis */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="hidden md:flex h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                              onClick={handleCloseConversation}
+                            >
+                              <X className="h-5 w-5 text-gray-700" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Close conversation</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </div>
-                </div>
 
-                {/* In-conversation Search */}
-                <div className="mt-3 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search in conversation..."
-                    value={messageSearchTerm}
-                    onChange={(e) => setMessageSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
-                  />
-                </div>
-              </SheetHeader>
+                  {/* In-conversation Search */}
+                  <div className="mt-3 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search in conversation..."
+                      value={messageSearchTerm}
+                      onChange={(e) => setMessageSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                    />
+                  </div>
+                </CardHeader>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-hidden bg-gray-50">
-                <ScrollArea className="h-full p-4 space-y-4">
+                {/* Messages */}
+                <CardContent className="flex-1 p-0 overflow-hidden">
+                  <ScrollArea className="h-full p-4 space-y-4 bg-gradient-to-b from-gray-50/80 to-white">
                   {isLoading && messages.length === 0 ? (
                     <div className="flex items-center justify-center h-32">
                       <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
@@ -1575,7 +1169,7 @@ const InboxPage: React.FC = () => {
                       const previousMessage = index > 0 ? filteredMessages[index - 1] : null;
                       const showTimestamp = index === 0 || 
                         (previousMessage && 
-                         new Date(message.timestamp).getTime() - new Date(previousMessage.timestamp).getTime() > 300000);
+                         new Date(message.timestamp).getTime() - new Date(previousMessage.timestamp).getTime() > 300000); // 5 minutes
                       
                       const messageReactions = messageReactionsMap[message.id] || [];
                       const isStarred = starredMessageSet.has(message.id);
@@ -1593,35 +1187,101 @@ const InboxPage: React.FC = () => {
                               })}
                             </div>
                           )}
-                          <div 
-                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div className="relative">
-                              <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-lg ${
-                                isOwnMessage
-                                  ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm shadow-orange-500/20'
-                                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
-                              }`}>
+                          <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group relative animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                            
+                            {/* Message Actions DropdownMenu */}
+                            <div className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-4 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10`}>
+                              <DropdownMenu>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-full bg-white shadow-md border border-gray-200 hover:bg-gray-50">
+                                          <MoreVertical className="h-3.5 w-3.5 text-gray-600" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Message options</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <DropdownMenuContent align={isOwnMessage ? 'end' : 'start'} className="w-48">
+                                  <DropdownMenuItem onClick={() => setShowReactionsFor(message.id)}>
+                                    <Smile className="mr-2 h-4 w-4" />
+                                    Add Reaction
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => toast.info('Reply feature coming soon!')}>
+                                    <Reply className="mr-2 h-4 w-4" />
+                                    Reply
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => toast.info('Forward feature coming soon!')}>
+                                    <Forward className="mr-2 h-4 w-4" />
+                                    Forward
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => toggleStarMessage(selectedConversation.id, message.id)}>
+                                    <Star className={cn("mr-2 h-4 w-4", isStarred && "fill-yellow-500 text-yellow-500")} />
+                                    {isStarred ? 'Unstar' : 'Star'} Message
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(message.message);
+                                      toast.success('Message copied to clipboard');
+                                    }}
+                                  >
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Copy Text
+                                  </DropdownMenuItem>
+                                  {isOwnMessage && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem 
+                                        onClick={() => toast.info('Delete feature coming soon!')} 
+                                        className="text-red-600 focus:text-red-600"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Message
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+
+                            {/* Reaction Picker Popover */}
+                            <Popover open={showReactionsFor === message.id} onOpenChange={(open) => !open && setShowReactionsFor(null)}>
+                              <PopoverTrigger asChild>
+                                <span className={`absolute ${isOwnMessage ? 'right-0 mr-2' : 'left-0 ml-2'} -top-10 invisible`} />
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-2 bg-white shadow-xl border border-gray-200 rounded-full" align={isOwnMessage ? 'end' : 'start'} side="top">
+                                <div className="flex items-center gap-1">
+                                  {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji) => (
+                                    <button key={emoji} onClick={() => toggleReaction(message.id, emoji)} className="text-xl hover:scale-125 transition-transform p-1 hover:bg-gray-100 rounded-full" title={`React with ${emoji}`}>
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+
+                            <div className="relative group/message">
+                              <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl text-sm shadow-md transition-all duration-200 hover:shadow-lg ${isOwnMessage ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm shadow-sm hover:border-gray-300'}`}>
+                                {/* Star Indicator */}
                                 {isStarred && (
-                                  <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'}`}>
+                                  <div className={`absolute ${isOwnMessage ? '-top-2 -left-2' : '-top-2 -right-2'}`}>
                                     <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 drop-shadow-md" />
                                   </div>
                                 )}
                                 
-                                <div 
-                                  className="break-words whitespace-pre-wrap"
-                                  dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
-                                />
-                                <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${
-                                  isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'
-                                }`}>
-                                  <span>
-                                    {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                                <div className="break-words whitespace-pre-wrap">{message.message}</div>
+                                <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'}`}>
+                                  <span>{
+                                    new Date(message.timestamp).toLocaleTimeString('en-US', {
                                       hour: 'numeric',
                                       minute: '2-digit',
                                       hour12: true
-                                    })}
-                                  </span>
+                                    })
+                                  }</span>
                                   {isOwnMessage && (
                                     <span className="ml-1" title={message.status || 'sent'}>
                                       {message.status === 'read' || message.isRead ? (
@@ -1642,13 +1302,14 @@ const InboxPage: React.FC = () => {
                                 </div>
                               </div>
 
+                              {/* Message Reactions */}
                               {messageReactions.length > 0 && (
                                 <div className={`flex flex-wrap gap-1.5 mt-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                                   {messageReactions.map((reaction) => (
                                     <button
                                       key={reaction.emoji}
                                       onClick={() => toggleReaction(message.id, reaction.emoji)}
-                                      className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-md"
+                                      className="flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 rounded-full text-xs hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 shadow-sm hover:shadow-md"
                                       title={`${reaction.users.join(', ')} reacted with ${reaction.emoji}`}
                                     >
                                       <span>{reaction.emoji}</span>
@@ -1664,55 +1325,159 @@ const InboxPage: React.FC = () => {
                     })
                   )}
                   <div ref={messagesEndRef} />
-                </ScrollArea>
-              </div>
+                  </ScrollArea>
+                </CardContent>
 
-              {/* Message Input */}
-              <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
-                <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-lg">
-                  <Textarea
-                    placeholder="Write a message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    disabled={isSending || isLoading}
-                    className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
-                    rows={1}
-                  />
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                {/* Message Input - Modern Floating Design */}
+                <div className="p-4 border-t bg-white space-y-3">
+                  {/* File Upload Preview */}
+                  {uploadedFile && (
+                    <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-3 border border-orange-200 shadow-sm">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-orange-500 p-1.5 rounded-lg">
+                            <Paperclip className="h-3.5 w-3.5 text-white" />
+                          </div>
+                          <span className="text-sm text-gray-800 font-medium">{uploadedFile.name}</span>
+                          <span className="text-xs text-gray-600">({(uploadedFile.size / 1024).toFixed(1)} KB)</span>
+                        </div>
                         <Button
-                          onClick={handleSendMessage}
-                          disabled={!newMessage.trim() || isSending || isLoading}
+                          variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
+                          onClick={removeUploadedFile}
+                          className="h-7 w-7 p-0 hover:bg-orange-200/70 rounded-full transition-colors"
                         >
-                          {isSending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
+                          <X className="h-4 w-4 text-gray-700" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{isSending ? 'Sending...' : 'Send message (Enter)'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                      </div>
+                      {isUploading && (
+                        <div className="space-y-1">
+                          <Progress value={uploadProgress} className="h-2" />
+                          <p className="text-xs text-gray-600">Uploading... {uploadProgress}%</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-start gap-3 bg-white rounded-3xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3 shadow-sm">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={handleFileSelect}
+                      accept="image/*,.pdf,.doc,.docx"
+                      className="hidden"
+                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg flex-shrink-0 mt-0.5 transition-all duration-200"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <Paperclip className="h-5 w-5 text-gray-700" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Attach file (Images, PDF, Documents)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <Popover>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg flex-shrink-0 mt-0.5 transition-all duration-200"
+                              >
+                                <Smile className="h-5 w-5 text-gray-700" />
+                              </Button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Add emoji</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent className="w-80 p-4" align="start">
+                        <div className="grid grid-cols-8 gap-2">
+                          {['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+                            '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+                            '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+                            '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+                            '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+                            '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+                            '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
+                            '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌',
+                            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+                            '💯', '💢', '💥', '💫', '💦', '💨', '🕊️', '🦋',
+                            '🌟', '✨', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇'].map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => {
+                                setNewMessage(prev => prev + emoji);
+                              }}
+                              className="text-2xl hover:bg-gray-100 rounded p-1 transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
+                    <Textarea
+                      placeholder="Write a message... (Shift+Enter for new line)"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      disabled={isSending || isLoading}
+                      className="flex-1 min-h-[40px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 py-2"
+                      rows={1}
+                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={handleSendMessage}
+                            disabled={!newMessage.trim() || isSending || isLoading}
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-[#f97316] hover:bg-[#ea580c] disabled:opacity-50 rounded-full flex-shrink-0 mt-1"
+                          >
+                            {isSending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{isSending ? 'Sending...' : 'Send message (Enter)'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd> to send, 
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs ml-1">Shift+Enter</kbd> for new line
+                  </p>
                 </div>
               </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+            </CardContent>
+          </Card>
+        </div>
+      </Card>
     </div>
-    </>
   );
 };
 
