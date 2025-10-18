@@ -8,13 +8,14 @@
 const Parse = require('parse/node');
 require('dotenv').config();
 
-// Initialize Parse
+// Initialize Parse with master key
 Parse.initialize(
   process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
   process.env.PARSE_JAVASCRIPT_KEY || 'unused',
   process.env.PARSE_MASTER_KEY || 'master_key_2024_secure'
 );
 Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
+Parse.Cloud.useMasterKey();
 
 async function createChatSchema() {
   console.log('🔧 Creating Chat System Schema...\n');
@@ -24,7 +25,7 @@ async function createChatSchema() {
     const ChatRoomSchema = new Parse.Schema('ChatRoom');
 
     try {
-      await ChatRoomSchema.get();
+      await ChatRoomSchema.get({ useMasterKey: true });
       console.log('✅ ChatRoom class already exists');
     } catch (error) {
       if (error.code === 103) {
@@ -49,7 +50,7 @@ async function createChatSchema() {
             protectedFields: {}
           });
 
-        await ChatRoomSchema.save();
+        await ChatRoomSchema.save({ useMasterKey: true });
         console.log('✅ ChatRoom class created successfully\n');
       } else {
         throw error;
@@ -60,7 +61,7 @@ async function createChatSchema() {
     const ChatMessageSchema = new Parse.Schema('ChatMessage');
 
     try {
-      await ChatMessageSchema.get();
+      await ChatMessageSchema.get({ useMasterKey: true });
       console.log('✅ ChatMessage class already exists');
     } catch (error) {
       if (error.code === 103) {
@@ -88,7 +89,7 @@ async function createChatSchema() {
             protectedFields: {}
           });
 
-        await ChatMessageSchema.save();
+        await ChatMessageSchema.save({ useMasterKey: true });
         console.log('✅ ChatMessage class created successfully\n');
       } else {
         throw error;
@@ -99,7 +100,7 @@ async function createChatSchema() {
     const ChatPreferencesSchema = new Parse.Schema('ChatPreferences');
 
     try {
-      await ChatPreferencesSchema.get();
+      await ChatPreferencesSchema.get({ useMasterKey: true });
       console.log('✅ ChatPreferences class already exists');
     } catch (error) {
       if (error.code === 103) {
@@ -122,7 +123,7 @@ async function createChatSchema() {
             protectedFields: {}
           });
 
-        await ChatPreferencesSchema.save();
+        await ChatPreferencesSchema.save({ useMasterKey: true });
         console.log('✅ ChatPreferences class created successfully\n');
       } else {
         throw error;
