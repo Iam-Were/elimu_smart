@@ -219,34 +219,105 @@ const StudentDashboard: React.FC = () => {
           {loading ? (
             <div className="text-center py-4 text-muted-foreground text-sm">Loading your progress...</div>
           ) : careerReadinessScore ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600">Assessments</span>
-                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.assessmentCompletion}%</span>
+            <div className="flex flex-col sm:flex-row items-stretch gap-4">
+              {/* Left: Big score + ring */}
+              <div className="flex-shrink-0 w-full sm:w-48 lg:w-56 bg-white rounded-lg p-3 flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    {/* SVG circular progress ring */}
+                    <svg className="w-28 h-28 sm:w-32 sm:h-32" viewBox="0 0 36 36" aria-hidden>
+                      <defs>
+                        <linearGradient id="grad1" x1="0%" x2="100%">
+                          <stop offset="0%" stopColor="#fb923c" />
+                          <stop offset="100%" stopColor="#f97316" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        className="circle-bg"
+                        d="M18 2.0845
+                           a 15.9155 15.9155 0 0 1 0 31.831
+                           a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#f3f4f6"
+                        strokeWidth="2.8"
+                      />
+                      <path
+                        className="circle"
+                        stroke="url(#grad1)"
+                        strokeWidth="2.8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${careerReadinessScore.overall}, 100`}
+                        d="M18 2.0845
+                           a 15.9155 15.9155 0 0 1 0 31.831
+                           a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                      />
+                    </svg>
+
+                    {/* Center large percentage (accessible) */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="text-center">
+                        <div className="text-2xl sm:text-3xl font-bold text-orange-600">{careerReadinessScore.overall}%</div>
+                        <div className="text-xs text-muted-foreground">Readiness</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-1.5" />
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600">Research</span>
-                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.careerResearch}%</span>
+
+              {/* Right: Summary and toggle for breakdown */}
+              <div className="flex-1 bg-white rounded-lg p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-800">Career Readiness Overview</h3>
+                    <p className="text-xs text-muted-foreground mt-1">A snapshot of your progress. Tap "View breakdown" to see detailed metrics.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowBreakdown(!showBreakdown)}
+                      aria-expanded={showBreakdown}
+                      aria-controls="readiness-breakdown"
+                      className="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-orange-50 border border-orange-100 hover:bg-orange-100 text-orange-600"
+                    >
+                      {showBreakdown ? 'Hide breakdown' : 'View breakdown'}
+                      <ArrowRight className="h-4 w-4 transform rotate-90" />
+                    </button>
+                  </div>
                 </div>
-                <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-1.5" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600">Exploration</span>
-                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.courseExploration}%</span>
+
+                {/* Collapsible breakdown - hidden by default on mobile */}
+                <div id="readiness-breakdown" className={`mt-3 transition-all duration-200 ${showBreakdown ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`} aria-hidden={!showBreakdown}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">Assessments</span>
+                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.assessmentCompletion}%</span>
+                      </div>
+                      <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-1.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">Research</span>
+                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.careerResearch}%</span>
+                      </div>
+                      <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-1.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">Exploration</span>
+                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.courseExploration}%</span>
+                      </div>
+                      <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-1.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600">Actions</span>
+                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.actionsTaken}%</span>
+                      </div>
+                      <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-1.5" />
+                    </div>
+                  </div>
                 </div>
-                <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-1.5" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600">Actions</span>
-                  <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.actionsTaken}%</span>
-                </div>
-                <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-1.5" />
               </div>
             </div>
           ) : (
