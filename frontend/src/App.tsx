@@ -172,6 +172,9 @@ const AppContent: React.FC = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+  );
+};
+
 const App: React.FC = () => {
   // Enable keyboard navigation detection globally
   useKeyboardNavigation();
@@ -186,9 +189,6 @@ const App: React.FC = () => {
           <Toaster />
         </Router>
       </ThemeProvider>
-    </ErrorBoundary>
-  );
-};    </ThemeProvider>
     </ErrorBoundary>
   );
 };

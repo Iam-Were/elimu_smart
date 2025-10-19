@@ -23,14 +23,14 @@ interface ParseUserData {
 
 const StudentDashboard: React.FC = () => {
   const { careerReadinessScore, kuccpsTimeline, loading, userActivities } = useDynamicDashboard();
+  const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [announceMessage, setAnnounceMessage] = useState('');
 
   // Announce changes to screen readers
-  useAriaLive(announceMessage, 'polite');');
-  const [showBreakdown, setShowBreakdown] = useState(false);
+  useAriaLive(announceMessage, 'polite');
 
   // Fetch Parse User data
   useEffect(() => {
@@ -272,6 +272,11 @@ const StudentDashboard: React.FC = () => {
 
               {/* Right: Summary and toggle for breakdown */}
               <div className="flex-1 bg-white rounded-lg p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-800">Career Readiness Overview</h3>
+                    <p className="text-xs text-muted-foreground mt-1">A snapshot of your progress. Tap "View breakdown" to see detailed metrics.</p>
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
@@ -285,11 +290,6 @@ const StudentDashboard: React.FC = () => {
                       aria-expanded={showBreakdown}
                       aria-controls="readiness-breakdown"
                       className="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-orange-50 border border-orange-100 hover:bg-orange-100 text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    >
-                      {showBreakdown ? 'Hide breakdown' : 'View breakdown'}
-                      <ArrowRight className="h-4 w-4 transform rotate-90" />
-                    </button>
-                  </div>assName="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-orange-50 border border-orange-100 hover:bg-orange-100 text-orange-600"
                     >
                       {showBreakdown ? 'Hide breakdown' : 'View breakdown'}
                       <ArrowRight className="h-4 w-4 transform rotate-90" />

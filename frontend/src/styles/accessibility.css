@@ -255,7 +255,8 @@ select[aria-invalid="true"]:focus {
 
 [role="dialog"] [data-focus-initial],
 [role="alertdialog"] [data-focus-initial] {
-  /* First focusable element in modal */
+  /* First focusable element in modal - auto-focused by useFocusTrap hook */
+  position: relative;
 }
 
 /* =========================
@@ -281,11 +282,13 @@ body.show-tab-order *:focus-visible::after {
    ========================= */
 
 [role="button"][aria-expanded="false"] {
-  /* Collapsed state indicator */
+  /* Collapsed state - chevron rotates 0deg (handled by component) */
+  position: relative;
 }
 
 [role="button"][aria-expanded="true"] {
-  /* Expanded state indicator */
+  /* Expanded state - chevron rotates 180deg (handled by component) */
+  position: relative;
 }
 
 /* =========================

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
-import { LinkedInStyleChat } from '../chat/LinkedInStyleChat';
 import { MobileBottomNav } from '../navigation/MobileBottomNav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -505,9 +504,6 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
           </div>
         </div>
       </footer>
-
-      {/* LinkedIn-Style Chat - Only for student routes */}
-      <LinkedInStyleChat />
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />

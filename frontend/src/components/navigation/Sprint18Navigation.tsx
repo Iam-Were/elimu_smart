@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useDebounce } from '@/hooks/useDebounce';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -16,6 +17,7 @@ import {
 import Button from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Home,
   GraduationCap,
@@ -31,6 +33,14 @@ import {
   BarChart3,
   Calendar,
   MessageSquare,
+  Search,
+  Menu,
+  X,
+  Library,
+  Network,
+  UserCircle,
+  CalendarDays,
+  Heart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -52,6 +62,63 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const { currentTheme } = useThemeContext();
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchOverlayRef = useRef<HTMLDivElement>(null);
+  
+  // Debounce search query for live search
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Escape key handler for search overlay
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSearchOpen) {
+        setIsSearchOpen(false);
+        setSearchQuery('');
+      }
+    };
+
+    if (isSearchOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isSearchOpen]);
+
+  // Live search effect
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    // Simulated search results - replace with actual API call
+    const mockSearch = async () => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Mock results based on query
+      const results = [
+        `Career: ${debouncedSearchQuery}`,
+        `Course: ${debouncedSearchQuery}`,
+        `Resource: ${debouncedSearchQuery}`,
+      ].filter(() => Math.random() > 0.3);
+
+      setSearchResults(results);
+      setIsSearching(false);
+    };
+
+    mockSearch();
+  }, [debouncedSearchQuery]);
 
   const getThemeColor = (theme: ThemeRole) => {
     return getRoleColor(theme);
@@ -367,8 +434,71 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
         {/* LinkedIn-Style Profile Section - Sprint 18 Requirement - Scroll-based animations */}
         <div className={cn("flex items-center space-x-2 transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
-          {/* Notifications */}
-          <NotificationCenter />
+          {/* Notifications - Desktop */}
+          <div className="hidden md:block">
+            <NotificationCenter />
+          </div>
+
+          {/* Mobile Search and Menu - LinkedIn Style */}
+          <div className="flex md:hidden items-center gap-1">
+            {/* Search Icon - Opens overlay - 44x44px touch target */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Open search"
+              className="h-11 w-11 p-0 touch-manipulation"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            
+            {/* Hamburger Menu with Secondary Navigation - 44x44px touch target */}
+            <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  aria-label="Open menu"
+                  className="h-11 w-11 p-0 touch-manipulation"
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64" align="end" forceMount>
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/guidance/book-session')}>
+                  <CalendarDays className="mr-2 h-4 w-4" />
+                  Book Session
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/guidance/resources')}>
+                  <Library className="mr-2 h-4 w-4" />
+                  Career Resources
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/guidance/professional-networking')}>
+                  <Network className="mr-2 h-4 w-4" />
+                  Professional Network
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/guidance/crisis')}>
+                  <Heart className="mr-2 h-4 w-4" />
+                  Crisis Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -485,6 +615,129 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Mobile Search Overlay - LinkedIn Style with Live Search */}
+      {isSearchOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+            onClick={() => {
+              setIsSearchOpen(false);
+              setSearchQuery('');
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Search Container */}
+          <div 
+            ref={searchOverlayRef}
+            className="fixed top-0 left-0 right-0 z-50 bg-background md:hidden animate-in slide-in-from-top duration-300 shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search"
+          >
+            {/* Search Input Bar */}
+            <div className="flex items-center gap-2 p-4 border-b">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchQuery('');
+                }}
+                aria-label="Close search"
+                className="h-10 w-10 p-0 shrink-0"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+              <Input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Search careers, courses, resources..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  }
+                }}
+                className="flex-1 text-base"
+                autoFocus
+                aria-describedby="search-help"
+              />
+            </div>
+
+            {/* Search Results / Suggestions */}
+            <div className="max-h-[70vh] overflow-y-auto">
+              {isSearching ? (
+                <div className="p-6 text-center">
+                  <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                    <span className="sr-only">Searching...</span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">Searching...</p>
+                </div>
+              ) : searchQuery.trim() ? (
+                searchResults.length > 0 ? (
+                  <div className="py-2">
+                    <p className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Search Results
+                    </p>
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={index}
+                        className="w-full px-4 py-3 text-left hover:bg-accent transition-colors focus:bg-accent focus:outline-none"
+                        onClick={() => {
+                          navigate(`/search?q=${encodeURIComponent(result)}`);
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm">{result}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground">No results found for "{searchQuery}"</p>
+                    <p className="mt-2 text-xs text-muted-foreground">Try different keywords</p>
+                  </div>
+                )
+              ) : (
+                <div className="py-2">
+                  <p className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Popular Searches
+                  </p>
+                  {['Software Engineering', 'Medicine', 'Business Administration', 'Psychology', 'Data Science'].map((term, index) => (
+                    <button
+                      key={index}
+                      className="w-full px-4 py-3 text-left hover:bg-accent transition-colors focus:bg-accent focus:outline-none"
+                      onClick={() => {
+                        setSearchQuery(term);
+                        searchInputRef.current?.focus();
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm">{term}</span>
+                      </div>
+                    </button>
+                  ))}
+                  
+                  <p id="search-help" className="px-4 py-4 text-xs text-muted-foreground">
+                    Press Enter to search or ESC to close
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </header>
     </>
   );
