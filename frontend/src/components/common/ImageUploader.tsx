@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LazyImage } from '@/components/ui/lazy-image';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { getParse } from '@/config/parse';
@@ -141,12 +142,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     <div className="space-y-4">
       {/* Current/Preview Image */}
       <div className="flex items-center gap-6">
-        <Avatar className="h-24 w-24">
-          <AvatarImage src={preview || currentImage} alt="Profile" />
-          <AvatarFallback className="text-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            {userInitials}
-          </AvatarFallback>
-        </Avatar>
+        <div className="relative h-24 w-24 rounded-full overflow-hidden">
+          {(preview || currentImage) ? (
+            <LazyImage
+              src={preview || currentImage || ''}
+              alt="Profile"
+              fallback="/default-avatar.png"
+              className="h-full w-full object-cover"
+              skeletonClassName="rounded-full"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold">
+              {userInitials}
+            </div>
+          )}
+        </div>
         <div className="flex-1">
           <h3 className="font-semibold mb-1">Profile Picture</h3>
           <p className="text-sm text-muted-foreground">
