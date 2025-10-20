@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Button from '@/components/ui/button';
-import StudentDashboardCards from '../cards/StudentDashboardCards';
 import StudentAssessmentCards from '../cards/StudentAssessmentCards';
 import StudentGuidanceCards from '../cards/StudentGuidanceCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -444,20 +443,6 @@ const StudentDashboard: React.FC = () => {
             </p>
           </div>
         </div>
-
-        {/* Main Dashboard Cards */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
-            <Target className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">Your Progress Overview</h2>
-            <p className="text-sm text-slate-600">Track your career readiness journey</p>
-          </div>
-        </div>
-        <StudentDashboardCards />
-      </div>
 
       {/* Assessment Section */}
       <div className="space-y-4">
