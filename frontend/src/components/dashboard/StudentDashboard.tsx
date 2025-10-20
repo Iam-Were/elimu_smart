@@ -504,6 +504,7 @@ const StudentDashboard: React.FC = () => {
 
         <StudentGuidanceCards maxCards={3} />
       </div>
+      </div>
     </div>
   );
 };
