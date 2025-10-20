@@ -1,0 +1,86 @@
+#!/usr/bin/expect -f
+# Automated VPS Deployment with Password Authentication
+# This script SSHs into the VPS, pulls from GitHub, and deploys
+
+set timeout -1
+set password "El1musmart"
+
+# Start SSH connection
+spawn ssh -o StrictHostKeyChecking=accept-new root@145.239.42.121
+
+# Handle password prompt
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "# " {
+        # Successfully logged in, now execute deployment commands
+        send "echo '🚀 Starting deployment...'\r"
+        expect "# "
+        
+        send "cd /root/elimu_smart\r"
+        expect "# "
+        
+        send "echo '📥 Pulling latest code from GitHub...'\r"
+        expect "# "
+        
+        send "git pull origin main\r"
+        expect "# "
+        
+        send "echo '📦 Installing frontend dependencies...'\r"
+        expect "# "
+        
+        send "cd frontend && npm install\r"
+        expect "# "
+        
+        send "echo '🏗️  Building frontend...'\r"
+        expect "# "
+        
+        send "npm run build -- --mode production\r"
+        expect "# "
+        
+        send "echo '📤 Deploying to Nginx...'\r"
+        expect "# "
+        
+        send "sudo cp -r dist/* /var/www/elimu-smart/\r"
+        expect "# "
+        
+        send "echo '📦 Installing backend dependencies...'\r"
+        expect "# "
+        
+        send "cd ../backend && npm install\r"
+        expect "# "
+        
+        send "echo '🔄 Restarting backend...'\r"
+        expect "# "
+        
+        send "pm2 reload parse-server-prod\r"
+        expect "# "
+        
+        send "echo '⏳ Waiting for services to stabilize...'\r"
+        expect "# "
+        
+        send "sleep 5\r"
+        expect "# "
+        
+        send "echo '🏥 Running health checks...'\r"
+        expect "# "
+        
+        send "curl -s https://elimu-smart.co.ke/parse/health\r"
+        expect "# "
+        
+        send "echo ''\r"
+        expect "# "
+        
+        send "pm2 status\r"
+        expect "# "
+        
+        send "echo '✅ Deployment complete!'\r"
+        expect "# "
+        
+        send "exit\r"
+    }
+}
+
+expect eof
