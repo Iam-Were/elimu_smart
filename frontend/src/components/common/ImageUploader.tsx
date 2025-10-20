@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
