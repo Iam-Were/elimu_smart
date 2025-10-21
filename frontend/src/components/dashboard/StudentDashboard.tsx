@@ -4,11 +4,15 @@ import { ArrowRight, Target, AlertCircle, Clock, CheckCircle, Sparkles } from 'l
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Button from '@/components/ui/button';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
 import { useAriaLive } from '@/hooks/useAccessibility';
+import UrgentActions from './UrgentActions';
+import ProgressMetrics from './ProgressMetrics';
+import ActivityTimeline from './ActivityTimeline';
 
 interface ParseUserData {
   firstName: string;
@@ -427,22 +431,57 @@ const StudentDashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* Main Dashboard Section - Grouped with Clear Hierarchy */}
+      {/* Main Dashboard Section - Tabbed Layout */}
       <div className="space-y-6">
-        {/* Section Header */}
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Target className="h-6 w-6 text-orange-600" />
-              Your Career Journey
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Track progress, explore careers, and get personalized guidance
-            </p>
-          </div>
-        </div>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="progress">Progress</TabsTrigger>
+          </TabsList>
 
-{/* TODO: Add UrgentActions component here (Task 1.3) */}      {/* TODO: Add ProgressMetrics component here (Task 1.4) */}      {/* TODO: Add ActivityTimeline in tab (Task 1.2) */}
+          {/* Overview Tab - Urgent Actions */}
+          <TabsContent value="overview" className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 mb-1">
+                <Target className="h-6 w-6 text-orange-600" />
+                Your Career Journey
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Track progress, explore careers, and get personalized guidance
+              </p>
+            </div>
+            <UrgentActions maxItems={5} />
+          </TabsContent>
+
+          {/* Activity Tab - Timeline */}
+          <TabsContent value="activity" className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 mb-1">
+                <Clock className="h-6 w-6 text-orange-600" />
+                Recent Activity
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Your recent actions and engagement history
+              </p>
+            </div>
+            <ActivityTimeline maxItems={10} />
+          </TabsContent>
+
+          {/* Progress Tab - Metrics */}
+          <TabsContent value="progress" className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 mb-1">
+                <Sparkles className="h-6 w-6 text-orange-600" />
+                Progress Metrics
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Track your career readiness and development
+              </p>
+            </div>
+            <ProgressMetrics />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
