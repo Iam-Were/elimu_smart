@@ -504,13 +504,13 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="secondary"
-                className="relative h-10 px-3"
+                className="relative h-8 sm:h-10 px-2 sm:px-3"
               >
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-7 w-7">
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
                     <AvatarImage src={(user as UserType & { avatar?: string })?.avatar} alt={getUserDisplayName()} />
-                    <AvatarFallback 
-                      className="text-xs font-medium"
+                    <AvatarFallback
+                      className="text-[10px] sm:text-xs font-medium"
                       style={{
                         backgroundColor: getThemeColor(currentTheme),
                         color: 'white',
@@ -519,11 +519,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       {user?.firstName?.[0]}{user?.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50" />
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72" align="end" forceMount>
+            <DropdownMenuContent className="w-64 sm:w-72" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={(user as UserType & { avatar?: string })?.avatar} alt={getUserDisplayName()} />
