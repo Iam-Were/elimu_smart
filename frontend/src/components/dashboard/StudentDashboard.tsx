@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Target, Heart, AlertCircle, Clock, CheckCircle, Sparkles } from 'lucide-react';
+
+import { ArrowRight, Target, AlertCircle, Clock, CheckCircle, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Button from '@/components/ui/button';
-import StudentAssessmentCards from '../cards/StudentAssessmentCards';
-import StudentGuidanceCards from '../cards/StudentGuidanceCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
@@ -444,51 +442,7 @@ const StudentDashboard: React.FC = () => {
           </div>
         </div>
 
-      {/* Assessment Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <Target className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">Career Assessments</h2>
-              <p className="text-sm text-slate-600">Discover your perfect career path</p>
-            </div>
-          </div>
-          <Button asChild variant="secondary" className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 flex items-center gap-2">
-            <Link to="/assessment">
-              View All Assessments
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <StudentAssessmentCards maxCards={3} />
-      </div>
-
-      {/* Guidance Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-              <Heart className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">Guidance & Support</h2>
-              <p className="text-sm text-slate-600">Get help with your academic and career journey</p>
-            </div>
-          </div>
-          <Button asChild variant="secondary" className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 flex items-center gap-2">
-            <Link to="/guidance">
-              View All Services
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <StudentGuidanceCards maxCards={3} />
-      </div>
+{/* TODO: Add UrgentActions component here (Task 1.3) */}      {/* TODO: Add ProgressMetrics component here (Task 1.4) */}      {/* TODO: Add ActivityTimeline in tab (Task 1.2) */}
       </div>
     </div>
   );
