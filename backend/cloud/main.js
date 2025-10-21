@@ -25,7 +25,8 @@ require('./riasecScoringFunctions');
 require('./careerFunctions');
 
 // Import chat preferences functions (auto-registers cloud functions)
-require('./chatPreferencesFunctions');
+// Temporarily disabled due to Parse initialization timing issue
+// require('./chatPreferencesFunctions');
 
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
