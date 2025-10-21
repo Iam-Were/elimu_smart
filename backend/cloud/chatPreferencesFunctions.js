@@ -6,6 +6,10 @@
 
 const Parse = require('parse/node');
 
+// Registration function to be called after Parse is initialized
+module.exports.register = () => {
+  console.log('📌 Registering Chat Preferences Cloud Functions...');
+
 // ============================================================================
 // CONVERSATION PREFERENCES (Pin/Mute/Archive)
 // ============================================================================
@@ -447,9 +451,16 @@ Parse.Cloud.define('getUserChatPreferences', async (request) => {
   }
 });
 
-module.exports = {
-  // Export for testing or direct import
-  togglePinConversation: Parse.Cloud.job('togglePinConversation'),
-  toggleStarMessage: Parse.Cloud.job('toggleStarMessage'),
-  toggleReaction: Parse.Cloud.job('toggleReaction'),
-};
+  console.log('✅ Chat Preferences Cloud Functions registered');
+}; // End of module.exports.register
+
+// For backwards compatibility or testing
+module.exports.functions = [
+  'togglePinConversation',
+  'toggleMuteConversation', 
+  'toggleArchiveConversation',
+  'toggleStarMessage',
+  'toggleReaction',
+  'getUserConversationPreferences',
+  'getUserMessagePreferences'
+];
