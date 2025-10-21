@@ -1,7 +1,6 @@
 import React from 'react';
 import { TrendingUp, Target, Award, CheckCircle2, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 
@@ -137,11 +136,12 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({ className = '' }) => 
                 </p>
               </div>
             </div>
-            <Progress
-              value={metric.value}
-              className="h-2"
-              indicatorClassName={metric.progressColor}
-            />
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div
+                className={`h-full transition-all ${metric.progressColor}`}
+                style={{ width: `${metric.value}%` }}
+              />
+            </div>
           </div>
         ))}
 
