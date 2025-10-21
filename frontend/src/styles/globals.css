@@ -1493,63 +1493,7 @@ input::placeholder, textarea::placeholder {
       0 4px 16px rgba(5, 150, 105, 0.1);
   }
   
-  /* Floating Navigation Glass Effect */
-  .glass-nav {
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    background: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 
-      0 4px 32px rgba(0, 0, 0, 0.08),
-      0 2px 16px rgba(0, 0, 0, 0.04);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  
-  /* Multi-layer Glass Cards with Floating Elements */
-  .glass-card-layered {
-    position: relative;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-  }
-  
-  .glass-card-layered::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 120px;
-    height: 120px;
-    background: linear-gradient(
-      135deg,
-      rgba(249, 115, 22, 0.1) 0%,
-      rgba(251, 146, 60, 0.05) 100%
-    );
-    border-radius: 50%;
-    transform: translate(40%, -40%);
-    pointer-events: none;
-  }
-  
-  .glass-card-layered::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(
-      45deg,
-      rgba(249, 115, 22, 0.05) 0%,
-      rgba(251, 146, 60, 0.03) 100%
-    );
-    border-radius: 50%;
-    transform: translate(-30%, 30%);
-    pointer-events: none;
-  }
+  /* Design System V2: Glass morphism classes removed - use solid backgrounds */
   
   /* Enhanced Hover Effects with Glass Morphism */
   .glass-card:hover {

@@ -104,7 +104,7 @@ const LandingPage: React.FC = () => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 z-10">
           
           {/* Hero Card */}
-          <Card className="bg-white/80 backdrop-blur-sm shadow-xl border border-gray-200">
+          <Card className="bg-white shadow-xl border border-gray-200">
             <CardContent className="p-8 lg:p-12">
               
               {/* Two Column Layout */}
@@ -514,7 +514,7 @@ const LandingPage: React.FC = () => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Card Container for CTA Content */}
-          <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-gray-200">
+          <Card className="bg-white shadow-xl border-gray-200">
             <CardContent className="p-12 text-center">
               
               <Badge variant="secondary" className="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium mb-6">

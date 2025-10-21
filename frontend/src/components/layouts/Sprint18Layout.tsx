@@ -135,8 +135,8 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
             {/* Start Your Journey Card */}
             <Card className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/30 flex items-center justify-center mx-auto">
-                  <Target className="w-7 h-7 text-white" />
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mx-auto">
+                  <Target className="w-7 h-7 text-orange-600" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Start Your Journey</h3>
                 <p className="text-orange-50 text-sm leading-relaxed">
@@ -157,8 +157,8 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
             {/* Get Expert Guidance Card */}
             <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20  flex items-center justify-center mx-auto">
-                  <Users className="w-7 h-7 text-white" />
+                <div className="w-14 h-14 rounded-2xl bg-purple-50  flex items-center justify-center mx-auto">
+                  <Users className="w-7 h-7 text-purple-600" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Expert Guidance</h3>
                 <p className="text-purple-50 text-sm leading-relaxed">
@@ -179,8 +179,8 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
             {/* Premium Features Card */}
             <Card className="bg-gradient-to-br from-amber-500 to-amber-600 border-0 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20  flex items-center justify-center mx-auto relative">
-                  <Sparkles className="w-7 h-7 text-white" />
+                <div className="w-14 h-14 rounded-2xl bg-amber-50  flex items-center justify-center mx-auto relative">
+                  <Sparkles className="w-7 h-7 text-amber-600" />
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Go Premium</h3>
@@ -405,7 +405,7 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
                         name="email"
                         placeholder="Enter your email address"
                         required
-                        className="flex-1 px-4 py-3 rounded-lg bg-white/95 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                        className="flex-1 px-4 py-3 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
                       />
                       <Button
                         type="submit"

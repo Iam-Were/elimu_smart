@@ -295,7 +295,7 @@ export const ProfilePage: React.FC = () => {
                   <Button
                     size="sm"
                     onClick={() => setShowImageUploader(!showImageUploader)}
-                    className="h-10 w-10 p-0 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm"
+                    className="h-10 w-10 p-0 rounded-full bg-white hover:bg-white shadow-lg"
                   >
                     <Camera className="h-5 w-5 text-gray-700" />
                   </Button>

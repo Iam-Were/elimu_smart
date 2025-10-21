@@ -53,37 +53,37 @@ const AdminPortal: React.FC = () => {
             
             {/* Right Dashboard Preview */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-80 h-48 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="w-80 h-48 bg-white rounded-2xl p-6 border border-gray-200 shadow-md">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-white" />
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-white">System Health</div>
-                    <div className="text-purple-200 text-sm">All systems operational</div>
+                    <div className="font-medium text-gray-900">System Health</div>
+                    <div className="text-gray-600 text-sm">All systems operational</div>
                   </div>
                 </div>
                 
                 {/* System Status */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-purple-200 text-sm">Server Load</span>
-                    <span className="text-white font-medium">32%</span>
+                    <span className="text-gray-600 text-sm">Server Load</span>
+                    <span className="text-gray-900 font-medium">32%</span>
                   </div>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div className="bg-green-400 h-2 rounded-full transition-all duration-300" style={{ width: '32%' }}></div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full transition-all duration-300" style={{ width: '32%' }}></div>
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-purple-200 text-sm">Database Health</span>
-                    <span className="text-green-400 font-medium text-sm">Excellent</span>
+                    <span className="text-gray-600 text-sm">Database Health</span>
+                    <span className="text-green-600 font-medium text-sm">Excellent</span>
                   </div>
                 </div>
                 
                 {/* Quick Action Button */}
                 <button 
                   onClick={() => navigate('/admin/dashboard')}
-                  className="w-full mt-4 bg-white text-purple-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  className="w-full mt-4 bg-purple-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors duration-200"
                 >
                   View Dashboard →
                 </button>

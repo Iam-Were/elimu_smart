@@ -220,7 +220,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
       </div>
       
       <header
-        className={cn("glass-nav sticky top-0 z-50 w-full border-b relative overflow-hidden", className)}
+        className={cn("bg-white sticky top-0 z-50 w-full border-b border-slate-200 shadow-sm relative overflow-hidden", className)}
         style={getHeaderStyles()}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
@@ -239,11 +239,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
           }}
         ></div>
         <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
-        {/* Enhanced Logo with glass effects - Scroll-based animations */}
+        {/* Enhanced Logo with solid background - Scroll-based animations */}
         <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
           <Link to="/" className="flex items-center space-x-2 group">
             <div
-              className="glass-card flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
+              className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300"
               style={getLogoStyles()}
             >
               <Brain className="h-6 w-6 text-white drop-shadow-sm" />
@@ -621,7 +621,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+            className="fixed inset-0 z-50 bg-black/80 md:hidden animate-in fade-in duration-200"
             onClick={() => {
               setIsSearchOpen(false);
               setSearchQuery('');

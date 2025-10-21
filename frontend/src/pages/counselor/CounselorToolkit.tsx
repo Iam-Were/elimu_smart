@@ -51,37 +51,37 @@ const CounselorToolkit: React.FC = () => {
             
             {/* Right Dashboard Preview */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-80 h-48 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="w-80 h-48 bg-white rounded-2xl p-6 border border-gray-200 shadow-md">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <MessageCircle className="h-5 w-5 text-white" />
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <MessageCircle className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-white">Active Sessions</div>
-                    <div className="text-yellow-200 text-sm">12 students today</div>
+                    <div className="font-medium text-gray-900">Active Sessions</div>
+                    <div className="text-gray-600 text-sm">12 students today</div>
                   </div>
                 </div>
                 
                 {/* Session Progress */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-yellow-200 text-sm">Today's Progress</span>
-                    <span className="text-white font-medium">8/12</span>
+                    <span className="text-gray-600 text-sm">Today's Progress</span>
+                    <span className="text-gray-900 font-medium">8/12</span>
                   </div>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div className="bg-white h-2 rounded-full transition-all duration-300" style={{ width: '67%' }}></div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-orange-500 h-2 rounded-full transition-all duration-300" style={{ width: '67%' }}></div>
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-yellow-200 text-sm">Pending Questions</span>
-                    <span className="text-white font-medium text-sm">23</span>
+                    <span className="text-gray-600 text-sm">Pending Questions</span>
+                    <span className="text-gray-900 font-medium text-sm">23</span>
                   </div>
                 </div>
                 
                 {/* Quick Action Button */}
                 <button 
                   onClick={() => navigate('/counselor/sessions')}
-                  className="w-full mt-4 bg-white text-yellow-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  className="w-full mt-4 bg-orange-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-200"
                 >
                   View Sessions →
                 </button>

@@ -155,7 +155,7 @@ export const MobileBottomNav: React.FC = () => {
       {/* Overlay for menu */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/80 z-40 md:hidden"
           onClick={() => setIsMenuOpen(false)}
           aria-label="Close menu"
         />
@@ -163,7 +163,7 @@ export const MobileBottomNav: React.FC = () => {
 
       {/* Search Bar Overlay - Non-persistent, triggered by magnifying glass */}
       {isSearchOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 md:hidden backdrop-blur-sm" onClick={() => setIsSearchOpen(false)}>
+        <div className="fixed inset-0 bg-black/80 z-50 md:hidden" onClick={() => setIsSearchOpen(false)}>
           <div 
             className="absolute top-0 left-0 right-0 bg-white shadow-lg p-4"
             onClick={(e) => e.stopPropagation()}
