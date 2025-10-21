@@ -24,15 +24,9 @@ require('./riasecScoringFunctions');
 // Import career functions (auto-registers cloud functions)
 require('./careerFunctions');
 
-// TODO: Chat preferences functions disabled - needs refactoring
-// The file was added with 'const Parse = require('parse/node')' which doesn't work
-// in Parse Server cloud code context. Parse must be available globally.
-// Options to fix:
-// 1. Remove the Parse require and rely on global Parse (but timing issues remain)
-// 2. Move all functions directly into main.js
-// 3. Use Parse.Cloud.job instead of Parse.Cloud.define for async operations
-// For now, chat preferences will use localStorage until this is fixed
-// require('./chatPreferencesFunctions');
+// Import chat preferences functions (auto-registers cloud functions)
+// Fixed: removed 'const Parse = require('parse/node')' - uses global Parse
+require('./chatPreferencesFunctions');
 
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
