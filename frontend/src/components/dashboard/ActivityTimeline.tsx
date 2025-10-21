@@ -18,33 +18,81 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   const { userActivities, loading } = useDynamicDashboard();
 
   // Get icon based on activity type
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'assessment':
-        return <BookOpen className="w-4 h-4" />;
-      case 'session':
-        return <Calendar className="w-4 h-4" />;
-      case 'message':
-        return <MessageCircle className="w-4 h-4" />;
-      case 'achievement':
-        return <Award className="w-4 h-4" />;
-      default:
-        return <CheckCircle className="w-4 h-4" />;
+  const getActivityIcon = (activityType: string) => {
+    const type = activityType.toLowerCase();
+    if (type.includes('assessment') || type.includes('test')) {
+      return <BookOpen className="w-4 h-4" />;
     }
+    if (type.includes('session') || type.includes('booking')) {
+      return <Calendar className="w-4 h-4" />;
+    }
+    if (type.includes('message') || type.includes('chat')) {
+      return <MessageCircle className="w-4 h-4" />;
+    }
+    if (type.includes('achievement') || type.includes('badge')) {
+      return <Award className="w-4 h-4" />;
+    }
+    return <CheckCircle className="w-4 h-4" />;
   };
 
-  // Get badge variant based on status
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="success" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">Completed</Badge>;
-      case 'pending':
-        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">Pending</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+  // Format activity title from activityType
+  const formatActivityTitle = (activityType: string) => {
+    return activityType
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Get activity description from data
+  const getActivityDescription = (activity: typeof userActivities[0]) => {
+    const { data, pageUrl } = activity;
+
+    // Try to extract meaningful description from data
+    if (data.description && typeof data.description === 'string') {
+      return data.description;
     }
+    if (data.title && typeof data.title === 'string') {
+      return data.title;
+    }
+    if (data.action && typeof data.action === 'string') {
+      return data.action;
+    }
+
+    // Fallback to page URL
+    return `Visited ${pageUrl}`;
+  };
+
+  // Get badge for activity
+  const getActivityBadge = (activity: typeof userActivities[0]) => {
+    const { data, activityType } = activity;
+
+    // Check for status in data
+    const status = data.status as string | undefined;
+    if (status) {
+      switch (status.toLowerCase()) {
+        case 'completed':
+        case 'complete':
+          return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">Completed</Badge>;
+        case 'pending':
+        case 'in_progress':
+          return <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">In Progress</Badge>;
+        case 'cancelled':
+        case 'failed':
+          return <Badge variant="destructive">Cancelled</Badge>;
+      }
+    }
+
+    // Default badge based on activity type
+    const type = activityType.toLowerCase();
+    if (type.includes('view') || type.includes('visited')) {
+      return <Badge variant="outline">Viewed</Badge>;
+    }
+    if (type.includes('click') || type.includes('interaction')) {
+      return <Badge variant="outline">Interaction</Badge>;
+    }
+
+    return <Badge variant="secondary">Activity</Badge>;
   };
 
   // Format timestamp to relative time
@@ -153,23 +201,21 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                 {dateGroup}
               </h4>
               {activities.map((activity, index) => (
-                <div key={activity.id || index}>
+                <div key={`${activity.timestamp.getTime()}-${index}`}>
                   <div className="flex items-start gap-4 py-3">
                     {/* Icon */}
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                      {getActivityIcon(activity.type)}
+                      {getActivityIcon(activity.activityType)}
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
-                        {activity.title}
+                        {formatActivityTitle(activity.activityType)}
                       </p>
-                      {activity.description && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {activity.description}
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {getActivityDescription(activity)}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatRelativeTime(activity.timestamp)}
                       </p>
@@ -177,7 +223,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
 
                     {/* Status Badge */}
                     <div className="flex-shrink-0">
-                      {getStatusBadge(activity.status)}
+                      {getActivityBadge(activity)}
                     </div>
                   </div>
                   {index < activities.length - 1 && <Separator />}
