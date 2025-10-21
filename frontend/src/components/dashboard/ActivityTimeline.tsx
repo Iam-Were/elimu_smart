@@ -194,29 +194,29 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-96 px-6 pb-4">
+        <ScrollArea className="h-64 sm:h-80 md:h-96 px-4 pb-3 sm:px-6 sm:pb-4">
           {Object.entries(groupedActivities).map(([dateGroup, activities]) => (
-            <div key={dateGroup} className="mb-4">
-              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 sticky top-0 bg-white dark:bg-gray-800 py-2">
+            <div key={dateGroup} className="mb-3 sm:mb-4">
+              <h4 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3 sticky top-0 bg-white dark:bg-gray-800 py-2">
                 {dateGroup}
               </h4>
               {activities.map((activity, index) => (
                 <div key={`${activity.timestamp.getTime()}-${index}`}>
-                  <div className="flex items-start gap-4 py-3">
+                  <div className="flex items-start gap-3 sm:gap-4 py-2 sm:py-3">
                     {/* Icon */}
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                      {getActivityIcon(activity.activityType)}
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                      {React.cloneElement(getActivityIcon(activity.activityType) as React.ReactElement, { className: "w-3 h-3 sm:w-4 sm:h-4" })}
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
+                      <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                         {formatActivityTitle(activity.activityType)}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {getActivityDescription(activity)}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {formatRelativeTime(activity.timestamp)}
                       </p>
                     </div>

@@ -206,43 +206,43 @@ const UrgentActions: React.FC<UrgentActionsProps> = ({
           <Badge variant="secondary" className="ml-auto">{urgentActions.length}</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {urgentActions.map((action) => (
           <div
             key={action.id}
-            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
+            className="p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700 transition-colors"
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2 sm:gap-3">
               {/* Icon */}
-              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 {action.icon}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                  <h4 className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                     {action.title}
                   </h4>
                   {getPriorityBadge(action.priority)}
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-[10px] sm:text-xs text-muted-foreground mb-2">
                   {action.description}
                 </p>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
                     {action.deadline && (
                       <>
                         <Clock className="w-3 h-3" />
                         <span>{formatDeadline(action.deadline)}</span>
                       </>
                     )}
-                    <Badge variant="outline" className="text-xs">{action.category}</Badge>
+                    <Badge variant="outline" className="text-[10px] sm:text-xs">{action.category}</Badge>
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                    className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                     onClick={() => navigate(action.actionUrl)}
                   >
                     {action.actionText}

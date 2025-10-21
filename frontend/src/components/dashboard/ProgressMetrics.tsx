@@ -113,25 +113,25 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({ className = '' }) => 
           {careerReadinessScore && getStatusBadge(careerReadinessScore.overall)}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6">
         {metrics.map((metric) => (
           <div key={metric.id} className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className={`p-2 rounded-lg ${metric.bgColor} ${metric.color}`}>
-                  {metric.icon}
+                <div className={`p-1.5 sm:p-2 rounded-lg ${metric.bgColor} ${metric.color}`}>
+                  {React.cloneElement(metric.icon as React.ReactElement, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-slate-900 dark:text-slate-100">
+                  <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                     {metric.title}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     {metric.description}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-bold text-lg text-slate-900 dark:text-slate-100">
+                <p className="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100">
                   {metric.value}%
                 </p>
               </div>
