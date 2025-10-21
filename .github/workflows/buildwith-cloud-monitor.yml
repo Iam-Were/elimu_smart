@@ -1,0 +1,82 @@
+name: Buildwith.cloud - Production Monitor
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'  # Every 3 hours (reduced frequency)
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Check Production Status
+        id: check
+        run: |
+          echo "🔍 Checking production services..."
+          
+          # Check Backend
+          BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/parse/health)
+          echo "backend_status=$BACKEND_STATUS" >> $GITHUB_OUTPUT
+          
+          # Check Frontend
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://elimu-smart.co.ke/)
+          echo "frontend_status=$FRONTEND_STATUS" >> $GITHUB_OUTPUT
+          
+          # Check Response Time
+          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" https://elimu-smart.co.ke/parse/health)
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+          
+          # Determine overall health
+          if [ "$BACKEND_STATUS" = "200" ] && [ "$FRONTEND_STATUS" = "200" ]; then
+            echo "✅ All services healthy"
+            echo "healthy=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Service degradation detected"
+            echo "healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Report Status
+        if: always()
+        run: |
+          echo "## 📊 Production Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status | Response |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend (Parse) | ${{ steps.check.outputs.backend_status }} | ${{ steps.check.outputs.response_time }}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ steps.check.outputs.frontend_status }} | - |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.check.outputs.healthy }}" = "true" ]; then
+            echo "**Overall Status**: ✅ Healthy" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Overall Status**: ❌ Degraded" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Alert on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Production Services Down',
+              body: `## 🚨 Service Health Alert
+              
+              **Time**: ${new Date().toISOString()}
+              **Backend**: ${{ steps.check.outputs.backend_status }}
+              **Frontend**: ${{ steps.check.outputs.frontend_status }}
+              **Response Time**: ${{ steps.check.outputs.response_time }}s
+              
+              **Action Required**: Check VPS services
+              
+              SSH: \`ssh root@${{ secrets.VPS_HOST }}\`
+              Check PM2: \`pm2 status\`
+              Check logs: \`pm2 logs parse-server-prod\``,
+              labels: ['production', 'monitoring', 'alert']
+            });

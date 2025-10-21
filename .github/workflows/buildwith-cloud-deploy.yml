@@ -1,0 +1,188 @@
+name: Buildwith.cloud - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - '.github/workflows/buildwith-cloud-deploy.yml'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Build and lint frontend
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint code
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # Backend validation
+  backend-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Validate backend syntax
+        working-directory: backend
+        run: |
+          echo "✅ Checking backend files..."
+          node -c server-working.js
+          node -c cloud/main.js
+          echo "✅ Backend validation passed"
+
+  # Deploy to VPS via SSH
+  deploy-to-vps:
+    needs: [frontend-build, backend-validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: ./dist
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment to VPS..."
+            
+            # Navigate to project directory
+            cd /root/elimu_smart
+            
+            # Pull latest code
+            echo "📥 Pulling latest code from GitHub..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Backend deployment
+            echo "🔧 Deploying backend..."
+            cd backend
+            npm install --production
+            
+            # Restart Parse Server with PM2
+            echo "♻️  Restarting Parse Server..."
+            pm2 restart parse-server-prod
+            pm2 save
+            
+            # Frontend deployment
+            echo "🎨 Deploying frontend..."
+            cd /root/elimu_smart/frontend
+            npm install --production
+            npm run build
+            
+            # Copy to production directory
+            echo "📦 Copying frontend to production..."
+            sudo cp -r dist/* /var/www/elimu-smart/
+            
+            # Restart Nginx (if needed)
+            echo "🔄 Reloading Nginx..."
+            sudo nginx -t && sudo systemctl reload nginx
+            
+            # Health check
+            echo "🏥 Running health check..."
+            sleep 5
+            
+            if curl -f -s https://elimu-smart.co.ke/parse/health > /dev/null; then
+              echo "✅ Backend health check passed"
+            else
+              echo "❌ Backend health check failed"
+              exit 1
+            fi
+            
+            if curl -f -s https://elimu-smart.co.ke/ > /dev/null; then
+              echo "✅ Frontend health check passed"
+            else
+              echo "❌ Frontend health check failed"
+              exit 1
+            fi
+            
+            echo "🎉 Deployment completed successfully!"
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Domain**: https://elimu-smart.co.ke" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '❌ Deployment Failed - ' + new Date().toISOString(),
+              body: `## ❌ Deployment to Production Failed
+              
+              **Commit**: ${{ github.sha }}
+              **Branch**: ${{ github.ref }}
+              **Workflow**: ${{ github.workflow }}
+              **Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              
+              Please check the logs and fix the issue.`,
+              labels: ['deployment', 'production', 'failed']
+            });
+            console.log('Created issue:', issue.data.html_url);
