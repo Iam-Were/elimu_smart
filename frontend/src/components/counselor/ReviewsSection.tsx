@@ -39,10 +39,6 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ counselorId }) =
   const [skip, setSkip] = useState(0);
   const limit = 5;
 
-  useEffect(() => {
-    loadReviews(true);
-  }, [counselorId]);
-
   const loadReviews = async (initial = false) => {
     if (initial) {
       setLoading(true);
@@ -61,7 +57,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ counselorId }) =
       });
 
       if (result.success) {
-        const newReviews = result.reviews.map((r: any) => ({
+        const newReviews = result.reviews.map((r: Review) => ({
           ...r,
           createdAt: new Date(r.createdAt)
         }));
@@ -84,6 +80,10 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ counselorId }) =
       setLoadingMore(false);
     }
   };
+
+  useEffect(() => {
+    loadReviews(true);
+  }, [counselorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'sm') => {
     const sizeClasses = {

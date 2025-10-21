@@ -6,7 +6,7 @@ interface NotificationOptions {
   icon?: string;
   badge?: string;
   tag?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   requireInteraction?: boolean;
 }
 
@@ -85,7 +85,7 @@ class PushNotificationService {
         window.focus();
         
         // Handle notification click
-        if (options.data?.url) {
+        if (options.data?.url && typeof options.data.url === 'string') {
           window.location.href = options.data.url;
         }
         

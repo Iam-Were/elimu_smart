@@ -28,7 +28,7 @@ class OfflineMessageQueue {
     try {
       const stored = localStorage.getItem(QUEUE_STORAGE_KEY);
       if (stored) {
-        this.queue = JSON.parse(stored).map((msg: any) => ({
+        this.queue = JSON.parse(stored).map((msg: QueuedMessage) => ({
           ...msg,
           timestamp: new Date(msg.timestamp)
         }));

@@ -86,9 +86,10 @@ export const AvailabilitySettings = () => {
       toast.success('Settings saved', {
         description: 'Your availability settings have been updated.'
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Error', {
-        description: 'Failed to save settings: ' + error.message
+        description: 'Failed to save settings: ' + errorMessage
       });
     } finally {
       setSaving(false);

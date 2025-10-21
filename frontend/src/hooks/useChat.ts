@@ -424,7 +424,8 @@ export const useChat = () => {
     if (!user || !chatState.currentRoom) return;
 
     const currentRoomId = chatState.currentRoom.id;
-    let subscription: any; // LiveQuerySubscription type not exported from Parse
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let subscription: any;
     let retryCount = 0;
     let retryTimeout: NodeJS.Timeout;
     let isUnmounting = false;

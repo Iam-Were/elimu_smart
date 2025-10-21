@@ -164,10 +164,11 @@ export const MpesaPaymentDialog: React.FC<MpesaPaymentDialogProps> = ({
         setStatus('failed');
         setErrorMessage(result.message || 'Failed to initiate payment');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Payment initiation error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
       setStatus('failed');
-      setErrorMessage(error.message || 'An error occurred. Please try again.');
+      setErrorMessage(errorMessage);
     }
   };
 

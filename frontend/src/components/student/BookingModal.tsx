@@ -42,12 +42,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedSession, setSelectedSession] = useState<SessionType | null>(null);
 
-  useEffect(() => {
-    if (isOpen && counselorId) {
-      loadCounselorSettings();
-    }
-  }, [isOpen, counselorId]);
-
   const loadCounselorSettings = async () => {
     setLoading(true);
     try {
@@ -65,6 +59,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen && counselorId) {
+      loadCounselorSettings();
+    }
+  }, [isOpen, counselorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBookSession = (session: SessionType) => {
     if (session.price === 0) {
