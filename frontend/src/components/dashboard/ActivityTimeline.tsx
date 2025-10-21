@@ -204,8 +204,8 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                 <div key={`${activity.timestamp.getTime()}-${index}`}>
                   <div className="flex items-start gap-3 sm:gap-4 py-2 sm:py-3">
                     {/* Icon */}
-                    <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                      {React.cloneElement(getActivityIcon(activity.activityType) as React.ReactElement, { className: "w-3 h-3 sm:w-4 sm:h-4" })}
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 [&>svg]:w-3 [&>svg]:h-3 sm:[&>svg]:w-4 sm:[&>svg]:h-4">
+                      {getActivityIcon(activity.activityType)}
                     </div>
 
                     {/* Content */}

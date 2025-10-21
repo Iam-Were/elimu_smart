@@ -118,8 +118,8 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({ className = '' }) => 
           <div key={metric.id} className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className={`p-1.5 sm:p-2 rounded-lg ${metric.bgColor} ${metric.color}`}>
-                  {React.cloneElement(metric.icon as React.ReactElement, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
+                <div className={`p-1.5 sm:p-2 rounded-lg ${metric.bgColor} ${metric.color} [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5`}>
+                  {metric.icon}
                 </div>
                 <div>
                   <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-slate-100">
