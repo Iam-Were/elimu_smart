@@ -153,7 +153,16 @@ function getCacheStats() {
   return { message: 'Production cache stats available in Redis' };
 }
 
+// Export cache instance for direct access
+const cache = process.env.NODE_ENV !== 'production' ? devCache : {
+  // In production, provide a simple wrapper that just executes (no caching)
+  async get(key) { return null; },
+  async set(key, value, ttl) { return true; },
+  async del(key) { return true; }
+};
+
 module.exports = {
+  cache,
   CACHE_TTL,
   getCached,
   invalidateCache,

@@ -3,7 +3,7 @@
 
 // Import services
 const emailService = require('../services/emailService')
-const { cache, cacheKeys } = require('../utils/cache')
+const { cache, getCached, invalidateCache, CACHE_TTL } = require('../utils/cache')
 
 // Import billing functions (auto-registers cloud functions)
 require('./billingFunctions');
