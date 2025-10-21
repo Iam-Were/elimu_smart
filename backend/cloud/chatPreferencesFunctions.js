@@ -4,11 +4,8 @@
  * Syncs user preferences across devices via Parse Server
  */
 
-const Parse = require('parse/node');
-
-// Registration function to be called after Parse is initialized
-module.exports.register = () => {
-  console.log('📌 Registering Chat Preferences Cloud Functions...');
+// Parse is globally available in cloud code context
+// No need to require it
 
 // ============================================================================
 // CONVERSATION PREFERENCES (Pin/Mute/Archive)
@@ -451,16 +448,4 @@ Parse.Cloud.define('getUserChatPreferences', async (request) => {
   }
 });
 
-  console.log('✅ Chat Preferences Cloud Functions registered');
-}; // End of module.exports.register
-
-// For backwards compatibility or testing
-module.exports.functions = [
-  'togglePinConversation',
-  'toggleMuteConversation', 
-  'toggleArchiveConversation',
-  'toggleStarMessage',
-  'toggleReaction',
-  'getUserConversationPreferences',
-  'getUserMessagePreferences'
-];
+console.log('✅ Chat Preferences Cloud Functions loaded');

@@ -24,12 +24,8 @@ require('./riasecScoringFunctions');
 // Import career functions (auto-registers cloud functions)
 require('./careerFunctions');
 
-// Import chat preferences functions with lazy loading
-const chatPreferences = require('./chatPreferencesFunctions');
-// Register after Parse is fully loaded
-if (chatPreferences && typeof chatPreferences.register === 'function') {
-  chatPreferences.register();
-}
+// Import chat preferences functions (auto-registers cloud functions)
+require('./chatPreferencesFunctions');
 
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
