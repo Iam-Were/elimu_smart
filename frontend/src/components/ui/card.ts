@@ -1,2 +1,2 @@
-// Re-export from Card.tsx for case-insensitive imports
-export * from './Card';
+// Re-export from card.tsx for Linux case-sensitive imports
+export * from './card';
