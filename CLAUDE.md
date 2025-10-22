@@ -522,19 +522,97 @@ Variable card heights communicate information importance (see Card Content secti
 4. ✅ Test in browser DevTools continuously
 5. ✅ Ensure accessibility (ARIA labels, keyboard navigation)
 
-### Before Committing
-1. ✅ Push code to GitHub - Let GitHub Actions handle build and lint checks
-2. ✅ Monitor workflow status - Use `gh run list` and `gh run watch`
-3. ✅ DO NOT run `npm run build` or `npm run lint` locally on VPS
-4. ✅ GitHub workflows will automatically run all quality checks
-5. ✅ Browser DevTools check - No console errors (when testing features)
-6. ✅ Verify mobile responsiveness (when testing features)
+### Development Workflow (Local → GitHub → VPS)
 
-**GitHub Actions Workflow**:
-- Auto-Fix Lint Errors (runs first, auto-commits fixes)
-- Lint & Build Check (TypeScript + ESLint validation)
-- Node.js CI (production build test on Node 20.x)
-- Deploy to Staging (automatic deployment after build passes)
+**IMPORTANT**: Follow this exact workflow for all code changes:
+
+#### 1. Local Development (Code + Lint Only)
+```bash
+cd frontend
+npm run dev      # Test changes locally
+npm run lint     # Check for errors (MUST pass with 0 errors before commit)
+# Fix any lint errors, then commit
+```
+
+#### 2. Push to GitHub
+```bash
+git add .
+git commit -m "descriptive message"
+git push origin main
+```
+
+#### 3. Monitor GitHub Actions
+```bash
+gh run list --limit 1        # Check latest run status
+gh run watch <run-id>        # Monitor build progress
+```
+
+**GitHub Actions Workflow** (Automatic):
+- ✅ Auto-Fix Lint Errors (runs first, auto-commits fixes if needed)
+- ✅ Lint & Build Check (TypeScript + ESLint validation)
+- ✅ Node.js CI (production build test on Node 20.x)
+- ⚠️ Deploy to Staging (manual - see VPS deployment below)
+
+**Note**: If GitHub Actions fails due to billing limits, proceed with manual VPS deployment after verifying local lint passes.
+
+#### 4. Deploy to VPS (Production)
+```bash
+ssh root@145.239.42.121
+
+# Navigate to project directory
+cd /root/elimu_smart
+
+# Pull latest changes
+git pull origin main
+
+# Handle any merge conflicts
+git stash                    # If conflicts
+git pull origin main
+git stash pop               # Resolve conflicts manually if needed
+
+# Backend deployment
+cd backend
+npm install                 # If package.json changed
+pm2 restart parse-server-prod
+
+# Frontend deployment
+cd ../frontend
+npm install                 # If package.json changed
+npm run build -- --mode production
+sudo cp -r dist/* /var/www/elimu-smart/
+
+# Verify deployment
+curl https://elimu-smart.co.ke/parse/health
+curl https://elimu-smart.co.ke/
+```
+
+#### 5. Verify Production
+- **Frontend**: https://elimu-smart.co.ke
+- **Backend Health**: https://elimu-smart.co.ke/parse/health
+- **Test Key Features**: Login, assessments, navigation
+- **Check PM2 Status**: `pm2 status` and `pm2 logs parse-server-prod --lines 50`
+
+### Quick Reference Commands
+
+**Local**:
+```bash
+npm run lint              # Check code quality
+git push origin main      # Push to GitHub
+```
+
+**GitHub**:
+```bash
+gh run list              # View recent runs
+gh run watch             # Monitor active run
+```
+
+**VPS**:
+```bash
+ssh root@145.239.42.121
+cd /root/elimu_smart && git pull origin main
+pm2 restart parse-server-prod
+cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/
+```
 
 ## Mobile Development Readiness
 
