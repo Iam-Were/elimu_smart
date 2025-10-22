@@ -42,10 +42,10 @@ export const StudentGuidanceCardsV2: React.FC<StudentGuidanceCardsV2Props> = ({
   // Filter state
   const [filter, setFilter] = useState<FilterType>('all');
   const [showPaywall, setShowPaywall] = useState(false);
-  const [selectedPremiumCard, setSelectedPremiumCard] = useState<string | null>(null);
 
   // Subscription status
-  const { isPremium, isLoading: subscriptionLoading } = useSubscription();
+  const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
+  const isPremium = userSubscription?.status === 'active';
 
   // Use unified hook to fetch guidance cards
   const { cards, loading, error } = useDynamicCards({
@@ -238,12 +238,8 @@ export const StudentGuidanceCardsV2: React.FC<StudentGuidanceCardsV2Props> = ({
       {showPaywall && (
         <SubscriptionPaywall
           isOpen={showPaywall}
-          onClose={() => {
-            setShowPaywall(false);
-            setSelectedPremiumCard(null);
-          }}
-          source="guidance_premium_feature"
-          featureName={selectedPremiumCard || 'Premium Guidance'}
+          onClose={() => setShowPaywall(false)}
+          feature="premium"
         />
       )}
     </>
