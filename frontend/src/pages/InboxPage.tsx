@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { SubscriptionPaywall } from '@/components/subscription/SubscriptionPaywall';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -43,13 +46,27 @@ interface LinkedInConversation {
 }
 
 const InboxPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedConversation, setSelectedConversation] = useState<LinkedInConversation | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const { user } = useAuth();
+  const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
   const { rooms, messages, isLoading, sendMessage } = useChat();
+
+  // Check if user has premium access
+  const isPremium = userSubscription?.status === 'active' &&
+    userSubscription?.plan !== 'free';
+
+  // Show paywall if not premium (after subscription data loads)
+  useEffect(() => {
+    if (!subscriptionLoading && !isPremium && user?.role === 'student') {
+      setShowPaywall(true);
+    }
+  }, [subscriptionLoading, isPremium, user]);
 
   // Transform rooms to conversations
   const linkedInConversations: LinkedInConversation[] = rooms.map(room => ({
@@ -99,6 +116,20 @@ const InboxPage: React.FC = () => {
     setNewMessage('');
   };
 
+  // Render paywall for free users (students only)
+  if (showPaywall && user?.role === 'student') {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <SubscriptionPaywall
+          isOpen={true}
+          onClose={() => navigate('/dashboard')}
+          feature="messaging"
+        />
+      </div>
+    );
+  }
+
+  // Premium users and counselors see full inbox
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       {/* LinkedIn-style Single Unified Card */}

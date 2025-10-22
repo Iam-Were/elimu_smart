@@ -185,26 +185,66 @@ export const ProfilePage: React.FC = () => {
   // Handle form submission
   const handleSaveProfile = async () => {
     try {
-      // Here you would typically make an API call to update the profile
-      // For now, we'll just show a success message
-      console.log('Saving profile:', editFormData);
+      const Parse = getParse();
+      const currentUser = Parse.User.current();
+
+      if (!currentUser) {
+        throw new Error('Not authenticated');
+      }
+
+      // Update user fields
+      currentUser.set('firstName', editFormData.firstName);
+      currentUser.set('lastName', editFormData.lastName);
+      currentUser.set('bio', editFormData.bio);
+      currentUser.set('location', editFormData.location);
+
+      await currentUser.save();
+
       setIsEditDialogOpen(false);
-      // You could add a toast notification here
+
+      // Show success toast and reload to update UI
+      const { toast } = await import('sonner');
+      toast.success('Profile updated successfully!');
+
+      // Reload page to reflect changes (Parse User object updated)
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error('Failed to save profile:', error);
+
+      // Show error toast
+      const { toast } = await import('sonner');
+      toast.error('Failed to save changes');
     }
   };
 
   // Handle profile image upload
   const handleImageUpload = async (imageUrl: string) => {
     try {
-      console.log('Profile image uploaded:', imageUrl);
-      // The ImageUploader component already handles the upload to backend
-      // The user avatar will be updated automatically on next page load
-      // For immediate UI update, we could refresh user data here
-      window.location.reload();
+      const Parse = getParse();
+      const currentUser = Parse.User.current();
+
+      if (currentUser) {
+        currentUser.set('profileImage', imageUrl);
+        await currentUser.save();
+
+        setShowImageUploader(false);
+
+        // Show success toast
+        const { toast } = await import('sonner');
+        toast.success('Profile picture updated!');
+
+        // Reload to update avatar across the page
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
     } catch (error) {
-      console.error('Failed to handle image upload:', error);
+      console.error('Failed to update profile image:', error);
+
+      const { toast } = await import('sonner');
+      toast.error('Failed to update profile picture');
     }
   };
 
