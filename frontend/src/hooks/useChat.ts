@@ -128,7 +128,7 @@ export const useChat = () => {
         isLoading: false
       }));
     }
-  }, [user, parseRoomToRoom]);
+  }, [user, parseRoomToRoom, getSessionToken]);
 
   // Load messages for a specific room
   const loadMessages = useCallback(async (chatRoomId: string) => {
@@ -162,7 +162,7 @@ export const useChat = () => {
         isLoading: false
       }));
     }
-  }, [user, parseMessageToMessage]);
+  }, [user, parseMessageToMessage, getSessionToken]);
 
   // Send a message
   const sendMessage = useCallback(async (chatRoomId: string, message: string, messageType: 'text' | 'file' | 'image' = 'text') => {
@@ -236,7 +236,7 @@ export const useChat = () => {
       }));
       throw error;
     }
-  }, [user, loadMessages]);
+  }, [user, loadMessages, getSessionToken]);
 
   // Create a new chat room
   const createChatRoom = useCallback(async (participantIds: string[], type: 'counseling' | 'mentoring' | 'group' = 'counseling', title?: string) => {
@@ -264,7 +264,7 @@ export const useChat = () => {
       }));
       throw error;
     }
-  }, [user, parseRoomToRoom]);
+  }, [user, parseRoomToRoom, getSessionToken]);
 
   // Set current room and load its messages
   const setCurrentRoom = useCallback((room: ChatRoom | undefined) => {
@@ -315,7 +315,7 @@ export const useChat = () => {
       }));
       return [];
     }
-  }, [user, parseRoomToRoom]);
+  }, [user, parseRoomToRoom, getSessionToken]);
 
   // Search conversations by title
   const searchConversations = useCallback(async (searchTerm: string, limit = 10) => {
@@ -329,7 +329,7 @@ export const useChat = () => {
       console.error('Failed to search conversations:', error);
       return [];
     }
-  }, [user, parseRoomToRoom]);
+  }, [user, parseRoomToRoom, getSessionToken]);
 
   // Archive a conversation
   const archiveConversation = useCallback(async (chatRoomId: string): Promise<{ success: boolean }> => {
@@ -352,7 +352,7 @@ export const useChat = () => {
       console.error('Failed to archive conversation:', error);
       return { success: false };
     }
-  }, [user]);
+  }, [user, getSessionToken]);
 
   // Send multimedia message (text, image, or file)
   const sendMultimediaMessage = useCallback(async (params: {
@@ -379,7 +379,7 @@ export const useChat = () => {
       }));
       throw error;
     }
-  }, [user, loadMessages]);
+  }, [user, loadMessages, getSessionToken]);
 
   // Update message status (delivered/read)
   const updateMessageStatus = useCallback(async (messageId: string, status: 'delivered' | 'read') => {
@@ -398,7 +398,7 @@ export const useChat = () => {
     } catch (error) {
       console.error('Failed to update message status:', error);
     }
-  }, [user]);
+  }, [user, getSessionToken]);
 
   // Mark all messages in room as delivered/read
   const updateRoomMessagesStatus = useCallback(async (chatRoomId: string, status: 'delivered' | 'read') => {
@@ -417,7 +417,7 @@ export const useChat = () => {
     } catch (error) {
       console.error('Failed to update room messages status:', error);
     }
-  }, [user]);
+  }, [user, getSessionToken]);
 
   // Real-time message updates with Parse Live Query
   useEffect(() => {
@@ -586,7 +586,7 @@ export const useChat = () => {
     );
 
     return cleanup;
-  }, [chatState.currentRoom, loadMessages]);
+  }, [chatState.currentRoom, loadMessages, getSessionToken]);
 
   // Request notification permission
   const requestNotificationPermission = useCallback(async () => {
