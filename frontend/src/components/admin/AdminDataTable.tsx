@@ -454,7 +454,7 @@ export const AdminDataTable = <T extends Record<string, unknown>>({
                             size="sm"
                             variant="ghost"
                             className="h-8 w-8 p-0"
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               onRowClick?.(row);
                             }}
@@ -467,7 +467,7 @@ export const AdminDataTable = <T extends Record<string, unknown>>({
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 p-0"
-                              onClick={(e) => {
+                              onClick={(e: React.MouseEvent) => {
                                 e.stopPropagation();
                                 onRowEdit(row);
                               }}
@@ -481,7 +481,7 @@ export const AdminDataTable = <T extends Record<string, unknown>>({
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={(e) => {
+                              onClick={(e: React.MouseEvent) => {
                                 e.stopPropagation();
                                 onRowDelete(row);
                               }}

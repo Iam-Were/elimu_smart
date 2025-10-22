@@ -1,3 +1,3 @@
-// Re-export from Button.tsx for case-insensitive imports
-export { default } from './Button';
-export * from './Button';
+// Re-export from button.tsx for case-insensitive imports
+export { default } from './button.tsx';
+export * from './button.tsx';

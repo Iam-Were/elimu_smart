@@ -620,7 +620,7 @@ export const LinkedInStyleChat: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 hover:bg-gray-100"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     setIsMinimized(!isMinimized);
                   }}
@@ -632,7 +632,7 @@ export const LinkedInStyleChat: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 hover:bg-gray-100"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     setIsOpen(false);
                   }}
@@ -729,7 +729,7 @@ export const LinkedInStyleChat: React.FC = () => {
 
                           {/* Pin toggle button */}
                           <button
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               togglePinnedConversation(conversation.id);
                             }}

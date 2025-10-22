@@ -264,7 +264,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
                     : "bg-orange-600 hover:bg-orange-700 text-white"
                 )}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   handleCardClick(card);
                 }}
