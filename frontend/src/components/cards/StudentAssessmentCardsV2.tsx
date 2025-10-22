@@ -1,16 +1,25 @@
 /**
- * StudentAssessmentCards V2 - Refactored to use unified card system
+ * StudentAssessmentCards V2 - Mobile-Optimized Unified Card System
  *
  * BEFORE: 656 lines with duplicate card rendering logic
- * AFTER: ~60 lines using UnifiedCardGrid + useDynamicCards
+ * AFTER: ~150 lines using UnifiedCardGrid + useDynamicCards + mobile optimizations
+ *
+ * Mobile Features:
+ * - Filter chips with horizontal scroll (hide-scrollbar utility)
+ * - WCAG AAA touch targets (48px minimum)
+ * - Responsive stats grid (2 cols mobile → 4 cols desktop)
+ * - Mobile-first active states (instead of hover-only)
  *
  * Migration: Replace StudentAssessmentCards import with StudentAssessmentCardsV2 in Sprint18AssessmentPage.tsx
  */
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, Clock } from 'lucide-react';
+import Button from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { AssessmentCard } from '@/types/CardInterfaces';
 
 interface StudentAssessmentCardsV2Props {
   className?: string;
@@ -18,23 +27,76 @@ interface StudentAssessmentCardsV2Props {
   showAll?: boolean;
 }
 
+type FilterType = 'all' | 'not-started' | 'in-progress' | 'completed' | 'priority';
+
 export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> = ({
   className,
   maxCards,
   showAll = false
 }) => {
+  // Filter state
+  const [filter, setFilter] = useState<FilterType>('all');
+
   // Use unified hook to fetch assessment cards
   const { cards, loading, error } = useDynamicCards({
     variant: 'assessment',
     maxCards: showAll ? undefined : maxCards
   });
 
+  // Type guard for AssessmentCard
+  const isAssessmentCard = (card: unknown): card is AssessmentCard => {
+    return (card as AssessmentCard).cardType === 'assessment';
+  };
+
+  // Filter cards based on selected filter
+  const filteredCards = useMemo(() => {
+    const assessmentCards = cards.filter(isAssessmentCard);
+
+    switch (filter) {
+      case 'not-started':
+        return assessmentCards.filter(card => !card.completionStatus || card.completionStatus.progress === 0);
+      case 'in-progress':
+        return assessmentCards.filter(card =>
+          card.completionStatus && card.completionStatus.progress > 0 && card.completionStatus.progress < 100
+        );
+      case 'completed':
+        return assessmentCards.filter(card =>
+          card.completionStatus && card.completionStatus.progress === 100
+        );
+      case 'priority':
+        return assessmentCards.filter(card => !card.completionStatus || card.completionStatus.progress < 50);
+      default:
+        return assessmentCards; // 'all'
+    }
+  }, [cards, filter]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const assessmentCards = cards.filter(isAssessmentCard);
+    const completed = assessmentCards.filter(card =>
+      card.completionStatus && card.completionStatus.progress === 100
+    ).length;
+    const inProgress = assessmentCards.filter(card =>
+      card.completionStatus && card.completionStatus.progress > 0 && card.completionStatus.progress < 100
+    ).length;
+    const notStarted = assessmentCards.filter(card =>
+      !card.completionStatus || card.completionStatus.progress === 0
+    ).length;
+
+    return {
+      total: assessmentCards.length,
+      completed,
+      inProgress,
+      notStarted
+    };
+  }, [cards]);
+
   // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-        <span className="ml-3 text-muted-foreground">Loading assessments...</span>
+        <span className="ml-3 text-sm sm:text-base text-muted-foreground">Loading assessments...</span>
       </div>
     );
   }
@@ -43,8 +105,8 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 mb-4">Failed to load assessments</p>
-        <p className="text-sm text-muted-foreground">{error}</p>
+        <p className="text-red-500 text-sm sm:text-base mb-4">Failed to load assessments</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">{error}</p>
       </div>
     );
   }
@@ -53,30 +115,133 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
   if (cards.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No assessments available</p>
+        <p className="text-sm sm:text-base text-muted-foreground">No assessments available</p>
       </div>
     );
   }
 
-  // Render cards using unified grid
+  // Render cards using unified grid with mobile optimizations
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
           Career Assessments
         </h2>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Discover your path through scientifically-backed assessments
         </p>
       </div>
 
+      {/* Mobile-Optimized Filter Chips (Horizontal Scroll) */}
+      <div className="overflow-x-auto hide-scrollbar -mx-2 px-2">
+        <div className="flex gap-2 min-w-min pb-2">
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('all')}
+            className={cn(
+              'min-h-[48px] whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4',
+              filter === 'all' && 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+            )}
+          >
+            <Circle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            All ({stats.total})
+          </Button>
+
+          <Button
+            variant={filter === 'not-started' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('not-started')}
+            className={cn(
+              'min-h-[48px] whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4',
+              filter === 'not-started' && 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+            )}
+          >
+            <Circle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            Not Started ({stats.notStarted})
+          </Button>
+
+          <Button
+            variant={filter === 'in-progress' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('in-progress')}
+            className={cn(
+              'min-h-[48px] whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4',
+              filter === 'in-progress' && 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+            )}
+          >
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            In Progress ({stats.inProgress})
+          </Button>
+
+          <Button
+            variant={filter === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('completed')}
+            className={cn(
+              'min-h-[48px] whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4',
+              filter === 'completed' && 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+            )}
+          >
+            <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            Completed ({stats.completed})
+          </Button>
+
+          <Button
+            variant={filter === 'priority' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('priority')}
+            className={cn(
+              'min-h-[48px] whitespace-nowrap text-xs sm:text-sm px-3 sm:px-4',
+              filter === 'priority' && 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+            )}
+          >
+            Priority
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Grid (Responsive: 2 cols mobile → 4 cols desktop) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border border-orange-200 dark:border-orange-800">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total</p>
+          <p className="text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-400">{stats.total}</p>
+        </div>
+
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border border-green-200 dark:border-green-800">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Completed</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-400">{stats.completed}</p>
+        </div>
+
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">In Progress</p>
+          <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-400">{stats.inProgress}</p>
+        </div>
+
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 border border-slate-200 dark:border-slate-800">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Not Started</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-700 dark:text-slate-400">{stats.notStarted}</p>
+        </div>
+      </div>
+
+      {/* Unified Card Grid */}
       <UnifiedCardGrid
-        cards={cards}
+        cards={filteredCards}
         variant="assessment"
         maxCards={showAll ? undefined : maxCards}
         className={className}
         activityPrefix="assessment_"
       />
+
+      {/* Empty filter result */}
+      {filteredCards.length === 0 && (
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-sm sm:text-base text-muted-foreground">
+            No assessments match the current filter
+          </p>
+        </div>
+      )}
     </div>
   );
 };

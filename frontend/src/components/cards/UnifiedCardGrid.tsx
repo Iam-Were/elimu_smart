@@ -62,7 +62,9 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
         <Card
           key={card.id}
           className={cn(
-            'group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]',
+            'group relative overflow-hidden transition-all duration-300',
+            'hover:shadow-xl hover:scale-[1.02]', // Desktop hover
+            'active:scale-[0.98] active:shadow-lg', // Mobile touch feedback
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
@@ -188,7 +190,10 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
           <CardFooter>
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
-              className="w-full text-xs sm:text-sm"
+              className={cn(
+                'w-full text-xs sm:text-sm min-h-[48px]', // WCAG AAA touch target
+                'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+              )}
               variant="default"
             >
               {card.actionText}
