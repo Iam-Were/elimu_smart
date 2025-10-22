@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import StudentAssessmentCards from '../components/cards/StudentAssessmentCards';
+import StudentAssessmentCardsV2 from '../components/cards/StudentAssessmentCardsV2';
 import { useDynamicDashboard } from '../hooks/useDynamicDashboard';
 
 const Sprint18AssessmentPage: React.FC = () => {
   const { logActivity } = useDynamicDashboard();
   const pageLoadTime = Date.now();
-  
+
   // Track assessment page visit
   useEffect(() => {
     logActivity('page_visit', {
@@ -24,10 +24,10 @@ const Sprint18AssessmentPage: React.FC = () => {
       });
     };
   }, [logActivity, pageLoadTime]);
-  
+
   return (
     <div className="py-8">
-      <StudentAssessmentCards showAll={true} />
+      <StudentAssessmentCardsV2 showAll={true} />
     </div>
   );
 };

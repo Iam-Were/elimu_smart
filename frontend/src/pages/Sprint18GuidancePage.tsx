@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import StudentGuidanceCards from '../components/cards/StudentGuidanceCards';
+import StudentGuidanceCardsV2 from '../components/cards/StudentGuidanceCardsV2';
 import { ProfessionalNetworkingPreview } from '../components/professional/ProfessionalNetworkingPreview';
 import { useDynamicDashboard } from '../hooks/useDynamicDashboard';
 
 const Sprint18GuidancePage: React.FC = () => {
   const { logActivity } = useDynamicDashboard();
   const pageLoadTime = Date.now();
-  
+
   // Track guidance page visit
   useEffect(() => {
     logActivity('page_visit', {
@@ -25,14 +25,14 @@ const Sprint18GuidancePage: React.FC = () => {
       });
     };
   }, [logActivity, pageLoadTime]);
-  
+
   return (
     <div className="py-8 space-y-12">
-      <StudentGuidanceCards showAll={true} />
-      
+      <StudentGuidanceCardsV2 showAll={true} />
+
       {/* Professional Networking Section */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Professional Development</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Professional Development</h2>
         <ProfessionalNetworkingPreview />
       </div>
     </div>
