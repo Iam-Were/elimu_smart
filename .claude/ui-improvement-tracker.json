@@ -1,0 +1,375 @@
+{
+  "project": "Elimu Smart UI/UX Improvement Plan",
+  "version": "1.0.0",
+  "startDate": "2025-01-21",
+  "totalEstimatedHours": 40,
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Dashboard Redesign & Navigation Enhancement",
+      "estimatedHours": 20,
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "1.1",
+          "name": "Remove static assessment/guidance preview cards from dashboard",
+          "file": "frontend/src/components/dashboard/StudentDashboard.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "critical",
+          "dependencies": []
+        },
+        {
+          "id": "1.2",
+          "name": "Create ActivityTimeline component",
+          "file": "frontend/src/components/dashboard/ActivityTimeline.tsx",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "shadcnComponents": ["ScrollArea", "Card", "Separator", "Badge"]
+        },
+        {
+          "id": "1.3",
+          "name": "Create UrgentActions component (dynamic, personalized)",
+          "file": "frontend/src/components/dashboard/UrgentActions.tsx",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "critical",
+          "dependencies": ["1.1"],
+          "shadcnComponents": ["Card", "Button", "Badge"]
+        },
+        {
+          "id": "1.4",
+          "name": "Create ProgressMetrics component",
+          "file": "frontend/src/components/dashboard/ProgressMetrics.tsx",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "shadcnComponents": ["Card", "Progress", "Badge"]
+        },
+        {
+          "id": "1.5",
+          "name": "Add tab navigation to dashboard (Overview, Activity, Progress)",
+          "file": "frontend/src/pages/Sprint18DashboardPage.tsx",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["1.2", "1.3", "1.4"],
+          "shadcnComponents": ["Tabs", "TabsList", "TabsTrigger", "TabsContent"]
+        },
+        {
+          "id": "1.6",
+          "name": "Add LinkedIn-style avatar dropdown to header",
+          "file": "frontend/src/components/navigation/Sprint18Navigation.tsx",
+          "estimatedHours": 3,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "shadcnComponents": ["DropdownMenu", "DropdownMenuTrigger", "DropdownMenuContent", "DropdownMenuItem", "DropdownMenuGroup", "DropdownMenuSeparator", "Avatar", "AvatarImage", "AvatarFallback"]
+        },
+        {
+          "id": "1.7",
+          "name": "Add notification bell with dropdown to header",
+          "file": "frontend/src/components/navigation/Sprint18Navigation.tsx",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": ["1.6"],
+          "shadcnComponents": ["DropdownMenu", "Badge", "ScrollArea", "Card"]
+        },
+        {
+          "id": "1.8",
+          "name": "Add 5th 'More' icon to mobile bottom nav",
+          "file": "frontend/src/components/navigation/MobileBottomNav.tsx",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "shadcnComponents": ["Sheet", "SheetContent", "SheetHeader", "SheetTitle", "Button", "Card"]
+        },
+        {
+          "id": "1.9",
+          "name": "Create CommandPalette component (Cmd+K search)",
+          "file": "frontend/src/components/common/CommandPalette.tsx",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [],
+          "shadcnComponents": ["Command", "CommandDialog", "CommandInput", "CommandList", "CommandEmpty", "CommandGroup", "CommandItem"]
+        },
+        {
+          "id": "1.10",
+          "name": "Make header sticky on scroll",
+          "file": "frontend/src/components/navigation/Sprint18Navigation.tsx",
+          "estimatedHours": 0.5,
+          "status": "pending",
+          "priority": "low",
+          "dependencies": ["1.6", "1.7"],
+          "shadcnComponents": []
+        },
+        {
+          "id": "1.11",
+          "name": "Add active state indicators to nav links",
+          "file": "frontend/src/components/navigation/Sprint18Navigation.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [],
+          "shadcnComponents": []
+        },
+        {
+          "id": "1.12",
+          "name": "Test dashboard on mobile and desktop",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "critical",
+          "dependencies": ["1.1", "1.2", "1.3", "1.4", "1.5"],
+          "testCases": [
+            "Dashboard shows personalized data, not static cards",
+            "Urgent Actions update after completing assessment",
+            "Activity timeline logs all user actions",
+            "Progress metrics show correct percentages",
+            "Tabs switch correctly on mobile and desktop"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Code Consolidation & Component Architecture",
+      "estimatedHours": 12,
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "2.1",
+          "name": "Create unified CardInterfaces.ts (BaseCard, DashboardCard, etc.)",
+          "file": "frontend/src/types/CardInterfaces.ts",
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "critical",
+          "dependencies": []
+        },
+        {
+          "id": "2.2",
+          "name": "Create useCardNavigation hook",
+          "file": "frontend/src/hooks/useCardNavigation.ts",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["2.1"]
+        },
+        {
+          "id": "2.3",
+          "name": "Create useDynamicCards hook",
+          "file": "frontend/src/hooks/useDynamicCards.ts",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["2.1"]
+        },
+        {
+          "id": "2.4",
+          "name": "Create UnifiedCardGrid component",
+          "file": "frontend/src/components/cards/UnifiedCardGrid.tsx",
+          "estimatedHours": 4,
+          "status": "pending",
+          "priority": "critical",
+          "dependencies": ["2.1", "2.2", "2.3"],
+          "shadcnComponents": ["Card", "CardHeader", "CardTitle", "CardDescription", "CardContent", "CardFooter", "Badge", "Button", "Progress", "Separator"]
+        },
+        {
+          "id": "2.5",
+          "name": "Refactor StudentDashboardCards to use UnifiedCardGrid",
+          "file": "frontend/src/components/cards/StudentDashboardCards.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["2.4"],
+          "expectedLineReduction": "524 → ~130 lines"
+        },
+        {
+          "id": "2.6",
+          "name": "Refactor StudentAssessmentCards to use UnifiedCardGrid",
+          "file": "frontend/src/components/cards/StudentAssessmentCards.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["2.4"],
+          "expectedLineReduction": "656 → ~150 lines"
+        },
+        {
+          "id": "2.7",
+          "name": "Refactor StudentGuidanceCards to use UnifiedCardGrid",
+          "file": "frontend/src/components/cards/StudentGuidanceCards.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": ["2.4"],
+          "expectedLineReduction": "305 → ~120 lines"
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Visual Polish & Performance",
+      "estimatedHours": 8,
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "3.1",
+          "name": "Add micro-interactions (hover states, scale effects)",
+          "files": ["frontend/src/components/cards/UnifiedCardGrid.tsx", "frontend/src/components/ui/button.tsx"],
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": ["2.4"]
+        },
+        {
+          "id": "3.2",
+          "name": "Add button loading states",
+          "file": "frontend/src/components/ui/button.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [],
+          "shadcnComponents": ["Button with Loader2 icon"]
+        },
+        {
+          "id": "3.3",
+          "name": "Create DashboardSkeleton component",
+          "file": "frontend/src/components/common/DashboardSkeleton.tsx",
+          "estimatedHours": 1.5,
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "shadcnComponents": ["Skeleton", "Card"]
+        },
+        {
+          "id": "3.4",
+          "name": "Create AssessmentSkeleton component",
+          "file": "frontend/src/components/common/AssessmentSkeleton.tsx",
+          "estimatedHours": 1,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [],
+          "shadcnComponents": ["Skeleton", "Card"]
+        },
+        {
+          "id": "3.5",
+          "name": "Dark mode audit and contrast fixes",
+          "files": ["frontend/src/components/ui/icon-container.tsx", "frontend/tailwind.config.js"],
+          "estimatedHours": 2,
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [],
+          "testCases": [
+            "All gradient icons visible on dark backgrounds",
+            "Text contrast meets WCAG AA in dark mode",
+            "All shadcn components render correctly in dark mode"
+          ]
+        },
+        {
+          "id": "3.6",
+          "name": "Optimize Bento grid card heights",
+          "file": "frontend/src/components/cards/UnifiedCardGrid.tsx",
+          "estimatedHours": 0.5,
+          "status": "pending",
+          "priority": "low",
+          "dependencies": ["2.4"]
+        }
+      ]
+    }
+  ],
+  "completionCriteria": {
+    "dashboardUsefulnessGrade": {
+      "before": "F (20%)",
+      "target": "A (95%)",
+      "metrics": [
+        "Shows personalized data (not static cards)",
+        "Urgent Actions section exists and updates dynamically",
+        "Activity timeline visible in tab",
+        "Progress metrics show accurate percentages",
+        "No duplication with /assessment or /guidance pages"
+      ]
+    },
+    "navigationEfficiency": {
+      "averageClickReduction": "-51%",
+      "averagePageLoadReduction": "-50%",
+      "metrics": [
+        "Start first assessment: 4 clicks → 2 clicks",
+        "Check progress: 3 clicks → 0 clicks (visible on dashboard)",
+        "Resume assessment: 3 clicks → 1 click",
+        "Access profile: 2 clicks → 1 click (avatar dropdown)"
+      ]
+    },
+    "codeDuplication": {
+      "linesRemoved": 770,
+      "percentageReduction": "61%",
+      "files": [
+        "StudentDashboardCards.tsx: 524 → ~130 lines",
+        "StudentAssessmentCards.tsx: 656 → ~150 lines",
+        "StudentGuidanceCards.tsx: 305 → ~120 lines"
+      ]
+    },
+    "industryCompliance": {
+      "before": "40% (4/10 best practices)",
+      "target": "100% (10/10 best practices)",
+      "practices": [
+        "Progressive disclosure (tabs)",
+        "Personalized dashboard",
+        "Bottom nav (5 icons max)",
+        "Avatar dropdown (LinkedIn pattern)",
+        "Command palette (power users)",
+        "Sticky header",
+        "Micro-interactions",
+        "Skeleton loading states",
+        "Dark mode support",
+        "Atomic design pattern"
+      ]
+    }
+  },
+  "buildAndTestCommands": {
+    "beforeStarting": [
+      "cd frontend",
+      "npm install",
+      "npm run build",
+      "npm run lint"
+    ],
+    "afterEachTask": [
+      "npm run lint",
+      "npm run build",
+      "Open http://localhost:5173 in browser",
+      "Test feature in Chrome DevTools",
+      "Test on mobile viewport (375px)",
+      "Test on tablet viewport (768px)",
+      "Test on desktop viewport (1440px)"
+    ],
+    "beforeCommit": [
+      "npm run build (must pass with zero errors)",
+      "npm run lint (must pass with zero warnings)",
+      "Test all affected routes in browser",
+      "Verify no console errors in DevTools"
+    ]
+  },
+  "notes": [
+    "All components must use 100% shadcn UI (no Mantine)",
+    "All TypeScript interfaces must be properly typed (no 'any')",
+    "Follow mobile-first responsive design (breakpoints: sm=640px, md=768px, lg=1024px, xl=1280px)",
+    "Use Button + navigate pattern (never Button asChild + Link + onClick)",
+    "All API calls must be non-blocking (UI first, backend secondary)",
+    "Delete this tracker file after Phase 3 completion"
+  ],
+  "progressTracking": {
+    "phase1Completed": 0,
+    "phase1Total": 12,
+    "phase2Completed": 0,
+    "phase2Total": 7,
+    "phase3Completed": 0,
+    "phase3Total": 6,
+    "totalCompleted": 0,
+    "totalTasks": 25,
+    "percentComplete": 0
+  }
+}

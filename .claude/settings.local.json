@@ -50,7 +50,12 @@
       "Bash(curl https://elimu-smart.co.ke/parse/health)",
       "Bash(curl https://elimu-smart.co.ke/reset-theme.js)",
       "Bash(git checkout HEAD~1 -- frontend/src/pages/InboxPage.tsx)",
-      "Bash(cat /c/Users/c/Documents/elimu-smart/pages/profile.php)"
+      "Bash(cat /c/Users/c/Documents/elimu-smart/pages/profile.php)",
+      "Bash(cat:*)",
+      "Bash(sed:*)",
+      "Bash(gh run view:*)",
+      "Bash(scp:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": [],
