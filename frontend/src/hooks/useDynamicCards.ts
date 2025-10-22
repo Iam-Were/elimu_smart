@@ -4,12 +4,12 @@
  * Generates dynamic card data for Dashboard, Assessment, and Guidance pages.
  * Replaces static card arrays with backend-driven data.
  *
- * Pattern: Fetch backend data ’ Transform to CardData interfaces ’ Return type-safe cards.
+ * Pattern: Fetch backend data ï¿½ Transform to CardData interfaces ï¿½ Return type-safe cards.
  *
  * @param variant - Card type: 'dashboard' | 'assessment' | 'guidance'
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getParse } from '@/config/parse';
 import type { CardData, DashboardCard, AssessmentCard, GuidanceCard } from '@/types/CardInterfaces';
 import { Target, TrendingUp, Award, Calendar, BookOpen, Users } from 'lucide-react';
@@ -63,7 +63,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           cardType: 'dashboard',
           title: 'Career Readiness Score',
           description: 'Your overall readiness for career exploration',
-          icon: <Target />,
+          icon: React.createElement(Target),
           iconGradient: 'from-orange-500 to-orange-600',
           actionText: 'View Details',
           actionUrl: '/dashboard?tab=progress',
@@ -87,7 +87,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           cardType: 'dashboard',
           title: 'University Placement',
           description: 'Programs you qualify for based on your grades',
-          icon: <TrendingUp />,
+          icon: React.createElement(TrendingUp),
           iconGradient: 'from-indigo-500 to-indigo-600',
           actionText: 'Explore Programs',
           actionUrl: '/assessment/university-finder',
@@ -111,7 +111,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           cardType: 'dashboard',
           title: 'Scholarship Matches',
           description: topMatch ? `Best match: ${topMatch.name}` : 'Find scholarships that fit your profile',
-          icon: <Award />,
+          icon: React.createElement(Award),
           iconGradient: 'from-amber-500 to-amber-600',
           actionText: 'View All',
           actionUrl: '/guidance/resources?filter=scholarships',
@@ -161,7 +161,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           assessmentType: 'riasec',
           title: 'RIASEC Career Assessment',
           description: 'Discover careers that match your personality and interests',
-          icon: <Target />,
+          icon: React.createElement(Target),
           iconGradient: 'from-purple-500 to-purple-600',
           actionText: progressData.riasec?.completed ? 'View Results' : 'Start Assessment',
           actionUrl: '/assessment/riasec',
@@ -176,7 +176,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           assessmentType: 'skills',
           title: 'Skills Assessment',
           description: 'Identify your strengths across 6 skill categories',
-          icon: <Award />,
+          icon: React.createElement(Award),
           iconGradient: 'from-green-500 to-green-600',
           actionText: progressData.skills?.completed ? 'View Results' : 'Start Assessment',
           actionUrl: '/assessment/skills',
@@ -191,7 +191,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           assessmentType: 'university',
           title: 'University Course Finder',
           description: 'Find courses that match your KCSE grades and interests',
-          icon: <BookOpen />,
+          icon: React.createElement(BookOpen),
           iconGradient: 'from-indigo-500 to-indigo-600',
           actionText: 'Find Courses',
           actionUrl: '/assessment/university-finder',
@@ -206,7 +206,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           assessmentType: 'career',
           title: 'Career Exploration',
           description: 'Explore 200+ careers with Kenya-specific insights',
-          icon: <TrendingUp />,
+          icon: React.createElement(TrendingUp),
           iconGradient: 'from-amber-500 to-amber-600',
           actionText: 'Explore Careers',
           actionUrl: '/assessment/career-explorer',
@@ -221,7 +221,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           assessmentType: 'subjects',
           title: 'Subject-Career Mapper',
           description: 'See which careers match your KCSE subjects',
-          icon: <Calendar />,
+          icon: React.createElement(Calendar),
           iconGradient: 'from-blue-500 to-blue-600',
           actionText: 'Map Careers',
           actionUrl: '/assessment/subject-career-mapper',
@@ -241,6 +241,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
   /**
    * Generate Guidance Cards (Freemium Model)
+   * Note: Crisis resources removed per user request
    */
   const generateGuidanceCards = async (): Promise<GuidanceCard[]> => {
     const cards: GuidanceCard[] = [
@@ -250,7 +251,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         serviceType: 'community',
         title: 'Community Q&A',
         description: 'Ask questions and get answers from career counselors',
-        icon: <Users />,
+        icon: React.createElement(Users),
         iconGradient: 'from-blue-500 to-blue-600',
         actionText: 'Browse Questions',
         actionUrl: '/guidance/community-qa',
@@ -272,7 +273,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         serviceType: 'premium',
         title: 'Message Counselor',
         description: 'Private 1-on-1 messaging with your assigned counselor',
-        icon: <Target />,
+        icon: React.createElement(Target),
         iconGradient: 'from-amber-500 to-amber-600',
         actionText: 'Open Inbox',
         actionUrl: '/inbox',
@@ -294,7 +295,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         serviceType: 'booking',
         title: 'Book Counseling Session',
         description: 'Schedule video, phone, or in-person sessions',
-        icon: <Calendar />,
+        icon: React.createElement(Calendar),
         iconGradient: 'from-purple-500 to-purple-600',
         actionText: 'View Availability',
         actionUrl: '/guidance/book-session',
@@ -315,7 +316,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         serviceType: 'resources',
         title: 'Career Resources',
         description: 'Guides, videos, and tools for career planning',
-        icon: <BookOpen />,
+        icon: React.createElement(BookOpen),
         iconGradient: 'from-green-500 to-green-600',
         actionText: 'Browse Library',
         actionUrl: '/guidance/resources',
