@@ -8,7 +8,7 @@
  * Badge variants use shadcn's actual variant types (no 'premium' or 'free').
  */
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 /**
  * Base Card Interface
