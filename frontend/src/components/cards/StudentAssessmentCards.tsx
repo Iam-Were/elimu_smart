@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { IconContainer } from '@/components/ui/icon-container';
+import { ImageWithFallback } from '../figma/ImageWithFallback';
 import {
   ArrowRight,
   CheckCircle,
   Clock,
   Star,
+  Award,
   Play,
   Trophy,
   Brain,
