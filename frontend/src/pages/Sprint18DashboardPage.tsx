@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import StudentDashboard from '../components/dashboard/StudentDashboard';
+import StudentDashboardCardsV2 from '../components/cards/StudentDashboardCardsV2';
 import { useDynamicDashboard } from '../hooks/useDynamicDashboard';
 
 const Sprint18DashboardPage: React.FC = () => {
   const { logActivity } = useDynamicDashboard();
   const pageLoadTime = Date.now();
-  
+
   // Track page visit on mount
   useEffect(() => {
     logActivity('page_visit', {
@@ -24,10 +24,10 @@ const Sprint18DashboardPage: React.FC = () => {
       });
     };
   }, [logActivity, pageLoadTime]);
-  
+
   return (
     <div className="py-8">
-      <StudentDashboard />
+      <StudentDashboardCardsV2 maxCards={6} />
     </div>
   );
 };
