@@ -1,17 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { IconContainer } from '@/components/ui/icon-container';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import {
   ArrowRight,
   CheckCircle,
   Clock,
   Star,
-  Award,
   Play,
   Trophy,
   Brain,
@@ -228,6 +226,7 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
     assessmentProgress,
     loading,
   } = useDynamicDashboard();
+  const [filter, setFilter] = useState<'all' | 'not-started' | 'in-progress' | 'completed' | 'priority'>('all');
 
   // Transform static cards with dynamic data
   const getDynamicCards = (): StudentAssessmentCard[] => {
@@ -344,7 +343,24 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
   };
 
   const dynamicCards = getDynamicCards();
-  const displayCards = showAll ? dynamicCards : dynamicCards.slice(0, maxCards);
+
+  // Filter cards based on selected filter
+  const filteredCards = dynamicCards.filter(card => {
+    switch (filter) {
+      case 'not-started':
+        return card.status === 'not-started';
+      case 'in-progress':
+        return card.status === 'in-progress';
+      case 'completed':
+        return card.status === 'completed' || card.progress === 100;
+      case 'priority':
+        return card.urgency === 'high';
+      default:
+        return true; // 'all'
+    }
+  });
+
+  const displayCards = showAll ? filteredCards : filteredCards.slice(0, maxCards);
 
   const handleCardClick = (card: StudentAssessmentCard) => {
     try {
@@ -465,6 +481,67 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
         </Card>
       )}
 
+      {/* Filter Chips - Mobile-friendly horizontal scroll */}
+      <div className="overflow-x-auto hide-scrollbar -mx-2 px-2">
+        <div className="flex gap-2 min-w-min">
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('all')}
+            className={cn(
+              "min-h-[44px] whitespace-nowrap",
+              filter === 'all' && "bg-orange-600 text-white"
+            )}
+          >
+            All ({dynamicCards.length})
+          </Button>
+          <Button
+            variant={filter === 'not-started' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('not-started')}
+            className={cn(
+              "min-h-[44px] whitespace-nowrap",
+              filter === 'not-started' && "bg-orange-600 text-white"
+            )}
+          >
+            Not Started ({dynamicCards.filter(c => c.status === 'not-started').length})
+          </Button>
+          <Button
+            variant={filter === 'in-progress' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('in-progress')}
+            className={cn(
+              "min-h-[44px] whitespace-nowrap",
+              filter === 'in-progress' && "bg-orange-600 text-white"
+            )}
+          >
+            In Progress ({dynamicCards.filter(c => c.status === 'in-progress').length})
+          </Button>
+          <Button
+            variant={filter === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('completed')}
+            className={cn(
+              "min-h-[44px] whitespace-nowrap",
+              filter === 'completed' && "bg-orange-600 text-white"
+            )}
+          >
+            Completed ({dynamicCards.filter(c => c.status === 'completed' || c.progress === 100).length})
+          </Button>
+          <Button
+            variant={filter === 'priority' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('priority')}
+            className={cn(
+              "min-h-[44px] whitespace-nowrap",
+              filter === 'priority' && "bg-red-600 text-white hover:bg-red-700"
+            )}
+          >
+            Priority ({dynamicCards.filter(c => c.urgency === 'high').length})
+          </Button>
+        </div>
+      </div>
+
       {/* Stat Cards - Centered, clean design */}
       {loading ? (
         <div className="flex items-center justify-center py-8 bg-white/90 dark:bg-slate-900 rounded-xl">
@@ -525,9 +602,9 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
               data-testid="assessment-card"
               data-card-id={card.id}
               className={cn(
-                "group relative overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-lg",
+                "group relative overflow-hidden transition-all duration-300 cursor-pointer active:scale-[0.98] md:hover:scale-[1.02] hover:shadow-lg",
                 "bg-white/90 dark:bg-slate-900 border border-slate-200/30 dark:border-slate-700/30 rounded-xl",
-                "flex flex-col h-full min-h-[520px]",
+                "flex flex-col h-full min-h-[320px] sm:min-h-[400px] md:min-h-[460px] lg:min-h-[520px]",
                 card.urgency === 'high' && "ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/10"
               )}
             >
@@ -538,8 +615,8 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 </div>
               )}
 
-              {/* Hero Image Section */}
-              <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
+              {/* Hero Image Section - Smaller on mobile */}
+              <div className="relative h-32 sm:h-40 md:h-48 w-full overflow-hidden flex-shrink-0">
                 <ImageWithFallback
                   src={`https://images.unsplash.com/photo-${card.id === 'discover-my-career' ? '1506744038136-46273834b3fb' : card.id === 'subject-to-career-mapper' ? '1523050854a88' : card.id === 'skills-strength-finder' ? '1522071820081' : card.id === 'university-course-finder' ? '1498243691581' : '1465101046530-73398c7f28ca'}?auto=format&fit=crop&w=600&q=80`}
                   alt={card.title}
@@ -633,15 +710,16 @@ export const StudentAssessmentCards: React.FC<StudentAssessmentCardsProps> = ({
                 <Button
                   data-testid="card-action"
                   onClick={() => handleCardClick(card)}
+                  size="lg"
                   className={cn(
-                    "w-full gap-2 font-semibold",
+                    "w-full gap-2 font-semibold min-h-[48px] text-base",
                     card.urgency === 'high'
-                      ? "bg-orange-600 hover:bg-orange-700 text-white"
-                      : "bg-orange-500 hover:bg-orange-600 text-white"
+                      ? "bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white"
+                      : "bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white"
                   )}
                 >
                   {card.actionText}
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </CardFooter>
             </Card>

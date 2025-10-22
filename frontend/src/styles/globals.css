@@ -1952,4 +1952,14 @@ input::placeholder, textarea::placeholder {
   .gradient-success {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   }
+
+  /* Hide scrollbar but keep scroll functionality - Mobile optimized */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
 }
