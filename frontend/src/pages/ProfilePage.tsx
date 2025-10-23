@@ -16,6 +16,7 @@ import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
 import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
 import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
+import { AddSkillsDialog } from '@/components/profile/AddSkillsDialog';
 
 interface ProfileProject {
   id: string;
@@ -67,7 +68,7 @@ interface ExperienceResponse {
 export const ProfilePage: React.FC = () => {
   const [projects, setProjects] = useState<ProfileProject[]>([]);
   const [experience, setExperience] = useState<ProfileExperience[]>([]);
-  const [skills] = useState<ProfileSkill[]>([]);
+  const [skills, setSkills] = useState<ProfileSkill[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingExperience, setLoadingExperience] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -77,6 +78,7 @@ export const ProfilePage: React.FC = () => {
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [showAddProjectDialog, setShowAddProjectDialog] = useState(false);
   const [showAddExperienceDialog, setShowAddExperienceDialog] = useState(false);
+  const [showAddSkillsDialog, setShowAddSkillsDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
@@ -141,6 +143,27 @@ export const ProfilePage: React.FC = () => {
     };
 
     loadExperience();
+  }, []);
+
+  // Load user skills from backend
+  useEffect(() => {
+    const loadSkills = async () => {
+      try {
+        const Parse = getParse();
+        const result = await Parse.Cloud.run('getUserSkills');
+        if (result.success && Array.isArray(result.skills) && result.skills.length > 0) {
+          setSkills(result.skills);
+        } else {
+          setSkills([]);
+        }
+      } catch (error) {
+        console.error('Failed to load skills:', error);
+        setSkills([]);
+      } finally {
+      }
+    };
+
+    loadSkills();
   }, []);
 
   // Calculate profile completion percentage
@@ -890,6 +913,7 @@ export const ProfilePage: React.FC = () => {
                 </p>
                 <Button
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
+                  onClick={() => setShowAddSkillsDialog(true)}
                 >
                   <Target className="h-4 w-4 mr-2" />
                   Add Your Skills
@@ -1130,6 +1154,21 @@ export const ProfilePage: React.FC = () => {
             setExperience([...experience, exp]);
             setShowAddExperienceDialog(false);
           }}
+        />
+      )}
+
+      {/* Add Skills Dialog */}
+      {showAddSkillsDialog && (
+        <AddSkillsDialog
+          isOpen={showAddSkillsDialog}
+          onClose={() => setShowAddSkillsDialog(false)}
+          onSuccess={(newSkills) => {
+            setSkills([...skills, ...newSkills]);
+            setShowAddSkillsDialog(false);
+          }}
+          existingSkills={skills}
+          userRiasecType={(user as any)?.riasecType}
+          userProjects={projects}
         />
       )}
     </div>
