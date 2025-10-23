@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
-import { MobileBottomNav } from '../navigation/MobileBottomNav';
+import { MobileHeader } from '../navigation/MobileHeader';
+import { MobileBottomNavOptimized } from '../navigation/MobileBottomNavOptimized';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Button from '@/components/ui/button';
@@ -91,7 +92,7 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       <Sprint18Navigation />
       
       {/* Main Content Area */}
-      <main id="main-content" className="relative" role="main" aria-label="Main content">
+      <main id="main-content" className="relative pt-16 md:pt-0" role="main" aria-label="Main content">
         {/* Page Header - Only show for non-dashboard pages - Theme-colored title */}
         {location.pathname !== '/' && location.pathname !== '/dashboard' && (
           <div className="border-b border-border/40 bg-muted/20">
@@ -506,7 +507,8 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       </footer>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <MobileHeader />
+      <MobileBottomNavOptimized />
     </div>
   );
 };
