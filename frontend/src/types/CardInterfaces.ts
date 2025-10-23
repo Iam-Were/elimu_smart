@@ -66,7 +66,7 @@ export interface AssessmentCard extends BaseCard {
  */
 export interface GuidanceCard extends BaseCard {
   cardType: 'guidance'; // Discriminator
-  serviceType: 'community' | 'premium' | 'crisis' | 'resources' | 'booking';
+  serviceType: 'community' | 'premium' | 'resources' | 'booking';
   isPremium: boolean; // Show lock icon if true
   features: string[]; // Max 3 features displayed
   responseTime?: string; // e.g., "24 hours", "Instant"

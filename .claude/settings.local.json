@@ -55,7 +55,10 @@
       "Bash(sed:*)",
       "Bash(gh run view:*)",
       "Bash(scp:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:kibo.school)",
+      "WebFetch(domain:www.elevenlabs.io)",
+      "WebFetch(domain:www.kibo-ui.com)"
     ],
     "deny": [],
     "ask": [],

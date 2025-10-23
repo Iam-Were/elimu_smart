@@ -7,7 +7,7 @@ import { IconContainer } from '@/components/ui/icon-container';
 import {
   Users,
   MessageSquare,
-  Heart,
+
   BookOpen,
   Calendar,
   Lock,
@@ -61,20 +61,6 @@ const studentGuidanceCards: StudentGuidanceCard[] = [
     actionLink: '/guidance/resources',
     value: 'Free',
     change: '50+ resources available',
-    isDynamic: false,
-    isPremium: false
-  },
-  {
-    id: 'crisis-support',
-    title: 'Crisis Resources',
-    description: 'Verified 24/7 helplines',
-    icon: Heart,
-    iconEmphasis: 'medium', // Urgent but free - medium emphasis
-    status: 'urgent',
-    actionText: 'Get Help Now',
-    actionLink: '/guidance/crisis',
-    value: 'Free',
-    change: 'Childline Kenya, NACADA',
     isDynamic: false,
     isPremium: false
   },

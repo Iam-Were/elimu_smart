@@ -9,7 +9,7 @@ import {
   LogOut,
   HelpCircle,
   CreditCard,
-  Shield,
+
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -147,10 +147,6 @@ export const MobileHeader: React.FC = () => {
                 Subscription
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate('/guidance/crisis')}>
-                <Shield className="h-4 w-4 mr-3" />
-                Crisis Support
-              </DropdownMenuItem>
 
               <DropdownMenuItem onClick={() => navigate('/help')}>
                 <HelpCircle className="h-4 w-4 mr-3" />

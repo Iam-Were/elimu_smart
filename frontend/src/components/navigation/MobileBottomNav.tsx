@@ -15,7 +15,7 @@ import {
   Bell,
   Library,
   Network,
-  Shield,
+
   Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -87,12 +87,6 @@ const secondaryNavItems: NavItem[] = [
     label: 'Professional Network',
     icon: Network,
     path: '/guidance/professional-networking',
-  },
-  {
-    id: 'crisis',
-    label: 'Crisis Support',
-    icon: Shield,
-    path: '/guidance/crisis',
   },
   {
     id: 'notifications',

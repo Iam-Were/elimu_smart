@@ -40,7 +40,7 @@ import {
   Network,
   UserCircle,
   CalendarDays,
-  Heart,
+
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -481,10 +481,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <DropdownMenuItem onClick={() => navigate('/guidance/professional-networking')}>
                   <Network className="mr-2 h-4 w-4" />
                   Professional Network
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/guidance/crisis')}>
-                  <Heart className="mr-2 h-4 w-4" />
-                  Crisis Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/settings')}>

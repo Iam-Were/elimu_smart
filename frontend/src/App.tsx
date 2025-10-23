@@ -52,7 +52,6 @@ const SkillsDevelopment = lazy(() => import('./components/guidance/SkillsDevelop
 const ProfessionalNetworkingHub = lazy(() => import('./components/professional/ProfessionalNetworkingHub').then(m => ({ default: m.ProfessionalNetworkingHub })));
 const CommunityQA = lazy(() => import('./components/guidance/CommunityQA'));
 const CareerResources = lazy(() => import('./components/guidance/CareerResources'));
-const CrisisSupport = lazy(() => import('./components/guidance/CrisisSupport'));
 const BookSession = lazy(() => import('./components/guidance/BookSession'));
 
 // Counselor pages
@@ -137,7 +136,6 @@ const AppContent: React.FC = () => {
           <Route path="/guidance/chat-counselor" element={<CounselorChat />} />
           <Route path="/guidance/community-qa" element={<CommunityQA />} />
           <Route path="/guidance/resources" element={<CareerResources />} />
-          <Route path="/guidance/crisis" element={<CrisisSupport />} />
           <Route path="/guidance/book-session" element={<BookSession />} />
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/messages" element={<InboxPage />} />
