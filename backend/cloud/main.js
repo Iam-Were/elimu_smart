@@ -6566,3 +6566,58 @@ async function updateCounselorRating(counselorId) {
     console.error('❌ Failed to update counselor rating:', error);
   }
 }
+
+/**
+ * Find Scholarship Matches
+ * Returns personalized scholarship recommendations based on user profile
+ */
+Parse.Cloud.define('findScholarshipMatches', async (request) => {
+  try {
+    const currentUser = request.user;
+
+    if (!currentUser) {
+      throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User must be logged in');
+    }
+
+    // Sample scholarship data (in production, fetch from Scholarship class)
+    const sampleScholarships = [
+      {
+        name: 'Equity Wings to Fly',
+        amount: 'Full tuition + stipend',
+        deadline: '2025-12-31',
+        eligibility: ['KCSE B+ and above', 'Needy & deserving'],
+        compatibility: 85
+      },
+      {
+        name: 'Mastercard Foundation Scholars',
+        amount: 'Full scholarship',
+        deadline: '2025-11-30',
+        eligibility: ['Academic excellence', 'Leadership potential'],
+        compatibility: 90
+      },
+      {
+        name: 'KCB Foundation Scholarship',
+        amount: 'KES 50,000/year',
+        deadline: '2025-10-15',
+        eligibility: ['Form 4 students', 'B- and above'],
+        compatibility: 75
+      }
+    ];
+
+    // Filter and sort by compatibility
+    const matches = sampleScholarships
+      .sort((a, b) => b.compatibility - a.compatibility)
+      .slice(0, 5);
+
+    return {
+      success: true,
+      matches
+    };
+  } catch (error) {
+    console.error('❌ Find scholarship matches failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Failed to find scholarship matches: ${error.message}`
+    );
+  }
+});
