@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,11 +18,15 @@ import {
   MessageCircle,
   Loader2,
   Circle,
+  Lock,
+  Users,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { SubscriptionPaywall } from '@/components/subscription/SubscriptionPaywall';
+import { ComposeDialog } from '@/components/inbox/ComposeDialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -51,22 +55,25 @@ const InboxPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const [showComposeDialog, setShowComposeDialog] = useState(false);
 
   const { user } = useAuth();
-  const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
+  const { userSubscription } = useSubscription();
   const { rooms, messages, isLoading, sendMessage } = useChat();
 
   // Check if user has premium access
   const isPremium = userSubscription?.status === 'active' &&
     userSubscription?.plan !== 'free';
 
-  // Show paywall if not premium (after subscription data loads)
-  useEffect(() => {
-    if (!subscriptionLoading && !isPremium && user?.role === 'student') {
-      setShowPaywall(true);
-    }
-  }, [subscriptionLoading, isPremium, user]);
+  // FREEMIUM STRATEGY: Free users can reply, but not initiate
+  // Students without premium can:
+  // - View conversation list
+  // - Reply to counselor-initiated messages
+  // - See upgrade banner for full features
+  // They CANNOT:
+  // - Compose new messages (initiate conversations)
+  // - Access full conversation history (show last 5 messages only)
+  const isFreeStudent = user?.role === 'student' && !isPremium;
 
   // Transform rooms to conversations
   const linkedInConversations: LinkedInConversation[] = rooms.map(room => ({
@@ -116,22 +123,96 @@ const InboxPage: React.FC = () => {
     setNewMessage('');
   };
 
-  // Render paywall for free users (students only)
-  if (showPaywall && user?.role === 'student') {
+  // 4-STATE EMPTY STATE COMPONENT
+  const EmptyStateDisplay = () => {
+    // State 1: Brand new user (no conversations at all)
+    if (rooms.length === 0 && !searchTerm) {
+      return (
+        <div className="p-8 text-center">
+          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="h-10 w-10 text-orange-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Welcome to Your Inbox!
+          </h3>
+          <p className="text-sm text-gray-600 max-w-sm mx-auto mb-6">
+            You'll be matched with a counselor after completing your RIASEC assessment.
+            They'll reach out to start your career guidance journey.
+          </p>
+          <Button
+            onClick={() => navigate('/assessment')}
+            className="bg-orange-600 hover:bg-orange-700 mb-3"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Complete RIASEC Assessment
+          </Button>
+          <div className="text-xs text-gray-500 mt-4">
+            <Clock className="inline h-3 w-3 mr-1" />
+            Takes about 15 minutes
+          </div>
+        </div>
+      );
+    }
+
+    // State 2: Search returned no results
+    if (searchTerm && filteredConversations.length === 0) {
+      return (
+        <div className="p-8 text-center">
+          <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm text-gray-600 mb-3">
+            No conversations match "{searchTerm}"
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSearchTerm('')}
+            className="text-orange-600 hover:text-orange-700"
+          >
+            Clear Search
+          </Button>
+        </div>
+      );
+    }
+
+    // State 3: Has rooms but all filtered out (shouldn't normally happen, but defensive)
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <SubscriptionPaywall
-          isOpen={true}
-          onClose={() => navigate('/dashboard')}
-          feature="messaging"
-        />
+      <div className="p-8 text-center">
+        <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-sm text-gray-600">
+          No conversations to display
+        </p>
       </div>
     );
-  }
+  };
 
-  // Premium users and counselors see full inbox
+  // FREEMIUM: Show inbox to everyone, with limitations for free students
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      {/* Freemium Upgrade Banner for Free Students */}
+      {isFreeStudent && (
+        <div className="w-full max-w-7xl mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg p-4 shadow-lg">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="h-6 w-6" />
+              <div>
+                <p className="font-semibold">Free Tier: Reply-Only Access</p>
+                <p className="text-sm text-orange-100">Upgrade to initiate conversations and access full message history</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                onClick={() => navigate('/subscription')}
+              >
+                View Plans
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* LinkedIn-style Single Unified Card */}
       <Card className="w-full max-w-7xl mx-auto h-[calc(100vh-2rem)] shadow-2xl border border-gray-200 overflow-hidden">
         <div className="flex h-full">
@@ -148,10 +229,33 @@ const InboxPage: React.FC = () => {
                 </h1>
                 <Button
                   size="sm"
-                  className="bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg px-4 shadow-sm"
+                  className={cn(
+                    "rounded-lg px-4 shadow-sm",
+                    isFreeStudent
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100"
+                      : "bg-[#f97316] hover:bg-[#ea580c] text-white"
+                  )}
+                  onClick={() => {
+                    if (isFreeStudent) {
+                      toast.error('Premium feature - Upgrade to initiate conversations');
+                      navigate('/subscription');
+                    } else {
+                      setShowComposeDialog(true);
+                    }
+                  }}
+                  disabled={isFreeStudent}
                 >
-                  <MessageCircle className="h-4 w-4 mr-1.5" />
-                  Compose
+                  {isFreeStudent ? (
+                    <>
+                      <Lock className="h-4 w-4 mr-1.5" />
+                      Compose
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      Compose
+                    </>
+                  )}
                 </Button>
               </div>
 
@@ -174,7 +278,7 @@ const InboxPage: React.FC = () => {
                   Loading conversations...
                 </div>
               ) : filteredConversations.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">No conversations found</div>
+                <EmptyStateDisplay />
               ) : (
                 filteredConversations.map((conversation) => (
                   <div
@@ -376,6 +480,18 @@ const InboxPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Compose Dialog */}
+      <ComposeDialog
+        isOpen={showComposeDialog}
+        onClose={() => setShowComposeDialog(false)}
+        onSuccess={() => {
+          setShowComposeDialog(false);
+          // Optionally navigate to the new conversation
+          toast.success('Conversation started! Check your inbox.');
+        }}
+        isPremium={isPremium}
+      />
     </div>
   );
 };

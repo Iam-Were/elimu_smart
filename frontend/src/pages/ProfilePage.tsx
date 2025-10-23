@@ -14,6 +14,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Edit, User, Target, Briefcase, Code, ExternalLink, Github, Globe, Camera, Shield, Calendar, Plus, Upload } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
+import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
+import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
 
 interface ProfileProject {
   id: string;
@@ -73,8 +75,8 @@ export const ProfilePage: React.FC = () => {
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [showFABMenu, setShowFABMenu] = useState(false);
   const [profileCompletion, setProfileCompletion] = useState(0);
-  const [_showAddProjectDialog, _setShowAddProjectDialog] = useState(false);
-  const [_showAddExperienceDialog, _setShowAddExperienceDialog] = useState(false);
+  const [showAddProjectDialog, setShowAddProjectDialog] = useState(false);
+  const [showAddExperienceDialog, setShowAddExperienceDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
@@ -720,7 +722,7 @@ export const ProfilePage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="gap-2"
-                onClick={() => _setShowAddProjectDialog(true)}
+                onClick={() => setShowAddProjectDialog(true)}
               >
                 <Code className="h-4 w-4" />
                 Add project
@@ -742,7 +744,7 @@ export const ProfilePage: React.FC = () => {
                   Add projects to demonstrate your skills and stand out to counselors and universities
                 </p>
                 <Button
-                  onClick={() => _setShowAddProjectDialog(true)}
+                  onClick={() => setShowAddProjectDialog(true)}
                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
                 >
                   <Code className="h-4 w-4 mr-2" />
@@ -823,7 +825,7 @@ export const ProfilePage: React.FC = () => {
                   Add internships, volunteer work, or part-time jobs to strengthen your profile
                 </p>
                 <Button
-                  onClick={() => _setShowAddExperienceDialog(true)}
+                  onClick={() => setShowAddExperienceDialog(true)}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
                 >
                   <Briefcase className="h-4 w-4 mr-2" />
@@ -1068,7 +1070,7 @@ export const ProfilePage: React.FC = () => {
               <Button
                 size="sm"
                 onClick={() => {
-                  _setShowAddProjectDialog(true);
+                  setShowAddProjectDialog(true);
                   setShowFABMenu(false);
                 }}
                 className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
@@ -1106,6 +1108,30 @@ export const ProfilePage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Add Project Dialog */}
+      {showAddProjectDialog && (
+        <AddProjectDialog
+          isOpen={showAddProjectDialog}
+          onClose={() => setShowAddProjectDialog(false)}
+          onSuccess={(project) => {
+            setProjects([...projects, project]);
+            setShowAddProjectDialog(false);
+          }}
+        />
+      )}
+
+      {/* Add Experience Dialog */}
+      {showAddExperienceDialog && (
+        <AddExperienceDialog
+          isOpen={showAddExperienceDialog}
+          onClose={() => setShowAddExperienceDialog(false)}
+          onSuccess={(exp) => {
+            setExperience([...experience, exp]);
+            setShowAddExperienceDialog(false);
+          }}
+        />
+      )}
     </div>
   );
 };
