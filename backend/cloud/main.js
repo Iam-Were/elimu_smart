@@ -6621,3 +6621,80 @@ Parse.Cloud.define('findScholarshipMatches', async (request) => {
     );
   }
 });
+
+// ==========================================
+// GET USER ASSESSMENT RESULTS (for Dashboard & Profile)
+// ==========================================
+Parse.Cloud.define('getUserAssessmentResults', async (request) => {
+  const { user } = request;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  try {
+    // Fetch StudentProgress to get assessment results
+    const StudentProgress = Parse.Object.extend('StudentProgress');
+    const progressQuery = new Parse.Query(StudentProgress);
+    progressQuery.equalTo('user', user);
+    const progress = await progressQuery.first({ useMasterKey: true });
+
+    if (!progress) {
+      return {
+        success: true,
+        hasResults: false,
+        assessments: []
+      };
+    }
+
+    // Fetch all completed assessments
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const riasecQuery = new Parse.Query(RiasecAssessment);
+    riasecQuery.equalTo('user', user);
+    riasecQuery.equalTo('status', 'completed');
+    riasecQuery.descending('completedAt');
+    riasecQuery.limit(10);
+    const riasecAssessments = await riasecQuery.find({ useMasterKey: true });
+
+    const assessments = [];
+
+    // Add RIASEC assessments
+    riasecAssessments.forEach(assessment => {
+      const results = assessment.get('results');
+      assessments.push({
+        id: assessment.id,
+        type: 'riasec',
+        title: 'RIASEC Career Assessment',
+        completedAt: assessment.get('completedAt'),
+        results: {
+          hollandCode: assessment.get('hollandCode'),
+          primaryType: assessment.get('primaryType'),
+          scores: results?.scores || {},
+          careerMatches: results?.careerMatches?.slice(0, 3) || []
+        }
+      });
+    });
+
+    // Get latest results from StudentProgress
+    const latestRiasec = progress.get('lastRiasecResults');
+    const hollandCode = progress.get('hollandCode');
+
+    return {
+      success: true,
+      hasResults: assessments.length > 0 || !!hollandCode,
+      assessments,
+      summary: {
+        hollandCode: hollandCode || null,
+        primaryType: latestRiasec?.primaryType || null,
+        topCareers: latestRiasec?.careerMatches?.slice(0, 3) || [],
+        assessmentsCompleted: progress.get('assessmentsCompleted') || 0
+      }
+    };
+  } catch (error) {
+    console.error('❌ Get user assessment results failed:', error);
+    throw new Parse.Error(
+      Parse.Error.INTERNAL_SERVER_ERROR,
+      `Failed to get assessment results: ${error.message}`
+    );
+  }
+});

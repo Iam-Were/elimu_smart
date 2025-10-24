@@ -3,6 +3,7 @@ import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Sprint18Navigation } from '../navigation/Sprint18Navigation';
 import { MobileHeader } from '../navigation/MobileHeader';
 import { MobileBottomNavOptimized } from '../navigation/MobileBottomNavOptimized';
+import { PersistentSearchHeader } from '../common/PersistentSearchHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Button from '@/components/ui/button';
@@ -91,6 +92,9 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       {/* Sprint 18 Navigation */}
       <Sprint18Navigation />
       
+      
+      {/* Persistent Search Header */}
+      <PersistentSearchHeader />
       {/* Main Content Area */}
       <main id="main-content" className="relative pt-16 md:pt-0" role="main" aria-label="Main content">
         {/* Page Header - Only show for non-dashboard pages - Theme-colored title */}

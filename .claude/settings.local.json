@@ -58,7 +58,10 @@
       "Bash(curl:*)",
       "WebFetch(domain:kibo.school)",
       "WebFetch(domain:www.elevenlabs.io)",
-      "WebFetch(domain:www.kibo-ui.com)"
+      "WebFetch(domain:www.kibo-ui.com)",
+      "Bash(for file in FreeRiasecAssessment.tsx SkillsAssessment.tsx UniversityCourseFinder.tsx CareerExploration.tsx SubjectCareerMapper.tsx)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": [],
