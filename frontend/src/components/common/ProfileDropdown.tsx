@@ -22,6 +22,7 @@ import {
   MoonIcon,
   SunIcon,
 } from '@radix-ui/react-icons';
+import { CreditCard, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
@@ -191,6 +192,26 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
             <div className="text-sm font-medium">Privacy & Security</div>
             <div className="text-xs text-muted-foreground">Password, 2FA, privacy settings</div>
           </div>
+        <DropdownMenuItem
+          onClick={() => handleNavigation('/subscription')}
+          className="cursor-pointer transition-all hover:bg-gray-50"
+        >
+          <CreditCard className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm font-medium">Billing & Subscription</div>
+            <div className="text-xs text-muted-foreground">Manage your plan and payments</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleNavigation('/help')}
+          className="cursor-pointer transition-all hover:bg-gray-50"
+        >
+          <HelpCircle className="mr-2 h-4 w-4" />
+          <div className="flex-1">
+            <div className="text-sm font-medium">Help Center</div>
+            <div className="text-xs text-muted-foreground">FAQs, guides, and support</div>
+          </div>
+        </DropdownMenuItem>
         </DropdownMenuItem>
 
         {/* Admin Section */}

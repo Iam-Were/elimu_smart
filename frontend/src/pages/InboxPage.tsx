@@ -22,6 +22,7 @@ import {
   Users,
   Clock,
   Sparkles,
+  ChevronLeft,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -223,10 +224,6 @@ const InboxPage: React.FC = () => {
           )}>
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-[#f97316]" />
-                  Messages
-                </h1>
                 <Button
                   size="sm"
                   className={cn(
@@ -312,7 +309,7 @@ const InboxPage: React.FC = () => {
                             <Badge className="bg-orange-500 text-white text-xs">{conversation.unreadCount}</Badge>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 truncate leading-relaxed">
+                        <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
                           {conversation.lastMessage.content}
                         </p>
                       </div>
@@ -342,6 +339,15 @@ const InboxPage: React.FC = () => {
                 <div className="p-4 border-b border-gray-200 bg-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                      {/* Mobile Back Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="md:hidden h-9 w-9 p-0 hover:bg-gray-100 rounded-lg -ml-2 mr-1"
+                        onClick={handleCloseConversation}
+                      >
+                        <ChevronLeft className="h-5 w-5 text-gray-700" />
+                      </Button>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={selectedConversation.participant.avatar} />
                         <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold">
