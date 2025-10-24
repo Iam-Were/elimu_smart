@@ -159,7 +159,7 @@ export const ProfilePage: React.FC = () => {
       } catch (error) {
         console.error('Failed to load skills:', error);
         setSkills([]);
-      } finally {
+      } catch {
       }
     };
 
@@ -1167,7 +1167,7 @@ export const ProfilePage: React.FC = () => {
             setShowAddSkillsDialog(false);
           }}
           existingSkills={skills}
-          userRiasecType={(user as any)?.riasecType}
+          userRiasecType={(user as unknown)?.riasecType}
           userProjects={projects}
         />
       )}
