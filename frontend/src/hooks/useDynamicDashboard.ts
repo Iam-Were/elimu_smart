@@ -111,6 +111,13 @@ interface LinkedInInsights {
   }>;
 }
 
+interface AssessmentSummary {
+  hollandCode: string | null;
+  primaryType: string | null;
+  topCareers: Array<{ name: string }>;
+  assessmentsCompleted: number;
+}
+
 interface DashboardData {
   careerReadinessScore: CareerReadinessScore | null;
   universityPlacement: UniversityPlacementData | null;
@@ -121,6 +128,7 @@ interface DashboardData {
   courseRecommendations: CourseRecommendations | null;
   linkedinInsights: LinkedInInsights | null;
   assessmentProgress: Record<string, unknown>;
+  assessmentResults: AssessmentSummary | null;
   loading: boolean;
   error: string | null;
 }
@@ -136,6 +144,7 @@ export const useDynamicDashboard = () => {
     courseRecommendations: null,
     linkedinInsights: null,
     assessmentProgress: {},
+    assessmentResults: null,
     loading: true,
     error: null
   });
@@ -376,6 +385,27 @@ export const useDynamicDashboard = () => {
     }
   };
 
+  // Get user assessment results
+  const getAssessmentResults = async (): Promise<AssessmentSummary | null> => {
+    try {
+      const Parse = getParse();
+      const currentUser = Parse.User.current();
+
+      if (!currentUser) return null;
+
+      const result = await Parse.Cloud.run('getUserAssessmentResults', {});
+
+      if (result.success && result.hasResults) {
+        return result.summary;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Failed to get assessment results:', error);
+      return null;
+    }
+  };
+
   // Additional data loading functions for specific features
   const loadExtendedData = useCallback(async () => {
     const results = await Promise.allSettled([
@@ -422,7 +452,8 @@ export const useDynamicDashboard = () => {
         calculateCareerReadiness(),
         getUniversityPlacement(),
         findScholarshipMatches(),
-        getUserActivities()
+        getUserActivities(),
+        getAssessmentResults()
       ]);
 
       // Extract successful results, use null for failures
@@ -430,11 +461,12 @@ export const useDynamicDashboard = () => {
       const universityPlacement = results[1].status === 'fulfilled' ? results[1].value : null;
       const scholarships = results[2].status === 'fulfilled' ? results[2].value : [];
       const activities = results[3].status === 'fulfilled' ? results[3].value : [];
+      const assessmentResults = results[4].status === 'fulfilled' ? results[4].value : null;
 
       // Log any failures for debugging
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
-          const functionNames = ['calculateCareerReadiness', 'getUniversityPlacement', 'findScholarshipMatches', 'getUserActivities'];
+          const functionNames = ['calculateCareerReadiness', 'getUniversityPlacement', 'findScholarshipMatches', 'getUserActivities', 'getAssessmentResults'];
           console.warn(`Dashboard data load: ${functionNames[index]} failed:`, result.reason);
         }
       });
@@ -444,6 +476,7 @@ export const useDynamicDashboard = () => {
         universityPlacement,
         scholarshipMatches: scholarships,
         userActivities: activities,
+        assessmentResults,
         // Set others to null to indicate not loaded (load on demand)
         cutoffAnalysis: null,
         kuccpsTimeline: null,

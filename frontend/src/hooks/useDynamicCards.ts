@@ -47,10 +47,11 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
       }
 
       // Fetch backend data for dashboard metrics
-      const [careerReadiness, universityData, scholarships] = await Promise.allSettled([
+      const [careerReadiness, universityData, scholarships, assessmentResults] = await Promise.allSettled([
         Parse.Cloud.run('calculateCareerReadinessScore'),
         Parse.Cloud.run('getUniversityPlacementData'),
-        Parse.Cloud.run('findScholarshipMatches')
+        Parse.Cloud.run('findScholarshipMatches'),
+        Parse.Cloud.run('getUserAssessmentResults')
       ]);
 
       const cards: DashboardCard[] = [];
@@ -126,6 +127,35 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         });
       }
 
+
+      // Card 4: Assessment Results (Holland Code)
+      if (assessmentResults.status === 'fulfilled' && assessmentResults.value.hasResults) {
+        const summary = assessmentResults.value.summary;
+        const hollandCode = summary?.hollandCode;
+        const primaryType = summary?.primaryType;
+        const topCareer = summary?.topCareers?.[0]?.name;
+        
+        if (hollandCode) {
+          cards.push({
+            id: 'assessment-results',
+            cardType: 'dashboard',
+            title: 'Your Career Profile',
+            description: hollandCode + ' - ' + (primaryType || 'Career Type'),
+            icon: React.createElement(Target),
+            iconGradient: 'from-purple-500 to-purple-600',
+            actionText: 'View Full Results',
+            actionUrl: '/profile/assessments',
+            metric: {
+              label: topCareer ? 'Top Career Match' : 'Assessments Completed',
+              value: topCareer || summary?.assessmentsCompleted || 0
+            },
+            badge: {
+              text: hollandCode,
+              variant: 'success'
+            }
+          });
+        }
+      }
       return cards;
     } catch (err) {
       console.error('[useDynamicCards] Dashboard card generation failed:', err);
