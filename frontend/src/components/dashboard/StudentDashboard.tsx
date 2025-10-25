@@ -9,7 +9,6 @@ import Button from '@/components/ui/button';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
-import { useAriaLive } from '@/hooks/useAccessibility';
 import UrgentActions from './UrgentActions';
 import ProgressMetrics from './ProgressMetrics';
 import ActivityTimeline from './ActivityTimeline';
@@ -27,10 +26,6 @@ const StudentDashboard: React.FC = () => {
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
-
-  // Announce changes to screen readers (for accessibility features)
-  const [announceMessage] = useState('');
-  useAriaLive(announceMessage, 'polite');
 
   // Fetch Parse User data
   useEffect(() => {
