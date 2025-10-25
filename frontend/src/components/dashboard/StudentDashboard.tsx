@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-import { ArrowRight, Target, AlertCircle, Clock, CheckCircle, Sparkles } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Target, AlertCircle, Clock, CheckCircle, Sparkles, User, Activity } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +27,6 @@ const StudentDashboard: React.FC = () => {
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const [announceMessage, setAnnounceMessage] = useState('');
 
   // Announce changes to screen readers
@@ -164,171 +163,151 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="space-y-6 sm:space-y-8 pb-6 sm:pb-8 px-4 sm:px-0">
 
-      {/* Hero KPI - Compact Career Readiness Score */}
-      <Card className="border-orange-200 bg-gradient-to-br from-white to-orange-50/30">
-        <CardHeader className="pb-4">
+      {/* Hero KPI - Enhanced Career Readiness Score */}
+      <Card className="overflow-hidden border-l-4 border-orange-500 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-orange-50/50 to-white pb-4 border-b">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-              {/* Compact Profile Picture */}
+              {/* Enhanced Profile Picture */}
               <div className="flex-shrink-0 relative">
                 {loadingUser ? (
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-200 bg-orange-100 animate-pulse" />
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-orange-300 bg-orange-100 animate-pulse shadow-lg" />
                 ) : (
                   <img
-                    src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=100`}
+                    src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=160`}
                     alt="Student profile"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-200 object-cover shadow-md"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-orange-300 object-cover shadow-lg"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=100`;
+                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=160`;
                     }}
                   />
                 )}
               </div>
 
-              {/* Welcome Message with Last Activity */}
+              {/* Enhanced Welcome Message with Last Activity */}
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-800 mb-0.5 truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1 truncate">
                   Welcome back, {userData?.firstName || 'Student'}! 👋
                 </h1>
                 {lastActivity ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{lastActivity}</p>
+                  <p className="text-sm sm:text-base text-slate-600 truncate leading-tight">{lastActivity}</p>
                 ) : (
-                  <p className="text-xs sm:text-sm text-muted-foreground">Ready to continue your career journey?</p>
+                  <p className="text-sm sm:text-base text-slate-600">Ready to continue your career journey?</p>
                 )}
               </div>
             </div>
 
-            {/* Compact Score Display */}
+            {/* Status Badge */}
             {careerReadinessScore && (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs text-muted-foreground">Career Readiness</p>
-                  <p className="text-2xl font-bold text-orange-600">{careerReadinessScore.overall}%</p>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs px-2 py-1",
-                    careerReadinessScore.overall >= 70 ? "text-green-600 border-green-600 bg-green-50" :
-                    careerReadinessScore.overall >= 40 ? "text-amber-600 border-amber-600 bg-amber-50" :
-                    "text-red-600 border-red-600 bg-red-50"
-                  )}
-                >
-                  {careerReadinessScore.overall >= 70 ? "On Track" :
-                   careerReadinessScore.overall >= 40 ? "Building Up" : "Getting Started"}
-                </Badge>
-              </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs sm:text-sm px-3 py-1.5 flex-shrink-0 font-semibold",
+                  careerReadinessScore.overall >= 70 ? "text-green-700 border-green-600 bg-green-50" :
+                  careerReadinessScore.overall >= 40 ? "text-amber-700 border-amber-600 bg-amber-50" :
+                  "text-red-700 border-red-600 bg-red-50"
+                )}
+              >
+                {careerReadinessScore.overall >= 70 ? "On Track" :
+                 careerReadinessScore.overall >= 40 ? "Building Up" : "Getting Started"}
+              </Badge>
             )}
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-6 pb-4">
           {loading ? (
             <div className="text-center py-4 text-muted-foreground text-sm">Loading your progress...</div>
           ) : careerReadinessScore ? (
-            <div className="flex flex-col sm:flex-row items-stretch gap-4">
-              {/* Left: Big score + ring */}
-              <div className="flex-shrink-0 w-full sm:w-48 lg:w-56 bg-white rounded-lg p-3 flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                  <div className="relative">
-                    {/* SVG circular progress ring */}
-                    <svg className="w-28 h-28 sm:w-32 sm:h-32" viewBox="0 0 36 36" aria-hidden>
-                      <defs>
-                        <linearGradient id="grad1" x1="0%" x2="100%">
-                          <stop offset="0%" stopColor="#fb923c" />
-                          <stop offset="100%" stopColor="#f97316" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        className="circle-bg"
-                        d="M18 2.0845
-                           a 15.9155 15.9155 0 0 1 0 31.831
-                           a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="#f3f4f6"
-                        strokeWidth="2.8"
-                      />
-                      <path
-                        className="circle"
-                        stroke="url(#grad1)"
-                        strokeWidth="2.8"
-                        strokeLinecap="round"
-                        strokeDasharray={`${careerReadinessScore.overall}, 100`}
-                        d="M18 2.0845
-                           a 15.9155 15.9155 0 0 1 0 31.831
-                           a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                      />
-                    </svg>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {/* Enhanced Progress Ring - Larger & More Prominent */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <svg className="w-36 h-36 sm:w-44 sm:h-44" viewBox="0 0 36 36" aria-hidden>
+                    <defs>
+                      <linearGradient id="grad1" x1="0%" x2="100%">
+                        <stop offset="0%" stopColor="#fb923c" />
+                        <stop offset="100%" stopColor="#f97316" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      className="circle-bg"
+                      d="M18 2.0845
+                         a 15.9155 15.9155 0 0 1 0 31.831
+                         a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#f3f4f6"
+                      strokeWidth="2.8"
+                    />
+                    <path
+                      className="circle"
+                      stroke="url(#grad1)"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeDasharray={`${careerReadinessScore.overall}, 100`}
+                      d="M18 2.0845
+                         a 15.9155 15.9155 0 0 1 0 31.831
+                         a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                    />
+                  </svg>
 
-                    {/* Center large percentage (accessible) */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-orange-600">{careerReadinessScore.overall}%</div>
-                        <div className="text-xs text-muted-foreground">Readiness</div>
+                  {/* Enhanced Center Display */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <div className="text-4xl sm:text-5xl font-bold text-orange-600 tracking-tight">
+                        {careerReadinessScore.overall}%
                       </div>
+                      <div className="text-sm sm:text-base text-slate-600 font-medium mt-1">Ready</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Right: Summary and toggle for breakdown */}
-              <div className="flex-1 bg-white rounded-lg p-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-800">Career Readiness Overview</h3>
-                    <p className="text-xs text-muted-foreground mt-1">A snapshot of your progress. Tap "View breakdown" to see detailed metrics.</p>
+              {/* Always Visible 4 Metrics - 2x2 Grid */}
+              <div className="flex-1 w-full">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {/* Metric 1: Assessments */}
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Assessments</span>
+                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {careerReadinessScore.breakdown.assessmentCompletion}%
+                      </span>
+                    </div>
+                    <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-2" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setShowBreakdown(!showBreakdown);
-                        setAnnounceMessage(
-                          showBreakdown 
-                            ? 'Career readiness breakdown collapsed' 
-                            : 'Career readiness breakdown expanded, showing 4 progress metrics'
-                        );
-                      }}
-                      aria-expanded={showBreakdown}
-                      aria-controls="readiness-breakdown"
-                      className="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-orange-50 border border-orange-100 hover:bg-orange-100 text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    >
-                      {showBreakdown ? 'Hide breakdown' : 'View breakdown'}
-                      <ArrowRight className="h-4 w-4 transform rotate-90" />
-                    </button>
-                  </div>
-                </div>
 
-                {/* Collapsible breakdown - hidden by default on mobile */}
-                <div id="readiness-breakdown" className={`mt-3 transition-all duration-200 ${showBreakdown ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`} aria-hidden={!showBreakdown}>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600">Assessments</span>
-                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.assessmentCompletion}%</span>
-                      </div>
-                      <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-1.5" />
+                  {/* Metric 2: Research */}
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Research</span>
+                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {careerReadinessScore.breakdown.careerResearch}%
+                      </span>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600">Research</span>
-                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.careerResearch}%</span>
-                      </div>
-                      <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-1.5" />
+                    <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-2" />
+                  </div>
+
+                  {/* Metric 3: Exploration */}
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Exploration</span>
+                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {careerReadinessScore.breakdown.courseExploration}%
+                      </span>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600">Exploration</span>
-                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.courseExploration}%</span>
-                      </div>
-                      <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-1.5" />
+                    <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-2" />
+                  </div>
+
+                  {/* Metric 4: Actions */}
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Actions</span>
+                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {careerReadinessScore.breakdown.actionsTaken}%
+                      </span>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-600">Actions</span>
-                        <span className="font-bold text-slate-800">{careerReadinessScore.breakdown.actionsTaken}%</span>
-                      </div>
-                      <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-1.5" />
-                    </div>
+                    <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-2" />
                   </div>
                 </div>
               </div>
@@ -342,6 +321,37 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
         </CardContent>
+
+        {/* NEW: Footer with Quick Stats */}
+        {careerReadinessScore && (
+          <CardFooter className="bg-slate-50/80 border-t border-slate-200 py-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3 sm:gap-0">
+              {/* Profile Completion */}
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <User className="w-4 h-4" />
+                <span>Profile: <strong className="text-slate-900">{userData?.profileCompletion || 0}%</strong> complete</span>
+              </div>
+              
+              {/* Activity Streak */}
+              {userActivities && userActivities.length > 0 && (
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Activity className="w-4 h-4 text-orange-500" />
+                  <span>Active <strong className="text-slate-900">{userActivities.length}</strong> days 🔥</span>
+                </div>
+              )}
+              
+              {/* CTA Button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => window.location.href = '/dashboard?tab=progress'}
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 font-semibold"
+              >
+                View Full Details →
+              </Button>
+            </div>
+          </CardFooter>
+        )}
       </Card>
 
       {/* Urgent Actions Banner */}
