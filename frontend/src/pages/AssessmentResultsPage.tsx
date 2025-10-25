@@ -249,7 +249,7 @@ export const AssessmentResultsPage: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         // TODO: Implement PDF download
                         alert('PDF download coming soon!');
@@ -261,7 +261,7 @@ export const AssessmentResultsPage: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         // TODO: Implement share
                         alert('Share coming soon!');
