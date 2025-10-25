@@ -1175,7 +1175,7 @@ export const ProfilePageTabbed: React.FC = () => {
             setShowAddSkillsDialog(false);
           }}
           existingSkills={skills}
-          userRiasecType={(user as any)?.riasecType}
+          userRiasecType={(user as { riasecType?: string })?.riasecType}
           userProjects={projects}
         />
       )}

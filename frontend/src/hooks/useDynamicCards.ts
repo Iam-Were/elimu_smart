@@ -111,7 +111,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
       // Card 3: Scholarship Opportunities
       if (scholarships.status === 'fulfilled') {
-        const matches = scholarships.value.matches || [];
+        const matches = Array.isArray(scholarships.value?.matches) ? scholarships.value.matches : [];
         const topMatch = matches[0];
         cards.push({
           id: 'scholarships',
@@ -165,7 +165,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
       // Card 5: KUCCPS Deadline Tracker (Live Timeline Data)
       if (kuccpsTimeline.status === 'fulfilled') {
-        const timeline = kuccpsTimeline.value || [];
+        const timeline = Array.isArray(kuccpsTimeline.value) ? kuccpsTimeline.value : [];
         const upcomingEvents = timeline.filter((event: { status: string }) => event.status === 'upcoming');
         const nextEvent = upcomingEvents[0];
         
@@ -196,7 +196,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
       // Card 6: Activity Timeline (Recent User Activities)
       if (recentActivities.status === 'fulfilled') {
-        const activities = recentActivities.value || [];
+        const activities = Array.isArray(recentActivities.value) ? recentActivities.value : [];
         if (activities.length > 0) {
           const activityCount = activities.length;
           cards.push({
@@ -222,7 +222,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
       // Card 7: Recommended Courses (AI-Powered Matches)
       if (courseRecommendations.status === 'fulfilled') {
-        const recommendations = courseRecommendations.value || [];
+        const recommendations = Array.isArray(courseRecommendations.value) ? courseRecommendations.value : [];
         if (recommendations.length > 0) {
           const topCourse = recommendations[0];
           cards.push({
@@ -297,8 +297,8 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
       }
 
       // Card 10: Career Goal Progress
-      if (careerGoals.status === 'fulfilled' && careerGoals.value.hasGoals) {
-        const goals = careerGoals.value.goals;
+      if (careerGoals.status === 'fulfilled' && careerGoals.value?.hasGoals) {
+        const goals = Array.isArray(careerGoals.value.goals) ? careerGoals.value.goals : [];
         if (goals.length > 0) {
           const primaryGoal = goals[0];
           cards.push({

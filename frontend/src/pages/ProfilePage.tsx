@@ -1166,7 +1166,7 @@ export const ProfilePage: React.FC = () => {
             setShowAddSkillsDialog(false);
           }}
           existingSkills={skills}
-          userRiasecType={(user as Record<string, unknown>)?.riasecType as string}
+          userRiasecType={(user as { riasecType?: string })?.riasecType}
           userProjects={projects}
         />
       )}
