@@ -4119,12 +4119,8 @@ const KENYA_CAREERS_DATABASE_DEPRECATED = [
 
 // Career Exploration Cloud Function (Parse Class Version - Updated 2025-10-11)
 // Queries from Career Parse Class instead of hardcoded data
+// Public access - no authentication required (career data is public)
 Parse.Cloud.define('exploreCareers', async (request) => {
-  const { user, master } = request;
-  if (!user && !master) {
-    throw new Error('User must be authenticated');
-  }
-
   const {
     filters,
     searchQuery,
