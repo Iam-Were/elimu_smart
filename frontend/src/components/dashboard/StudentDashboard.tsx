@@ -27,9 +27,9 @@ const StudentDashboard: React.FC = () => {
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
-  const [announceMessage, setAnnounceMessage] = useState('');
 
-  // Announce changes to screen readers
+  // Announce changes to screen readers (for accessibility features)
+  const [announceMessage] = useState('');
   useAriaLive(announceMessage, 'polite');
 
   // Fetch Parse User data

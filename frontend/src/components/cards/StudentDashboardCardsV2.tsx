@@ -22,7 +22,7 @@ import React, { useState, useEffect } from 'react';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
-import { Loader2, AlertCircle, User, Activity, Target, CheckCircle, Sparkles } from 'lucide-react';
+import { Loader2, AlertCircle, User, Activity } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
