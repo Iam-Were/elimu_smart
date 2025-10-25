@@ -12,7 +12,7 @@
 import React, { useState, useEffect } from 'react';
 import { getParse } from '@/config/parse';
 import type { CardData, DashboardCard, AssessmentCard, GuidanceCard } from '@/types/CardInterfaces';
-import { Target, TrendingUp, Award, Calendar, BookOpen, Users } from 'lucide-react';
+import { Target, TrendingUp, Award, Calendar, BookOpen, Users, Clock, Activity, User, CalendarClock, Target as TargetIcon } from 'lucide-react';
 
 interface UseDynamicCardsOptions {
   variant: 'dashboard' | 'assessment' | 'guidance';
@@ -47,11 +47,17 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
       }
 
       // Fetch backend data for dashboard metrics
-      const [careerReadiness, universityData, scholarships, assessmentResults] = await Promise.allSettled([
+      const [careerReadiness, universityData, scholarships, assessmentResults, kuccpsTimeline, recentActivities, courseRecommendations, profileCompletion, nextSession, careerGoals] = await Promise.allSettled([
         Parse.Cloud.run('calculateCareerReadinessScore'),
         Parse.Cloud.run('getUniversityPlacementData'),
         Parse.Cloud.run('findScholarshipMatches'),
-        Parse.Cloud.run('getUserAssessmentResults')
+        Parse.Cloud.run('getUserAssessmentResults'),
+        Parse.Cloud.run('getKuccpsTimeline'),
+        Parse.Cloud.run('logUserActivity', { activityType: 'fetch_recent', limit: 5 }),
+        Parse.Cloud.run('getCourseRecommendations'),
+        Parse.Cloud.run('calculateProfileCompletion'),
+        Parse.Cloud.run('getStudentNextSession'),
+        Parse.Cloud.run('getUserCareerGoals')
       ]);
 
       const cards: DashboardCard[] = [];
@@ -152,6 +158,165 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
             badge: {
               text: hollandCode,
               variant: 'success'
+            }
+          });
+        }
+      }
+
+      // Card 5: KUCCPS Deadline Tracker (Live Timeline Data)
+      if (kuccpsTimeline.status === 'fulfilled') {
+        const timeline = kuccpsTimeline.value || [];
+        const upcomingEvents = timeline.filter((event: { status: string }) => event.status === 'upcoming');
+        const nextEvent = upcomingEvents[0];
+        
+        if (nextEvent) {
+          const eventDate = typeof nextEvent.date === 'string' ? new Date(nextEvent.date) : nextEvent.date;
+          const daysUntil = Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+          cards.push({
+            id: 'kuccps-deadline',
+            cardType: 'dashboard',
+            title: 'KUCCPS Deadline',
+            description: nextEvent.event,
+            icon: React.createElement(Clock),
+            iconGradient: 'from-red-500 to-red-600',
+            actionText: 'View Timeline',
+            actionUrl: '/guidance/resources?filter=kuccps',
+            metric: {
+              label: 'Days Remaining',
+              value: daysUntil > 0 ? `${daysUntil} days` : 'Today'
+            },
+            urgency: daysUntil < 7 ? 'high' : daysUntil < 30 ? 'medium' : 'low',
+            badge: {
+              text: daysUntil < 7 ? 'Urgent' : daysUntil < 30 ? 'Soon' : 'Upcoming',
+              variant: daysUntil < 7 ? 'destructive' : daysUntil < 30 ? 'warning' : 'secondary'
+            }
+          });
+        }
+      }
+
+      // Card 6: Activity Timeline (Recent User Activities)
+      if (recentActivities.status === 'fulfilled') {
+        const activities = recentActivities.value || [];
+        if (activities.length > 0) {
+          const activityCount = activities.length;
+          cards.push({
+            id: 'activity-timeline',
+            cardType: 'dashboard',
+            title: 'Recent Activity',
+            description: `${activityCount} actions in the last 7 days`,
+            icon: React.createElement(Activity),
+            iconGradient: 'from-blue-500 to-blue-600',
+            actionText: 'View History',
+            actionUrl: '/profile?tab=activity',
+            metric: {
+              label: 'This Week',
+              value: activityCount
+            },
+            badge: {
+              text: activityCount > 5 ? 'Active' : 'Getting Started',
+              variant: activityCount > 5 ? 'success' : 'secondary'
+            }
+          });
+        }
+      }
+
+      // Card 7: Recommended Courses (AI-Powered Matches)
+      if (courseRecommendations.status === 'fulfilled') {
+        const recommendations = courseRecommendations.value || [];
+        if (recommendations.length > 0) {
+          const topCourse = recommendations[0];
+          cards.push({
+            id: 'course-recommendations',
+            cardType: 'dashboard',
+            title: 'Recommended Courses',
+            description: topCourse.courseName + ' at ' + topCourse.university,
+            icon: React.createElement(BookOpen),
+            iconGradient: 'from-teal-500 to-teal-600',
+            actionText: 'View All',
+            actionUrl: '/assessment/university',
+            metric: {
+              label: 'Match Score',
+              value: topCourse.matchScore ? `${topCourse.matchScore}%` : '85%'
+            },
+            badge: {
+              text: `${recommendations.length} Matches`,
+              variant: 'success'
+            }
+          });
+        }
+      }
+
+      // Card 8: Profile Completion (Gamification)
+      if (profileCompletion.status === 'fulfilled') {
+        const completion = profileCompletion.value;
+        if (completion.percentage < 100) {
+          cards.push({
+            id: 'profile-completion',
+            cardType: 'dashboard',
+            title: 'Profile Completion',
+            description: completion.nextStep,
+            icon: React.createElement(User),
+            iconGradient: 'from-purple-500 to-purple-600',
+            actionText: 'Complete Profile',
+            actionUrl: '/profile',
+            metric: {
+              label: 'Progress',
+              value: `${completion.percentage}%`
+            },
+            urgency: completion.percentage < 40 ? 'high' : completion.percentage < 70 ? 'medium' : 'low',
+            badge: {
+              text: completion.category,
+              variant: completion.percentage >= 80 ? 'success' : completion.percentage >= 60 ? 'secondary' : 'warning'
+            }
+          });
+        }
+      }
+
+      // Card 9: Next Counselor Session
+      if (nextSession.status === 'fulfilled' && nextSession.value.hasSession) {
+        const session = nextSession.value;
+        cards.push({
+          id: 'next-session',
+          cardType: 'dashboard',
+          title: 'Upcoming Session',
+          description: `${session.session.topic} with ${session.counselor.name}`,
+          icon: React.createElement(CalendarClock),
+          iconGradient: 'from-indigo-500 to-indigo-600',
+          actionText: 'View Details',
+          actionUrl: '/guidance/sessions',
+          metric: {
+            label: session.daysUntil === 0 ? 'Today' : session.daysUntil === 1 ? 'Tomorrow' : 'In',
+            value: session.daysUntil === 0 ? `${session.hoursUntil}h` : session.daysUntil === 1 ? `${session.hoursUntil}h` : `${session.daysUntil} days`
+          },
+          urgency: session.hoursUntil < 24 ? 'high' : session.daysUntil < 7 ? 'medium' : 'low',
+          badge: {
+            text: session.hoursUntil < 24 ? 'Soon' : 'Scheduled',
+            variant: session.hoursUntil < 24 ? 'destructive' : 'success'
+          }
+        });
+      }
+
+      // Card 10: Career Goal Progress
+      if (careerGoals.status === 'fulfilled' && careerGoals.value.hasGoals) {
+        const goals = careerGoals.value.goals;
+        if (goals.length > 0) {
+          const primaryGoal = goals[0];
+          cards.push({
+            id: 'career-goals',
+            cardType: 'dashboard',
+            title: 'Career Goal Progress',
+            description: primaryGoal.goal,
+            icon: React.createElement(TargetIcon),
+            iconGradient: 'from-emerald-500 to-emerald-600',
+            actionText: 'Track Progress',
+            actionUrl: '/profile?tab=goals',
+            metric: {
+              label: 'Milestones',
+              value: `${primaryGoal.completedMilestones}/${primaryGoal.totalMilestones}`
+            },
+            badge: {
+              text: `${primaryGoal.progress}% Complete`,
+              variant: primaryGoal.progress >= 75 ? 'success' : primaryGoal.progress >= 50 ? 'secondary' : 'warning'
             }
           });
         }

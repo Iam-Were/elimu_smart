@@ -82,15 +82,6 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="space-y-1 sm:space-y-2">
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
-          Your Dashboard
-        </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Track your progress and next steps
-        </p>
-      </div>
 
       {/* Unified Card Grid (Dynamic Backend Data) */}
       <UnifiedCardGrid

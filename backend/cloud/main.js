@@ -27,6 +27,8 @@ require('./careerFunctions');
 // Import chat preferences functions (auto-registers cloud functions)
 // Fixed: removed 'const Parse = require('parse/node')' - uses global Parse
 require('./chatPreferencesFunctions');
+// Import dashboard functions (auto-registers cloud functions)
+require('./dashboardFunctions');
 
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
