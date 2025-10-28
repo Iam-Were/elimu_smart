@@ -68,6 +68,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         cards.push({
           id: 'career-readiness',
           cardType: 'dashboard',
+          rowSpan: 2, // ✅ FIX #2: Make most important card 2x taller for visual hierarchy
           title: 'Career Readiness Score',
           description: 'Your overall readiness for career exploration',
           icon: React.createElement(Target),
@@ -321,6 +322,16 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           });
         }
       }
+
+      // ✅ FIX #1: Sort cards by urgency (high priority first)
+      // Best Practice: Critical cards (deadlines, incomplete profiles) show at top
+      cards.sort((a, b) => {
+        const urgencyWeight = { high: 3, medium: 2, low: 1 };
+        const aWeight = urgencyWeight[a.urgency || 'low'];
+        const bWeight = urgencyWeight[b.urgency || 'low'];
+        return bWeight - aWeight;
+      });
+
       return cards;
     } catch (err) {
       console.error('[useDynamicCards] Dashboard card generation failed:', err);

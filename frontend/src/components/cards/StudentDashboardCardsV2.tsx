@@ -47,6 +47,9 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   className,
   maxCards = 6
 }) => {
+  // ✅ FIX #3: State for progressive disclosure
+  const [expanded, setExpanded] = useState(false);
+
   // Use unified hook to fetch dashboard cards
   const { cards, loading, error, refreshCards } = useDynamicCards({
     variant: 'dashboard',
@@ -384,10 +387,23 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
       <UnifiedCardGrid
         cards={cards}
         variant="dashboard"
-        maxCards={maxCards}
+        maxCards={expanded ? undefined : maxCards}
         className={className}
         activityPrefix="dashboard_"
       />
+
+      {/* ✅ FIX #3: Show More Button (Progressive Disclosure) */}
+      {!expanded && cards.length > maxCards && (
+        <div className="text-center pt-4">
+          <Button
+            onClick={() => setExpanded(true)}
+            variant="outline"
+            className="min-h-[48px] px-8"
+          >
+            Show {cards.length - maxCards} More Cards
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
