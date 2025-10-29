@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,8 @@ import {
   Settings,
   Target,
   Award,
-  Loader2
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSkillsQuestions } from '@/lib/assessmentApi';
@@ -97,6 +99,7 @@ const SKILL_CATEGORIES: Record<string, SkillCategory> = {
 };
 
 export const SkillsAssessment: React.FC = () => {
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState<SkillQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<number, number>>({});
@@ -156,13 +159,15 @@ export const SkillsAssessment: React.FC = () => {
   const handleResponse = (questionId: number, response: number) => {
     const newResponses = { ...responses, [questionId]: response };
     setResponses(newResponses);
+  };
 
-    // Auto-advance to next question
+  const handleNext = async () => {
+    // Auto-advance to next question or complete assessment
     if (currentQuestion < totalQuestions - 1) {
-      setTimeout(() => setCurrentQuestion(prev => prev + 1), 500);
+      setCurrentQuestion(prev => prev + 1);
     } else {
       // Assessment complete - calculate results
-      completeAssessment(newResponses);
+      await completeAssessment(responses);
     }
   };
 
@@ -224,17 +229,39 @@ export const SkillsAssessment: React.FC = () => {
   if (error && questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="bg-red-100 p-3 rounded-full">
-                <Trophy className="h-8 w-8 text-red-600" />
+        <Card className="w-full max-w-md border-orange-200 bg-orange-50">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="bg-orange-100 p-4 rounded-full">
+                <Trophy className="h-8 w-8 text-orange-600" />
               </div>
-              <h3 className="text-lg font-semibold text-red-800">Failed to Load Assessment</h3>
-              <p className="text-red-600">{error}</p>
-              <Button onClick={() => window.location.reload()} className="mt-2">
-                Refresh Page
-              </Button>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-orange-900">Connection Issue</h3>
+                <p className="text-orange-700">{error}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-orange-200 w-full">
+                <h4 className="font-semibold text-gray-900 mb-2 text-sm">What you can do:</h4>
+                <ul className="text-xs text-gray-700 text-left space-y-1">
+                  <li>✓ Check your internet connection</li>
+                  <li>✓ Try refreshing the page</li>
+                  <li>✓ Your progress is saved locally</li>
+                  <li>✓ Contact support if this persists</li>
+                </ul>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Retry Now
+                </Button>
+                <Button 
+                  onClick={() => navigate('/assessment')} 
+                  variant="outline"
+                >
+                  Back to Assessments
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -559,21 +586,24 @@ export const SkillsAssessment: React.FC = () => {
             Previous
           </Button>
           
-          <div className="text-sm text-gray-500">
-            Question {currentQuestion + 1} of {totalQuestions}
-          </div>
-          
-          {currentQuestion === totalQuestions - 1 && currentResponse && (
-            <Badge className="bg-green-600 px-4 py-2">
-              Assessment will complete after this question
-            </Badge>
-          )}
-          
-          {currentQuestion < totalQuestions - 1 && (
-            <div className="text-sm text-gray-500 flex items-center gap-2">
+          {currentQuestion < totalQuestions - 1 ? (
+            <Button
+              onClick={handleNext}
+              disabled={currentResponse === undefined}
+              className="gap-2 bg-orange-600 hover:bg-orange-700"
+            >
+              Next Question
               <ArrowRight className="h-4 w-4" />
-              Auto-advance after selection
-            </div>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={currentResponse === undefined}
+              className="gap-2 bg-green-600 hover:bg-green-700"
+            >
+              Complete Assessment
+              <CheckCircle className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>

@@ -466,7 +466,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
   }, [questionsLoading, questions.length, assessmentId, startAssessment]);
 
-  const handleResponse = async (questionId: number, response: number) => {
+  const handleResponse = (questionId: number, response: number) => {
     const newResponses = { ...responses, [questionId]: response };
     setResponses(newResponses);
 
@@ -486,23 +486,23 @@ export const FreeRiasecAssessment: React.FC = () => {
 
     // Save to backend but don't block UI
     if (assessmentId && !assessmentId.startsWith('local-')) {
-      try {
-        await saveRiasecResponse(
-          assessmentId,
-          questionId.toString(),
-          response,
-          {
-            questionNumber: currentQuestion + 1,
-            category: questions[currentQuestion]?.category || 'activities',
-            riasecType: questions[currentQuestion]?.riasecType || 'R'
-          }
-        );
-      } catch (error) {
+      saveRiasecResponse(
+        assessmentId,
+        questionId.toString(),
+        response,
+        {
+          questionNumber: currentQuestion + 1,
+          category: questions[currentQuestion]?.category || 'activities',
+          riasecType: questions[currentQuestion]?.riasecType || 'R'
+        }
+      ).catch(error => {
         console.warn('Failed to save response to backend (continuing locally):', error);
-      }
+      });
     }
+  };
 
-    // Always advance to next question (non-blocking)
+  const handleNext = async () => {
+    // Advance to next question or complete assessment
     if (currentQuestion < totalQuestions - 1) {
       const nextQuestionNum = currentQuestion + 2; // +2 because currentQuestion is 0-indexed but we display 1-indexed
       const milestone = getMilestone(nextQuestionNum);
@@ -516,7 +516,7 @@ export const FreeRiasecAssessment: React.FC = () => {
           setCurrentQuestion(prev => prev + 1);
         }, 2500); // Show celebration for 2.5 seconds
       } else {
-        setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+        setCurrentQuestion(prev => prev + 1);
       }
     } else {
       // Assessment complete - try backend first, fallback to local
@@ -525,10 +525,10 @@ export const FreeRiasecAssessment: React.FC = () => {
           await completeAssessment();
         } catch (error) {
           console.warn('Backend completion failed, using local calculation:', error);
-          calculateResults(newResponses);
+          calculateResults(responses);
         }
       } else {
-        calculateResults(newResponses);
+        calculateResults(responses);
       }
     }
   };
@@ -727,12 +727,40 @@ export const FreeRiasecAssessment: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-12 text-center">
-            <p className="text-red-600 font-semibold mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()} variant="outline">
-              Refresh Page
-            </Button>
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="bg-orange-100 p-4 rounded-full">
+                <Brain className="h-8 w-8 text-orange-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-orange-900">Connection Issue</h3>
+                <p className="text-orange-700 max-w-md">{error}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-orange-200 max-w-md">
+                <h4 className="font-semibold text-gray-900 mb-2">What you can do:</h4>
+                <ul className="text-sm text-gray-700 text-left space-y-1">
+                  <li>✓ Check your internet connection</li>
+                  <li>✓ Try refreshing the page</li>
+                  <li>✓ Your progress is saved - you can continue later</li>
+                  <li>✓ Contact support if this persists</li>
+                </ul>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Retry Now
+                </Button>
+                <Button 
+                  onClick={() => navigate('/assessment')} 
+                  variant="outline"
+                >
+                  Back to Assessments
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -743,9 +771,33 @@ export const FreeRiasecAssessment: React.FC = () => {
   if (questions.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-600">No questions available. Please try again later.</p>
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="bg-yellow-100 p-4 rounded-full">
+                <Loader2 className="h-8 w-8 text-yellow-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-yellow-900">Questions Not Available</h3>
+                <p className="text-yellow-700 max-w-md">
+                  We couldn't load the assessment questions. This might be a temporary issue.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Try Again
+                </Button>
+                <Button 
+                  onClick={() => navigate('/assessment')} 
+                  variant="outline"
+                >
+                  Back to Assessments
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -1117,7 +1169,7 @@ export const FreeRiasecAssessment: React.FC = () => {
 
           {/* Response Options */}
           <RadioGroup
-            value={currentResponse?.toString()}
+            value={currentResponse !== undefined ? currentResponse.toString() : ""}
             onValueChange={(value) => handleResponse(question.id, parseInt(value))}
             className="space-y-3"
           >
@@ -1220,9 +1272,19 @@ export const FreeRiasecAssessment: React.FC = () => {
             Exit Assessment
           </Button>
 
-          {currentQuestion === totalQuestions - 1 && (
+          {currentQuestion < totalQuestions - 1 ? (
             <Button
-              disabled={!currentResponse}
+              onClick={handleNext}
+              disabled={currentResponse === undefined}
+              className="gap-2 bg-orange-600 hover:bg-orange-700"
+            >
+              Next Question
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={currentResponse === undefined}
               className="gap-2 bg-green-600 hover:bg-green-700"
             >
               Complete Assessment
