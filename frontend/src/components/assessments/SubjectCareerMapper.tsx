@@ -26,7 +26,9 @@ import {
   Sprout,
   Palette,
   Music,
-  FileText
+  FileText,
+  Award,
+  Building
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -785,7 +787,7 @@ export const SubjectCareerMapper: React.FC = () => {
               {careerDetails.description && (
                 <div>
                   <h3 className="text-lg font-semibold mb-2">About This Career</h3>
-                  <p className="text-gray-700">{String(careerDetails.description)}</p>
+                  <p className="text-gray-700">{careerDetails.description as string}</p>
                 </div>
               )}
 
@@ -794,8 +796,8 @@ export const SubjectCareerMapper: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Day-to-Day Responsibilities</h3>
                   <ul className="list-disc list-inside space-y-1">
-                    {careerDetails.dailyTasks.map((task, i) => (
-                      <li key={i} className="text-gray-700">{String(task)}</li>
+                    {(careerDetails.dailyTasks as string[]).map((task, i) => (
+                      <li key={i} className="text-gray-700">{task}</li>
                     ))}
                   </ul>
                 </div>
@@ -806,9 +808,9 @@ export const SubjectCareerMapper: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Essential Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {careerDetails.skills.map((skill, i) => (
+                    {(careerDetails.skills as string[]).map((skill, i) => (
                       <Badge key={i} variant="outline" className="text-sm">
-                        {String(skill)}
+                        {skill}
                       </Badge>
                     ))}
                   </div>
@@ -820,9 +822,9 @@ export const SubjectCareerMapper: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Personality Fit</h3>
                   <div className="flex flex-wrap gap-2">
-                    {careerDetails.personalityTraits.map((trait, i) => (
+                    {(careerDetails.personalityTraits as string[]).map((trait, i) => (
                       <Badge key={i} className="bg-purple-100 text-purple-700 text-sm">
-                        {String(trait)}
+                        {trait}
                       </Badge>
                     ))}
                   </div>
@@ -833,7 +835,7 @@ export const SubjectCareerMapper: React.FC = () => {
               {careerDetails.careerProgression && (
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Career Progression Path</h3>
-                  <p className="text-gray-700">{String(careerDetails.careerProgression)}</p>
+                  <p className="text-gray-700">{careerDetails.careerProgression as string}</p>
                 </div>
               )}
 
@@ -914,10 +916,10 @@ export const SubjectCareerMapper: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700">{String(careerDetails.educationPath)}</p>
+                    <p className="text-gray-700">{careerDetails.educationPath as string}</p>
                     {careerDetails.educationLevel && (
                       <Badge className="mt-2 bg-blue-600 text-white">
-                        Level Required: {String(careerDetails.educationLevel)}
+                        Level Required: {careerDetails.educationLevel as string}
                       </Badge>
                     )}
                   </CardContent>
