@@ -123,6 +123,7 @@ const AppContent: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/assessments" element={<AssessmentResultsPage />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/pricing" element={<SubscriptionPage />} />
           <Route path="/checkout/:planId" element={<CheckoutPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/settings/*" element={<AccountSettingsPage />} />
