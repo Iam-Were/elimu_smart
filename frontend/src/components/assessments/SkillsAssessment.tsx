@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import AssessmentLoadingSkeleton from './AssessmentLoadingSkeleton';
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,7 +17,6 @@ import {
   Settings,
   Target,
   Award,
-  Loader2,
   CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -211,19 +211,7 @@ export const SkillsAssessment: React.FC = () => {
   };
 
   if (isLoading && questions.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
-              <h3 className="text-lg font-semibold">Loading Skills Assessment...</h3>
-              <p className="text-gray-600">Fetching 36 questions from database...</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AssessmentLoadingSkeleton />;
   }
 
   if (error && questions.length === 0) {

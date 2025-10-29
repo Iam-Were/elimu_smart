@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import AssessmentLoadingSkeleton from './AssessmentLoadingSkeleton';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   Save,
@@ -710,17 +712,7 @@ export const FreeRiasecAssessment: React.FC = () => {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mb-4" />
-            <p className="text-lg text-gray-600">Loading RIASEC Career Assessment...</p>
-            <p className="text-sm text-gray-500 mt-2">Fetching 96 questions from database</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AssessmentLoadingSkeleton />;
   }
 
   // Error state
@@ -1239,13 +1231,19 @@ export const FreeRiasecAssessment: React.FC = () => {
                     status: 'in-progress'
                   }, sessionToken);
 
-                  alert('Progress saved! You can continue later from this point.');
+                  toast.success('Progress saved!', {
+                    description: 'You can continue later from this point.'
+                  });
                 } catch (error) {
                   console.error('Failed to save progress to server:', error);
-                  alert('Progress saved locally! Continue anytime from this device.');
+                  toast.info('Progress saved locally', {
+                    description: 'Continue anytime from this device.'
+                  });
                 }
               } else {
-                alert('Progress saved locally! Continue anytime from this device.');
+                toast.info('Progress saved locally', {
+                  description: 'Continue anytime from this device.'
+                });
               }
             }}
           >
