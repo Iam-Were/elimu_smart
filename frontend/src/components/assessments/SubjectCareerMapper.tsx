@@ -481,10 +481,13 @@ export const SubjectCareerMapper: React.FC = () => {
               const isSelected = selectedSubject === subject.name;
 
               return (
-                <Card
+                <div
                   key={subject.name}
+                  role="button"
+                  tabIndex={0}
                   className={cn(
                     "cursor-pointer transition-all duration-300 hover:shadow-md",
+                    "border rounded-lg p-4 text-center space-y-2 bg-white",
                     isSelected
                       ? "ring-2 ring-orange-500 bg-orange-50"
                       : "hover:bg-gray-50"
@@ -494,12 +497,17 @@ export const SubjectCareerMapper: React.FC = () => {
                     setSelectedSubject(subject.name);
                     console.log('✅ setState called for:', subject.name);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      console.log('🖱️ Subject card clicked:', subject.name);
+                      setSelectedSubject(subject.name);
+                      console.log('✅ setState called for:', subject.name);
+                    }
+                  }}
                 >
-                  <CardContent className="p-4 text-center space-y-2">
-                    <div className="text-2xl">{subject.emoji}</div>
-                    <div className="text-sm font-medium">{subject.name}</div>
-                  </CardContent>
-                </Card>
+                  <div className="text-2xl">{subject.emoji}</div>
+                  <div className="text-sm font-medium">{subject.name}</div>
+                </div>
               );
             })}
           </div>
