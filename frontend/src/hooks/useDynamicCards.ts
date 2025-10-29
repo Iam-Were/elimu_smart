@@ -64,7 +64,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
 
       // Card 1: Career Readiness Score
       if (careerReadiness.status === 'fulfilled') {
-        const score = careerReadiness.value.overall || 0;
+        const score = careerReadiness.value.score || 0;
         cards.push({
           id: 'career-readiness',
           cardType: 'dashboard',
