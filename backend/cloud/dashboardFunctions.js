@@ -224,7 +224,7 @@ Parse.Cloud.define('getUserCareerGoals', async (request) => {
   try {
     const CareerGoal = Parse.Object.extend('CareerGoal');
     const query = new Parse.Query(CareerGoal);
-    query.equalTo('userId', user.id);
+    query.equalTo('user', user);
     query.descending('createdAt');
     query.limit(5);
 
@@ -234,7 +234,8 @@ Parse.Cloud.define('getUserCareerGoals', async (request) => {
       // Return default goal template based on assessment results
       const StudentProgress = Parse.Object.extend('StudentProgress');
       const progressQuery = new Parse.Query(StudentProgress);
-      progressQuery.equalTo('userId', user.id);
+      // FIX: StudentProgress.user is a string field (objectId), not a pointer
+      progressQuery.equalTo('user', user.id);
       const progress = await progressQuery.first({ useMasterKey: true });
 
       const primaryType = progress?.get('primaryType') || 'General';
