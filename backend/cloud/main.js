@@ -4387,15 +4387,25 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
     throw new Error('User must be authenticated');
   }
 
-  const { careerId, studentProfile } = request.params;
+  const { careerId, careerTitle, studentProfile } = request.params;
 
-  console.log('📋 Getting career details for:', careerId);
+  // Support both careerId and careerTitle for backwards compatibility
+  const careerIdentifier = careerId || careerTitle;
+
+  console.log('📋 Getting career details for:', careerIdentifier);
 
   try {
     // Query Career from Parse Class
     const CareerClass = Parse.Object.extend('Career');
     const careerQuery = new Parse.Query(CareerClass);
-    careerQuery.equalTo('careerId', careerId);
+
+    // Search by careerId if provided, otherwise search by title
+    if (careerId) {
+      careerQuery.equalTo('careerId', careerId);
+    } else if (careerTitle) {
+      careerQuery.equalTo('title', careerTitle);
+    }
+
     const careerObject = await careerQuery.first({ useMasterKey: true });
 
     if (!careerObject) {
@@ -4447,15 +4457,20 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
 
     // Log activity (only if user exists - skip for master key requests)
     if (user && user.id) {
-      await Parse.Cloud.run('logUserActivity', {
-        userId: user.id,
-        activityType: 'career_details_view',
-        details: {
-          careerId,
-          careerTitle: career.title,
-          category: career.category
-        }
-      });
+      try {
+        await Parse.Cloud.run('logUserActivity', {
+          userId: user.id,
+          activityType: 'career_details_view',
+          details: {
+            careerId: careerIdentifier,
+            careerTitle: career.title,
+            category: career.category
+          }
+        }, { sessionToken: user.getSessionToken() });
+      } catch (activityError) {
+        console.warn('Failed to log career details view activity:', activityError.message);
+        // Don't fail the whole request if activity logging fails
+      }
     }
 
     return {
