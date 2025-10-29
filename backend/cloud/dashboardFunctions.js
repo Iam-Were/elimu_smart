@@ -221,6 +221,23 @@ Parse.Cloud.define('getUserCareerGoals', async (request) => {
     throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'User must be logged in');
   }
 
+  // ✅ TEMPORARY FIX: CareerGoal pointer query causing PostgreSQL errors
+  // Return default template until schema/pointer issues resolved
+  // TODO: Fix Parse pointer queries or migrate to different approach
+  return {
+    hasGoals: false,
+    suggestedGoal: {
+      goal: 'Set Your Career Goal',
+      milestones: [
+        { name: 'Complete RIASEC Assessment', completed: false },
+        { name: 'Complete Skills Assessment', completed: false },
+        { name: 'Complete KCSE with required grades', completed: false },
+        { name: 'Apply to relevant university programs', completed: false }
+      ]
+    }
+  };
+
+  /* DISABLED - Causing PostgreSQL "column user does not exist" errors
   try {
     const CareerGoal = Parse.Object.extend('CareerGoal');
     const query = new Parse.Query(CareerGoal);
@@ -231,9 +248,6 @@ Parse.Cloud.define('getUserCareerGoals', async (request) => {
     const goals = await query.find({ useMasterKey: true });
 
     if (goals.length === 0) {
-      // Return default goal template (no career goals exist yet)
-      // ✅ FIX: StudentProgress query causes PostgreSQL errors - skip it for now
-      // TODO: Fix StudentProgress schema or use _User object instead
       return {
         hasGoals: false,
         suggestedGoal: {
@@ -277,6 +291,7 @@ Parse.Cloud.define('getUserCareerGoals', async (request) => {
       `Failed to get career goals: ${error.message}`
     );
   }
+  */
 });
 
 /**
