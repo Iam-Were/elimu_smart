@@ -372,7 +372,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           actionText: progressData.riasec?.completed ? 'View Results' : 'Start Assessment',
           actionUrl: '/assessment/career',
           duration: '15 minutes',
-          questions: 60,
+          questions: 96,
           benefit: 'Get personalized career matches based on Holland Codes',
           completionStatus: progressData.riasec
         },
