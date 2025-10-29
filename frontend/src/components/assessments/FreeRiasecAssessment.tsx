@@ -1165,51 +1165,63 @@ export const FreeRiasecAssessment: React.FC = () => {
         </Button>
 
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="gap-2"
             onClick={async () => {
+              // Always save to localStorage first (instant UX)
+              localStorage.setItem('riasec_progress', JSON.stringify({
+                currentQuestion,
+                responses,
+                timestamp: Date.now()
+              }));
+
               if (assessmentId) {
                 try {
                   const sessionToken = localStorage.getItem('parse-session-token') || '';
 
-                  // First save progress
-                  await callCloudFunction('saveRiasecProgress', {
-                    assessmentId,
-                    currentQuestion,
-                    responses
-                  }, sessionToken);
-
-                  // Update assessment progress
+                  // Update assessment progress (only update metadata, not individual responses)
                   await callCloudFunction('updateAssessmentProgress', {
                     assessmentType: 'riasec-discovery',
                     progress: Math.round((currentQuestion / totalQuestions) * 100),
                     status: 'in-progress'
                   }, sessionToken);
 
-                  navigate('/assessment');
+                  alert('Progress saved! You can continue later from this point.');
                 } catch (error) {
-                  console.error('Failed to save progress:', error);
-                  alert('Unable to save progress. Please continue or try again later.');
+                  console.error('Failed to save progress to server:', error);
+                  alert('Progress saved locally! Continue anytime from this device.');
                 }
               } else {
-                // Local mode - save to localStorage
+                alert('Progress saved locally! Continue anytime from this device.');
+              }
+            }}
+          >
+            <Save className="h-4 w-4" />
+            Save & Continue Later
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="gap-2"
+            onClick={() => {
+              if (window.confirm('Exit assessment? Your progress will be saved and you can continue later.')) {
+                // Save current progress before exiting
                 localStorage.setItem('riasec_progress', JSON.stringify({
                   currentQuestion,
                   responses,
                   timestamp: Date.now()
                 }));
-                alert('Progress saved locally!');
                 navigate('/assessment');
               }
             }}
           >
-            <Save className="h-4 w-4" />
-            Save Progress
+            <ArrowLeft className="h-4 w-4" />
+            Exit Assessment
           </Button>
-          
+
           {currentQuestion === totalQuestions - 1 && (
-            <Button 
+            <Button
               disabled={!currentResponse}
               className="gap-2 bg-green-600 hover:bg-green-700"
             >
