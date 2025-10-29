@@ -54,7 +54,7 @@ export const callParseCloudFunction = async (
   const Parse = await getParse();
 
   const currentUser = Parse.User.current();
-  const sessionToken = currentUser?.getSessionToken();
+  const sessionToken = currentUser?.getSessionToken() ?? undefined;
 
   return callCloudFunction(functionName, params, sessionToken);
 };
