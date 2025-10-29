@@ -119,6 +119,8 @@ export const ProfilePageTabbed: React.FC = () => {
     lastName: '',
     bio: '',
     location: '',
+    tagline: '',
+    careerInterests: [] as string[],
   });
 
   const { user } = useAuth();
@@ -132,6 +134,8 @@ export const ProfilePageTabbed: React.FC = () => {
         lastName: user.lastName || '',
         bio: '',
         location: 'Nairobi, Kenya',
+        tagline: '',
+        careerInterests: [],
       });
     }
   }, [user]);
@@ -660,7 +664,7 @@ export const ProfilePageTabbed: React.FC = () => {
 
                 <div className="flex flex-wrap gap-2 mt-4">
                   {editFormData.careerInterests && editFormData.careerInterests.length > 0 ? (
-                    editFormData.careerInterests.map((interest) => (
+                    editFormData.careerInterests.map((interest: string) => (
                       <Badge key={interest} variant="secondary" className="text-xs">
                         {interest}
                       </Badge>
