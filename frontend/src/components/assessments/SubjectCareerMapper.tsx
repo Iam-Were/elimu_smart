@@ -199,7 +199,12 @@ export const SubjectCareerMapper: React.FC = () => {
         careerTitle
       });
 
-      setCareerDetails(result);
+      // Extract career data from response
+      if (result && result.career) {
+        setCareerDetails(result.career);
+      } else {
+        setCareerDetails(result);
+      }
     } catch (error) {
       console.error(`Failed to load career details for ${careerTitle}:`, error);
       setCareerDetails({ error: 'Failed to load career details. Please try again.' });
@@ -220,7 +225,12 @@ export const SubjectCareerMapper: React.FC = () => {
         careerTitle
       });
 
-      setCareerDetails(result);
+      // Extract career data from response
+      if (result && result.career) {
+        setCareerDetails(result.career);
+      } else {
+        setCareerDetails(result);
+      }
     } catch (error) {
       console.error(`Failed to load career pathway for ${careerTitle}:`, error);
       setCareerDetails({ error: 'Failed to load career pathway. Please try again.' });
@@ -773,7 +783,7 @@ export const SubjectCareerMapper: React.FC = () => {
 
       {/* Learn More Modal */}
       <Dialog open={!!selectedCareerForDetails && !showPlanPathModal} onOpenChange={(open) => !open && setSelectedCareerForDetails(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-orange-800">
               {selectedCareerForDetails}
@@ -896,7 +906,7 @@ export const SubjectCareerMapper: React.FC = () => {
           setSelectedCareerForDetails(null);
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-orange-800">
               Learning Pathway: {selectedCareerForDetails}
