@@ -2662,6 +2662,61 @@ Parse.Cloud.define('saveRiasecResponse', async (request) => {
   }
 });
 
+// Save Bulk RIASEC Progress (for "Save & Continue Later" button)
+Parse.Cloud.define('saveRiasecProgress', async (request) => {
+  const { assessmentId, currentQuestion, responses } = request.params;
+  const { user } = request;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.UNAUTHENTICATED, 'User must be authenticated');
+  }
+
+  if (!assessmentId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Assessment ID required');
+  }
+
+  try {
+    // Get assessment
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessmentQuery = new Parse.Query(RiasecAssessment);
+    const assessment = await assessmentQuery.get(assessmentId, { useMasterKey: true });
+
+    // Verify ownership
+    if (assessment.get('user').id !== user.id) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Assessment not found');
+    }
+
+    // Update bulk progress
+    assessment.set('currentQuestion', currentQuestion);
+    assessment.set('responses', responses);
+    assessment.set('lastUpdated', new Date());
+    assessment.set('status', 'in_progress');
+
+    await assessment.save(null, { useMasterKey: true });
+
+    // Log progress save activity
+    await Parse.Cloud.run('logUserActivity', {
+      userId: user.id,
+      activityType: 'riasec_progress_saved',
+      data: {
+        assessmentId: assessmentId,
+        currentQuestion: currentQuestion,
+        totalResponses: Object.keys(responses).length
+      }
+    }, { useMasterKey: true });
+
+    return {
+      success: true,
+      currentQuestion: currentQuestion,
+      totalResponses: Object.keys(responses).length,
+      message: 'Progress saved successfully'
+    };
+  } catch (error) {
+    console.error('Save RIASEC progress error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, `Failed to save progress: ${error.message}`);
+  }
+});
+
 // Complete RIASEC Assessment and Calculate Results
 Parse.Cloud.define('completeRiasecAssessment', async (request) => {
   const { assessmentId } = request.params;

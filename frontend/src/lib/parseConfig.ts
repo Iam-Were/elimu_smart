@@ -40,3 +40,21 @@ export const callCloudFunction = async (
   const result = await response.json();
   return result.result;
 };
+
+/**
+ * Call Parse Cloud Function with automatic session token from Parse SDK
+ * Use this instead of callCloudFunction to avoid localStorage session tokens
+ */
+export const callParseCloudFunction = async (
+  functionName: string,
+  params: Record<string, unknown> = {}
+) => {
+  // Dynamic import to avoid browser compatibility issues
+  const { getParse } = await import('@/config/parse');
+  const Parse = await getParse();
+
+  const currentUser = Parse.User.current();
+  const sessionToken = currentUser?.getSessionToken();
+
+  return callCloudFunction(functionName, params, sessionToken);
+};
