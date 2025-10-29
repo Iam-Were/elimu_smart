@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import { getParse } from '@/config/parse';
 import { callCloudFunction } from '@/lib/parseConfig';
@@ -104,6 +105,10 @@ export const SubjectCareerMapper: React.FC = () => {
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
   const [liveJobData, setLiveJobData] = useState<Record<string, LiveJobData>>({});
   const [liveJobsLoading, setLiveJobsLoading] = useState<string | null>(null);
+  const [selectedCareerForDetails, setSelectedCareerForDetails] = useState<string | null>(null);
+  const [careerDetails, setCareerDetails] = useState<Record<string, unknown> | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [showPlanPathModal, setShowPlanPathModal] = useState(false);
 
   // Fetch careers from backend when subject changes
   useEffect(() => {
@@ -163,6 +168,47 @@ export const SubjectCareerMapper: React.FC = () => {
       }));
     } finally {
       setLiveJobsLoading(null);
+    }
+  };
+
+  // Load detailed career information
+  const handleLearnMore = async (careerTitle: string) => {
+    setSelectedCareerForDetails(careerTitle);
+    setIsLoadingDetails(true);
+
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getCareerDetails', {
+        careerTitle
+      });
+
+      setCareerDetails(result);
+    } catch (error) {
+      console.error(`Failed to load career details for ${careerTitle}:`, error);
+      setCareerDetails({ error: 'Failed to load career details. Please try again.' });
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  // Load career pathway with skills roadmap and certificates
+  const handlePlanPath = async (careerTitle: string) => {
+    setSelectedCareerForDetails(careerTitle);
+    setShowPlanPathModal(true);
+    setIsLoadingDetails(true);
+
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getCareerDetails', {
+        careerTitle
+      });
+
+      setCareerDetails(result);
+    } catch (error) {
+      console.error(`Failed to load career pathway for ${careerTitle}:`, error);
+      setCareerDetails({ error: 'Failed to load career pathway. Please try again.' });
+    } finally {
+      setIsLoadingDetails(false);
     }
   };
 
@@ -631,11 +677,17 @@ export const SubjectCareerMapper: React.FC = () => {
 
                       {/* Actions */}
                       <div className="flex gap-2 pt-2">
-                        <Button className="flex-1 bg-orange-600 hover:bg-orange-700">
+                        <Button
+                          className="flex-1 bg-orange-600 hover:bg-orange-700"
+                          onClick={() => handleLearnMore(career.title)}
+                        >
                           <BookOpen className="mr-2 h-3 w-3" />
                           Learn More
                         </Button>
-                        <Button variant="outline">
+                        <Button
+                          variant="outline"
+                          onClick={() => handlePlanPath(career.title)}
+                        >
                           <Target className="mr-2 h-3 w-3" />
                           Plan Path
                         </Button>
@@ -701,6 +753,310 @@ export const SubjectCareerMapper: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Learn More Modal */}
+      <Dialog open={!!selectedCareerForDetails && !showPlanPathModal} onOpenChange={(open) => !open && setSelectedCareerForDetails(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-orange-800">
+              {selectedCareerForDetails}
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive career information and insights
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingDetails ? (
+            <div className="p-12 text-center">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-orange-500" />
+              <p className="text-lg font-medium text-gray-700">Loading career details...</p>
+            </div>
+          ) : careerDetails && 'error' in careerDetails ? (
+            <div className="p-12 text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+              <p className="text-lg font-medium text-gray-700">{String(careerDetails.error)}</p>
+              <Button onClick={() => selectedCareerForDetails && handleLearnMore(selectedCareerForDetails)} className="mt-4">
+                Try Again
+              </Button>
+            </div>
+          ) : careerDetails ? (
+            <div className="space-y-6">
+              {/* Description */}
+              {careerDetails.description && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">About This Career</h3>
+                  <p className="text-gray-700">{String(careerDetails.description)}</p>
+                </div>
+              )}
+
+              {/* Daily Tasks */}
+              {Array.isArray(careerDetails.dailyTasks) && careerDetails.dailyTasks.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Day-to-Day Responsibilities</h3>
+                  <ul className="list-disc list-inside space-y-1">
+                    {careerDetails.dailyTasks.map((task, i) => (
+                      <li key={i} className="text-gray-700">{String(task)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Skills Required */}
+              {Array.isArray(careerDetails.skills) && careerDetails.skills.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Essential Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {careerDetails.skills.map((skill, i) => (
+                      <Badge key={i} variant="outline" className="text-sm">
+                        {String(skill)}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Personality Traits */}
+              {Array.isArray(careerDetails.personalityTraits) && careerDetails.personalityTraits.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Personality Fit</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {careerDetails.personalityTraits.map((trait, i) => (
+                      <Badge key={i} className="bg-purple-100 text-purple-700 text-sm">
+                        {String(trait)}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Career Progression */}
+              {careerDetails.careerProgression && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Career Progression Path</h3>
+                  <p className="text-gray-700">{String(careerDetails.careerProgression)}</p>
+                </div>
+              )}
+
+              {/* Kenya-Specific Info */}
+              {careerDetails.kenyaSpecific && typeof careerDetails.kenyaSpecific === 'object' && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Opportunities in Kenya</h3>
+                  {Array.isArray((careerDetails.kenyaSpecific as Record<string, unknown>).majorEmployers) && (
+                    <div className="mb-3">
+                      <h4 className="text-sm font-medium text-gray-600 mb-2">Major Employers</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {((careerDetails.kenyaSpecific as Record<string, unknown>).majorEmployers as string[]).map((employer, i) => (
+                          <Badge key={i} variant="outline" className="bg-green-50 text-sm">
+                            {employer}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {Array.isArray((careerDetails.kenyaSpecific as Record<string, unknown>).universities) && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-2">Universities Offering Programs</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {((careerDetails.kenyaSpecific as Record<string, unknown>).universities as string[]).map((uni, i) => (
+                          <Badge key={i} variant="outline" className="bg-blue-50 text-sm">
+                            {uni}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Plan Path Modal */}
+      <Dialog open={showPlanPathModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowPlanPathModal(false);
+          setSelectedCareerForDetails(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-orange-800">
+              Learning Pathway: {selectedCareerForDetails}
+            </DialogTitle>
+            <DialogDescription>
+              Skills roadmap, certificates, and courses to reach your career goal
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingDetails ? (
+            <div className="p-12 text-center">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-orange-500" />
+              <p className="text-lg font-medium text-gray-700">Loading learning pathway...</p>
+            </div>
+          ) : careerDetails && 'error' in careerDetails ? (
+            <div className="p-12 text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+              <p className="text-lg font-medium text-gray-700">{String(careerDetails.error)}</p>
+              <Button onClick={() => selectedCareerForDetails && handlePlanPath(selectedCareerForDetails)} className="mt-4">
+                Try Again
+              </Button>
+            </div>
+          ) : careerDetails ? (
+            <div className="space-y-6">
+              {/* Education Pathway */}
+              {careerDetails.educationPath && (
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                      Education Foundation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700">{String(careerDetails.educationPath)}</p>
+                    {careerDetails.educationLevel && (
+                      <Badge className="mt-2 bg-blue-600 text-white">
+                        Level Required: {String(careerDetails.educationLevel)}
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Skills Roadmap */}
+              {Array.isArray(careerDetails.skills) && careerDetails.skills.length > 0 && (
+                <Card className="bg-green-50 border-green-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Target className="h-5 w-5 text-green-600" />
+                      Skills Roadmap
+                    </CardTitle>
+                    <CardDescription>Master these skills to excel in this career</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-green-800 mb-2">🌱 Beginner Skills (0-6 months)</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {careerDetails.skills.slice(0, Math.ceil((careerDetails.skills as string[]).length / 3)).map((skill, i) => (
+                            <Badge key={i} variant="outline" className="bg-white">
+                              {String(skill)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-green-800 mb-2">🌿 Intermediate Skills (6-18 months)</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {careerDetails.skills.slice(
+                            Math.ceil((careerDetails.skills as string[]).length / 3),
+                            Math.ceil((careerDetails.skills as string[]).length * 2 / 3)
+                          ).map((skill, i) => (
+                            <Badge key={i} variant="outline" className="bg-white">
+                              {String(skill)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-green-800 mb-2">🌳 Advanced Skills (18+ months)</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {careerDetails.skills.slice(Math.ceil((careerDetails.skills as string[]).length * 2 / 3)).map((skill, i) => (
+                            <Badge key={i} variant="outline" className="bg-white">
+                              {String(skill)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Certificates & Courses */}
+              <Card className="bg-purple-50 border-purple-200">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Award className="h-5 w-5 text-purple-600" />
+                    Recommended Certificates & Courses
+                  </CardTitle>
+                  <CardDescription>Boost your credentials and stand out</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Professional Certifications */}
+                    <div>
+                      <h4 className="font-medium text-purple-800 mb-2">🏆 Professional Certifications</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                          <span className="text-sm text-gray-700">Industry-recognized certifications (CPA, AWS, Google, etc.) - Check professional bodies in Kenya</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                          <span className="text-sm text-gray-700">Specialized training programs from {careerDetails.kenyaSpecific && typeof careerDetails.kenyaSpecific === 'object' && Array.isArray((careerDetails.kenyaSpecific as Record<string, unknown>).majorEmployers) ? ((careerDetails.kenyaSpecific as Record<string, unknown>).majorEmployers as string[])[0] : 'top employers'}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Online Courses */}
+                    <div>
+                      <h4 className="font-medium text-purple-800 mb-2">📚 Online Courses & Resources</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                          <span className="text-sm text-gray-700">Coursera / edX - University-level courses (Free with certificate option)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                          <span className="text-sm text-gray-700">Udemy - Practical skills courses (Often on sale for KSh 1,500-3,000)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                          <span className="text-sm text-gray-700">YouTube - Free tutorials and industry insights</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200">
+                      <h4 className="font-medium text-purple-800 mb-2">⏱️ Estimated Timeline</h4>
+                      <p className="text-sm text-gray-700">
+                        <strong>Beginner to Job-Ready:</strong> 18-24 months with consistent learning
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        <strong>Investment:</strong> KSh 50,000 - 200,000 (mix of free and paid resources)
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Universities in Kenya */}
+              {careerDetails.kenyaSpecific && typeof careerDetails.kenyaSpecific === 'object' && Array.isArray((careerDetails.kenyaSpecific as Record<string, unknown>).universities) && (
+                <Card className="bg-orange-50 border-orange-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Building className="h-5 w-5 text-orange-600" />
+                      University Programs in Kenya
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {((careerDetails.kenyaSpecific as Record<string, unknown>).universities as string[]).map((uni, i) => (
+                        <Badge key={i} variant="outline" className="bg-white text-sm">
+                          {uni}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
