@@ -17,11 +17,13 @@ import {
   Settings,
   Target,
   Award,
-  CheckCircle
+  CheckCircle,
+  Save
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSkillsQuestions } from '@/lib/assessmentApi';
 import { getParse } from '@/config/parse';
+import { toast } from 'sonner';
 
 /**
  * Ensure Parse User is authenticated before making Cloud Function calls
@@ -233,6 +235,33 @@ export const SkillsAssessment: React.FC = () => {
   const goToPrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
+    }
+  };
+
+  const handleSaveAndExit = () => {
+    // Save progress locally
+    localStorage.setItem('skills_progress', JSON.stringify({
+      currentQuestion,
+      responses,
+      assessmentId,
+      timestamp: Date.now()
+    }));
+    
+    toast.success('Progress saved!', {
+      description: 'Continue anytime from this device.'
+    });
+  };
+
+  const handleExitAssessment = () => {
+    if (window.confirm('Exit assessment? Your progress will be saved and you can continue later.')) {
+      // Save current progress before exiting
+      localStorage.setItem('skills_progress', JSON.stringify({
+        currentQuestion,
+        responses,
+        assessmentId,
+        timestamp: Date.now()
+      }));
+      navigate('/assessment');
     }
   };
 
@@ -492,8 +521,8 @@ export const SkillsAssessment: React.FC = () => {
             }}>
               Retake Assessment
             </Button>
-            <Button>
-              Save Results & Continue
+            <Button onClick={() => navigate('/dashboard')}>
+              View Dashboard
             </Button>
           </div>
         </div>
@@ -589,16 +618,37 @@ export const SkillsAssessment: React.FC = () => {
         </Card>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center">
-          <Button 
-            variant="outline" 
-            onClick={goToPrevious}
-            disabled={currentQuestion === 0}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex gap-2">
+            {currentQuestion > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={goToPrevious}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Previous
+              </Button>
+            )}
+            
+            <Button
+              variant="ghost"
+              className="gap-2"
+              onClick={handleSaveAndExit}
+            >
+              <Save className="h-4 w-4" />
+              Save & Continue Later
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="gap-2"
+              onClick={handleExitAssessment}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Exit Assessment
+            </Button>
+          </div>
           
           {currentQuestion < totalQuestions - 1 ? (
             <Button

@@ -14,9 +14,10 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import AssessmentLoadingSkeleton from '../assessments/AssessmentLoadingSkeleton';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
-import { Loader2, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { CheckCircle2, Circle, Clock } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AssessmentCard } from '@/types/CardInterfaces';
@@ -92,12 +93,7 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
 
   // Loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-        <span className="ml-3 text-sm sm:text-base text-muted-foreground">Loading assessments...</span>
-      </div>
-    );
+    return <AssessmentLoadingSkeleton />;
   }
 
   // Error state

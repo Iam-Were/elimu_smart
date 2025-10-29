@@ -968,17 +968,17 @@ export const FreeRiasecAssessment: React.FC = () => {
                     },
                     localStorage.getItem('parse-session-token') || ''
                   );
-                  navigate('/assessment');
+                  navigate('/dashboard');
                 } catch (error) {
                   console.error('Failed to update assessment progress:', error);
-                  navigate('/assessment');
+                  navigate('/dashboard');
                 }
               } else {
-                navigate('/assessment');
+                navigate('/dashboard');
               }
             }}
           >
-            Save Results & Continue
+            View Dashboard
           </Button>
         </div>
       </div>
@@ -1198,15 +1198,16 @@ export const FreeRiasecAssessment: React.FC = () => {
 
       {/* Navigation */}
       <div className="flex justify-between items-center">
-        <Button 
-          variant="outline" 
-          onClick={goToPrevious}
-          disabled={currentQuestion === 0}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Previous
-        </Button>
+        {currentQuestion > 0 && (
+          <Button 
+            variant="outline" 
+            onClick={goToPrevious}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Previous
+          </Button>
+        )}
 
         <div className="flex gap-2">
           <Button
