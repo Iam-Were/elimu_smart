@@ -4450,27 +4450,25 @@ Parse.Cloud.define('getCareerDetails', async (request) => {
       personalizedCareer.actionPlan = generateCareerActionPlan(career, studentProfile);
     }
 
-    // Add related information
-    personalizedCareer.similarCareers = findSimilarCareers(career);
-    personalizedCareer.industryTrends = getIndustryTrends(career.category);
-    personalizedCareer.successStories = getSuccessStories(career);
+    // Add related information - Commented out for performance (not used in UI)
+    // personalizedCareer.similarCareers = findSimilarCareers(career); // Iterates through large deprecated array
+    // personalizedCareer.industryTrends = getIndustryTrends(career.category);
+    // personalizedCareer.successStories = getSuccessStories(career);
 
     // Log activity (only if user exists - skip for master key requests)
+    // Fire-and-forget pattern for non-blocking logging
     if (user && user.id) {
-      try {
-        await Parse.Cloud.run('logUserActivity', {
-          userId: user.id,
-          activityType: 'career_details_view',
-          details: {
-            careerId: careerIdentifier,
-            careerTitle: career.title,
-            category: career.category
-          }
-        }, { sessionToken: user.getSessionToken() });
-      } catch (activityError) {
+      Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'career_details_view',
+        details: {
+          careerId: careerIdentifier,
+          careerTitle: career.title,
+          category: career.category
+        }
+      }, { sessionToken: user.getSessionToken() }).catch(activityError => {
         console.warn('Failed to log career details view activity:', activityError.message);
-        // Don't fail the whole request if activity logging fails
-      }
+      });
     }
 
     return {
