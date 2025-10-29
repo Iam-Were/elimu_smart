@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "env": {},
+      "description": "Chrome DevTools MCP - inspect live pages, debug JS, monitor network, performance analysis, browser automation"
+    },
+    "elimu-intelligence": {
+      "command": "node",
+      "args": ["/root/elimu_smart/.mcp/server.js"],
+      "env": {},
+      "description": "Elimu Smart project intelligence - instant function mapping, mobile readiness, architecture queries (saves 85-95% tokens)"
+    },
+    "elimu-vps": {
+      "command": "ssh",
+      "args": [
+        "elimu-vps",
+        "-o",
+        "StrictHostKeyChecking=no"
+      ],
+      "env": {},
+      "description": "Direct SSH access to Elimu Smart VPS"
+    },
+    "github-actions": {
+      "command": "gh",
+      "args": ["api"],
+      "env": {},
+      "description": "GitHub Actions API access"
+    }
+  }
+}

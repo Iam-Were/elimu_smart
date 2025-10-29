@@ -109,6 +109,8 @@ export const AddSkillsDialog: React.FC<AddSkillsDialogProps> = ({
     };
 
     loadSuggestions();
+    // getFallbackSuggestions is defined below but stable (doesn't change between renders)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, userRiasecType, userProjects, existingSkills]);
 
   const getFallbackSuggestions = (riasecType?: string, technologies: string[] = []): string[] => {

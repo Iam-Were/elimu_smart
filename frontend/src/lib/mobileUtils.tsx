@@ -1,9 +1,11 @@
 /**
  * Mobile Optimization Utilities
- * 
+ *
  * Provides mobile-first utilities for touch gestures, haptic feedback,
  * and performance optimizations following Apple HIG and Material Design.
  */
+
+/* eslint-disable react-refresh/only-export-components */
 
 // ============================================================================
 // HAPTIC FEEDBACK

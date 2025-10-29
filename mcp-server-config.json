@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@0.9.0", "--headless"],
+      "env": {},
+      "description": "Chrome DevTools MCP - inspect live pages, debug JS, monitor network, performance analysis (no Puppeteer dependency)"
+    },
     "elimu-intelligence": {
       "command": "node",
       "args": ["/root/elimu_smart/.mcp/server.js"],

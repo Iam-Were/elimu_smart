@@ -47,10 +47,9 @@ export const StudentGuidanceCardsV2: React.FC<StudentGuidanceCardsV2Props> = ({
   const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
   const isPremium = userSubscription?.status === 'active';
 
-  // Use unified hook to fetch guidance cards
+  // Use unified hook to fetch guidance cards (returns ALL cards)
   const { cards, loading, error } = useDynamicCards({
-    variant: 'guidance',
-    maxCards: showAll ? undefined : maxCards
+    variant: 'guidance'
   });
 
   // Type guard for GuidanceCard
@@ -208,9 +207,8 @@ export const StudentGuidanceCardsV2: React.FC<StudentGuidanceCardsV2Props> = ({
 
         {/* Unified Card Grid */}
         <UnifiedCardGrid
-          cards={filteredCards}
+          cards={showAll ? filteredCards : filteredCards.slice(0, maxCards)}
           variant="guidance"
-          maxCards={showAll ? undefined : maxCards}
           className={className}
           activityPrefix="guidance_"
         />

@@ -37,11 +37,13 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
   // Filter state
   const [filter, setFilter] = useState<FilterType>('all');
 
-  // Use unified hook to fetch assessment cards
+  // Use unified hook to fetch assessment cards (returns ALL cards)
   const { cards, loading, error } = useDynamicCards({
-    variant: 'assessment',
-    maxCards: showAll ? undefined : maxCards
+    variant: 'assessment'
   });
+
+  // ✅ FIX: Slice cards for display in component
+  const displayedCards = showAll ? cards : cards.slice(0, maxCards);
 
   // Type guard for AssessmentCard
   const isAssessmentCard = (card: unknown): card is AssessmentCard => {
@@ -218,9 +220,8 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
 
       {/* Unified Card Grid */}
       <UnifiedCardGrid
-        cards={filteredCards}
+        cards={showAll ? filteredCards : filteredCards.slice(0, maxCards)}
         variant="assessment"
-        maxCards={showAll ? undefined : maxCards}
         className={className}
         activityPrefix="assessment_"
       />

@@ -17,7 +17,7 @@ import { Target, TrendingUp, Award, Calendar, BookOpen, Users, Clock, Activity, 
 interface UseDynamicCardsOptions {
   variant: 'dashboard' | 'assessment' | 'guidance';
   userId?: string;
-  maxCards?: number;
+  // maxCards removed - progressive disclosure handled by component, not hook
 }
 
 interface UseDynamicCardsReturn {
@@ -28,7 +28,7 @@ interface UseDynamicCardsReturn {
 }
 
 export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCardsReturn => {
-  const { variant, maxCards } = options;
+  const { variant } = options;
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -564,10 +564,9 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           break;
       }
 
-      // Apply maxCards limit if specified
-      if (maxCards && maxCards > 0) {
-        fetchedCards = fetchedCards.slice(0, maxCards);
-      }
+      // ✅ FIX: Don't slice cards in hook - let component control display limit
+      // The component needs full card count to show "Show X More Cards" button
+      // Progressive disclosure happens in StudentDashboardCardsV2 via expanded state
 
       setCards(fetchedCards);
     } catch (err) {
@@ -590,7 +589,7 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
   useEffect(() => {
     fetchCards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, maxCards]);
+  }, [variant]);
 
   return {
     cards,

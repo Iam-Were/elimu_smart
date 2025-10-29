@@ -50,11 +50,14 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   // ✅ FIX #3: State for progressive disclosure
   const [expanded, setExpanded] = useState(false);
 
-  // Use unified hook to fetch dashboard cards
+  // Use unified hook to fetch dashboard cards (returns ALL cards)
   const { cards, loading, error, refreshCards } = useDynamicCards({
-    variant: 'dashboard',
-    maxCards
+    variant: 'dashboard'
   });
+
+  // ✅ FIX: Slice cards for display in component, not in hook
+  // This allows "Show More" button to know total count
+  const displayedCards = expanded ? cards : cards.slice(0, maxCards);
 
   // Fetch dashboard data for hero section
   const { careerReadinessScore, userActivities } = useDynamicDashboard();
@@ -385,9 +388,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
 
       {/* Unified Card Grid (Dynamic Backend Data) */}
       <UnifiedCardGrid
-        cards={cards}
+        cards={displayedCards}
         variant="dashboard"
-        maxCards={expanded ? undefined : maxCards}
         className={className}
         activityPrefix="dashboard_"
       />
