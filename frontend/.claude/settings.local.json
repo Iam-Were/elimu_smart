@@ -21,7 +21,20 @@
       "Bash(npm install:*)",
       "Read(//c/Users/c/Downloads/elimusmart_platform2.0/**)",
       "Bash(find:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ssh root@145.239.42.121:*)",
+      "Bash(curl:*)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "Bash(tasklist:*)",
+      "mcp__chrome-devtools__new_page",
+      "Bash(taskkill:*)",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__wait_for",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__take_screenshot"
     ],
     "deny": [],
     "ask": []
