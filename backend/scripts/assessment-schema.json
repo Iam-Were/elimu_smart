@@ -1,0 +1,27 @@
+{
+  "className": "AssessmentResult",
+  "fields": {
+    "user": {
+      "type": "Pointer",
+      "targetClass": "_User"
+    },
+    "assessmentType": {
+      "type": "String"
+    },
+    "responses": {
+      "type": "Object"
+    },
+    "scores": {
+      "type": "Object"
+    },
+    "results": {
+      "type": "Object"
+    },
+    "completedAt": {
+      "type": "Date"
+    },
+    "isActive": {
+      "type": "Boolean"
+    }
+  }
+}
