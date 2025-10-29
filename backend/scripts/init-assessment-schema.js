@@ -4,11 +4,13 @@
  */
 
 const Parse = require('parse/node');
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Initialize Parse
 Parse.initialize(process.env.APP_ID, process.env.JAVASCRIPT_KEY, process.env.MASTER_KEY);
 Parse.serverURL = process.env.SERVER_URL || 'http://localhost:1337/parse';
+Parse.masterKey = process.env.MASTER_KEY;
 
 async function initializeSchema() {
   console.log('🔧 Initializing Assessment Schema...\n');
