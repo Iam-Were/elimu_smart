@@ -189,12 +189,12 @@ export const useDynamicDashboard = () => {
 
       const result = await Parse.Cloud.run('calculateCareerReadinessScore');
       return {
-        overall: result.overall || 0,
+        overall: result.score || 0,
         breakdown: {
-          assessmentCompletion: result.breakdown?.assessmentCompletion || 0,
-          careerResearch: result.breakdown?.careerResearch || 0,
-          courseExploration: result.breakdown?.courseExploration || 0,
-          actionsTaken: result.breakdown?.actionsTaken || 0
+          assessmentCompletion: result.components?.assessmentCompletion || 0,
+          careerResearch: result.components?.careerResearch || 0,
+          courseExploration: result.components?.courseExploration || 0,
+          actionsTaken: result.components?.actionsTaken || 0
         },
         lastUpdated: new Date(result.lastUpdated || Date.now())
       };
@@ -235,11 +235,11 @@ export const useDynamicDashboard = () => {
       const result = await Parse.Cloud.run('findScholarshipMatches');
       return (result.matches || []).map((match: Record<string, unknown>) => ({
         name: match.name,
-        provider: match.provider,
+        provider: match.provider || 'Unknown',
         amount: match.amount,
         deadline: new Date(match.deadline as string | number | Date),
-        requirements: match.requirements || [],
-        matchScore: match.matchScore || 0,
+        requirements: match.eligibility || match.requirements || [],
+        matchScore: match.compatibility || match.matchScore || 0,
         category: match.category || 'General'
       }));
     } catch (error) {
