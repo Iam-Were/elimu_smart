@@ -376,11 +376,11 @@ export const ProfilePageTabbed: React.FC = () => {
                     <p className="text-xl text-gray-600 mt-1">
                       {user?.role === 'counselor'
                         ? 'Licensed Career Counselor | M.Ed Psychology | 8+ Years Experience'
-                        : 'Aspiring Software Developer | Form 4 Student | Tech Enthusiast'}
+                        : (editFormData.tagline || 'Student')}
                     </p>
                     <p className="text-gray-500 mt-2 flex items-center gap-1">
                       <Globe className="h-4 w-4" />
-                      Nairobi, Kenya • {user?.email}
+                      {editFormData.location || 'Kenya'} • {user?.email}
                     </p>
                   </div>
 
@@ -640,18 +640,35 @@ export const ProfilePageTabbed: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed text-gray-700 mb-4">
-                  {editFormData.bio ||
-                    'Aspiring software developer with hands-on experience in web development and data analysis. Currently pursuing secondary education while building practical skills through internships and personal projects. Passionate about using technology to solve real-world problems, particularly in education and data visualization.'}
-                </p>
+                {editFormData.bio ? (
+                  <>
+                    <p className="text-sm leading-relaxed text-gray-700 mb-4">
+                      {editFormData.bio}
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-center py-8 bg-gradient-to-br from-orange-50/30 to-white rounded-lg border-2 border-dashed border-orange-200">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                      <User className="h-6 w-6 text-white" />
+                    </div>
+                    <p className="font-semibold text-base mb-2">Tell us about yourself</p>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                      Add a bio to help counselors and universities understand your goals and interests
+                    </p>
+                  </div>
+                )}
 
-                <div className="flex flex-wrap gap-2">
-                  {['Software Development', 'Data Science', 'Web Development', 'Mobile Apps', 'AI/ML', 'Education Technology'].map(
-                    (interest) => (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {editFormData.careerInterests && editFormData.careerInterests.length > 0 ? (
+                    editFormData.careerInterests.map((interest) => (
                       <Badge key={interest} variant="secondary" className="text-xs">
                         {interest}
                       </Badge>
-                    )
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">
+                      No career interests added yet. Complete assessments to discover your interests.
+                    </p>
                   )}
                 </div>
               </CardContent>
