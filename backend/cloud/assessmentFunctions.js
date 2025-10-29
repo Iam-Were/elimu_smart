@@ -117,4 +117,49 @@ Parse.Cloud.define('getUserAssessments', async (request) => {
   }
 });
 
+// Get user's skills data (for profile page)
+Parse.Cloud.define('getUserSkills', async (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User must be authenticated');
+  }
+
+  try {
+    // Get most recent Skills assessment
+    const query = new Parse.Query('AssessmentResult');
+    query.equalTo('user', request.user);
+    query.equalTo('assessmentType', 'skills');
+    query.equalTo('isActive', true);
+    query.descending('completedAt');
+    query.limit(1);
+
+    const results = await query.find();
+
+    if (results.length === 0) {
+      return {
+        hasCompleted: false,
+        skills: []
+      };
+    }
+
+    const assessment = results[0];
+    const scores = assessment.get('scores') || {};
+    
+    // Convert scores object to array format expected by frontend
+    const skillsArray = Object.entries(scores).map(([category, score]) => ({
+      category,
+      score: score || 0
+    }));
+
+    return {
+      hasCompleted: true,
+      completedAt: assessment.get('completedAt'),
+      skills: skillsArray,
+      results: assessment.get('results')
+    };
+  } catch (error) {
+    console.error('Error fetching user skills:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch user skills');
+  }
+});
+
 console.log('✓ Assessment Cloud Functions loaded');
