@@ -787,7 +787,7 @@ export const SubjectCareerMapper: React.FC = () => {
               {careerDetails.description && (
                 <div>
                   <h3 className="text-lg font-semibold mb-2">About This Career</h3>
-                  <p className="text-gray-700">{careerDetails.description as string}</p>
+                  <p className="text-gray-700">{String(careerDetails.description)}</p>
                 </div>
               )}
 
@@ -810,7 +810,7 @@ export const SubjectCareerMapper: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     {(careerDetails.skills as string[]).map((skill, i) => (
                       <Badge key={i} variant="outline" className="text-sm">
-                        {skill}
+                        {String(skill)}
                       </Badge>
                     ))}
                   </div>
@@ -824,7 +824,7 @@ export const SubjectCareerMapper: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     {(careerDetails.personalityTraits as string[]).map((trait, i) => (
                       <Badge key={i} className="bg-purple-100 text-purple-700 text-sm">
-                        {trait}
+                        {String(trait)}
                       </Badge>
                     ))}
                   </div>
@@ -835,7 +835,7 @@ export const SubjectCareerMapper: React.FC = () => {
               {careerDetails.careerProgression && (
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Career Progression Path</h3>
-                  <p className="text-gray-700">{careerDetails.careerProgression as string}</p>
+                  <p className="text-gray-700">{String(careerDetails.careerProgression)}</p>
                 </div>
               )}
 
@@ -916,10 +916,10 @@ export const SubjectCareerMapper: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700">{careerDetails.educationPath as string}</p>
+                    <p className="text-gray-700">{String(careerDetails.educationPath)}</p>
                     {careerDetails.educationLevel && (
                       <Badge className="mt-2 bg-blue-600 text-white">
-                        Level Required: {careerDetails.educationLevel as string}
+                        Level Required: {String(careerDetails.educationLevel)}
                       </Badge>
                     )}
                   </CardContent>
