@@ -108,7 +108,22 @@ export const SubjectCareerMapper: React.FC = () => {
   const [liveJobData, setLiveJobData] = useState<Record<string, LiveJobData>>({});
   const [liveJobsLoading, setLiveJobsLoading] = useState<string | null>(null);
   const [selectedCareerForDetails, setSelectedCareerForDetails] = useState<string | null>(null);
-  const [careerDetails, setCareerDetails] = useState<Record<string, unknown> | null>(null);
+  const [careerDetails, setCareerDetails] = useState<{
+    description?: string;
+    dailyTasks?: string[];
+    skills?: string[];
+    personalityTraits?: string[];
+    careerProgression?: string;
+    educationPath?: string;
+    educationLevel?: string;
+    kenyaSpecific?: {
+      majorEmployers?: string[];
+      universities?: string[];
+      [key: string]: unknown;
+    };
+    error?: string;
+    [key: string]: unknown;
+  } | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [showPlanPathModal, setShowPlanPathModal] = useState(false);
 
