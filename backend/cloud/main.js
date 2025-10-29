@@ -4331,16 +4331,21 @@ Parse.Cloud.define('exploreCareers', async (request) => {
 
     // Log activity (only if user exists - skip for master key requests)
     if (user && user.id) {
-      await Parse.Cloud.run('logUserActivity', {
-        userId: user.id,
-        activityType: 'career_exploration',
-        details: {
-          filters: filters || {},
-          searchQuery: searchQuery || '',
-          resultsCount: limitedCareers.length,
-          sortBy: sortBy || 'relevance'
-        }
-      });
+      try {
+        await Parse.Cloud.run('logUserActivity', {
+          userId: user.id,
+          activityType: 'career_exploration',
+          details: {
+            filters: filters || {},
+            searchQuery: searchQuery || '',
+            resultsCount: limitedCareers.length,
+            sortBy: sortBy || 'relevance'
+          }
+        }, { sessionToken: user.getSessionToken() });
+      } catch (activityError) {
+        console.warn('Failed to log career exploration activity:', activityError.message);
+        // Don't fail the whole request if activity logging fails
+      }
     }
 
     const result = {
