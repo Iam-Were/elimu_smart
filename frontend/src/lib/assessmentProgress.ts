@@ -6,10 +6,28 @@
 import { getParse } from '@/config/parse';
 
 /**
- * Helper to get session token from localStorage
+ * Helper to ensure Parse User is authenticated
+ * This syncs the session token with Parse SDK so Cloud Functions work
  */
-const getSessionToken = (): string => {
-  return localStorage.getItem('parse-session-token') || '';
+const ensureParseUser = async (): Promise<void> => {
+  const sessionToken = localStorage.getItem('parse-session-token');
+  if (!sessionToken) {
+    throw new Error('No session token found. Please login again.');
+  }
+
+  const Parse = getParse();
+  const currentUser = Parse.User.current();
+  
+  // If no current user OR current user session doesn't match, sync it
+  if (!currentUser || currentUser.getSessionToken() !== sessionToken) {
+    try {
+      await Parse.User.become(sessionToken);
+      console.log('✅ Parse User session synced for Cloud Functions');
+    } catch (error) {
+      console.error('Failed to sync Parse User session:', error);
+      throw new Error('Authentication failed. Please login again.');
+    }
+  }
 };
 
 export interface AssessmentStartResult {
@@ -84,10 +102,10 @@ export interface QuestionData {
  */
 export async function startRiasecAssessment(): Promise<AssessmentStartResult> {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
-    const result = await Parse.Cloud.run('startRiasecAssessment', {}, { sessionToken });
+    const result = await Parse.Cloud.run('startRiasecAssessment', {});
     return result;
   } catch (error) {
     console.error('Failed to start RIASEC assessment:', error);
@@ -105,7 +123,7 @@ export async function saveRiasecResponse(
   questionData: QuestionData
 ): Promise<SaveResponseResult> {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
     const result = await Parse.Cloud.run('saveRiasecResponse', {
@@ -113,7 +131,7 @@ export async function saveRiasecResponse(
       questionId,
       response,
       questionData
-    }, { sessionToken });
+    });
     return result;
   } catch (error) {
     console.error('Failed to save RIASEC response:', error);
@@ -128,12 +146,12 @@ export async function completeRiasecAssessment(
   assessmentId: string
 ): Promise<CompleteAssessmentResult> {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
     const result = await Parse.Cloud.run('completeRiasecAssessment', {
       assessmentId
-    }, { sessionToken });
+    });
     return result;
   } catch (error) {
     console.error('Failed to complete RIASEC assessment:', error);
@@ -146,10 +164,10 @@ export async function completeRiasecAssessment(
  */
 export async function resumeRiasecAssessment(): Promise<ResumeAssessmentResult> {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
-    const result = await Parse.Cloud.run('resumeRiasecAssessment', {}, { sessionToken });
+    const result = await Parse.Cloud.run('resumeRiasecAssessment', {});
     return result;
   } catch (error) {
     console.error('Failed to resume RIASEC assessment:', error);
@@ -162,12 +180,12 @@ export async function resumeRiasecAssessment(): Promise<ResumeAssessmentResult> 
  */
 export async function getRiasecResults(assessmentId?: string) {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
     const result = await Parse.Cloud.run('getRiasecResults', {
       assessmentId
-    }, { sessionToken });
+    });
     return result;
   } catch (error) {
     console.error('Failed to get RIASEC results:', error);
@@ -180,10 +198,10 @@ export async function getRiasecResults(assessmentId?: string) {
  */
 export async function getRiasecHistory() {
   const Parse = getParse();
-  const sessionToken = getSessionToken();
+  await ensureParseUser();
 
   try {
-    const result = await Parse.Cloud.run('getRiasecHistory', {}, { sessionToken });
+    const result = await Parse.Cloud.run('getRiasecHistory', {});
     return result;
   } catch (error) {
     console.error('Failed to get RIASEC history:', error);

@@ -23,6 +23,30 @@ import { cn } from '@/lib/utils';
 import { getSkillsQuestions } from '@/lib/assessmentApi';
 import { getParse } from '@/config/parse';
 
+/**
+ * Ensure Parse User is authenticated before making Cloud Function calls
+ */
+const ensureParseUser = async (): Promise<void> => {
+  const sessionToken = localStorage.getItem('parse-session-token');
+  if (!sessionToken) {
+    throw new Error('No session token found. Please login again.');
+  }
+
+  const Parse = getParse();
+  const currentUser = Parse.User.current();
+  
+  // If no current user OR current user session doesn't match, sync it
+  if (!currentUser || currentUser.getSessionToken() !== sessionToken) {
+    try {
+      await Parse.User.become(sessionToken);
+      console.log('✅ Parse User session synced for Skills Assessment');
+    } catch (error) {
+      console.error('Failed to sync Parse User session:', error);
+      throw new Error('Authentication failed. Please login again.');
+    }
+  }
+};
+
 interface SkillCategory {
   name: string;
   icon: React.ReactNode;
@@ -141,6 +165,7 @@ export const SkillsAssessment: React.FC = () => {
     try {
       setIsLoading(true);
       const Parse = getParse();
+      await ensureParseUser(); // Ensure user is authenticated
       const result = await Parse.Cloud.run('startSkillsAssessment');
 
       if (result && result.id) {
@@ -177,6 +202,7 @@ export const SkillsAssessment: React.FC = () => {
     try {
       setIsLoading(true);
       const Parse = getParse();
+      await ensureParseUser(); // Ensure user is authenticated
 
       // First, save all responses to the assessment
       const SkillsAssessment = Parse.Object.extend('SkillsAssessment');
