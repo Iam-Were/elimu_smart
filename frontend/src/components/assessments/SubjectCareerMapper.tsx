@@ -129,19 +129,24 @@ export const SubjectCareerMapper: React.FC = () => {
 
   // Fetch careers from backend when subject changes
   useEffect(() => {
+    console.log('🔍 useEffect fired! Selected subject:', selectedSubject);
+
     const fetchCareers = async () => {
+      console.log('📡 Fetching careers for subject:', selectedSubject);
       setIsLoadingCareers(true);
       setCareerError(null);
 
       try {
         const Parse = await getParse();
+        console.log('✅ Parse SDK ready, calling getCareersBySubject');
         const result = await Parse.Cloud.run('getCareersBySubject', {
           subject: selectedSubject
         });
 
+        console.log('✅ Received careers:', result?.length || 0);
         setCareers(result || []);
       } catch (error) {
-        console.error('Failed to fetch careers:', error);
+        console.error('❌ Failed to fetch careers:', error);
         setCareerError('Failed to load careers. Please try again.');
         setCareers([]);
       } finally {
@@ -484,7 +489,11 @@ export const SubjectCareerMapper: React.FC = () => {
                       ? "ring-2 ring-orange-500 bg-orange-50"
                       : "hover:bg-gray-50"
                   )}
-                  onClick={() => setSelectedSubject(subject.name)}
+                  onClick={() => {
+                    console.log('🖱️ Subject card clicked:', subject.name);
+                    setSelectedSubject(subject.name);
+                    console.log('✅ setState called for:', subject.name);
+                  }}
                 >
                   <CardContent className="p-4 text-center space-y-2">
                     <div className="text-2xl">{subject.emoji}</div>
