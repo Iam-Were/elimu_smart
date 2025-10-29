@@ -42,9 +42,6 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
     variant: 'assessment'
   });
 
-  // ✅ FIX: Slice cards for display in component
-  const displayedCards = showAll ? cards : cards.slice(0, maxCards);
-
   // Type guard for AssessmentCard
   const isAssessmentCard = (card: unknown): card is AssessmentCard => {
     return (card as AssessmentCard).cardType === 'assessment';
