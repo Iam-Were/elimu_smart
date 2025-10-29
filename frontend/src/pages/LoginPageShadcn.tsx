@@ -110,6 +110,7 @@ export const LoginPageShadcn: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange('email')}
                   placeholder="Enter your email"
+                  autoComplete="email"
                   required
                   disabled={isLoading}
                   className="h-12 px-4 text-base text-black placeholder:text-gray-500 border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white"
@@ -125,6 +126,7 @@ export const LoginPageShadcn: React.FC = () => {
                     value={formData.password}
                     onChange={handleInputChange('password')}
                     placeholder="Enter your password"
+                    autoComplete="current-password"
                     required
                     disabled={isLoading}
                     className="h-12 px-4 pr-12 text-base text-black placeholder:text-gray-500 border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white"

@@ -153,6 +153,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="john.doe@example.com"
+                autoComplete="email"
                 {...registerField('email')}
                 className={errors.email ? 'border-red-500' : ''}
               />
@@ -187,6 +188,7 @@ export default function RegisterPage() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
+                  autoComplete="new-password"
                   {...registerField('password')}
                   className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
                 />
@@ -246,6 +248,7 @@ export default function RegisterPage() {
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm your password"
+                  autoComplete="new-password"
                   {...registerField('confirmPassword')}
                   className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
                 />
