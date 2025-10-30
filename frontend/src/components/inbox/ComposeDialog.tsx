@@ -60,7 +60,6 @@ export const ComposeDialog: React.FC<ComposeDialogProps> = ({
         const Parse = await getParse();
         
         // Ensure current user is set in Parse SDK for cloud function auth
-        const currentUserStr = localStorage.getItem('Parse/elimu-smart-production/currentUser');
         const sessionToken = localStorage.getItem('parse-session-token');
         
         if (sessionToken && !Parse.User.current()) {
