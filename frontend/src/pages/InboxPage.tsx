@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
 import {
   Archive,
   Search,
@@ -14,14 +13,11 @@ import {
   Phone,
   Video,
   X,
-  MoreVertical,
   MessageCircle,
   Loader2,
   Circle,
   Lock,
-  Users,
-  Clock,
-  Sparkles,
+  Pin,
   ChevronLeft,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
@@ -30,6 +26,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { ComposeDialog } from '@/components/inbox/ComposeDialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import ParseApi from '@/lib/parseApi';
 
 interface LinkedInConversation {
   id: string;
@@ -48,6 +45,8 @@ interface LinkedInConversation {
     isRead: boolean;
   };
   unreadCount: number;
+  isPinned?: boolean;
+  archivedAt?: Date;
 }
 
 const InboxPage: React.FC = () => {
@@ -57,6 +56,8 @@ const InboxPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showComposeDialog, setShowComposeDialog] = useState(false);
+  const [conversations, setConversations] = useState<LinkedInConversation[]>([]);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
 
   const { user } = useAuth();
   const { userSubscription } = useSubscription();
@@ -66,38 +67,94 @@ const InboxPage: React.FC = () => {
   const isPremium = userSubscription?.status === 'active' &&
     userSubscription?.plan !== 'free';
 
-  // FREEMIUM STRATEGY: Free users can reply, but not initiate
-  // Students without premium can:
-  // - View conversation list
-  // - Reply to counselor-initiated messages
-  // - See upgrade banner for full features
-  // They CANNOT:
-  // - Compose new messages (initiate conversations)
-  // - Access full conversation history (show last 5 messages only)
   const isFreeStudent = user?.role === 'student' && !isPremium;
 
-  // Transform rooms to conversations
-  const linkedInConversations: LinkedInConversation[] = rooms.map(room => ({
-    id: room.id,
-    participant: {
-      id: room.participants[0] || 'unknown',
-      name: room.title || 'Chat',
-      role: 'counselor' as const,
-      isOnline: room.isActive
-    },
-    lastMessage: {
-      id: 'last',
-      content: room.lastMessage || 'Start a conversation...',
-      sender: { id: 'system', name: 'System', role: 'system' },
-      timestamp: room.lastActivity,
-      isRead: true
-    },
-    unreadCount: room.unreadCount || 0
-  }));
+  // Load conversations from backend on mount
+  const loadConversations = async () => {
+    if (!user) return;
+    
+    setIsLoadingConversations(true);
+    try {
+      const sessionToken = (user as unknown as { sessionToken?: string })?.sessionToken;
+      const result = await ParseApi.callCloudFunction(
+        'getInboxConversations', 
+        { limit: 50, skip: 0 },
+        sessionToken
+      );
 
-  const filteredConversations = linkedInConversations.filter(conv =>
-    conv.participant.name.toLowerCase().includes(searchTerm.toLowerCase())
+      if (Array.isArray(result)) {
+        const formattedConversations: LinkedInConversation[] = result.map((conv: unknown) => {
+          const convData = conv as Record<string, unknown>;
+          return {
+            id: (convData.objectId || convData.id || '') as string,
+            participant: {
+              id: (convData.participantId || (convData.participants as string[])?.[0] || 'unknown') as string,
+              name: (convData.title || convData.participantName || 'Chat') as string,
+              avatar: (convData.avatar || undefined) as string | undefined,
+              role: (convData.participantRole || 'counselor') as 'counselor',
+              isOnline: (convData.isActive === true || convData.isOnline === true)
+            },
+            lastMessage: {
+              id: 'last',
+              content: (convData.lastMessage || 'Start a conversation...') as string,
+              sender: {
+                id: (convData.lastSenderId || 'system') as string,
+                name: (convData.lastSenderName || 'System') as string,
+                role: 'system'
+              },
+              timestamp: convData.lastActivity ? new Date(convData.lastActivity as string | number | Date) : new Date(),
+              isRead: (convData.isRead !== false)
+            },
+            unreadCount: (convData.unreadCount || 0) as number,
+            isPinned: (convData.isPinned || false) as boolean,
+            archivedAt: convData.archivedAt ? new Date(convData.archivedAt as string | number | Date) : undefined
+          };
+        });
+        
+        setConversations(formattedConversations);
+      }
+    } catch (error) {
+      console.warn('Failed to load conversations:', error);
+      // Fallback to rooms from useChat hook
+      setConversations(rooms.map(room => ({
+        id: room.id,
+        participant: {
+          id: room.participants[0] || 'unknown',
+          name: room.title || 'Chat',
+          role: 'counselor' as const,
+          isOnline: room.isActive
+        },
+        lastMessage: {
+          id: 'last',
+          content: room.lastMessage || 'Start a conversation...',
+          sender: { id: 'system', name: 'System', role: 'system' },
+          timestamp: room.lastActivity,
+          isRead: true
+        },
+        unreadCount: room.unreadCount || 0
+      })));
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  };
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, rooms]);
+
+  const filteredConversations = conversations.filter(conv =>
+    conv.participant.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !conv.archivedAt // Hide archived conversations by default
   );
+
+  // Sort: Pinned first, then by last activity
+  const sortedConversations = [...filteredConversations].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
+  });
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || isSending) return;
@@ -106,6 +163,7 @@ const InboxPage: React.FC = () => {
     try {
       await sendMessage(selectedConversation.id, newMessage.trim());
       setNewMessage('');
+      // Reload messages after sending
       toast.success('Message sent');
     } catch (error) {
       console.error('Send failed:', error);
@@ -117,6 +175,12 @@ const InboxPage: React.FC = () => {
 
   const handleConversationClick = (conversation: LinkedInConversation) => {
     setSelectedConversation(conversation);
+    // Mark as read locally (backend will handle persistence)
+    setConversations(prev => prev.map(c => 
+      c.id === conversation.id 
+        ? { ...c, unreadCount: 0, lastMessage: { ...c.lastMessage, isRead: true } }
+        : c
+    ));
   };
 
   const handleCloseConversation = () => {
@@ -124,39 +188,63 @@ const InboxPage: React.FC = () => {
     setNewMessage('');
   };
 
+  const handleArchiveConversation = async () => {
+    if (!selectedConversation) return;
+    
+    try {
+      const sessionToken = (user as unknown as { sessionToken?: string })?.sessionToken;
+      await ParseApi.callCloudFunction(
+        'archiveConversation',
+        { chatRoomId: selectedConversation.id },
+        sessionToken
+      );
+      
+      // Remove from local state
+      setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
+      handleCloseConversation();
+      toast.success('Conversation archived');
+    } catch (error) {
+      console.error('Archive failed:', error);
+      toast.error('Failed to archive conversation');
+    }
+  };
+
+  const handlePinConversation = (conv: LinkedInConversation) => {
+    setConversations(prev => prev.map(c =>
+      c.id === conv.id ? { ...c, isPinned: !c.isPinned } : c
+    ));
+    toast.success(conv.isPinned ? 'Unpinned' : 'Pinned');
+  };
+
   // 4-STATE EMPTY STATE COMPONENT
   const EmptyStateDisplay = () => {
     // State 1: Brand new user (no conversations at all)
-    if (rooms.length === 0 && !searchTerm) {
+    if (sortedConversations.length === 0 && !searchTerm && !isLoadingConversations) {
       return (
         <div className="p-8 text-center">
-          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
             <MessageCircle className="h-10 w-10 text-orange-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Welcome to Your Inbox!
+          <h3 className="text-base font-semibold text-gray-900 mb-2">
+            Your Inbox is Empty
           </h3>
           <p className="text-sm text-gray-600 max-w-sm mx-auto mb-6">
-            You'll be matched with a counselor after completing your RIASEC assessment.
-            They'll reach out to start your career guidance journey.
+            Connect with counselors to get personalized career guidance. They'll reach out after you complete an assessment.
           </p>
-          <Button
-            onClick={() => navigate('/assessment')}
-            className="bg-orange-600 hover:bg-orange-700 mb-3"
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            Complete RIASEC Assessment
-          </Button>
-          <div className="text-xs text-gray-500 mt-4">
-            <Clock className="inline h-3 w-3 mr-1" />
-            Takes about 15 minutes
+          <div className="space-y-3">
+            {!isPremium && (
+              <div className="text-xs text-gray-500">
+                <Lock className="inline h-3 w-3 mr-1" />
+                Premium feature available with subscription
+              </div>
+            )}
           </div>
         </div>
       );
     }
 
     // State 2: Search returned no results
-    if (searchTerm && filteredConversations.length === 0) {
+    if (searchTerm && sortedConversations.length === 0) {
       return (
         <div className="p-8 text-center">
           <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
@@ -167,7 +255,7 @@ const InboxPage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => setSearchTerm('')}
-            className="text-orange-600 hover:text-orange-700"
+            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
           >
             Clear Search
           </Button>
@@ -175,59 +263,52 @@ const InboxPage: React.FC = () => {
       );
     }
 
-    // State 3: Has rooms but all filtered out (shouldn't normally happen, but defensive)
-    return (
-      <div className="p-8 text-center">
-        <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-sm text-gray-600">
-          No conversations to display
-        </p>
-      </div>
-    );
+    return null;
   };
 
-  // FREEMIUM: Show inbox to everyone, with limitations for free students
+  // PROFESSIONAL LINKEDIN-STYLE LAYOUT
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      {/* Freemium Upgrade Banner for Free Students */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Freemium Upgrade Banner */}
       {isFreeStudent && (
-        <div className="w-full max-w-7xl mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg p-4 shadow-lg">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="sticky top-0 z-40 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 shadow-md">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <MessageCircle className="h-6 w-6" />
+              <Lock className="h-5 w-5 flex-shrink-0" />
               <div>
-                <p className="font-semibold">Free Tier: Reply-Only Access</p>
-                <p className="text-sm text-orange-100">Upgrade to initiate conversations and access full message history</p>
+                <p className="font-semibold text-sm">Free Tier: Reply-Only</p>
+                <p className="text-xs text-orange-100">Upgrade to initiate conversations with counselors</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
-                onClick={() => navigate('/subscription')}
-              >
-                View Plans
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              className="bg-white text-orange-600 hover:bg-orange-50 font-semibold"
+              onClick={() => navigate('/subscription')}
+            >
+              Upgrade Now
+            </Button>
           </div>
         </div>
       )}
 
-      {/* LinkedIn-style Single Unified Card */}
-      <Card className="w-full max-w-7xl mx-auto h-[calc(100vh-2rem)] shadow-2xl border border-gray-200 overflow-hidden">
-        <div className="flex h-full">
-          {/* Left Sidebar - Conversations List */}
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto h-[calc(100vh-57px)] md:h-screen p-4 md:p-6">
+        {/* LinkedIn-style Unified Card */}
+        <div className="h-full flex bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          
+          {/* LEFT SIDEBAR: Conversations List */}
           <div className={cn(
-            "w-full md:w-80 flex flex-col border-r border-gray-200 bg-white",
+            "w-full md:w-96 flex flex-col border-r border-gray-200 bg-white",
             selectedConversation && "hidden md:flex"
           )}>
-            <div className="p-4 border-b border-gray-200">
+            {/* Header with Compose Button */}
+            <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Inbox</h2>
                 <Button
                   size="sm"
                   className={cn(
-                    "rounded-lg px-4 shadow-sm",
+                    "rounded-lg px-3 py-2 shadow-sm font-semibold",
                     isFreeStudent
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100"
                       : "bg-[#f97316] hover:bg-[#ea580c] text-white"
@@ -242,125 +323,141 @@ const InboxPage: React.FC = () => {
                   }}
                   disabled={isFreeStudent}
                 >
-                  {isFreeStudent ? (
-                    <>
-                      <Lock className="h-4 w-4 mr-1.5" />
-                      Compose
-                    </>
-                  ) : (
-                    <>
-                      <MessageCircle className="h-4 w-4 mr-1.5" />
-                      Compose
-                    </>
-                  )}
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  New
                 </Button>
               </div>
 
-              {/* Search */}
+              {/* Search Bar */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search messages..."
+                  placeholder="Search conversations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-gray-300 focus:border-[#f97316] focus:ring-[#f97316] rounded-lg"
+                  className="pl-10 bg-gray-100 border-none focus:bg-white focus:border-orange-500 focus:ring-orange-500 rounded-lg text-sm"
                 />
               </div>
             </div>
 
+            {/* Conversations List */}
             <ScrollArea className="flex-1">
-              {isLoading ? (
-                <div className="p-4 text-center text-gray-500">
+              {isLoadingConversations ? (
+                <div className="p-6 text-center text-gray-500">
                   <Loader2 className="h-6 w-6 animate-spin text-[#f97316] mx-auto mb-2" />
-                  Loading conversations...
+                  <p className="text-sm">Loading conversations...</p>
                 </div>
-              ) : filteredConversations.length === 0 ? (
+              ) : sortedConversations.length === 0 ? (
                 <EmptyStateDisplay />
               ) : (
-                filteredConversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    onClick={() => handleConversationClick(conversation)}
-                    className={cn(
-                      "p-4 border-b border-gray-100 cursor-pointer transition-all duration-200",
-                      "hover:bg-gray-50 active:bg-gray-100",
-                      selectedConversation?.id === conversation.id &&
-                      "bg-orange-50 border-l-4 border-l-orange-500 hover:bg-orange-50"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative">
-                        <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
-                          <AvatarImage src={conversation.participant.avatar} />
-                          <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold">
-                            {conversation.participant.name[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        {conversation.participant.isOnline && (
-                          <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold text-sm text-gray-900 truncate">
-                            {conversation.participant.name}
-                          </h3>
-                          {conversation.unreadCount > 0 && (
-                            <Badge className="bg-orange-500 text-white text-xs">{conversation.unreadCount}</Badge>
+                <div className="divide-y divide-gray-100">
+                  {sortedConversations.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      onClick={() => handleConversationClick(conversation)}
+                      className={cn(
+                        "p-4 cursor-pointer transition-all duration-200 border-l-4 border-l-transparent",
+                        selectedConversation?.id === conversation.id
+                          ? "bg-orange-50 border-l-orange-500 hover:bg-orange-50"
+                          : "hover:bg-gray-50 active:bg-gray-100"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Avatar */}
+                        <div className="relative flex-shrink-0">
+                          <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
+                            <AvatarImage src={conversation.participant.avatar} alt={conversation.participant.name} />
+                            <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold text-sm">
+                              {conversation.participant.name[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {conversation.participant.isOnline && (
+                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                          {conversation.lastMessage.content}
-                        </p>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <h3 className="font-semibold text-sm text-gray-900 truncate">
+                              {conversation.participant.name}
+                            </h3>
+                            {conversation.unreadCount > 0 && (
+                              <Badge className="bg-orange-500 text-white text-xs px-2 py-0.5 flex-shrink-0">
+                                {conversation.unreadCount}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                            {conversation.lastMessage.sender.id === user?.id ? 'You: ' : ''}
+                            {conversation.lastMessage.content}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-500">
+                              {new Date(conversation.lastMessage.timestamp).toLocaleDateString()}
+                            </span>
+                            {conversation.isPinned && (
+                              <Pin className="h-3 w-3 text-orange-500 flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </ScrollArea>
           </div>
 
-          {/* Right Panel - Chat Area */}
+          {/* RIGHT PANEL: Chat Thread */}
           <div className={cn(
-            "flex-1 flex-col bg-white",
+            "flex-1 flex flex-col bg-white",
             selectedConversation ? "flex" : "hidden md:flex"
           )}>
             {!selectedConversation ? (
-              <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                 <div className="text-center">
-                  <MessageCircle className="h-20 w-20 text-gray-300 mx-auto mb-4" />
+                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="h-10 w-10 text-gray-400" />
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Select a conversation</h3>
-                  <p className="text-gray-500">Choose a conversation from the sidebar to start messaging</p>
+                  <p className="text-gray-600 text-sm max-w-xs">
+                    Choose a conversation from the sidebar to view messages and continue chatting
+                  </p>
                 </div>
               </div>
             ) : (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-gray-200 bg-white">
+                <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {/* Mobile Back Button */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="md:hidden h-9 w-9 p-0 hover:bg-gray-100 rounded-lg -ml-2 mr-1"
+                        className="md:hidden h-9 w-9 p-0 hover:bg-gray-100 rounded-lg"
                         onClick={handleCloseConversation}
                       >
                         <ChevronLeft className="h-5 w-5 text-gray-700" />
                       </Button>
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={selectedConversation.participant.avatar} />
+
+                      {/* Avatar & Info */}
+                      <Avatar className="h-11 w-11 ring-2 ring-white shadow-sm">
+                        <AvatarImage src={selectedConversation.participant.avatar} alt={selectedConversation.participant.name} />
                         <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-semibold">
-                          {selectedConversation.participant.name[0]}
+                          {selectedConversation.participant.name[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h2 className="font-semibold text-gray-900">{selectedConversation.participant.name}</h2>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-gray-900 text-sm truncate">
+                          {selectedConversation.participant.name}
+                        </h2>
                         <div className="flex items-center gap-1 text-xs">
                           {selectedConversation.participant.isOnline ? (
                             <>
                               <Circle className="h-2 w-2 fill-green-500 text-green-500" />
-                              <span className="text-green-600">Active now</span>
+                              <span className="text-green-600 font-medium">Active now</span>
                             </>
                           ) : (
                             <span className="text-gray-500">Offline</span>
@@ -369,23 +466,46 @@ const InboxPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
-                        <Phone className="h-5 w-5 text-gray-700" />
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-1.5">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors" 
+                        title="Call"
+                      >
+                        <Phone className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
-                        <Video className="h-5 w-5 text-gray-700" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
-                        <Archive className="h-5 w-5 text-gray-700" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
-                        <MoreVertical className="h-5 w-5 text-gray-700" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors" 
+                        title="Video call"
+                      >
+                        <Video className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 bg-gray-100 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                        onClick={() => handlePinConversation(selectedConversation)}
+                        title={selectedConversation.isPinned ? 'Unpin' : 'Pin'}
+                      >
+                        <Pin className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+                        onClick={handleArchiveConversation}
+                        title="Archive"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="md:hidden h-9 w-9 p-0 hover:bg-gray-100 rounded-lg"
                         onClick={handleCloseConversation}
                       >
                         <X className="h-5 w-5 text-gray-700" />
@@ -395,39 +515,37 @@ const InboxPage: React.FC = () => {
                 </div>
 
                 {/* Messages Area */}
-                <div className="flex-1 overflow-hidden bg-gray-50">
-                  <ScrollArea className="h-full p-6">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center h-full">
-                        <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        <div className="text-center">
-                          <MessageCircle className="h-12 w-12 mb-3 text-gray-300 mx-auto" />
-                          <p className="text-sm">Start a conversation...</p>
+                <div className="flex-1 overflow-hidden bg-white">
+                  <ScrollArea className="h-full">
+                    <div className="p-6 space-y-4">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                          <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
                         </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {messages.map((message) => {
+                      ) : messages.length === 0 ? (
+                        <div className="flex items-center justify-center h-40 text-gray-500">
+                          <div className="text-center">
+                            <MessageCircle className="h-12 w-12 mb-2 text-gray-300 mx-auto" />
+                            <p className="text-sm">No messages yet. Start the conversation!</p>
+                          </div>
+                        </div>
+                      ) : (
+                        messages.map((message) => {
                           const isOwnMessage = message.sender.id === user?.id;
                           return (
                             <div key={message.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                              <div
-                                className={cn(
-                                  "max-w-md px-4 py-3 rounded-2xl shadow-sm",
-                                  isOwnMessage
-                                    ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm"
-                                    : "bg-white text-gray-900 border border-gray-200 rounded-bl-sm"
-                                )}
-                              >
+                              <div className={cn(
+                                "group max-w-xs lg:max-w-md px-4 py-3 rounded-xl shadow-sm transition-shadow hover:shadow-md",
+                                isOwnMessage
+                                  ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-none"
+                                  : "bg-gray-100 text-gray-900 rounded-bl-none"
+                              )}>
                                 <div className="text-sm break-words whitespace-pre-wrap leading-relaxed">
                                   {message.message}
                                 </div>
                                 <div className={cn(
-                                  "flex items-center gap-1.5 mt-2 text-xs",
-                                  isOwnMessage ? "text-orange-100 justify-end" : "text-gray-500"
+                                  "flex items-center gap-2 mt-2 text-xs justify-end opacity-75",
+                                  isOwnMessage ? "text-orange-100" : "text-gray-600"
                                 )}>
                                   <span>
                                     {new Date(message.timestamp).toLocaleTimeString('en-US', {
@@ -436,38 +554,45 @@ const InboxPage: React.FC = () => {
                                       hour12: true
                                     })}
                                   </span>
+                                  {isOwnMessage && message.status && (
+                                    <span className="text-xs">
+                                      {message.status === 'sent' ? '✓' : message.status === 'read' ? '✓✓' : '◯'}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           );
-                        })}
-                      </div>
-                    )}
+                        })
+                      )}
+                    </div>
                   </ScrollArea>
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t border-gray-200 bg-white">
-                  <div className="flex items-end gap-3 bg-white rounded-2xl border-2 border-gray-200 hover:border-orange-300 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100 transition-all duration-200 p-3">
-                    <Textarea
-                      placeholder="Write a message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      disabled={isSending || isLoading}
-                      className="flex-1 min-h-[44px] max-h-[120px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
-                      rows={1}
-                    />
+                <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1 flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 transition-all duration-200 focus-within:bg-white focus-within:shadow-md focus-within:border-2 focus-within:border-orange-500">
+                      <Textarea
+                        placeholder="Write a message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        disabled={isSending || isLoading}
+                        className="flex-1 min-h-[40px] max-h-[100px] resize-none border-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder-gray-500"
+                        rows={1}
+                      />
+                    </div>
                     <Button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim() || isSending || isLoading}
                       size="sm"
-                      className="h-10 w-10 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 rounded-full flex-shrink-0 shadow-md"
+                      className="h-10 w-10 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full flex-shrink-0 shadow-md"
                     >
                       {isSending ? (
                         <Loader2 className="h-5 w-5 animate-spin text-white" />
@@ -477,15 +602,15 @@ const InboxPage: React.FC = () => {
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2 text-center">
-                    Press <kbd className="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs font-medium">Enter</kbd> to send,
-                    <kbd className="px-2 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs font-medium ml-1">Shift+Enter</kbd> for new line
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-medium">Enter</kbd> to send,
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-medium mx-1">Shift+Enter</kbd> for new line
                   </p>
                 </div>
               </>
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Compose Dialog */}
       <ComposeDialog
@@ -493,7 +618,7 @@ const InboxPage: React.FC = () => {
         onClose={() => setShowComposeDialog(false)}
         onSuccess={() => {
           setShowComposeDialog(false);
-          // Optionally navigate to the new conversation
+          loadConversations();
           toast.success('Conversation started! Check your inbox.');
         }}
         isPremium={isPremium}
