@@ -33,11 +33,11 @@ require('dotenv').config();
 
 // Initialize Parse
 Parse.initialize(
-  process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
-  process.env.PARSE_JAVASCRIPT_KEY,
-  process.env.PARSE_MASTER_KEY
+  process.env.APP_ID || 'elimu_smart_app_2024',
+  process.env.JAVASCRIPT_KEY,
+  process.env.MASTER_KEY
 );
-Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
+Parse.serverURL = process.env.SERVER_URL || 'http://localhost:1337/parse';
 
 async function addCareerDetailsSchema() {
   console.log('🚀 Starting Career Details Schema Migration...\n');
