@@ -263,17 +263,36 @@ async function seedViaAPI() {
           continue;
         }
 
-        // Get counselor name
+        // Get student and counselor details
+        const studentResponse = await makeRequest('GET', `/users/${studentId}`);
         const counselorResponse = await makeRequest('GET', `/users/${counselorId}`);
         const counselorName = counselorResponse.name;
+        const studentName = studentResponse.name;
 
-        // Update student with assigned counselor
+        // 1. Update student with assigned counselor
         await makeRequest('PUT', `/users/${studentId}`, {
           assignedCounselorId: counselorId,
           assignedCounselorName: counselorName
         });
 
-        console.log(`✅ Assigned ${assignment.studentEmail} to ${counselorName}\n`);
+        // 2. Create StudentAssignment record (required by getCounselorAssignedStudents)
+        const assignmentData = {
+          studentId: studentId,
+          counselorId: counselorId,
+          studentName: studentName,
+          counselorName: counselorName,
+          gradeLevel: studentResponse.form ? `Form ${studentResponse.form}` : 'Form 4',
+          status: 'active',
+          lastContact: {
+            __type: 'Date',
+            iso: new Date().toISOString()
+          },
+          urgentFlags: []
+        };
+
+        const assignmentResponse = await makeRequest('POST', '/classes/StudentAssignment', assignmentData);
+        console.log(`✅ Assigned ${assignment.studentEmail} to ${counselorName}`);
+        console.log(`   StudentAssignment record created: ${assignmentResponse.objectId}\n`);
       } catch (error) {
         console.log(`⚠️  Failed to assign student: ${error.message}\n`);
       }
