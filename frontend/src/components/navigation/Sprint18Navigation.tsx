@@ -257,6 +257,27 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               Elimu Smart
             </span>
           </Link>
+
+          {/* Desktop Search Bar - Moved right after logo */}
+          <div className={cn("hidden md:flex flex-1 max-w-md ml-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="search"
+                placeholder="Search careers, courses, resources..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                    setSearchQuery('');
+                  }
+                }}
+                className="pl-9 pr-4 h-9 w-full bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                aria-label="Search"
+              />
+            </div>
+          </div>
         </div>
 
         {/* 4-Section Navigation - Sprint 18 Requirement - Scroll-based animations */}
@@ -431,28 +452,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
           </NavigationMenuList>
         </NavigationMenu>
-
-        {/* Desktop Search Bar - Persistent in Header */}
-        <div className={cn("hidden md:flex flex-1 max-w-md mx-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="search"
-              placeholder="Search careers, courses, resources..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
-                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                  setSearchQuery('');
-                }
-              }}
-              className="pl-9 pr-4 h-9 w-full bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-              aria-label="Search"
-            />
-          </div>
-        </div>
-
 
         {/* LinkedIn-Style Profile Section - Sprint 18 Requirement - Scroll-based animations */}
         <div className={cn("flex items-center space-x-2 transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
