@@ -4562,7 +4562,7 @@ Parse.Cloud.define('getCareerJobData', async (request) => {
       const axios = require('axios');
 
       // CareerJet Public API endpoint for Kenya
-      const careerjetUrl = 'https://public-api.careerjet.net/search';
+      const careerjetUrl = 'https://public.api.careerjet.net/search';
 
       const params = {
         keywords: careerTitle,
