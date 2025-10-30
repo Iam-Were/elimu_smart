@@ -58,7 +58,22 @@ export const ComposeDialog: React.FC<ComposeDialogProps> = ({
     const loadCounselors = async () => {
       try {
         const Parse = await getParse();
-        const result = await Parse.Cloud.run('getCounselorAssignedStudents');
+        
+        // Ensure current user is set in Parse SDK for cloud function auth
+        const currentUserStr = localStorage.getItem('Parse/elimu-smart-production/currentUser');
+        const sessionToken = localStorage.getItem('parse-session-token');
+        
+        if (sessionToken && !Parse.User.current()) {
+          console.log('🔄 Restoring Parse user session for cloud functions...');
+          try {
+            await Parse.User.become(sessionToken);
+            console.log('✅ Parse user session restored');
+          } catch (err) {
+            console.warn('⚠️ Failed to restore user session:', err);
+          }
+        }
+        
+        const result = await Parse.Cloud.run('getAllCounselors');
 
         // Transform counselor data
         const counselorList: Counselor[] = result.counselors || [
@@ -82,6 +97,14 @@ export const ComposeDialog: React.FC<ComposeDialogProps> = ({
         ];
 
         setCounselors(counselorList);
+        
+        // Auto-select assigned counselor if available
+        if (result.assignedCounselorId && counselorList.length > 0) {
+          const assignedCounselor = counselorList.find(c => c.id === result.assignedCounselorId);
+          if (assignedCounselor) {
+            setSelectedCounselorId(result.assignedCounselorId);
+          }
+        }
       } catch (error) {
         console.error('Failed to load counselors:', error);
         toast.error('Failed to load counselors');
@@ -112,27 +135,45 @@ export const ComposeDialog: React.FC<ComposeDialogProps> = ({
 
     try {
       const Parse = await getParse();
+      const user = await Parse.User.currentAsync();
 
-      // Create new chat room with initial message
-      const result = await Parse.Cloud.run('createChatRoom', {
-        participantId: selectedCounselorId,
-        initialMessage: message.trim()
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create new chat room with both participants
+      const chatRoomResult = await Parse.Cloud.run('createChatRoom', {
+        participantIds: [user.id, selectedCounselorId],
+        type: 'counseling',
+        title: `Chat with ${selectedCounselor?.name}`
       });
 
-      if (result.success) {
+      if (!chatRoomResult || !chatRoomResult.id) {
+        throw new Error('Failed to create chat room');
+      }
+
+      // Send initial message
+      const messageResult = await Parse.Cloud.run('sendMessage', {
+        chatRoomId: chatRoomResult.id,
+        message: message.trim(),
+        messageType: 'text'
+      });
+
+      if (messageResult) {
         toast.success('Message sent successfully!');
-        onSuccess(result.roomId);
+        onSuccess(chatRoomResult.id);
         onClose();
 
         // Reset form
         setSelectedCounselorId('');
         setMessage('');
       } else {
-        throw new Error(result.message || 'Failed to send message');
+        throw new Error('Failed to send message');
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send message');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      toast.error(errorMessage);
     } finally {
       setSending(false);
     }
