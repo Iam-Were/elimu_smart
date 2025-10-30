@@ -250,22 +250,60 @@ export const UniversityCourseFinder: React.FC = () => {
     return gradeMap[grade] || 0;
   };
 
-  const renderForm = () => (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <BookOpen className="h-6 w-6 text-orange-600" />
+  const getSectionCompletion = () => {
+    const sections = [
+      selectedSubjects.length >= 4 && selectedSubjects.every(s => grades[s]), // Subjects & Grades
+      careerInterests.length > 0, // Career Interests
+      studyDuration !== '', // Study Duration
+      maxAnnualFees > 0, // Financial
+      true // Location (optional)
+    ];
+    
+    const completed = sections.filter(Boolean).length;
+    const total = sections.length;
+    const percentage = Math.round((completed / total) * 100);
+    
+    return { completed, total, percentage };
+  };
+
+  const renderForm = () => {
+    const { completed, total, percentage } = getSectionCompletion();
+    
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <BookOpen className="h-6 w-6 text-orange-600" />
+            </div>
+            <h2 className="text-2xl">Find Your University Program</h2>
+          </CardTitle>
+          <CardDescription>
+            ⏱️ Takes about 3 minutes • Get personalized matches based on your KCSE results
+          </CardDescription>
+          
+          {/* Progress Indicator */}
+          <div className="mt-4">
+            <div className="flex justify-between mb-2 text-sm">
+              <span className="text-gray-600">{completed} of {total} sections complete</span>
+              <span className="font-medium text-orange-600">{percentage}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
           </div>
-          Find Your University Program
-        </CardTitle>
-        <CardDescription>
-          Fill in your details below and we'll find the best university programs for you
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        {/* Subject Selection */}
-        <div className="mb-6">
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Live announcements for screen readers */}
+          <div role="status" aria-live="polite" className="sr-only">
+            {selectedSubjects.length} of 8 subjects selected
+          </div>
+          
+          {/* Subject Selection */}
+          <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Select Your KCSE Subjects</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
             {KENYAN_SUBJECTS.map(subject => (
@@ -381,6 +419,8 @@ export const UniversityCourseFinder: React.FC = () => {
               value={maxAnnualFees}
               onChange={(e) => setMaxAnnualFees(Number(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              aria-label={`Maximum annual fees in Kenyan Shillings, currently ${maxAnnualFees} shillings`}
+              aria-valuetext={`${maxAnnualFees} shillings`}
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>20K</span>
@@ -454,12 +494,12 @@ export const UniversityCourseFinder: React.FC = () => {
           </div>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-center">
+        {/* Submit Button - Sticky on Mobile */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 -mx-6 px-6 py-4 md:static md:border-0 md:px-0 md:py-0 flex justify-center">
           <Button
             onClick={handleFindPrograms}
             disabled={isLoading}
-            className="px-8 py-6 text-lg bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
+            className="w-full md:w-auto px-8 py-6 text-lg bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 shadow-lg"
           >
             {isLoading ? (
               <>
@@ -477,6 +517,7 @@ export const UniversityCourseFinder: React.FC = () => {
       </CardContent>
     </Card>
   );
+};
 
   const renderResults = () => {
     if (!finderResult) return null;
