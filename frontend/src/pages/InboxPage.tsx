@@ -69,6 +69,30 @@ const InboxPage: React.FC = () => {
 
   const isFreeStudent = user?.role === 'student' && !isPremium;
 
+  // Format date safely, handling invalid dates
+  const formatMessageDate = (timestamp: Date | string | number | undefined) => {
+    if (!timestamp) return 'recently';
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return 'recently';
+      
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch {
+      return 'recently';
+    }
+  };
+
   // Load conversations from backend on mount
   const loadConversations = async () => {
     if (!user) return;
@@ -394,7 +418,7 @@ const InboxPage: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-gray-500">
-                              {new Date(conversation.lastMessage.timestamp).toLocaleDateString()}
+                              {formatMessageDate(conversation.lastMessage.timestamp)}
                             </span>
                             {conversation.isPinned && (
                               <Pin className="h-3 w-3 text-orange-500 flex-shrink-0" />
@@ -548,11 +572,14 @@ const InboxPage: React.FC = () => {
                                   isOwnMessage ? "text-orange-100" : "text-gray-600"
                                 )}>
                                   <span>
-                                    {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                                      hour: 'numeric',
-                                      minute: '2-digit',
-                                      hour12: true
-                                    })}
+                                    {message.timestamp instanceof Date && !isNaN(message.timestamp.getTime())
+                                      ? message.timestamp.toLocaleTimeString('en-US', {
+                                          hour: 'numeric',
+                                          minute: '2-digit',
+                                          hour12: true
+                                        })
+                                      : 'just now'
+                                    }
                                   </span>
                                   {isOwnMessage && message.status && (
                                     <span className="text-xs">
