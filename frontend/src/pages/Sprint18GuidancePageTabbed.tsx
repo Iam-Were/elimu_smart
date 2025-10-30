@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useDynamicDashboard } from '../hooks/useDynamicDashboard';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useGuidanceData } from '@/hooks/useGuidanceData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UnifiedCardGrid } from '../components/cards/UnifiedCardGrid';
@@ -24,6 +25,18 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
   // Subscription status
   const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
   const isPremium = userSubscription?.status === 'active';
+
+  // Fetch real backend data for bookings and messages
+  const {
+    upcomingSessionsCount,
+    pastSessionsCount,
+    unreadMessagesCount,
+    nextAvailableSlot,
+    upcomingSessions,
+    pastSessions,
+    loading: guidanceLoading,
+    error: guidanceError
+  } = useGuidanceData();
 
   // Fetch all guidance cards
   const { cards, loading, error } = useDynamicCards({
@@ -70,7 +83,7 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
   );
 
   // Loading state
-  if (loading || subscriptionLoading) {
+  if (loading || subscriptionLoading || guidanceLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
@@ -80,12 +93,12 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
   }
 
   // Error state
-  if (error) {
+  if (error || guidanceError) {
     return (
       <div className="py-8">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <p className="text-red-600 text-center">{error}</p>
+            <p className="text-red-600 text-center">{error || guidanceError}</p>
           </CardContent>
         </Card>
       </div>
@@ -98,11 +111,11 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
           <Heart className="h-8 w-8 text-orange-500" />
-          Guidance & Support
+          Guidance Center
         </h1>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl text-muted-foreground">
           Get personalized career guidance, resources, and support from expert counselors
-        </p>
+        </h2>
       </div>
 
       {/* Premium Status Badge */}
@@ -166,7 +179,14 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
         {/* Services Tab */}
         <TabsContent value="services" className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Counseling Services</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Counseling Services</h2>
+              {isPremium && unreadMessagesCount > 0 && (
+                <Badge className="bg-orange-500 text-white">
+                  {unreadMessagesCount} unread message{unreadMessagesCount !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground mb-6">
               Connect with career counselors through community Q&A, private messaging, or scheduled sessions
             </p>
@@ -207,37 +227,117 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
               {/* Upcoming Sessions */}
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-orange-600" />
-                    Upcoming Sessions
+                  <CardTitle className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-orange-600" />
+                      Upcoming Sessions
+                    </div>
+                    {upcomingSessionsCount > 0 && (
+                      <Badge variant="secondary">{upcomingSessionsCount}</Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                    <p>No upcoming sessions</p>
-                    <Button
-                      onClick={() => (window.location.href = '/guidance/book-session')}
-                      className="mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
-                    >
-                      Book a Session
-                    </Button>
-                  </div>
+                  {upcomingSessionsCount === 0 ? (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                      <p className="text-muted-foreground mb-2">No upcoming sessions</p>
+                      {nextAvailableSlot && (
+                        <p className="text-sm text-gray-600 mb-4">
+                          Next available: <strong>{nextAvailableSlot}</strong>
+                        </p>
+                      )}
+                      <Button
+                        onClick={() => (window.location.href = '/guidance/book-session')}
+                        className="mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
+                      >
+                        Book a Session
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {upcomingSessions.map((session) => (
+                        <Card key={session.id} className="border-orange-200 bg-orange-50/50">
+                          <CardContent className="pt-4 pb-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="font-semibold text-orange-900">
+                                  {session.date.toLocaleDateString('en-KE', {
+                                    weekday: 'long',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                                <p className="text-sm text-orange-700">
+                                  {session.date.toLocaleTimeString('en-KE', {
+                                    hour: 'numeric',
+                                    minute: '2-digit'
+                                  })} • {session.duration} minutes • {session.type}
+                                </p>
+                                {session.counselor && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    with {session.counselor.name}
+                                  </p>
+                                )}
+                              </div>
+                              <Badge className="bg-orange-500 text-white">Confirmed</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
               {/* Past Sessions */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-gray-600" />
-                    Past Sessions
+                  <CardTitle className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-gray-600" />
+                      Past Sessions
+                    </div>
+                    {pastSessionsCount > 0 && (
+                      <Badge variant="secondary">{pastSessionsCount}</Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No past sessions</p>
-                  </div>
+                  {pastSessionsCount === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No past sessions</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {pastSessions.slice(0, 5).map((session) => (
+                        <Card key={session.id} className="border-gray-200">
+                          <CardContent className="pt-4 pb-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="font-semibold text-gray-900">
+                                  {session.date.toLocaleDateString('en-KE', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {session.duration} minutes • {session.type}
+                                </p>
+                                {session.counselor && (
+                                  <p className="text-sm text-gray-600">
+                                    with {session.counselor.name}
+                                  </p>
+                                )}
+                              </div>
+                              <Badge variant="outline">Completed</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

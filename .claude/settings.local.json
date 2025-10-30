@@ -95,7 +95,12 @@
       "Bash(then mv button.tsx Button.tsx)",
       "Bash(else echo \"File already named Button.tsx\")",
       "Bash(fi)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(jobs:*)",
+      "Bash(pgrep:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": [],
