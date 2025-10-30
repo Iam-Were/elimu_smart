@@ -27,6 +27,7 @@ import { ComposeDialog } from '@/components/inbox/ComposeDialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ParseApi from '@/lib/parseApi';
+import { getParse } from '@/config/parse';
 
 interface LinkedInConversation {
   id: string;
@@ -99,7 +100,8 @@ const InboxPage: React.FC = () => {
     
     setIsLoadingConversations(true);
     try {
-      const sessionToken = (user as unknown as { sessionToken?: string })?.sessionToken;
+      const Parse = getParse();
+      const sessionToken = Parse.User.current()?.getSessionToken() || undefined;
       const result = await ParseApi.callCloudFunction(
         'getInboxConversations', 
         { limit: 50, skip: 0 },
