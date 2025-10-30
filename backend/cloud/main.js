@@ -4561,8 +4561,8 @@ Parse.Cloud.define('getCareerJobData', async (request) => {
       // Real CareerJet API call (free, no API key required!)
       const axios = require('axios');
 
-      // CareerJet Public API endpoint for Kenya
-      const careerjetUrl = 'https://public.api.careerjet.net/search';
+      // CareerJet Public API endpoint for Kenya (HTTP only, HTTPS not supported)
+      const careerjetUrl = 'http://public.api.careerjet.net/search';
 
       const params = {
         keywords: careerTitle,
