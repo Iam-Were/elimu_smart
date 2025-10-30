@@ -30,6 +30,9 @@ require('./chatPreferencesFunctions');
 // Import dashboard functions (auto-registers cloud functions)
 require('./dashboardFunctions');
 
+// Import career schema migration function (auto-registers cloud functions)
+require('./careerSchemaMigration');
+
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   const { user } = request;
