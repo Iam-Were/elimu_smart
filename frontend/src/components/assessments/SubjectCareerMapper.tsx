@@ -450,7 +450,8 @@ export const SubjectCareerMapper: React.FC = () => {
                 <MapPin className="w-3 h-3 mr-1" />
                 Interactive Career Mapping
               </Badge>
-              <h1 className="text-3xl font-bold">Subject-to-Career Mapper</h1>
+              {/* Note: H1 "Assessment Center" is provided by Sprint18Layout */}
+              <h2 className="text-2xl font-semibold">Subject-to-Career Mapper</h2>
               <p className="text-white/90 text-lg">
                 Discover how your KCSE subjects connect to exciting career opportunities in Kenya and beyond.
               </p>

@@ -38,8 +38,9 @@ const ScholarshipSearch: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-orange-50/30 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-orange-600 mb-2">Find Scholarships & Funding</h1>
+          <h2 className="text-2xl font-semibold text-orange-600 mb-2">Find Scholarships & Funding</h2>
           <p className="text-muted-foreground">Discover opportunities that match your profile</p>
         </div>
 

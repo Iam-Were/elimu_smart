@@ -60,8 +60,9 @@ const CounselorChat: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-orange-50/30 p-6">
       <div className="max-w-4xl mx-auto">
+        {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-orange-600 mb-2">Chat with Counselor</h1>
+          <h2 className="text-2xl font-semibold text-orange-600 mb-2">Chat with Counselor</h2>
           <p className="text-muted-foreground">Real-time support and guidance</p>
         </div>
 

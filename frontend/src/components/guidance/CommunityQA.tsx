@@ -96,9 +96,10 @@ const CommunityQA: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Community Q&A</h1>
+        <h2 className="text-2xl font-semibold mb-2">Community Q&A</h2>
         <p className="text-muted-foreground">
           Get answers from counselors and fellow students. Over 200 questions answered.
         </p>

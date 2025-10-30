@@ -124,9 +124,10 @@ export const BillingPage: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
+      {/* Note: H1 is provided by Sprint18Layout (auto-title for current route) */}
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Billing & Invoices</h1>
+        <h2 className="text-2xl font-semibold mb-2">Billing & Invoices</h2>
         <p className="text-muted-foreground">
           Manage your subscription and view billing history
         </p>

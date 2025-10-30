@@ -140,9 +140,10 @@ const BookSession: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Book a Counseling Session</h1>
+        <h2 className="text-2xl font-semibold mb-2">Book a Counseling Session</h2>
         <p className="text-muted-foreground">
           Schedule 1-on-1 sessions with professional counselors. Get personalized guidance for your career journey.
         </p>

@@ -521,7 +521,8 @@ export const CareerExploration: React.FC = () => {
             <div className="p-2 bg-orange-100 rounded-lg">
               <Search className="h-6 w-6 text-orange-600" />
             </div>
-            <h1 className="text-2xl font-bold">Explore Career Paths</h1>
+            {/* Note: H1 "Assessment Center" is provided by Sprint18Layout */}
+            <h2 className="text-xl font-semibold">Explore Career Paths</h2>
           </div>
           <p className="text-gray-600">Discover careers that match your interests, skills, and goals in Kenya</p>
         </div>

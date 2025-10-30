@@ -108,12 +108,12 @@ export const AssessmentResultsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="container max-w-6xl mx-auto py-8 px-4">
-        {/* Header */}
+        {/* Note: H1 "Assessment Center" is provided by Sprint18Layout */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-            <ClipboardCheck className="h-8 w-8 text-orange-500" />
-            Assessment Results
-          </h1>
+          <h2 className="text-2xl font-semibold mb-2 flex items-center gap-3">
+            <ClipboardCheck className="h-6 w-6 text-orange-500" />
+            Your Assessment Results
+          </h2>
           <p className="text-muted-foreground">
             View all your completed career assessments and track your progress
           </p>

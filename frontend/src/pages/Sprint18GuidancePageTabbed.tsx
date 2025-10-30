@@ -107,16 +107,7 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
 
   return (
     <div className="py-8 space-y-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <Heart className="h-8 w-8 text-orange-500" />
-          Guidance Center
-        </h1>
-        <h2 className="text-xl text-muted-foreground">
-          Get personalized career guidance, resources, and support from expert counselors
-        </h2>
-      </div>
+      {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
 
       {/* Premium Status Badge */}
       {isPremium ? (

@@ -27,8 +27,9 @@ const CounselorConnect: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-orange-50/30 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-orange-600 mb-2">Connect with a Counselor</h1>
+          <h2 className="text-2xl font-semibold text-orange-600 mb-2">Connect with a Counselor</h2>
           <p className="text-muted-foreground">Professional guidance for your career decisions</p>
         </div>
 
