@@ -46,14 +46,7 @@ async function addCareerDetailsSchema() {
     // Get the Career schema
     const schema = new Parse.Schema('Career');
 
-    // Check if schema exists
-    try {
-      await schema.get();
-      console.log('✅ Career schema found, adding new fields...\n');
-    } catch (error) {
-      console.error('❌ Career schema not found. Please run create-career-schema.js first.');
-      process.exit(1);
-    }
+    console.log('✅ Updating Career schema with new fields...\n');
 
     // CRITICAL FIELDS (Priority 1 & 2)
 
