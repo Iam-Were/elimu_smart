@@ -119,8 +119,8 @@ async function addCareerDetailsSchema() {
     schema.addArray('relatedCareers');
     console.log('  ✓ relatedCareers (Array)');
 
-    // Update the schema
-    await schema.update();
+    // Update the schema with master key
+    await schema.update({ useMasterKey: true });
 
     console.log('\n✅ Career Details Schema Migration Complete!');
     console.log('\n📊 Summary:');
