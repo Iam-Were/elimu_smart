@@ -358,11 +358,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       to="/counselor/students"
                       className={cn(
                         "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
-                        isActive("/counselor") && "text-primary"
+                        isActive("/counselor/students") && "text-primary"
                       )}
                     >
                       <Users className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-light">My Students</span>
+                      <span className="text-xs font-light">Students</span>
                       {isActive("/counselor/students") && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -379,33 +379,12 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       to="/counselor/sessions"
                       className={cn(
                         "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
-                        location.pathname.includes("counselor") && location.hash === "#sessions" && "text-primary"
+                        isActive("/counselor/sessions") && "text-primary"
                       )}
                     >
                       <Calendar className="h-5 w-5 mb-1" />
                       <span className="text-xs font-light">Sessions</span>
-                      {location.pathname.includes("counselor") && location.hash === "#sessions" && (
-                        <div 
-                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
-                          style={{ backgroundColor: getThemeColor(currentTheme) }}
-                        />
-                      )}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to="/counselor/analytics"
-                      className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
-                        location.pathname.includes("counselor") && location.hash === "#analytics" && "text-primary"
-                      )}
-                    >
-                      <BarChart3 className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-light">Analytics</span>
-                      {location.pathname.includes("counselor") && location.hash === "#analytics" && (
+                      {isActive("/counselor/sessions") && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
                           style={{ backgroundColor: getThemeColor(currentTheme) }}
