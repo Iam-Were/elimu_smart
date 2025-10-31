@@ -96,12 +96,21 @@ export default {
         ],
       },
       fontSize: {
-        // Match Mantine font sizes
-        xs: '0.75rem',    // 12px
-        sm: '0.875rem',   // 14px - Base size
-        base: '1rem',     // 16px
-        lg: '1.125rem',   // 18px
-        xl: '1.25rem',    // 20px
+        // LinkedIn-inspired professional typography scale
+        xs: '0.75rem',     // 12px - Small labels, badges
+        sm: '0.875rem',    // 14px - Body text, secondary
+        base: '1rem',      // 16px - Primary body text
+        lg: '1.25rem',     // 20px - Headings, emphasized
+        xl: '1.5rem',      // 24px - Large headings
+        '2xl': '1.875rem', // 30px - Hero text
+      },
+      fontWeight: {
+        // LinkedIn-inspired weight hierarchy
+        light: '300',      // Thin labels (nav icons, captions)
+        normal: '400',     // Body text
+        medium: '500',     // Slightly emphasized
+        semibold: '600',   // Headings, buttons
+        bold: '700',       // Strong emphasis
       },
       spacing: {
         // 8px grid system matching globals.css

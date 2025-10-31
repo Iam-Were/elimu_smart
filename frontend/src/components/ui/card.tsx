@@ -22,8 +22,8 @@ const Card: React.FC<CardProps> = ({
   onClick,
   ...props
 }) => {
-  // Base card styling - NEVER CHANGE THESE VALUES
-  const baseClasses = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm';
+  // Base card styling - LinkedIn-inspired professional look
+  const baseClasses = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.12)]';
   
   // Padding variants - EXACT SPACING
   const paddingClasses = {
@@ -41,9 +41,9 @@ const Card: React.FC<CardProps> = ({
     warning: 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10'
   };
   
-  // Interactive states - EXACT HOVER EFFECTS
+  // Interactive states - LinkedIn-style hover with lift effect
   const interactiveClasses = hover || clickable ? 
-    'transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5' : '';
+    'transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:-translate-y-0.5' : '';
   
   const clickableClasses = clickable ? 'cursor-pointer group' : '';
   

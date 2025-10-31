@@ -40,7 +40,9 @@ import {
   Network,
   UserCircle,
   CalendarDays,
-
+  Compass,
+  BarChart,
+  UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -227,7 +229,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             </span>
           </Link>
 
-          {/* Desktop Search Bar - Moved right after logo */}
+          {/* Desktop Search Bar - LinkedIn-style with subtle borders */}
           <div className={cn("hidden md:flex flex-1 max-w-md ml-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -242,7 +244,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     setSearchQuery('');
                   }
                 }}
-                className="pl-9 pr-4 h-9 w-full bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                className="pl-9 pr-4 h-9 w-full bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-300 focus:shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-all"
                 aria-label="Search"
               />
             </div>
@@ -263,7 +265,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   )}
                 >
                   <Home className="h-5 w-5 mb-1" />
-                  <span className="text-xs font-normal">{user?.role === 'admin' ? 'Admin Panel' : 'Home'}</span>
+                  <span className="text-xs font-light">{user?.role === 'admin' ? 'Admin Panel' : 'Home'}</span>
                   {(isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && (
                     <div 
                       className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -287,7 +289,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     )}
                   >
                     <GraduationCap className="h-5 w-5 mb-1" />
-                    <span className="text-xs font-normal">Assessment</span>
+                    <span className="text-xs font-light">Assessment</span>
                     {isActive("/assessment") && (
                       <div 
                         className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -310,8 +312,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       isActive("/guidance") && "text-primary"
                     )}
                   >
-                    <Users className="h-5 w-5 mb-1" />
-                    <span className="text-xs font-normal">Guidance</span>
+                    <Compass className="h-5 w-5 mb-1" />
+                    <span className="text-xs font-light">Guidance</span>
                     {isActive("/guidance") && (
                       <div 
                         className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -334,7 +336,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   )}
                 >
                   <MessageSquare className="h-5 w-5 mb-1" />
-                  <span className="text-xs font-normal">Messages</span>
+                  <span className="text-xs font-light">Messages</span>
                   {isActive("/inbox") && (
                     <div 
                       className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -360,8 +362,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       )}
                     >
                       <Users className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-normal">My Students</span>
-                      {isActive("/counselor") && (
+                      <span className="text-xs font-light">My Students</span>
+                      {isActive("/counselor/students") && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
                           style={{ backgroundColor: getThemeColor(currentTheme) }}
@@ -381,7 +383,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       )}
                     >
                       <Calendar className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-normal">Sessions</span>
+                      <span className="text-xs font-light">Sessions</span>
                       {location.pathname.includes("counselor") && location.hash === "#sessions" && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -402,7 +404,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                       )}
                     >
                       <BarChart3 className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-normal">Analytics</span>
+                      <span className="text-xs font-light">Analytics</span>
                       {location.pathname.includes("counselor") && location.hash === "#analytics" && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -427,8 +429,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                         isActive("/admin/users") && "text-primary"
                       )}
                     >
-                      <Users className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-normal">User Mgmt</span>
+                      <UserCog className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-light">User Mgmt</span>
                       {isActive("/admin/users") && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
@@ -448,8 +450,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                         isActive("/admin/analytics") && "text-primary"
                       )}
                     >
-                      <BarChart3 className="h-5 w-5 mb-1" />
-                      <span className="text-xs font-normal">Analytics</span>
+                      <BarChart className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-light">Analytics</span>
                       {isActive("/admin/analytics") && (
                         <div 
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"

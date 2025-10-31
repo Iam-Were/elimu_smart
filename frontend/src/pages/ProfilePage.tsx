@@ -295,18 +295,31 @@ export const ProfilePage: React.FC = () => {
 
         {/* LinkedIn-Style Header Card */}
         <Card className="mb-8 overflow-hidden">
-          {/* Cover Photo */}
-          <div className={`h-32 bg-gradient-to-r ${getThemeColor(currentTheme)} relative`}>
+          {/* Cover Photo - LinkedIn aspect ratio (1584 x 396) */}
+          <div className={`h-48 md:h-52 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
             <div className="absolute inset-0 bg-black/10"></div>
+            
+            {/* LinkedIn-style banner upload button - appears on hover */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
+              <Button
+                size="sm"
+                onClick={() => {/* Add banner upload logic */}}
+                className="gap-2 bg-white hover:bg-gray-100 text-gray-900 shadow-lg rounded-full px-4 py-2 font-semibold"
+              >
+                <Camera className="h-4 w-4" />
+                <span className="hidden sm:inline">Edit cover photo</span>
+                <span className="sm:hidden">Edit cover</span>
+              </Button>
+            </div>
           </div>
 
           {/* Profile Section */}
-          <CardContent className="relative -mt-16 pb-6">
+          <CardContent className="relative -mt-20 md:-mt-24 pb-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Profile Picture with Completion Ring */}
+              {/* Profile Picture with Completion Ring - LinkedIn-style */}
               <div className="relative group">
                 {/* Completion Ring (SVG Circle) */}
-                <svg className="absolute inset-0 w-36 h-36 -left-2 -top-2" viewBox="0 0 144 144">
+                <svg className="absolute inset-0 w-36 h-36 md:w-40 md:h-40 -left-2 -top-2" viewBox="0 0 144 144">
                   {/* Background circle */}
                   <circle
                     cx="72"
@@ -332,7 +345,7 @@ export const ProfilePage: React.FC = () => {
                 </svg>
 
                 {/* Avatar */}
-                <Avatar className="h-32 w-32 border-4 border-white bg-white relative z-10">
+                <Avatar className="h-32 w-32 md:h-36 md:w-36 border-4 border-white bg-white relative z-10 shadow-lg">
                   <AvatarImage src={user?.profileImage} />
                   <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-2xl`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
@@ -342,7 +355,7 @@ export const ProfilePage: React.FC = () => {
                 {/* Completion Badge */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20">
                   <Badge
-                    className={`text-xs font-semibold px-2 py-0.5 ${
+                    className={`text-xs font-semibold px-2 py-0.5 shadow-sm ${
                       profileCompletion >= 80
                         ? 'bg-green-100 text-green-700 border-green-300'
                         : profileCompletion >= 50
@@ -354,14 +367,14 @@ export const ProfilePage: React.FC = () => {
                   </Badge>
                 </div>
 
-                {/* Camera Button - Shows on Hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+                {/* LinkedIn-style profile picture upload button - circular overlay on hover */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 rounded-full bg-black/40">
                   <Button
                     size="sm"
                     onClick={() => setShowImageUploader(!showImageUploader)}
-                    className="h-10 w-10 p-0 rounded-full bg-white hover:bg-white shadow-lg"
+                    className="h-10 w-10 p-0 rounded-full bg-white hover:bg-gray-100 shadow-lg text-gray-900"
                   >
-                    <Camera className="h-5 w-5 text-gray-700" />
+                    <Camera className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
