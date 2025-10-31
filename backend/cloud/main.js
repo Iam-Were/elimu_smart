@@ -5816,6 +5816,278 @@ Parse.Cloud.define('getAssignedStudents', async (request) => {
   }
 });
 
+// Search all students on platform (for counselor outreach)
+Parse.Cloud.define('searchStudents', async (request) => {
+  const counselor = requireCounselor(request);
+  const {
+    searchTerm = '',
+    grade = '',
+    school = '',
+    hasAssessments = null,
+    hasSubscription = null,
+    careerInterest = '',
+    minProfileCompletion = 0,
+    limit = 20,
+    skip = 0,
+    sortBy = 'recent' // 'recent', 'name', 'grade', 'profileCompletion'
+  } = request.params;
+
+  try {
+    const User = Parse.Object.extend('_User');
+    const query = new Parse.Query(User);
+
+    // Only search students (not counselors/admins)
+    query.equalTo('role', 'student');
+
+    // Exclude students already assigned to this counselor
+    query.notEqualTo('assignedCounselorId', counselor.id);
+
+    // Search by name or email
+    if (searchTerm.trim()) {
+      const nameQuery = new Parse.Query(User);
+      nameQuery.matches('firstName', new RegExp(searchTerm, 'i'));
+
+      const lastNameQuery = new Parse.Query(User);
+      lastNameQuery.matches('lastName', new RegExp(searchTerm, 'i'));
+
+      const emailQuery = new Parse.Query(User);
+      emailQuery.matches('email', new RegExp(searchTerm, 'i'));
+
+      const combinedQuery = Parse.Query.or(nameQuery, lastNameQuery, emailQuery);
+      query._orQuery(combinedQuery.toJSON().where);
+    }
+
+    // Filter by grade (Form 1-4)
+    if (grade) {
+      query.equalTo('grade', grade);
+    }
+
+    // Filter by school
+    if (school.trim()) {
+      query.matches('school', new RegExp(school, 'i'));
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case 'name':
+        query.ascending('firstName');
+        break;
+      case 'grade':
+        query.descending('grade');
+        break;
+      case 'recent':
+      default:
+        query.descending('createdAt');
+        break;
+    }
+
+    query.limit(limit);
+    query.skip(skip);
+
+    const students = await query.find({ useMasterKey: true });
+
+    // Get detailed data for each student
+    const studentData = await Promise.all(students.map(async (student) => {
+      // Get assessment count
+      const Assessment = Parse.Object.extend('Assessment');
+      const assessmentQuery = new Parse.Query(Assessment);
+      assessmentQuery.equalTo('userId', student.id);
+      const assessmentCount = await assessmentQuery.count({ useMasterKey: true });
+
+      // Get subscription status
+      const Subscription = Parse.Object.extend('Subscription');
+      const subQuery = new Parse.Query(Subscription);
+      subQuery.equalTo('userId', student.id);
+      subQuery.equalTo('status', 'active');
+      const hasActiveSub = await subQuery.first({ useMasterKey: true });
+
+      // Get RIASEC results for career interests
+      const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+      const riasecQuery = new Parse.Query(RiasecAssessment);
+      riasecQuery.equalTo('userId', student.id);
+      riasecQuery.equalTo('status', 'completed');
+      riasecQuery.descending('completedAt');
+      const riasecResult = await riasecQuery.first({ useMasterKey: true });
+
+      let topCareerInterest = 'Not assessed';
+      if (riasecResult) {
+        const results = riasecResult.get('results');
+        if (results && results.topType) {
+          topCareerInterest = results.topType;
+        }
+      }
+
+      // Calculate profile completion
+      const totalFields = 10;
+      let completedFields = 0;
+      if (student.get('firstName')) completedFields++;
+      if (student.get('lastName')) completedFields++;
+      if (student.get('email')) completedFields++;
+      if (student.get('phone')) completedFields++;
+      if (student.get('grade')) completedFields++;
+      if (student.get('school')) completedFields++;
+      if (student.get('subjects')) completedFields++;
+      if (assessmentCount > 0) completedFields += 2;
+      if (hasActiveSub) completedFields++;
+
+      const profileCompletion = Math.round((completedFields / totalFields) * 100);
+
+      return {
+        id: student.id,
+        firstName: student.get('firstName') || 'Unknown',
+        lastName: student.get('lastName') || 'Student',
+        email: student.get('email'),
+        grade: student.get('grade') || 'Not specified',
+        school: student.get('school') || 'Not specified',
+        profileCompletion,
+        assessmentCount,
+        hasSubscription: !!hasActiveSub,
+        careerInterest: topCareerInterest,
+        joinedDate: student.get('createdAt'),
+        lastActive: student.get('updatedAt')
+      };
+    }));
+
+    // Apply post-query filters (can't do these in Parse query)
+    let filteredData = studentData;
+
+    if (hasAssessments !== null) {
+      filteredData = filteredData.filter(s =>
+        hasAssessments ? s.assessmentCount > 0 : s.assessmentCount === 0
+      );
+    }
+
+    if (hasSubscription !== null) {
+      filteredData = filteredData.filter(s => s.hasSubscription === hasSubscription);
+    }
+
+    if (careerInterest.trim()) {
+      filteredData = filteredData.filter(s =>
+        s.careerInterest.toLowerCase().includes(careerInterest.toLowerCase())
+      );
+    }
+
+    if (minProfileCompletion > 0) {
+      filteredData = filteredData.filter(s => s.profileCompletion >= minProfileCompletion);
+    }
+
+    // Sort by profileCompletion if requested (post-query)
+    if (sortBy === 'profileCompletion') {
+      filteredData.sort((a, b) => b.profileCompletion - a.profileCompletion);
+    }
+
+    return {
+      students: filteredData,
+      total: filteredData.length,
+      hasMore: students.length === limit
+    };
+  } catch (error) {
+    console.error('Error searching students:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to search students');
+  }
+});
+
+// Initiate outreach to student (create chat room + send intro message)
+Parse.Cloud.define('initiateStudentOutreach', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId, introMessage } = request.params;
+
+  if (!studentId) {
+    throw new Parse.Error(Parse.Error.INVALID_ARGUMENT, 'Student ID required');
+  }
+
+  if (!introMessage || introMessage.trim().length === 0) {
+    throw new Parse.Error(Parse.Error.INVALID_ARGUMENT, 'Introduction message required');
+  }
+
+  try {
+    // Verify student exists and is a student
+    const User = Parse.Object.extend('_User');
+    const studentQuery = new Parse.Query(User);
+    const student = await studentQuery.get(studentId, { useMasterKey: true });
+
+    if (student.get('role') !== 'student') {
+      throw new Parse.Error(Parse.Error.INVALID_ARGUMENT, 'User is not a student');
+    }
+
+    // Check if chat room already exists
+    const ChatRoom = Parse.Object.extend('ChatRoom');
+    const existingRoomQuery = new Parse.Query(ChatRoom);
+    existingRoomQuery.containsAll('participants', [counselor.id, studentId]);
+    const existingRoom = await existingRoomQuery.first({ useMasterKey: true });
+
+    let chatRoom;
+    if (existingRoom) {
+      chatRoom = existingRoom;
+    } else {
+      // Create new chat room
+      chatRoom = new ChatRoom();
+      chatRoom.set('type', 'counseling');
+      chatRoom.set('participants', [counselor.id, studentId]);
+      chatRoom.set('title', `Chat with ${student.get('firstName')} ${student.get('lastName')}`);
+      chatRoom.set('createdBy', counselor);
+      chatRoom.set('isActive', true);
+      chatRoom.set('messageCount', 0);
+      chatRoom.set('lastActivity', new Date());
+      await chatRoom.save(null, { useMasterKey: true });
+    }
+
+    // Send intro message
+    const ChatMessage = Parse.Object.extend('ChatMessage');
+    const message = new ChatMessage();
+
+    const chatRoomPointer = {
+      __type: 'Pointer',
+      className: 'ChatRoom',
+      objectId: chatRoom.id
+    };
+
+    message.set('chatRoom', chatRoomPointer);
+    message.set('sender', counselor);
+    message.set('message', introMessage.trim());
+    message.set('messageType', 'text');
+    message.set('timestamp', new Date());
+    message.set('isRead', false);
+    message.set('status', 'sent');
+
+    await message.save(null, { useMasterKey: true });
+
+    // Update chat room
+    chatRoom.set('lastMessage', introMessage.trim());
+    chatRoom.set('lastActivity', new Date());
+    chatRoom.increment('messageCount');
+    await chatRoom.save(null, { useMasterKey: true });
+
+    // Create notification for student
+    const Notification = Parse.Object.extend('Notification');
+    const notification = new Notification();
+    notification.set('userId', studentId);
+    notification.set('type', 'counselor_outreach');
+    notification.set('title', 'New Message from Counselor');
+    notification.set('message', `${counselor.get('firstName')} ${counselor.get('lastName')} sent you a message`);
+    notification.set('isRead', false);
+    notification.set('createdAt', new Date());
+    await notification.save(null, { useMasterKey: true });
+
+    // Log counselor activity
+    await Parse.Cloud.run('logCounselorActivity', {
+      activityType: 'student_outreach',
+      description: `Initiated contact with student: ${student.get('firstName')} ${student.get('lastName')}`,
+      metadata: { studentId, chatRoomId: chatRoom.id }
+    }, { useMasterKey: true });
+
+    return {
+      success: true,
+      chatRoomId: chatRoom.id,
+      messageId: message.id,
+      studentName: `${student.get('firstName')} ${student.get('lastName')}`
+    };
+  } catch (error) {
+    console.error('Error initiating student outreach:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to initiate outreach');
+  }
+});
+
 // Get counselor performance metrics
 Parse.Cloud.define('getCounselorPerformance', async (request) => {
   const counselor = requireCounselor(request);
