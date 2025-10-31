@@ -546,7 +546,17 @@ Parse.Cloud.define('getChatRooms', async (request) => {
         const userQuery = new Parse.Query(Parse.User);
         const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
         // LinkedIn pattern: Just show the name, not "Chat with X"
-        const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
+        // Fallback: name -> username -> email (formatted) -> 'User'
+        let otherUserName = otherUser.get('name') || otherUser.get('username');
+        if (!otherUserName) {
+          const email = otherUser.get('email');
+          if (email) {
+            // Format email as name: "user@example.com" -> "User"
+            otherUserName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+          } else {
+            otherUserName = 'User';
+          }
+        }
         roomData.title = otherUserName;
         // Include participant details for richer UI
         roomData.participantName = otherUserName;
@@ -860,7 +870,17 @@ Parse.Cloud.define('getInboxConversations', async (request) => {
           const userQuery = new Parse.Query(Parse.User);
           const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
           // LinkedIn pattern: Just show the name, not "Chat with X"
-          const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
+          // Fallback: name -> username -> email (formatted) -> 'User'
+          let otherUserName = otherUser.get('name') || otherUser.get('username');
+          if (!otherUserName) {
+            const email = otherUser.get('email');
+            if (email) {
+              // Format email as name: "user@example.com" -> "User"
+              otherUserName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+            } else {
+              otherUserName = 'User';
+            }
+          }
           roomData.title = otherUserName;
           // Include participant details for richer UI
           roomData.participantName = otherUserName;
