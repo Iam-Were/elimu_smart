@@ -21,7 +21,7 @@ interface TrackProgressParams {
   studentId: string;
   milestone: string;
   status: MilestoneStatus;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export const useStudentManagement = () => {
@@ -39,7 +39,7 @@ export const useStudentManagement = () => {
       const result = await Parse.Cloud.run('updateStudentPriority', params);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to update student priority';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update student priority';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -58,7 +58,7 @@ export const useStudentManagement = () => {
       const result = await Parse.Cloud.run('addStudentNote', params);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to add student note';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add student note';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -77,7 +77,7 @@ export const useStudentManagement = () => {
       const result = await Parse.Cloud.run('getStudentAssessmentResults', { studentId });
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to get assessment results';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get assessment results';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -96,7 +96,7 @@ export const useStudentManagement = () => {
       const result = await Parse.Cloud.run('trackStudentProgress', params);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to track student progress';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to track student progress';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -115,7 +115,7 @@ export const useStudentManagement = () => {
       const result = await Parse.Cloud.run('getStudentNotes', { studentId });
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to get student notes';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get student notes';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -137,7 +137,7 @@ export const useStudentManagement = () => {
   /**
    * Mark milestone as achieved (shortcut for trackStudentProgress)
    */
-  const achieveMilestone = async (studentId: string, milestone: string, metadata?: any) => {
+  const achieveMilestone = async (studentId: string, milestone: string, metadata?: Record<string, unknown>) => {
     return trackStudentProgress({
       studentId,
       milestone,

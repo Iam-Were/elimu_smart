@@ -18,19 +18,20 @@ export const useSessionManagement = () => {
   /**
    * Get pending session requests
    */
-  const getPendingSessionRequests = async () => {
+  const getPendingSessionRequests = async (): Promise<SessionRequest[]> => {
     setIsLoading(true);
     setError(null);
 
     try {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('getPendingSessionRequests');
-      return result.map((req: any) => ({
+      return result.map((req: SessionRequest) => ({
         ...req,
         preferredDate: new Date(req.preferredDate)
       }));
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch session requests');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch session requests';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -52,8 +53,8 @@ export const useSessionManagement = () => {
         notes
       });
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to update session');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update session');
       throw err;
     } finally {
       setIsLoading(false);
@@ -74,8 +75,8 @@ export const useSessionManagement = () => {
         newDate: newDate.toISOString()
       });
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to reschedule session');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reschedule session');
       throw err;
     } finally {
       setIsLoading(false);
@@ -96,8 +97,8 @@ export const useSessionManagement = () => {
         notes
       });
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to add notes');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add notes');
       throw err;
     } finally {
       setIsLoading(false);

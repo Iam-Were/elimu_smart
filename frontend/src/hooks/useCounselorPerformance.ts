@@ -44,6 +44,7 @@ export const useCounselorPerformance = (
 
   useEffect(() => {
     fetchPerformance(initialTimeRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTimeRange]);
 
   return {

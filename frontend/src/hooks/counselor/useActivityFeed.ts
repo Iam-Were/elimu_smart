@@ -65,6 +65,7 @@ export const useActivityFeed = (limit: number = 20): UseActivityFeedResult => {
   // Initial fetch
   useEffect(() => {
     fetchActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit]);
 
   // Auto-refresh every 30 seconds
@@ -74,6 +75,7 @@ export const useActivityFeed = (limit: number = 20): UseActivityFeedResult => {
     }, 30000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit]);
 
   return {

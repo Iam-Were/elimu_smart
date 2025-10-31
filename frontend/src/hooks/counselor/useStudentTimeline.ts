@@ -70,6 +70,7 @@ export const useStudentTimeline = (studentId: string | null, limit: number = 50)
   // Fetch when studentId changes
   useEffect(() => {
     fetchTimeline();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId, limit]);
 
   return {

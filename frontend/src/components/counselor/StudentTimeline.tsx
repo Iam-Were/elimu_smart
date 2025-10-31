@@ -35,7 +35,7 @@ export const StudentTimeline: React.FC<StudentTimelineProps> = ({ studentId }) =
   const { timeline, isLoading, error, refresh } = useStudentTimeline(studentId);
 
   const getEventIcon = (icon: string) => {
-    const iconMap: Record<string, any> = {
+    const iconMap: Record<string, typeof UserPlus> = {
       'user-plus': UserPlus,
       'user-check': UserCheck,
       'clipboard-check': ClipboardCheck,

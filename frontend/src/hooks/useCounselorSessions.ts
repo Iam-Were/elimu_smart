@@ -48,7 +48,14 @@ export const useCounselorSessions = (initialStatus?: string): UseCounselorSessio
       const result = await Parse.Cloud.run('getCounselorSessions', params);
 
       // Convert scheduledAt strings to Date objects
-      const sessionsWithDates = result.map((session: any) => ({
+      const sessionsWithDates = result.map((session: {
+        startTime: string;
+        endTime: string;
+        scheduledAt: string | Date;
+        createdAt: string | Date;
+        updatedAt: string | Date;
+        [key: string]: unknown;
+      }) => ({
         ...session,
         scheduledAt: new Date(session.scheduledAt),
         createdAt: new Date(session.createdAt),

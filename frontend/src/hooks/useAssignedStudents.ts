@@ -50,7 +50,7 @@ export const useAssignedStudents = (
       const result = await Parse.Cloud.run('getAssignedStudents', params);
 
       // Convert date strings to Date objects
-      const studentsWithDates = result.map((student: any) => ({
+      const studentsWithDates = result.map((student: Student) => ({
         ...student,
         lastContact: new Date(student.lastContact),
       }));

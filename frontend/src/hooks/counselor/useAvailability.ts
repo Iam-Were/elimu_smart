@@ -23,8 +23,9 @@ export const useAvailability = () => {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('setAvailability', { slots });
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to set availability');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to set availability';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -42,8 +43,9 @@ export const useAvailability = () => {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('getAvailabilitySchedule');
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch availability');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch availability';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);

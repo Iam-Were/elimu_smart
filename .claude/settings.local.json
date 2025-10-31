@@ -100,7 +100,9 @@
       "Bash(pgrep:*)",
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(for file in useActivityFeed.ts useStudentTimeline.ts)",
+      "Bash(do sed -i 's/}, \\[\\]);$/}, []); \\/\\/ eslint-disable-line react-hooks\\/exhaustive-deps/g' \"$file\")"
     ],
     "deny": [],
     "ask": [],

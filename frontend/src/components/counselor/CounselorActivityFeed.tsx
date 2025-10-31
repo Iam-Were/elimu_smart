@@ -1,6 +1,6 @@
 import React from 'react';
-import { Activity, Clock, MessageSquare, Calendar, Target, Trophy, AlertCircle, RefreshCw } from 'lucide-react';
-import { useActivityFeed } from '../../hooks/counselor/useActivityFeed';
+import { Activity as ActivityIcon, Clock, MessageSquare, Calendar, Target, Trophy, AlertCircle, RefreshCw } from 'lucide-react';
+import { useActivityFeed, type Activity } from '../../hooks/counselor/useActivityFeed';
 import { formatDistanceToNow } from 'date-fns';
 import { IconContainer } from '../ui/icon-container';
 import { Badge } from '../ui/badge';
@@ -10,13 +10,13 @@ export const CounselorActivityFeed: React.FC = () => {
   const { activities, isLoading, error, refresh } = useActivityFeed(10);
 
   const getActivityIcon = (type: string) => {
-    const iconMap: Record<string, any> = {
+    const iconMap: Record<string, typeof MessageSquare> = {
       message: MessageSquare,
       session: Calendar,
       assessment: Target,
       milestone: Trophy,
     };
-    return iconMap[type] || Activity;
+    return iconMap[type] || ActivityIcon;
   };
 
   const getActivityTheme = (type: string): 'neutral' | 'counselor' | 'student' => {
@@ -34,7 +34,7 @@ export const CounselorActivityFeed: React.FC = () => {
     }
   };
 
-  const getActivityText = (activity: any) => {
+  const getActivityText = (activity: Activity) => {
     switch (activity.type) {
       case 'message':
         return (
@@ -90,7 +90,7 @@ export const CounselorActivityFeed: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <IconContainer
-            icon={Activity}
+            icon={ActivityIcon}
             emphasis="medium"
             theme="counselor"
             size="sm"
@@ -124,7 +124,7 @@ export const CounselorActivityFeed: React.FC = () => {
         </div>
       ) : activities.length === 0 ? (
         <div className="text-center py-6 text-slate-500 dark:text-slate-400 text-sm">
-          <Activity className="w-8 h-8 mx-auto mb-2 opacity-30" />
+          <ActivityIcon className="w-8 h-8 mx-auto mb-2 opacity-30" />
           <p>No recent activity</p>
         </div>
       ) : (

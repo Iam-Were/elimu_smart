@@ -42,8 +42,20 @@ export const StudentRoster: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
-  const [studentNotes, setStudentNotes] = useState<any[]>([]);
-  const [assessmentResults, setAssessmentResults] = useState<any>(null);
+  const [studentNotes, setStudentNotes] = useState<Array<{
+    id: string;
+    content: string;
+    createdAt: string | Date;
+    tags?: string[];
+  }>>([]);
+  const [assessmentResults, setAssessmentResults] = useState<{
+    summary: {
+      hollandCode?: string;
+      primaryType?: string;
+      assessmentsCompleted: number;
+      profileCompletion: number;
+    };
+  } | null>(null);
 
   // Update local students when hook data changes
   React.useEffect(() => {
