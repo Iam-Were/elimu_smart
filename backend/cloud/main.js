@@ -545,8 +545,12 @@ Parse.Cloud.define('getChatRooms', async (request) => {
       try {
         const userQuery = new Parse.Query(Parse.User);
         const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
+        // LinkedIn pattern: Just show the name, not "Chat with X"
         const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
-        roomData.title = `Chat with ${otherUserName}`;
+        roomData.title = otherUserName;
+        // Include participant details for richer UI
+        roomData.participantName = otherUserName;
+        roomData.participantRole = otherUser.get('role') || 'user';
       } catch (error) {
         console.warn('Failed to fetch participant name:', error);
       }
@@ -855,8 +859,12 @@ Parse.Cloud.define('getInboxConversations', async (request) => {
         try {
           const userQuery = new Parse.Query(Parse.User);
           const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
+          // LinkedIn pattern: Just show the name, not "Chat with X"
           const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
-          roomData.title = `Chat with ${otherUserName}`;
+          roomData.title = otherUserName;
+          // Include participant details for richer UI
+          roomData.participantName = otherUserName;
+          roomData.participantRole = otherUser.get('role') || 'user';
         } catch (error) {
           console.warn('Failed to fetch participant name:', error);
         }
