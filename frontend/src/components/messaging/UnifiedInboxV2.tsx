@@ -458,11 +458,11 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
         >
           {/* Header with tabs and search */}
           <div className="flex-shrink-0 p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">{labels.title}</h2>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                <Mail className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Compose</span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 flex-1 truncate">{labels.title}</h2>
+              <Button className="bg-orange-600 hover:bg-orange-700 text-white flex-shrink-0 h-9 px-3">
+                <Mail className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Compose</span>
               </Button>
             </div>
 

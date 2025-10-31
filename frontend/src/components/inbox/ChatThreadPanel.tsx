@@ -319,12 +319,12 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
 
       {/* MESSAGE INPUT */}
       <div className="flex-shrink-0 px-4 py-4 border-t border-gray-200 bg-white">
-        <div className="flex items-end gap-3">
+        <div className="flex items-center gap-2">
           {/* Attachment button */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0"
+            className="flex-shrink-0 h-10 w-10 p-0"
             disabled={isSending}
           >
             <Paperclip className="h-4 w-4" />
@@ -335,7 +335,7 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0"
+            className="flex-shrink-0 h-10 w-10 p-0"
             disabled={isSending}
           >
             <Smile className="h-4 w-4" />
@@ -343,28 +343,32 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
           </Button>
 
           {/* Message input */}
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message... (Shift + Enter for new line)"
-            className="resize-none min-h-[40px] max-h-[120px]"
-            rows={1}
-            disabled={isSending}
-          />
+          <div className="flex-1 min-w-0">
+            <Textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message... (Shift + Enter for new line)"
+              className="resize-none min-h-[40px] max-h-[120px] w-full"
+              rows={1}
+              disabled={isSending}
+            />
+          </div>
 
           {/* Send button */}
           <Button
             onClick={handleSend}
             disabled={!newMessage.trim() || isSending}
-            className="bg-orange-600 text-white hover:bg-orange-700 flex-shrink-0"
+            className="bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 flex-shrink-0 h-10 px-4"
           >
             {isSending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <>
+                <Send className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Send</span>
+              </>
             )}
-            <span className="ml-2 hidden sm:inline">Send</span>
           </Button>
         </div>
 
