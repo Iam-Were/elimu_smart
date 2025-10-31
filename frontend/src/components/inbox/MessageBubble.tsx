@@ -137,7 +137,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Timestamp (incoming only) */}
         {!isOutgoing && (
-          <p className="text-xs text-gray-500 mt-1 ml-1">{timestamp}</p>
+          <p className="text-xs text-gray-500 mt-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">{timestamp}</p>
         )}
 
         {/* Message actions (visible on hover) */}

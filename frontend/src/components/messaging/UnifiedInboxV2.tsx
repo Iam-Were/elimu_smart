@@ -326,17 +326,27 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
       const otherParticipants = room.participants.filter((p) => p !== user?.id);
       const participantId = otherParticipants[0] || 'unknown';
 
+      // Get last message for this room from messages array
+      const roomMessages = messages.filter(msg => msg.chatRoomId === room.id);
+      const lastMsg = roomMessages[roomMessages.length - 1];
+
+      // Add "You:" prefix if current user sent the last message
+      let displayMessage = room.lastMessage || 'Start a conversation...';
+      if (lastMsg && lastMsg.sender.id === user?.id) {
+        displayMessage = `You: ${displayMessage}`;
+      }
+
       return {
         id: room.id,
         name: room.title || `${room.type} Chat`,
-        lastMessage: room.lastMessage || 'Start a conversation...',
+        lastMessage: displayMessage,
         unreadCount: room.unreadCount || 0,
         isOnline: room.isActive,
         lastActivity: room.lastActivity,
         participantId,
       };
     });
-  }, [rooms, user?.id]);
+  }, [rooms, user?.id, messages]);
 
   // Filter conversations based on active tab
   const filteredByTab = useMemo(() => {

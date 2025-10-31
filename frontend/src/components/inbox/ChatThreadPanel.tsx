@@ -108,33 +108,49 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
   };
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    try {
+      const validDate = new Date(date);
+      if (isNaN(validDate.getTime())) {
+        return ''; // Return empty string for invalid dates
+      }
+      return validDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch {
+      return '';
+    }
   };
 
   const formatDate = (date: Date) => {
-    const today = new Date();
-    const msgDate = new Date(date);
+    try {
+      const today = new Date();
+      const msgDate = new Date(date);
 
-    if (msgDate.toDateString() === today.toDateString()) {
-      return 'Today';
+      if (isNaN(msgDate.getTime())) {
+        return ''; // Return empty string for invalid dates
+      }
+
+      if (msgDate.toDateString() === today.toDateString()) {
+        return 'Today';
+      }
+
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (msgDate.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+      }
+
+      return msgDate.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: msgDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
+      });
+    } catch {
+      return '';
     }
-
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (msgDate.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    }
-
-    return msgDate.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: msgDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
-    });
   };
 
   // Group messages by date
