@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useSessionBooking } from '@/hooks/useSessionBooking';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import Parse from 'parse';
 import {
   Calendar,
   Clock,
@@ -20,6 +23,7 @@ import {
   AlertCircle,
   User,
   Loader2,
+  Crown,
 } from 'lucide-react';
 
 interface Counselor {
@@ -39,42 +43,45 @@ interface Counselor {
   };
 }
 
-const sampleCounselors: Counselor[] = [
-  {
-    id: '1',
-    name: 'Sarah Njeri',
-    title: 'Senior Career Counselor',
-    avatar: '/avatars/sarah.jpg',
-    rating: 4.9,
-    reviewCount: 127,
-    specialties: ['University Selection', 'KUCCPS Guidance', 'Career Planning'],
-    availableSlots: ['Mon 2PM', 'Wed 10AM', 'Fri 4PM'],
-    sessionTypes: ['video', 'phone', 'in-person'],
-    pricing: {
-      thirtyMin: 1500,
-      sixtyMin: 2500,
-      ninetyMin: 3500,
-    },
-  },
-  {
-    id: '2',
-    name: 'James Mutua',
-    title: 'Educational Psychologist',
-    avatar: '/avatars/james.jpg',
-    rating: 4.8,
-    reviewCount: 98,
-    specialties: ['Academic Stress', 'Study Skills', 'Exam Preparation'],
-    availableSlots: ['Tue 11AM', 'Thu 3PM', 'Sat 9AM'],
-    sessionTypes: ['video', 'phone'],
-    pricing: {
-      thirtyMin: 1500,
-      sixtyMin: 2500,
-      ninetyMin: 3500,
-    },
-  },
-];
+// Helper function to load counselors from Parse database
+const loadCounselorsFromDatabase = async (): Promise<Counselor[]> => {
+  try {
+    const query = new Parse.Query(Parse.User);
+    query.equalTo('role', 'counselor');
+    query.equalTo('isActive', true);
+    query.descending('rating');
+    query.limit(10);
+    
+    const results = await query.find();
+    
+    return results.map(counselor => ({
+      id: counselor.id!,  // Parse IDs are always defined
+      name: counselor.get('name') || `${counselor.get('firstName') || ''} ${counselor.get('lastName') || ''}`.trim() || counselor.get('username') || 'Professional Counselor',
+      title: counselor.get('title') || 'Career Counselor',
+      avatar: counselor.get('profilePicture')?.url() || counselor.get('profileImage') || '/default-avatar.png',
+      rating: counselor.get('rating') || 4.5,
+      reviewCount: counselor.get('reviewCount') || 0,
+      specialties: counselor.get('specialties') || ['Career Guidance', 'University Applications'],
+      availableSlots: counselor.get('availableSlots') || ['Mon-Fri 9AM-5PM'],
+      sessionTypes: (counselor.get('sessionTypes') || ['video', 'phone', 'in-person']) as ('video' | 'phone' | 'in-person')[],
+      pricing: counselor.get('pricing') || {
+        thirtyMin: 1500,
+        sixtyMin: 2500,
+        ninetyMin: 3500,
+      },
+    }));
+  } catch (error) {
+    console.error('Error loading counselors:', error);
+    toast.error('Failed to load counselors. Please try again.');
+    return [];
+  }
+};
 
 const BookSession: React.FC = () => {
+  // State for counselors loaded from database
+  const [counselors, setCounselors] = useState<Counselor[]>([]);
+  const [isLoadingCounselors, setIsLoadingCounselors] = useState(true);
+  
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<30 | 60 | 90>(60);
   const [selectedType, setSelectedType] = useState<'video' | 'phone' | 'in-person'>('video');
@@ -86,6 +93,19 @@ const BookSession: React.FC = () => {
   // Hooks
   const { bookSession, isBooking, error: bookingError } = useSessionBooking();
   const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
+  const navigate = useNavigate();
+
+  // Load counselors from database on component mount
+  useEffect(() => {
+    const fetchCounselors = async () => {
+      setIsLoadingCounselors(true);
+      const loadedCounselors = await loadCounselorsFromDatabase();
+      setCounselors(loadedCounselors);
+      setIsLoadingCounselors(false);
+    };
+    
+    fetchCounselors();
+  }, []);
 
   // Check if user has premium subscription
   const hasPremium = userSubscription?.status === 'active';
@@ -240,8 +260,42 @@ const BookSession: React.FC = () => {
       {/* Available Counselors */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Available Counselors</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {sampleCounselors.map((counselor) => (
+        
+        {/* Premium Paywall Alert */}
+        {showPaywall && (
+          <Alert className="border-orange-200 bg-orange-50 mb-6">
+            <Crown className="h-5 w-5 text-orange-600" />
+            <AlertTitle className="text-orange-900 font-semibold">Premium Feature</AlertTitle>
+            <AlertDescription className="text-orange-800">
+              Upgrade to Premium to book one-on-one sessions with professional counselors.
+              <Button 
+                onClick={() => navigate('/pricing')} 
+                variant="link" 
+                className="ml-2 text-orange-600 underline p-0 h-auto font-medium"
+              >
+                View Plans →
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Loading State */}
+        {isLoadingCounselors ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <span className="ml-3 text-gray-600">Loading counselors...</span>
+          </div>
+        ) : counselors.length === 0 ? (
+          <Alert>
+            <AlertCircle className="h-5 w-5" />
+            <AlertTitle>No Counselors Available</AlertTitle>
+            <AlertDescription>
+              There are currently no counselors available. Please check back later.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {counselors.map((counselor: Counselor) => (
             <Card
               key={counselor.id}
               className={`hover:shadow-lg transition-shadow ${
@@ -325,13 +379,15 @@ const BookSession: React.FC = () => {
                   className="w-full"
                   variant={selectedCounselor === counselor.id ? 'default' : 'outline'}
                   onClick={() => setSelectedCounselor(counselor.id)}
+                  disabled={showPaywall}
                 >
-                  {selectedCounselor === counselor.id ? 'Selected' : 'Select Counselor'}
+                  {selectedCounselor === counselor.id ? 'Selected' : showPaywall ? 'Premium Required' : 'Select Counselor'}
                 </Button>
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Booking Form (shown after counselor selection) */}
@@ -428,9 +484,9 @@ const BookSession: React.FC = () => {
                     </span>
                     <span className="text-xl font-bold">
                       KES{' '}
-                      {sampleCounselors.find((c) => c.id === selectedCounselor) &&
+                      {counselors.find((c: Counselor) => c.id === selectedCounselor) &&
                         getPriceForDuration(
-                          sampleCounselors.find((c) => c.id === selectedCounselor)!
+                          counselors.find((c: Counselor) => c.id === selectedCounselor)!
                         )}
                     </span>
                   </div>
@@ -441,10 +497,7 @@ const BookSession: React.FC = () => {
               <Button
                 className="w-full"
                 size="lg"
-                onClick={hasPremium ? handleBookSession : () => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                  window.location.href = '/subscription';
-                }}
+                onClick={hasPremium ? handleBookSession : () => navigate('/pricing')}
                 disabled={isBooking || !sessionDate || !sessionTime || subscriptionLoading}
               >
                 {isBooking ? (
