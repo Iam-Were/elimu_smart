@@ -270,8 +270,8 @@ const BookSession: React.FC = () => {
               Upgrade to Premium to book one-on-one sessions with professional counselors.
               <Button 
                 onClick={() => navigate('/pricing')} 
-                variant="link" 
-                className="ml-2 text-orange-600 underline p-0 h-auto font-medium"
+                variant="ghost" 
+                className="ml-2 text-orange-600 underline p-0 h-auto font-medium hover:text-orange-700"
               >
                 View Plans →
               </Button>
