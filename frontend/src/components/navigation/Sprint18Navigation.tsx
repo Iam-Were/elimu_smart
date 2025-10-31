@@ -30,7 +30,6 @@ import {
   Shield,
   LogOut,
   Brain,
-  BarChart3,
   Calendar,
   MessageSquare,
   Search,
