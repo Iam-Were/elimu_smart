@@ -5463,6 +5463,291 @@ Parse.Cloud.define('getAllCounselors', async (request) => {
     throw new Parse.Error(Parse.Error.INTERNAL, 'Failed to load counselors');
   }
 });
+
+// ============================================================================
+// COUNSELOR DASHBOARD CLOUD FUNCTIONS
+// ============================================================================
+
+// Helper function to check counselor authentication
+const requireCounselor = (request) => {
+  if (!request.user) {
+    throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'User must be authenticated');
+  }
+
+  const userRole = request.user.get('role');
+  if (userRole !== 'counselor') {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Counselor access required');
+  }
+
+  return request.user;
+};
+
+// Get counselor dashboard statistics
+Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
+  const counselor = requireCounselor(request);
+
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get assigned students count
+    const User = Parse.Object.extend('_User');
+    const studentQuery = new Parse.Query(User);
+    studentQuery.equalTo('assignedCounselorId', counselor.id);
+    const assignedStudents = await studentQuery.count({ useMasterKey: true });
+
+    // Get premium students
+    const Subscription = Parse.Object.extend('Subscription');
+    const premiumQuery = new Parse.Query(Subscription);
+    premiumQuery.equalTo('status', 'active');
+    premiumQuery.greaterThan('expiresAt', new Date());
+    
+    const premiumSubs = await premiumQuery.find({ useMasterKey: true });
+    const premiumStudentIds = premiumSubs.map(sub => sub.get('user').id);
+    
+    const premiumStudentQuery = new Parse.Query(User);
+    premiumStudentQuery.equalTo('assignedCounselorId', counselor.id);
+    premiumStudentQuery.containedIn('objectId', premiumStudentIds);
+    const premiumStudents = await premiumStudentQuery.count({ useMasterKey: true });
+
+    // Get today's sessions
+    const Session = Parse.Object.extend('Session');
+    const todaySessionQuery = new Parse.Query(Session);
+    todaySessionQuery.equalTo('counselorId', counselor.id);
+    todaySessionQuery.greaterThanOrEqualTo('scheduledTime', today);
+    todaySessionQuery.lessThan('scheduledTime', tomorrow);
+    const todaySessions = await todaySessionQuery.count({ useMasterKey: true });
+
+    // Get active chats
+    const ChatRoom = Parse.Object.extend('ChatRoom');
+    const chatQuery = new Parse.Query(ChatRoom);
+    chatQuery.equalTo('counselorId', counselor.id);
+    chatQuery.containedIn('status', ['active', 'waiting']);
+    const activeChats = await chatQuery.count({ useMasterKey: true });
+
+    // Get unread messages count
+    const Message = Parse.Object.extend('Message');
+    const unreadQuery = new Parse.Query(Message);
+    unreadQuery.equalTo('receiverId', counselor.id);
+    unreadQuery.equalTo('read', false);
+    const unreadMessages = await unreadQuery.count({ useMasterKey: true });
+
+    // Calculate monthly earnings (mock for now - would integrate with payment system)
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthSessionQuery = new Parse.Query(Session);
+    monthSessionQuery.equalTo('counselorId', counselor.id);
+    monthSessionQuery.equalTo('status', 'completed');
+    monthSessionQuery.greaterThanOrEqualTo('scheduledTime', monthStart);
+    const monthSessions = await monthSessionQuery.count({ useMasterKey: true });
+    const estimatedEarnings = monthSessions * 1500; // KES 1,500 per session
+
+    return {
+      assignedStudents,
+      premiumStudents,
+      todaySessions,
+      activeChats,
+      unreadMessages,
+      urgentCount: Math.floor(assignedStudents * 0.15), // ~15% of students may need urgent attention
+      monthlyEarnings: estimatedEarnings,
+      todayEarnings: todaySessions * 1500
+    };
+  } catch (error) {
+    console.error('Error getting counselor dashboard stats:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to get dashboard stats');
+  }
+});
+
+// Get counselor's sessions
+Parse.Cloud.define('getCounselorSessions', async (request) => {
+  const counselor = requireCounselor(request);
+  const { status, limit = 50, skip = 0 } = request.params;
+
+  try {
+    const Session = Parse.Object.extend('Session');
+    const query = new Parse.Query(Session);
+    query.equalTo('counselorId', counselor.id);
+    
+    if (status) {
+      query.equalTo('status', status);
+    }
+    
+    query.descending('scheduledTime');
+    query.limit(limit);
+    query.skip(skip);
+
+    const sessions = await query.find({ useMasterKey: true });
+
+    return sessions.map(session => ({
+      id: session.id,
+      studentId: session.get('studentId'),
+      studentName: session.get('studentName'),
+      studentEmail: session.get('studentEmail'),
+      studentGrade: session.get('studentGrade') || 'Form 4',
+      title: session.get('title') || 'Counseling Session',
+      description: session.get('description') || '',
+      type: session.get('type') || 'individual',
+      status: session.get('status'),
+      scheduledAt: session.get('scheduledTime'),
+      duration: session.get('duration') || 45,
+      location: session.get('location') || 'Virtual Session',
+      notes: session.get('notes') || '',
+      outcomes: session.get('outcomes') || [],
+      nextSteps: session.get('nextSteps') || [],
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt
+    }));
+  } catch (error) {
+    console.error('Error getting counselor sessions:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to get sessions');
+  }
+});
+
+// Get assigned students
+Parse.Cloud.define('getAssignedStudents', async (request) => {
+  const counselor = requireCounselor(request);
+  const { priority, status, limit = 50, skip = 0 } = request.params;
+
+  try {
+    const User = Parse.Object.extend('_User');
+    const query = new Parse.Query(User);
+    query.equalTo('assignedCounselorId', counselor.id);
+    query.limit(limit);
+    query.skip(skip);
+
+    const students = await query.find({ useMasterKey: true });
+
+    // Get assessment completion for each student
+    const studentData = await Promise.all(students.map(async (student) => {
+      // Get assessment count
+      const Assessment = Parse.Object.extend('Assessment');
+      const assessmentQuery = new Parse.Query(Assessment);
+      assessmentQuery.equalTo('userId', student.id);
+      const assessmentCount = await assessmentQuery.count({ useMasterKey: true });
+
+      // Get career matches count
+      const CareerMatch = Parse.Object.extend('CareerMatch');
+      const matchQuery = new Parse.Query(CareerMatch);
+      matchQuery.equalTo('userId', student.id);
+      const matchCount = await matchQuery.count({ useMasterKey: true });
+
+      // Calculate profile completion
+      const totalFields = 10;
+      let completedFields = 0;
+      if (student.get('firstName')) completedFields++;
+      if (student.get('lastName')) completedFields++;
+      if (student.get('email')) completedFields++;
+      if (student.get('phone')) completedFields++;
+      if (student.get('grade')) completedFields++;
+      if (student.get('school')) completedFields++;
+      if (assessmentCount > 0) completedFields += 2;
+      if (matchCount > 0) completedFields += 2;
+
+      const profileCompletion = Math.round((completedFields / totalFields) * 100);
+
+      return {
+        id: student.id,
+        name: `${student.get('firstName')} ${student.get('lastName')}`,
+        email: student.get('email'),
+        grade: student.get('grade') || 'Form 4',
+        school: student.get('school') || 'Unknown School',
+        profileCompletion,
+        assessments: assessmentCount,
+        careerMatches: matchCount,
+        lastContact: student.updatedAt,
+        priority: profileCompletion < 50 ? 'high' : profileCompletion < 80 ? 'medium' : 'low',
+        status: assessmentCount > 0 ? 'active' : 'pending'
+      };
+    }));
+
+    // Apply filters
+    let filteredData = studentData;
+    if (priority) {
+      filteredData = filteredData.filter(s => s.priority === priority);
+    }
+    if (status) {
+      filteredData = filteredData.filter(s => s.status === status);
+    }
+
+    return filteredData;
+  } catch (error) {
+    console.error('Error getting assigned students:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to get assigned students');
+  }
+});
+
+// Get counselor performance metrics
+Parse.Cloud.define('getCounselorPerformance', async (request) => {
+  const counselor = requireCounselor(request);
+  const { timeRange = '30days' } = request.params;
+
+  try {
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    
+    switch(timeRange) {
+      case '7days':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30days':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '90days':
+        startDate.setDate(startDate.getDate() - 90);
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 30);
+    }
+
+    // Get completed sessions
+    const Session = Parse.Object.extend('Session');
+    const completedQuery = new Parse.Query(Session);
+    completedQuery.equalTo('counselorId', counselor.id);
+    completedQuery.equalTo('status', 'completed');
+    completedQuery.greaterThanOrEqualTo('scheduledTime', startDate);
+    const completedSessions = await completedQuery.count({ useMasterKey: true });
+
+    // Get total scheduled sessions
+    const totalQuery = new Parse.Query(Session);
+    totalQuery.equalTo('counselorId', counselor.id);
+    totalQuery.greaterThanOrEqualTo('scheduledTime', startDate);
+    const totalSessions = await totalQuery.count({ useMasterKey: true });
+
+    // Calculate completion rate
+    const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+
+    // Get average response time from messages
+    const Message = Parse.Object.extend('Message');
+    const messageQuery = new Parse.Query(Message);
+    messageQuery.equalTo('senderId', counselor.id);
+    messageQuery.greaterThanOrEqualTo('createdAt', startDate);
+    messageQuery.limit(100);
+    const messages = await messageQuery.find({ useMasterKey: true });
+
+    // Mock average response time calculation (would need proper timestamp tracking)
+    const avgResponseTime = 2.3; // hours
+
+    // Get student satisfaction (from completed session feedback)
+    // This would integrate with a feedback system
+    const avgSatisfaction = 4.7; // out of 5
+
+    return {
+      completionRate: Math.round(completionRate * 10) / 10,
+      completedSessions,
+      totalSessions,
+      avgResponseTime,
+      avgSatisfaction,
+      messagesReplied: messages.length,
+      timeRange
+    };
+  } catch (error) {
+    console.error('Error getting counselor performance:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to get performance metrics');
+  }
+});
+
 // Get counselor's active chat sessions
 Parse.Cloud.define('getCounselorActiveChatSessions', async (request) => {
   const counselor = requireCounselor(request);
