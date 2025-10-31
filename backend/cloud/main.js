@@ -546,15 +546,22 @@ Parse.Cloud.define('getChatRooms', async (request) => {
         const userQuery = new Parse.Query(Parse.User);
         const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
         // LinkedIn pattern: Just show the name, not "Chat with X"
-        // Fallback: name -> username -> email (formatted) -> 'User'
-        let otherUserName = otherUser.get('name') || otherUser.get('username');
+        // Fallback: name -> username (if not email) -> formatted email -> 'User'
+        let otherUserName = otherUser.get('name');
         if (!otherUserName) {
-          const email = otherUser.get('email');
-          if (email) {
-            // Format email as name: "user@example.com" -> "User"
-            otherUserName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+          const username = otherUser.get('username');
+          // Only use username if it's not an email address
+          if (username && !username.includes('@')) {
+            otherUserName = username;
           } else {
-            otherUserName = 'User';
+            const email = otherUser.get('email') || username;
+            if (email) {
+              // Format email as name: "student@example.com" -> "Student"
+              const emailPrefix = email.split('@')[0];
+              otherUserName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+            } else {
+              otherUserName = 'User';
+            }
           }
         }
         roomData.title = otherUserName;
@@ -870,15 +877,22 @@ Parse.Cloud.define('getInboxConversations', async (request) => {
           const userQuery = new Parse.Query(Parse.User);
           const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
           // LinkedIn pattern: Just show the name, not "Chat with X"
-          // Fallback: name -> username -> email (formatted) -> 'User'
-          let otherUserName = otherUser.get('name') || otherUser.get('username');
+          // Fallback: name -> username (if not email) -> formatted email -> 'User'
+          let otherUserName = otherUser.get('name');
           if (!otherUserName) {
-            const email = otherUser.get('email');
-            if (email) {
-              // Format email as name: "user@example.com" -> "User"
-              otherUserName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+            const username = otherUser.get('username');
+            // Only use username if it's not an email address
+            if (username && !username.includes('@')) {
+              otherUserName = username;
             } else {
-              otherUserName = 'User';
+              const email = otherUser.get('email') || username;
+              if (email) {
+                // Format email as name: "student@example.com" -> "Student"
+                const emailPrefix = email.split('@')[0];
+                otherUserName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+              } else {
+                otherUserName = 'User';
+              }
             }
           }
           roomData.title = otherUserName;
