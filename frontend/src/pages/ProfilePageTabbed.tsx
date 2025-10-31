@@ -729,41 +729,51 @@ export const ProfilePageTabbed: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     {projects.map((project) => (
-                      <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-2">
+                      <div key={project.id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h4 className="font-semibold text-lg">{project.title}</h4>
-                            <p className="text-sm text-gray-600">{project.type}</p>
+                            <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{project.title}</h4>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{project.type}</p>
                           </div>
-                          <Badge
-                            className={
-                              project.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                            }
-                          >
+                          <span className={`text-xs font-medium ${project.status === 'Completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'}`}>
                             {project.status}
-                          </Badge>
+                          </span>
                         </div>
 
-                        <p className="text-sm text-gray-700 mb-3">{project.description}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">{project.description}</p>
 
-                        <div className="flex flex-wrap gap-2 mb-3">
+                        {/* Technologies - LinkedIn neutral pill style */}
+                        <div className="flex flex-wrap gap-2 mb-4">
                           {project.technologies.map((tech) => (
-                            <Badge key={tech} variant="secondary" className="text-xs">
+                            <span key={tech} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-full">
                               {tech}
-                            </Badge>
+                            </span>
                           ))}
                         </div>
 
-                        <div className="flex gap-2">
+                        {/* Links - LinkedIn style */}
+                        <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                           {project.githubUrl && (
-                            <Button variant="outline" size="sm" className="gap-1">
-                              <Github className="h-3 w-3" /> Code
-                            </Button>
+                            <a
+                              href={project.githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1.5 transition-colors"
+                            >
+                              <Github className="h-4 w-4" />
+                              View Code
+                            </a>
                           )}
                           {project.liveUrl && (
-                            <Button variant="outline" size="sm" className="gap-1">
-                              <ExternalLink className="h-3 w-3" /> Live Demo
-                            </Button>
+                            <a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1.5 transition-colors"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Live Demo
+                            </a>
                           )}
                         </div>
                       </div>
@@ -813,32 +823,52 @@ export const ProfilePageTabbed: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {experience.map((exp) => (
-                      <div key={exp.id} className="border-b last:border-b-0 pb-6 last:pb-0">
-                        <div className="flex items-start gap-4">
-                          <div
-                            className={`w-12 h-12 rounded bg-gradient-to-r ${getThemeColor(currentTheme)} flex items-center justify-center text-white flex-shrink-0`}
-                          >
-                            <Briefcase className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-lg">{exp.title}</h4>
-                            <p className="text-gray-600">
-                              {exp.company} • {exp.type}
-                            </p>
-                            <p className="text-sm text-gray-500 mb-2">
-                              {new Date(exp.startDate).toLocaleDateString()} -{' '}
-                              {exp.current ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
-                            </p>
-                            <p className="text-sm text-gray-700 mb-3">{exp.description}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {(exp.skills ?? []).map((skill) => (
-                                <Badge key={skill} variant="outline" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
+                  <div className="space-y-8">
+                    {experience.map((exp, index) => (
+                      <div key={exp.id} className="relative pl-8">
+                        {/* Timeline connector */}
+                        {index < experience.length - 1 && (
+                          <div className="absolute left-6 top-12 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
+                        )}
+                        
+                        <div className="flex gap-4">
+                          {/* Company Logo Circle - LinkedIn style */}
+                          <div className="flex-shrink-0">
+                            <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
+                              <Briefcase className="h-6 w-6 text-slate-400 dark:text-slate-500" />
                             </div>
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">{exp.title}</h4>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{exp.company}</p>
+                              </div>
+                              <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-4">
+                                {new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} -{' '}
+                                {exp.current ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present'}
+                              </span>
+                            </div>
+                            
+                            {/* Description */}
+                            {exp.description && (
+                              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                                {exp.description}
+                              </p>
+                            )}
+                            
+                            {/* Skills - LinkedIn neutral style */}
+                            {(exp.skills ?? []).length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {(exp.skills ?? []).map((skill) => (
+                                  <span key={skill} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-full">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -883,18 +913,38 @@ export const ProfilePageTabbed: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {skills.map((skill) => (
-                      <div key={skill.name} className="p-3 border rounded-lg text-center hover:shadow-md transition-shadow">
-                        <div className="font-medium text-sm mb-2">{skill.name}</div>
-                        <div className="text-xs text-gray-500 mb-2">{skill.category}</div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                          <div
-                            className={`bg-gradient-to-r ${getThemeColor(currentTheme)} h-2 rounded-full`}
-                            style={{ width: `${skill.level}%` }}
-                          ></div>
+                      <div key={skill.name} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50 truncate">
+                              {skill.name}
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{skill.category}</p>
+                          </div>
+                          <span className="text-xs font-medium text-orange-600 dark:text-orange-400 ml-2">
+                            {skill.level}%
+                          </span>
                         </div>
-                        <div className="text-xs text-gray-600">{skill.level}%</div>
+                        
+                        {/* LinkedIn-style Progress Bar */}
+                        <div className="relative">
+                          <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
+                              style={{ width: `${skill.level}%` }}
+                            />
+                          </div>
+                          
+                          {/* Level label */}
+                          <div className="flex justify-between mt-1.5">
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {skill.level >= 75 ? 'Expert' : skill.level >= 50 ? 'Advanced' : skill.level >= 25 ? 'Intermediate' : 'Beginner'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

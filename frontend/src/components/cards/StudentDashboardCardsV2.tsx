@@ -22,6 +22,7 @@ import React, { useState, useEffect } from 'react';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2, AlertCircle, User, Activity } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
@@ -62,12 +63,15 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   // Fetch dashboard data for hero section
   const { careerReadinessScore, userActivities } = useDynamicDashboard();
   
+  // Get auth user to ensure profile photo is synced
+  const { user: authUser } = useAuth();
+  
   // User data state
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastActivity, setLastActivity] = useState<string>('');
 
-  // Fetch Parse User data
+  // Fetch Parse User data - synced with auth user profile photo
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -75,6 +79,9 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
         const currentUser = Parse.User.current();
 
         if (currentUser) {
+          // Refresh user data from server to get latest profile photo
+          await currentUser.fetch();
+          
           const firstName = currentUser.get('firstName') || '';
           const lastName = currentUser.get('lastName') || '';
           const email = currentUser.get('email') || currentUser.get('username') || '';
@@ -109,7 +116,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
     };
 
     fetchUserData();
-  }, []);
+  }, [authUser?.profileImage]); // Re-fetch when auth user's profile image changes
 
   // Calculate last activity
   useEffect(() => {
@@ -194,46 +201,44 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   return (
     <div className="space-y-4 sm:space-y-6">
 
-      {/* Hero KPI - Enhanced Career Readiness Score */}
-      <Card className="overflow-hidden border-l-4 border-orange-500 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-orange-50/50 to-white pb-4 border-b">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-              {/* Enhanced Profile Picture */}
-              <div className="flex-shrink-0 relative">
-                {loadingUser ? (
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-orange-300 bg-orange-100 animate-pulse shadow-lg" />
-                ) : (
-                  <img
-                    src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=160`}
-                    alt="Student profile"
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-orange-300 object-cover shadow-lg"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=160`;
-                    }}
-                  />
-                )}
-              </div>
-
-              {/* Enhanced Welcome Message with Last Activity */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1 truncate">
-                  Welcome back, {userData?.firstName || 'Student'}! 👋
-                </h1>
-                {lastActivity ? (
-                  <p className="text-sm sm:text-base text-slate-600 truncate leading-tight">{lastActivity}</p>
-                ) : (
-                  <p className="text-sm sm:text-base text-slate-600">Ready to continue your career journey?</p>
-                )}
-              </div>
+      {/* Hero KPI - Compact Welcome Card with Profile Photo Sync */}
+      <Card className="overflow-hidden border-l-4 border-orange-500 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
+        <CardHeader className="bg-gradient-to-r from-orange-50/50 to-white pb-3 pt-4 border-b">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Profile Picture - Same size as profile page (h-32 w-32) */}
+            <div className="flex-shrink-0">
+              {loadingUser ? (
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-300 bg-orange-100 animate-pulse shadow-md" />
+              ) : (
+                <img
+                  src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=128`}
+                  alt="Profile"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-300 object-cover shadow-md"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=128`;
+                  }}
+                />
+              )}
             </div>
 
-            {/* Status Badge */}
+            {/* Compact Welcome Message - Emphasized */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                Welcome back, {userData?.firstName || 'Student'}! 👋
+              </h1>
+              {lastActivity ? (
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-snug">{lastActivity}</p>
+              ) : (
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-snug">Ready to continue your career journey?</p>
+              )}
+            </div>
+
+            {/* Status Badge - Compact */}
             {careerReadinessScore && (
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-xs sm:text-sm px-3 py-1.5 flex-shrink-0 font-semibold",
+                  "text-xs px-2.5 py-1 flex-shrink-0 font-semibold hidden sm:flex",
                   careerReadinessScore.overall >= 70 ? "text-green-700 border-green-600 bg-green-50" :
                   careerReadinessScore.overall >= 40 ? "text-amber-700 border-amber-600 bg-amber-50" :
                   "text-red-700 border-red-600 bg-red-50"
