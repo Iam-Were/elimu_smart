@@ -1,5 +1,5 @@
 import React from 'react';
-import { UnifiedInbox } from '@/components/messaging/UnifiedInbox';
+import { UnifiedInboxV2 } from '@/components/messaging/UnifiedInboxV2';
 import { useThemeContext } from '@/hooks/useThemeContext';
 import type { ThemeRole } from '@/types';
 
@@ -41,9 +41,9 @@ const UnifiedInboxPage: React.FC = () => {
         <p className="text-sm text-gray-600 mt-1">{getPageDescription(currentTheme)}</p>
       </div>
 
-      {/* Unified Inbox Component */}
+      {/* LinkedIn-Style Unified Inbox Component */}
       <div className="flex-1 overflow-hidden">
-        <UnifiedInbox />
+        <UnifiedInboxV2 />
       </div>
     </div>
   );
