@@ -534,7 +534,28 @@ Parse.Cloud.define('getChatRooms', async (request) => {
   query.limit(50);
   
   const chatRooms = await query.find({ useMasterKey: true });
-  return chatRooms;
+  
+  // Personalize titles based on current user
+  const personalizedRooms = await Promise.all(chatRooms.map(async (room) => {
+    const roomData = room.toJSON();
+    const participants = roomData.participants || [];
+    const otherParticipantId = participants.find(id => id !== user.id);
+    
+    if (otherParticipantId) {
+      try {
+        const userQuery = new Parse.Query(Parse.User);
+        const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
+        const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
+        roomData.title = `Chat with ${otherUserName}`;
+      } catch (error) {
+        console.warn('Failed to fetch participant name:', error);
+      }
+    }
+    
+    return roomData;
+  }));
+  
+  return personalizedRooms;
 });
 
 // Get messages for a chat room
@@ -806,7 +827,7 @@ Parse.Cloud.define('getInboxConversations', async (request) => {
     
     const rooms = await query.find({ useMasterKey: true });
     
-    // Get unread message counts for each room
+    // Get unread message counts for each room AND personalize titles
     const roomsWithUnread = await Promise.all(rooms.map(async (room) => {
       const ChatMessage = Parse.Object.extend('ChatMessage');
       const messageQuery = new Parse.Query(ChatMessage);
@@ -821,10 +842,27 @@ Parse.Cloud.define('getInboxConversations', async (request) => {
       
       const unreadCount = await messageQuery.count({ useMasterKey: true });
       
-      return {
+      const roomData = {
         ...room.toJSON(),
         unreadCount
       };
+      
+      // Personalize title based on current user
+      const participants = roomData.participants || [];
+      const otherParticipantId = participants.find(id => id !== user.id);
+      
+      if (otherParticipantId) {
+        try {
+          const userQuery = new Parse.Query(Parse.User);
+          const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
+          const otherUserName = otherUser.get('name') || otherUser.get('username') || 'User';
+          roomData.title = `Chat with ${otherUserName}`;
+        } catch (error) {
+          console.warn('Failed to fetch participant name:', error);
+        }
+      }
+      
+      return roomData;
     }));
     
     return roomsWithUnread;

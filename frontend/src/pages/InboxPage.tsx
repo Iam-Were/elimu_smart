@@ -62,7 +62,7 @@ const InboxPage: React.FC = () => {
 
   const { user } = useAuth();
   const { userSubscription } = useSubscription();
-  const { rooms, messages, isLoading, sendMessage } = useChat();
+  const { rooms, messages, isLoading, sendMessage, setCurrentRoom } = useChat();
 
   // Check if user has premium access
   const isPremium = userSubscription?.status === 'active' &&
@@ -228,6 +228,22 @@ const InboxPage: React.FC = () => {
 
   const handleConversationClick = (conversation: LinkedInConversation) => {
     setSelectedConversation(conversation);
+    
+    // Convert LinkedInConversation to ChatRoom and load messages
+    const chatRoom = {
+      id: conversation.id,
+      title: conversation.participant.name,
+      type: conversation.participant.role === 'counselor' ? 'counseling' as const : 'mentoring' as const,
+      participants: [user?.id || '', conversation.participant.id],
+      lastMessage: conversation.lastMessage.content,
+      lastActivity: conversation.lastMessage.timestamp,
+      messageCount: 0,
+      isActive: conversation.participant.isOnline,
+      createdBy: conversation.lastMessage.sender.id
+    };
+    
+    setCurrentRoom(chatRoom);
+    
     // Mark as read locally (backend will handle persistence)
     setConversations(prev => prev.map(c => 
       c.id === conversation.id 
