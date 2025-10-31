@@ -220,25 +220,12 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
       </div>
       
       <header
-        className={cn("bg-white sticky top-0 z-50 w-full border-b border-slate-200 shadow-sm relative overflow-hidden", className)}
-        style={getHeaderStyles()}
+        className={cn("bg-white sticky top-0 z-50 w-full border-b shadow-sm transition-shadow duration-200", className)}
+        style={{ borderColor: 'rgba(0,0,0,0.08)' }}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
       >
-        {/* Subtle floating background elements */}
-        <div
-          className="absolute top-0 left-1/4 w-32 h-32 rounded-full -mt-16 animate-pulse"
-          style={{
-            background: `linear-gradient(to bottom right, ${getThemeColor(currentTheme)}0d, ${getThemeColor(currentTheme)}08)`
-          }}
-        ></div>
-        <div
-          className="absolute top-0 right-1/3 w-24 h-24 rounded-full -mt-12"
-          style={{
-            background: `linear-gradient(to bottom left, ${getThemeColor(currentTheme)}14, ${getThemeColor(currentTheme)}0a)`
-          }}
-        ></div>
-        <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between relative z-10">
+        <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between">
         {/* Enhanced Logo with solid background - Scroll-based animations */}
         <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
           <Link to="/" className="flex items-center space-x-2 group">
@@ -289,15 +276,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <Link
                   to={user?.role === 'counselor' ? '/counselor/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                   className={cn(
-                    "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && "shadow-md scale-110"
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && "text-primary"
                   )}
-                  style={
-                    (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) ? getActiveNavStyles() : {}
-                  }
                 >
-                  <Home className="h-6 w-6" />
-                  <span className="text-xs font-medium mt-1">{user?.role === 'admin' ? 'Admin Panel' : 'Home'}</span>
+                  <Home className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-normal">{user?.role === 'admin' ? 'Admin Panel' : 'Home'}</span>
+                  {(isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && (
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                      style={{ backgroundColor: getThemeColor(currentTheme) }}
+                    />
+                  )}
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -310,13 +300,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   <Link
                     to="/assessment"
                     className={cn(
-                      "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                      isActive("/assessment") && "shadow-md scale-110"
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                      isActive("/assessment") && "text-primary"
                     )}
-                    style={isActive("/assessment") ? getActiveNavStyles() : {}}
                   >
-                    <GraduationCap className="h-6 w-6" />
-                    <span className="text-xs font-medium mt-1">Assessment</span>
+                    <GraduationCap className="h-5 w-5 mb-1" />
+                    <span className="text-xs font-normal">Assessment</span>
+                    {isActive("/assessment") && (
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                        style={{ backgroundColor: getThemeColor(currentTheme) }}
+                      />
+                    )}
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -329,13 +324,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   <Link
                     to="/guidance"
                     className={cn(
-                      "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                      isActive("/guidance") && "shadow-md scale-110"
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                      isActive("/guidance") && "text-primary"
                     )}
-                    style={isActive("/guidance") ? getActiveNavStyles() : {}}
                   >
-                    <Users className="h-6 w-6" />
-                    <span className="text-xs font-medium mt-1">Guidance</span>
+                    <Users className="h-5 w-5 mb-1" />
+                    <span className="text-xs font-normal">Guidance</span>
+                    {isActive("/guidance") && (
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                        style={{ backgroundColor: getThemeColor(currentTheme) }}
+                      />
+                    )}
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -347,13 +347,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <Link
                   to="/inbox"
                   className={cn(
-                    "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                    isActive("/inbox") && "shadow-md scale-110"
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                    isActive("/inbox") && "text-primary"
                   )}
-                  style={isActive("/inbox") ? getActiveNavStyles() : {}}
                 >
-                  <MessageSquare className="h-6 w-6" />
-                  <span className="text-xs font-medium mt-1">Messages</span>
+                  <MessageSquare className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-normal">Messages</span>
+                  {isActive("/inbox") && (
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                      style={{ backgroundColor: getThemeColor(currentTheme) }}
+                    />
+                  )}
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -368,13 +373,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/students"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/counselor") && "shadow-md scale-110"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        isActive("/counselor") && "text-primary"
                       )}
-                      style={isActive("/counselor") ? getActiveNavStyles() : {}}
                     >
-                      <Users className="h-6 w-6" />
-                      <span className="text-xs font-medium mt-1">My Students</span>
+                      <Users className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-normal">My Students</span>
+                      {isActive("/counselor") && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                          style={{ backgroundColor: getThemeColor(currentTheme) }}
+                        />
+                      )}
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -384,13 +394,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/sessions"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#sessions" && "shadow-md scale-110"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        location.pathname.includes("counselor") && location.hash === "#sessions" && "text-primary"
                       )}
-                      style={location.pathname.includes("counselor") && location.hash === "#sessions" ? getActiveNavStyles() : {}}
                     >
-                      <Calendar className="h-6 w-6" />
-                      <span className="text-xs font-medium mt-1">Sessions</span>
+                      <Calendar className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-normal">Sessions</span>
+                      {location.pathname.includes("counselor") && location.hash === "#sessions" && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                          style={{ backgroundColor: getThemeColor(currentTheme) }}
+                        />
+                      )}
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -400,13 +415,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/analytics"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        location.pathname.includes("counselor") && location.hash === "#analytics" && "shadow-md scale-110"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        location.pathname.includes("counselor") && location.hash === "#analytics" && "text-primary"
                       )}
-                      style={location.pathname.includes("counselor") && location.hash === "#analytics" ? getActiveNavStyles() : {}}
                     >
-                      <BarChart3 className="h-6 w-6" />
-                      <span className="text-xs font-medium mt-1">Analytics</span>
+                      <BarChart3 className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-normal">Analytics</span>
+                      {location.pathname.includes("counselor") && location.hash === "#analytics" && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                          style={{ backgroundColor: getThemeColor(currentTheme) }}
+                        />
+                      )}
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -421,13 +441,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/admin/users"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/admin/users") && "shadow-md scale-110"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        isActive("/admin/users") && "text-primary"
                       )}
-                      style={isActive("/admin/users") ? getActiveNavStyles() : {}}
                     >
-                      <Users className="h-6 w-6" />
-                      <span className="text-xs font-medium mt-1">User Mgmt</span>
+                      <Users className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-normal">User Mgmt</span>
+                      {isActive("/admin/users") && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                          style={{ backgroundColor: getThemeColor(currentTheme) }}
+                        />
+                      )}
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -437,13 +462,18 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/admin/analytics"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-3 py-2 text-sm font-medium transition-all duration-200 rounded-xl hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        isActive("/admin/analytics") && "shadow-md scale-110"
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        isActive("/admin/analytics") && "text-primary"
                       )}
-                      style={isActive("/admin/analytics") ? getActiveNavStyles() : {}}
                     >
-                      <BarChart3 className="h-6 w-6" />
-                      <span className="text-xs font-medium mt-1">Analytics</span>
+                      <BarChart3 className="h-5 w-5 mb-1" />
+                      <span className="text-xs font-normal">Analytics</span>
+                      {isActive("/admin/analytics") && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                          style={{ backgroundColor: getThemeColor(currentTheme) }}
+                        />
+                      )}
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
