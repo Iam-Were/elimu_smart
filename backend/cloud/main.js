@@ -5508,21 +5508,26 @@ Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
     const activeChats = await chatQuery.count({ useMasterKey: true });
 
     // Get unread messages count from chat rooms where counselor is participant
-    const ChatMessage = Parse.Object.extend('ChatMessage');
-    const unreadQuery = new Parse.Query(ChatMessage);
-    unreadQuery.notEqualTo('senderId', counselor.id); // Not sent by counselor
-    unreadQuery.equalTo('read', false);
-    
-    // Get chat rooms where counselor is participant
+    // First get all counselor's chat rooms
     const counselorRooms = await chatQuery.find({ useMasterKey: true });
-    const roomIds = counselorRooms.map(room => room.id);
     
-    // Count unread messages in those rooms
-    if (roomIds.length > 0) {
-      const ChatRoom = Parse.Object.extend('ChatRoom');
-      unreadQuery.matchesKeyInQuery('chatRoom', 'objectId', new Parse.Query(ChatRoom).containedIn('objectId', roomIds));
+    // Count unread messages in those rooms (not sent by counselor)
+    let unreadMessages = 0;
+    if (counselorRooms.length > 0) {
+      const ChatMessage = Parse.Object.extend('ChatMessage');
+      const unreadQuery = new Parse.Query(ChatMessage);
+      
+      // Message sender is NOT the counselor
+      unreadQuery.notEqualTo('sender', counselor);
+      
+      // Message is not read yet
+      unreadQuery.equalTo('isRead', false);
+      
+      // Message is in one of counselor's chat rooms
+      unreadQuery.containedIn('chatRoom', counselorRooms);
+      
+      unreadMessages = await unreadQuery.count({ useMasterKey: true });
     }
-    const unreadMessages = roomIds.length > 0 ? await unreadQuery.count({ useMasterKey: true }) : 0;
 
     // Calculate monthly earnings (mock for now - would integrate with payment system)
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
