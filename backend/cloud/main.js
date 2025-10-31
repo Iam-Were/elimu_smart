@@ -7766,3 +7766,559 @@ Parse.Cloud.define('getStudentNotes', async (request) => {
     throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get student notes: ${error.message}`);
   }
 });
+
+// ==========================================
+// PHASE 3: AVAILABILITY & CALENDAR INTEGRATION
+// ==========================================
+
+/**
+ * Set counselor availability schedule
+ * @param {object} schedule - Weekly schedule object
+ * Format: { monday: ['09:00-12:00', '14:00-17:00'], tuesday: [...], ... }
+ */
+Parse.Cloud.define('setAvailability', async (request) => {
+  const counselor = requireCounselor(request);
+  const { schedule } = request.params;
+
+  if (!schedule || typeof schedule !== 'object') {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Schedule object is required');
+  }
+
+  const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  
+  // Validate schedule format
+  for (const day in schedule) {
+    if (!validDays.includes(day.toLowerCase())) {
+      throw new Parse.Error(Parse.Error.INVALID_QUERY, `Invalid day: ${day}`);
+    }
+    if (!Array.isArray(schedule[day])) {
+      throw new Parse.Error(Parse.Error.INVALID_QUERY, `Schedule for ${day} must be an array`);
+    }
+  }
+
+  try {
+    const CounselorAvailability = Parse.Object.extend('CounselorAvailability');
+    
+    // Check if availability already exists
+    const query = new Parse.Query(CounselorAvailability);
+    query.equalTo('counselorId', counselor.id);
+    let availability = await query.first({ useMasterKey: true });
+
+    if (availability) {
+      // Update existing
+      availability.set('schedule', schedule);
+      availability.set('updatedAt', new Date());
+    } else {
+      // Create new
+      availability = new CounselorAvailability();
+      availability.set('counselorId', counselor.id);
+      availability.set('schedule', schedule);
+    }
+
+    await availability.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      schedule
+    };
+  } catch (error) {
+    console.error('Error setting availability:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to set availability: ${error.message}`);
+  }
+});
+
+/**
+ * Block specific time slot
+ * @param {Date} startTime - Start time to block
+ * @param {Date} endTime - End time to block
+ * @param {string} reason - Reason for blocking (optional)
+ */
+Parse.Cloud.define('blockTimeSlot', async (request) => {
+  const counselor = requireCounselor(request);
+  const { startTime, endTime, reason } = request.params;
+
+  if (!startTime || !endTime) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Start time and end time are required');
+  }
+
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Invalid date format');
+  }
+
+  if (start >= end) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Start time must be before end time');
+  }
+
+  try {
+    const BlockedTimeSlot = Parse.Object.extend('BlockedTimeSlot');
+    const blockedSlot = new BlockedTimeSlot();
+    
+    blockedSlot.set('counselorId', counselor.id);
+    blockedSlot.set('startTime', start);
+    blockedSlot.set('endTime', end);
+    blockedSlot.set('reason', reason || 'Unavailable');
+    blockedSlot.set('createdAt', new Date());
+
+    await blockedSlot.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      blockedSlot: {
+        id: blockedSlot.id,
+        startTime: start,
+        endTime: end,
+        reason: reason || 'Unavailable'
+      }
+    };
+  } catch (error) {
+    console.error('Error blocking time slot:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to block time slot: ${error.message}`);
+  }
+});
+
+/**
+ * Get available time slots for booking
+ * @param {string} counselorId - Counselor ID (optional, defaults to current counselor)
+ * @param {Date} date - Date to check availability
+ * @param {number} duration - Session duration in minutes (default: 60)
+ */
+Parse.Cloud.define('getAvailableSlots', async (request) => {
+  const { counselorId, date, duration = 60 } = request.params;
+  
+  const targetCounselorId = counselorId || request.user?.id;
+  if (!targetCounselorId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Counselor ID is required');
+  }
+
+  if (!date) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Date is required');
+  }
+
+  const targetDate = new Date(date);
+  if (isNaN(targetDate.getTime())) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Invalid date format');
+  }
+
+  try {
+    // Get counselor's availability schedule
+    const CounselorAvailability = Parse.Object.extend('CounselorAvailability');
+    const availQuery = new Parse.Query(CounselorAvailability);
+    availQuery.equalTo('counselorId', targetCounselorId);
+    const availability = await availQuery.first({ useMasterKey: true });
+
+    if (!availability) {
+      return {
+        success: true,
+        slots: [],
+        message: 'No availability schedule set'
+      };
+    }
+
+    const schedule = availability.get('schedule');
+    const dayName = targetDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const daySlots = schedule[dayName] || [];
+
+    if (daySlots.length === 0) {
+      return {
+        success: true,
+        slots: [],
+        message: `No availability on ${dayName}s`
+      };
+    }
+
+    // Get existing sessions for the date
+    const Session = Parse.Object.extend('Session');
+    const sessionQuery = new Parse.Query(Session);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    sessionQuery.equalTo('counselorId', targetCounselorId);
+    sessionQuery.greaterThanOrEqualTo('scheduledTime', startOfDay);
+    sessionQuery.lessThan('scheduledTime', endOfDay);
+    sessionQuery.containedIn('status', ['pending', 'confirmed']);
+    const existingSessions = await sessionQuery.find({ useMasterKey: true });
+
+    // Get blocked time slots for the date
+    const BlockedTimeSlot = Parse.Object.extend('BlockedTimeSlot');
+    const blockedQuery = new Parse.Query(BlockedTimeSlot);
+    blockedQuery.equalTo('counselorId', targetCounselorId);
+    blockedQuery.greaterThanOrEqualTo('startTime', startOfDay);
+    blockedQuery.lessThan('endTime', endOfDay);
+    const blockedSlots = await blockedQuery.find({ useMasterKey: true });
+
+    // Generate available slots
+    const availableSlots = [];
+    
+    for (const timeRange of daySlots) {
+      const [startStr, endStr] = timeRange.split('-');
+      const [startHour, startMin] = startStr.split(':').map(Number);
+      const [endHour, endMin] = endStr.split(':').map(Number);
+      
+      let currentTime = new Date(targetDate);
+      currentTime.setHours(startHour, startMin, 0, 0);
+      
+      const rangeEnd = new Date(targetDate);
+      rangeEnd.setHours(endHour, endMin, 0, 0);
+      
+      while (currentTime < rangeEnd) {
+        const slotEnd = new Date(currentTime.getTime() + duration * 60000);
+        
+        if (slotEnd > rangeEnd) break;
+        
+        // Check if slot conflicts with existing session
+        const hasConflict = existingSessions.some(session => {
+          const sessionStart = session.get('scheduledTime');
+          const sessionDuration = session.get('duration') || 60;
+          const sessionEnd = new Date(sessionStart.getTime() + sessionDuration * 60000);
+          
+          return (currentTime < sessionEnd && slotEnd > sessionStart);
+        });
+        
+        // Check if slot conflicts with blocked time
+        const isBlocked = blockedSlots.some(blocked => {
+          const blockedStart = blocked.get('startTime');
+          const blockedEnd = blocked.get('endTime');
+          
+          return (currentTime < blockedEnd && slotEnd > blockedStart);
+        });
+        
+        if (!hasConflict && !isBlocked) {
+          availableSlots.push({
+            startTime: new Date(currentTime),
+            endTime: new Date(slotEnd),
+            duration
+          });
+        }
+        
+        // Move to next slot (30-minute increments)
+        currentTime = new Date(currentTime.getTime() + 30 * 60000);
+      }
+    }
+
+    return {
+      success: true,
+      date: targetDate,
+      dayOfWeek: dayName,
+      slots: availableSlots,
+      totalSlots: availableSlots.length
+    };
+  } catch (error) {
+    console.error('Error getting available slots:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get available slots: ${error.message}`);
+  }
+});
+
+/**
+ * Get counselor's availability schedule
+ */
+Parse.Cloud.define('getAvailabilitySchedule', async (request) => {
+  const counselor = requireCounselor(request);
+
+  try {
+    const CounselorAvailability = Parse.Object.extend('CounselorAvailability');
+    const query = new Parse.Query(CounselorAvailability);
+    query.equalTo('counselorId', counselor.id);
+    const availability = await query.first({ useMasterKey: true });
+
+    if (!availability) {
+      return {
+        success: true,
+        hasSchedule: false,
+        schedule: {}
+      };
+    }
+
+    return {
+      success: true,
+      hasSchedule: true,
+      schedule: availability.get('schedule'),
+      updatedAt: availability.get('updatedAt')
+    };
+  } catch (error) {
+    console.error('Error getting availability schedule:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get availability schedule: ${error.message}`);
+  }
+});
+
+// ==========================================
+// PHASE 4: MESSAGING & OUTREACH
+// ==========================================
+
+/**
+ * Send bulk message to multiple students
+ * @param {array} studentIds - Array of student IDs
+ * @param {string} message - Message content
+ * @param {string} subject - Message subject (optional)
+ */
+Parse.Cloud.define('sendBulkMessage', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentIds, message, subject } = request.params;
+
+  if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student IDs array is required');
+  }
+
+  if (!message || !message.trim()) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Message content is required');
+  }
+
+  if (studentIds.length > 100) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Cannot send to more than 100 students at once');
+  }
+
+  try {
+    const results = {
+      success: [],
+      failed: []
+    };
+
+    for (const studentId of studentIds) {
+      try {
+        // Get or create chat room
+        const ChatRoom = Parse.Object.extend('ChatRoom');
+        const roomQuery = new Parse.Query(ChatRoom);
+        roomQuery.containsAll('participants', [counselor.id, studentId]);
+        let chatRoom = await roomQuery.first({ useMasterKey: true });
+
+        if (!chatRoom) {
+          // Create new chat room
+          chatRoom = new ChatRoom();
+          chatRoom.set('participants', [counselor.id, studentId]);
+          chatRoom.set('createdAt', new Date());
+          chatRoom.set('updatedAt', new Date());
+          await chatRoom.save(null, { useMasterKey: true });
+        }
+
+        // Send message
+        const ChatMessage = Parse.Object.extend('ChatMessage');
+        const newMessage = new ChatMessage();
+        
+        newMessage.set('chatRoom', chatRoom);
+        newMessage.set('sender', counselor.toPointer());
+        newMessage.set('text', message);
+        newMessage.set('isRead', false);
+        newMessage.set('createdAt', new Date());
+
+        await newMessage.save(null, { useMasterKey: true });
+
+        // Update chat room
+        chatRoom.set('lastMessage', newMessage);
+        chatRoom.set('updatedAt', new Date());
+        await chatRoom.save(null, { useMasterKey: true });
+
+        // Send notification
+        try {
+          const Student = Parse.Object.extend('_User');
+          const studentQuery = new Parse.Query(Student);
+          const student = await studentQuery.get(studentId, { useMasterKey: true });
+
+          const Notification = Parse.Object.extend('Notification');
+          const notification = new Notification();
+          notification.set('user', student);
+          notification.set('type', 'new_message');
+          notification.set('title', subject || 'New message from counselor');
+          notification.set('message', message.substring(0, 100) + (message.length > 100 ? '...' : ''));
+          notification.set('isRead', false);
+          notification.set('relatedObjectId', chatRoom.id);
+          notification.set('relatedObjectType', 'ChatRoom');
+          await notification.save(null, { useMasterKey: true });
+        } catch (notificationError) {
+          console.error('Failed to send notification:', notificationError);
+        }
+
+        results.success.push(studentId);
+      } catch (error) {
+        console.error(`Failed to send message to student ${studentId}:`, error);
+        results.failed.push({
+          studentId,
+          error: error.message
+        });
+      }
+    }
+
+    return {
+      success: true,
+      totalSent: results.success.length,
+      totalFailed: results.failed.length,
+      successfulRecipients: results.success,
+      failedRecipients: results.failed
+    };
+  } catch (error) {
+    console.error('Error sending bulk message:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to send bulk message: ${error.message}`);
+  }
+});
+
+/**
+ * Create message template for reuse
+ * @param {string} title - Template title
+ * @param {string} content - Template content with placeholders
+ * @param {string} category - Template category (optional)
+ */
+Parse.Cloud.define('createMessageTemplate', async (request) => {
+  const counselor = requireCounselor(request);
+  const { title, content, category, placeholders } = request.params;
+
+  if (!title || !title.trim()) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Template title is required');
+  }
+
+  if (!content || !content.trim()) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Template content is required');
+  }
+
+  try {
+    const MessageTemplate = Parse.Object.extend('MessageTemplate');
+    const template = new MessageTemplate();
+    
+    template.set('counselorId', counselor.id);
+    template.set('title', title);
+    template.set('content', content);
+    template.set('category', category || 'general');
+    template.set('placeholders', placeholders || []);
+    template.set('createdAt', new Date());
+
+    await template.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      template: {
+        id: template.id,
+        title,
+        content,
+        category,
+        placeholders
+      }
+    };
+  } catch (error) {
+    console.error('Error creating message template:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to create template: ${error.message}`);
+  }
+});
+
+/**
+ * Get counselor's message templates
+ * @param {string} category - Filter by category (optional)
+ */
+Parse.Cloud.define('getMessageTemplates', async (request) => {
+  const counselor = requireCounselor(request);
+  const { category } = request.params;
+
+  try {
+    const MessageTemplate = Parse.Object.extend('MessageTemplate');
+    const query = new Parse.Query(MessageTemplate);
+    query.equalTo('counselorId', counselor.id);
+    
+    if (category) {
+      query.equalTo('category', category);
+    }
+    
+    query.descending('createdAt');
+    query.limit(50);
+
+    const templates = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      templates: templates.map(t => ({
+        id: t.id,
+        title: t.get('title'),
+        content: t.get('content'),
+        category: t.get('category'),
+        placeholders: t.get('placeholders') || [],
+        createdAt: t.get('createdAt')
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting message templates:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get templates: ${error.message}`);
+  }
+});
+
+/**
+ * Update message template
+ * @param {string} templateId - Template ID
+ * @param {string} title - New title (optional)
+ * @param {string} content - New content (optional)
+ * @param {string} category - New category (optional)
+ */
+Parse.Cloud.define('updateMessageTemplate', async (request) => {
+  const counselor = requireCounselor(request);
+  const { templateId, title, content, category, placeholders } = request.params;
+
+  if (!templateId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Template ID is required');
+  }
+
+  try {
+    const MessageTemplate = Parse.Object.extend('MessageTemplate');
+    const query = new Parse.Query(MessageTemplate);
+    const template = await query.get(templateId, { useMasterKey: true });
+
+    // Verify ownership
+    if (template.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only update your own templates');
+    }
+
+    if (title) template.set('title', title);
+    if (content) template.set('content', content);
+    if (category) template.set('category', category);
+    if (placeholders) template.set('placeholders', placeholders);
+    template.set('updatedAt', new Date());
+
+    await template.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      template: {
+        id: template.id,
+        title: template.get('title'),
+        content: template.get('content'),
+        category: template.get('category'),
+        placeholders: template.get('placeholders')
+      }
+    };
+  } catch (error) {
+    console.error('Error updating message template:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to update template: ${error.message}`);
+  }
+});
+
+/**
+ * Delete message template
+ * @param {string} templateId - Template ID
+ */
+Parse.Cloud.define('deleteMessageTemplate', async (request) => {
+  const counselor = requireCounselor(request);
+  const { templateId } = request.params;
+
+  if (!templateId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Template ID is required');
+  }
+
+  try {
+    const MessageTemplate = Parse.Object.extend('MessageTemplate');
+    const query = new Parse.Query(MessageTemplate);
+    const template = await query.get(templateId, { useMasterKey: true });
+
+    // Verify ownership
+    if (template.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only delete your own templates');
+    }
+
+    await template.destroy({ useMasterKey: true });
+
+    return {
+      success: true,
+      deletedId: templateId
+    };
+  } catch (error) {
+    console.error('Error deleting message template:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to delete template: ${error.message}`);
+  }
+});
