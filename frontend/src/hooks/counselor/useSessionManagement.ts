@@ -1,26 +1,14 @@
 import { useState } from 'react';
-import Parse from 'parse';
+import { getParse } from '@/config/parse';
 
-interface SessionUpdateParams {
-  sessionId: string;
-  status: 'confirmed' | 'cancelled' | 'completed' | 'in_progress' | 'pending';
+export interface SessionRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  type: string;
+  preferredDate: Date;
+  status: 'pending' | 'approved' | 'rejected';
   notes?: string;
-  outcomes?: any;
-  cancellationReason?: string;
-}
-
-interface RescheduleParams {
-  sessionId: string;
-  newTime: Date;
-  reason?: string;
-}
-
-interface SessionNotesParams {
-  sessionId: string;
-  notes?: string;
-  nextSteps?: string;
-  resources?: string[];
-  outcomes?: any;
 }
 
 export const useSessionManagement = () => {
@@ -28,124 +16,100 @@ export const useSessionManagement = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Update session status (confirm, cancel, complete)
+   * Get pending session requests
    */
-  const updateSessionStatus = async (params: SessionUpdateParams) => {
+  const getPendingSessionRequests = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await Parse.Cloud.run('updateSessionStatus', params);
-      return result;
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getPendingSessionRequests');
+      return result.map((req: any) => ({
+        ...req,
+        preferredDate: new Date(req.preferredDate)
+      }));
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to update session status';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to fetch session requests');
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Reschedule a session to a new time
+   * Update session status
    */
-  const rescheduleSession = async (params: RescheduleParams) => {
+  const updateSessionStatus = async (sessionId: string, status: 'approved' | 'rejected', notes?: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await Parse.Cloud.run('rescheduleSession', params);
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('updateSessionStatus', {
+        sessionId,
+        status,
+        notes
+      });
       return result;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to reschedule session';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to update session');
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Add or update session notes
+   * Reschedule a session
    */
-  const addSessionNotes = async (params: SessionNotesParams) => {
+  const rescheduleSession = async (sessionId: string, newDate: Date) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await Parse.Cloud.run('addSessionNotes', params);
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('rescheduleSession', {
+        sessionId,
+        newDate: newDate.toISOString()
+      });
       return result;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to add session notes';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to reschedule session');
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Get detailed session information
+   * Add session notes
    */
-  const getSessionDetails = async (sessionId: string) => {
+  const addSessionNotes = async (sessionId: string, notes: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await Parse.Cloud.run('getSessionDetails', { sessionId });
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('addSessionNotes', {
+        sessionId,
+        notes
+      });
       return result;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to get session details';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to add notes');
+      throw err;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  /**
-   * Confirm a session (shortcut for updateSessionStatus)
-   */
-  const confirmSession = async (sessionId: string, notes?: string) => {
-    return updateSessionStatus({
-      sessionId,
-      status: 'confirmed',
-      notes
-    });
-  };
-
-  /**
-   * Cancel a session (shortcut for updateSessionStatus)
-   */
-  const cancelSession = async (sessionId: string, cancellationReason: string) => {
-    return updateSessionStatus({
-      sessionId,
-      status: 'cancelled',
-      cancellationReason
-    });
-  };
-
-  /**
-   * Complete a session (shortcut for updateSessionStatus)
-   */
-  const completeSession = async (sessionId: string, notes?: string, outcomes?: any) => {
-    return updateSessionStatus({
-      sessionId,
-      status: 'completed',
-      notes,
-      outcomes
-    });
   };
 
   return {
-    isLoading,
-    error,
+    getPendingSessionRequests,
     updateSessionStatus,
     rescheduleSession,
     addSessionNotes,
-    getSessionDetails,
-    confirmSession,
-    cancelSession,
-    completeSession
+    isLoading,
+    error
   };
 };
