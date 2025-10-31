@@ -1,6 +1,7 @@
 import React from 'react';
 import CounselorDashboardCards from '../../components/counselor/CounselorDashboardCards';
 import CounselorProfileSidebar from '../../components/counselor/CounselorProfileSidebar';
+import { CounselorActivityFeed } from '../../components/counselor/CounselorActivityFeed';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useCounselorPerformance } from '../../hooks/useCounselorPerformance';
@@ -22,8 +23,9 @@ const CounselorDashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
           
           {/* Left Sidebar - Hidden on mobile, visible on desktop */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block space-y-6">
             <CounselorProfileSidebar />
+            <CounselorActivityFeed />
           </div>
 
           {/* Main Content Area */}

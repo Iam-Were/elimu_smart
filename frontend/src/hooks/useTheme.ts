@@ -25,13 +25,35 @@ const themeToRole = (theme: 'orange' | 'yellow' | 'purple'): ThemeRole => {
   return 'student';
 };
 
+// Get user's role-based theme from body classes (set by useAuth)
+const getUserRoleTheme = (): ThemeRole | null => {
+  try {
+    const body = document.body;
+    if (body.classList.contains('theme-admin')) return 'admin';
+    if (body.classList.contains('theme-counselor')) return 'counselor';
+    // Student is default (no class)
+    if (body.classList.contains('theme-student')) return 'student';
+  } catch (error) {
+    console.warn('Failed to get user role for theme:', error);
+  }
+  return null;
+};
+
 export const useTheme = (): UseThemeReturn => {
   const [currentTheme, setCurrentTheme] = useState<ThemeRole>(() => {
-    // Get initial theme from localStorage (Parse fallback handled in service)
+    // PRIORITY 1: Use user's role-based theme if logged in
+    const roleTheme = getUserRoleTheme();
+    if (roleTheme) {
+      return roleTheme;
+    }
+    
+    // PRIORITY 2: Get theme from localStorage (for manual overrides)
     const savedTheme = localStorage.getItem('elimu-theme');
     if (savedTheme === 'orange' || savedTheme === 'yellow' || savedTheme === 'purple') {
       return themeToRole(savedTheme);
     }
+    
+    // PRIORITY 3: Default to student theme
     return 'student';
   });
 
@@ -49,6 +71,26 @@ export const useTheme = (): UseThemeReturn => {
   useEffect(() => {
     applyRoleTheme(currentTheme);
     localStorage.setItem('elimu-theme', roleToTheme(currentTheme));
+  }, [currentTheme]);
+
+  // 🎨 AUTO-SYNC THEME WITH USER ROLE
+  // When user logs in/out or role changes, update theme automatically
+  useEffect(() => {
+    const syncThemeWithUserRole = () => {
+      const roleTheme = getUserRoleTheme();
+      if (roleTheme && roleTheme !== currentTheme) {
+        console.log(`🎨 Auto-syncing theme from ${currentTheme} to ${roleTheme} based on user role`);
+        setCurrentTheme(roleTheme);
+      }
+    };
+
+    // Check immediately on mount
+    syncThemeWithUserRole();
+
+    // Poll for role changes every 2 seconds (handles role switching, login/logout)
+    const interval = setInterval(syncThemeWithUserRole, 2000);
+
+    return () => clearInterval(interval);
   }, [currentTheme]);
 
   // Apply dark mode when it changes
