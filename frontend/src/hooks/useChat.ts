@@ -17,6 +17,8 @@ export interface ChatRoom {
   isActive: boolean;
   createdBy: string;
   unreadCount?: number;
+  isPinned?: boolean;
+  isMuted?: boolean;
 }
 
 export interface ChatMessage {
@@ -354,6 +356,72 @@ export const useChat = () => {
     }
   }, [user, getSessionToken]);
 
+  // Pin/Unpin conversation
+  const pinConversation = useCallback(async (chatRoomId: string) => {
+    if (!user) return { success: false };
+
+    try {
+      const result = await ParseApi.callCloudFunction('pinConversation', { chatRoomId }, getSessionToken()) as unknown as Record<string, unknown>;
+
+      // Update local state
+      setChatState(prev => ({
+        ...prev,
+        rooms: prev.rooms.map(room =>
+          room.id === chatRoomId ? { ...room, isPinned: result.isPinned as boolean } : room
+        )
+      }));
+
+      return { success: result.success === true, isPinned: result.isPinned as boolean };
+    } catch (error) {
+      console.error('Failed to pin/unpin conversation:', error);
+      return { success: false };
+    }
+  }, [user, getSessionToken]);
+
+  // Mute/Unmute conversation
+  const muteConversation = useCallback(async (chatRoomId: string) => {
+    if (!user) return { success: false };
+
+    try {
+      const result = await ParseApi.callCloudFunction('muteConversation', { chatRoomId }, getSessionToken()) as unknown as Record<string, unknown>;
+
+      // Update local state
+      setChatState(prev => ({
+        ...prev,
+        rooms: prev.rooms.map(room =>
+          room.id === chatRoomId ? { ...room, isMuted: result.isMuted as boolean } : room
+        )
+      }));
+
+      return { success: result.success === true, isMuted: result.isMuted as boolean };
+    } catch (error) {
+      console.error('Failed to mute/unmute conversation:', error);
+      return { success: false };
+    }
+  }, [user, getSessionToken]);
+
+  // Delete conversation
+  const deleteConversation = useCallback(async (chatRoomId: string) => {
+    if (!user) return { success: false };
+
+    try {
+      const result = await ParseApi.callCloudFunction('deleteConversation', { chatRoomId }, getSessionToken());
+
+      // Remove deleted room from state
+      setChatState(prev => ({
+        ...prev,
+        rooms: prev.rooms.filter(room => room.id !== chatRoomId),
+        currentRoom: prev.currentRoom?.id === chatRoomId ? undefined : prev.currentRoom,
+        messages: prev.currentRoom?.id === chatRoomId ? [] : prev.messages
+      }));
+
+      return { success: (result as unknown as Record<string, unknown>).success === true };
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+      return { success: false };
+    }
+  }, [user, getSessionToken]);
+
   // Send multimedia message (text, image, or file)
   const sendMultimediaMessage = useCallback(async (params: {
     chatRoomId: string;
@@ -620,6 +688,9 @@ export const useChat = () => {
     getInboxConversations,
     searchConversations,
     archiveConversation,
+    pinConversation,
+    muteConversation,
+    deleteConversation,
     createChatRoom
   };
 };

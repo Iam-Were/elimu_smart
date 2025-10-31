@@ -520,11 +520,11 @@ Parse.Cloud.define('updateRoomMessagesStatus', async (request) => {
 // Get chat rooms for current user
 Parse.Cloud.define('getChatRooms', async (request) => {
   const user = request.user;
-  
+
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
   const ChatRoom = Parse.Object.extend('ChatRoom');
   const query = new Parse.Query(ChatRoom);
   query.containsAll('participants', [user.id]);
@@ -532,51 +532,69 @@ Parse.Cloud.define('getChatRooms', async (request) => {
   query.descending('lastActivity');
   query.include(['createdBy']);
   query.limit(50);
-  
+
   const chatRooms = await query.find({ useMasterKey: true });
-  
-  // Personalize titles based on current user
-  const personalizedRooms = await Promise.all(chatRooms.map(async (room) => {
-    const roomData = room.toJSON();
-    const participants = roomData.participants || [];
-    const otherParticipantId = participants.find(id => id !== user.id);
-    
-    if (otherParticipantId) {
-      try {
-        const userQuery = new Parse.Query(Parse.User);
-        const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
-        // LinkedIn pattern: Just show the name, not "Chat with X"
-        // Fallback: name -> username (if not email) -> formatted email -> 'User'
-        let otherUserName = otherUser.get('name');
-        if (!otherUserName) {
-          const username = otherUser.get('username');
-          // Only use username if it's not an email address
-          if (username && !username.includes('@')) {
-            otherUserName = username;
-          } else {
-            const email = otherUser.get('email') || username;
-            if (email) {
-              // Format email as name: "student@example.com" -> "Student"
-              const emailPrefix = email.split('@')[0];
-              otherUserName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
-            } else {
-              otherUserName = 'User';
+
+  // Filter out conversations deleted by current user and personalize titles
+  const personalizedRooms = await Promise.all(
+    chatRooms
+      .filter(room => {
+        const deletedBy = room.get('deletedBy') || [];
+        return !deletedBy.includes(user.id);
+      })
+      .map(async (room) => {
+        const roomData = room.toJSON();
+        const participants = roomData.participants || [];
+        const otherParticipantId = participants.find(id => id !== user.id);
+
+        // Add pin/mute status for current user
+        const pinnedBy = room.get('pinnedBy') || [];
+        const mutedBy = room.get('mutedBy') || [];
+        roomData.isPinned = pinnedBy.includes(user.id);
+        roomData.isMuted = mutedBy.includes(user.id);
+
+        if (otherParticipantId) {
+          try {
+            const userQuery = new Parse.Query(Parse.User);
+            const otherUser = await userQuery.get(otherParticipantId, { useMasterKey: true });
+            // LinkedIn pattern: Just show the name, not "Chat with X"
+            // Fallback: name -> username (if not email) -> formatted email -> 'User'
+            let otherUserName = otherUser.get('name');
+            if (!otherUserName) {
+              const username = otherUser.get('username');
+              // Only use username if it's not an email address
+              if (username && !username.includes('@')) {
+                otherUserName = username;
+              } else {
+                const email = otherUser.get('email') || username;
+                if (email) {
+                  // Format email as name: "student@example.com" -> "Student"
+                  const emailPrefix = email.split('@')[0];
+                  otherUserName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+                } else {
+                  otherUserName = 'User';
+                }
+              }
             }
+            roomData.title = otherUserName;
+            // Include participant details for richer UI
+            roomData.participantName = otherUserName;
+            roomData.participantRole = otherUser.get('role') || 'user';
+          } catch (error) {
+            console.warn('Failed to fetch participant name:', error);
           }
         }
-        roomData.title = otherUserName;
-        // Include participant details for richer UI
-        roomData.participantName = otherUserName;
-        roomData.participantRole = otherUser.get('role') || 'user';
-      } catch (error) {
-        console.warn('Failed to fetch participant name:', error);
-      }
-    }
-    
-    return roomData;
-  }));
-  
-  return personalizedRooms;
+
+        return roomData;
+      })
+  );
+
+  // Sort pinned conversations to top
+  return personalizedRooms.sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return 0; // Keep original order (by lastActivity) for same pin status
+  });
 });
 
 // Get messages for a chat room
@@ -1065,6 +1083,132 @@ Parse.Cloud.define('getFileUploadUrl', async (request) => {
     uploadUrl: `${request.config.serverURL}/files/${uniqueFileName}`,
     fileType: fileType
   };
+});
+
+// Pin/Unpin conversation
+Parse.Cloud.define('pinConversation', async (request) => {
+  const { chatRoomId } = request.params;
+  const user = request.user;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+
+  try {
+    const ChatRoom = Parse.Object.extend('ChatRoom');
+    const query = new Parse.Query(ChatRoom);
+    const chatRoom = await query.get(chatRoomId, { useMasterKey: true });
+
+    // Check if user is participant
+    const participants = chatRoom.get('participants');
+    if (!participants.includes(user.id)) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Conversation not found');
+    }
+
+    // Toggle pin status (per-user basis using array field)
+    let pinnedBy = chatRoom.get('pinnedBy') || [];
+    const isPinned = pinnedBy.includes(user.id);
+
+    if (isPinned) {
+      // Unpin: remove user from pinnedBy array
+      pinnedBy = pinnedBy.filter(id => id !== user.id);
+    } else {
+      // Pin: add user to pinnedBy array
+      pinnedBy.push(user.id);
+    }
+
+    chatRoom.set('pinnedBy', pinnedBy);
+    await chatRoom.save(null, { useMasterKey: true });
+
+    return { success: true, isPinned: !isPinned };
+  } catch (error) {
+    console.error('Pin conversation error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to pin/unpin conversation');
+  }
+});
+
+// Mute/Unmute conversation notifications
+Parse.Cloud.define('muteConversation', async (request) => {
+  const { chatRoomId } = request.params;
+  const user = request.user;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+
+  try {
+    const ChatRoom = Parse.Object.extend('ChatRoom');
+    const query = new Parse.Query(ChatRoom);
+    const chatRoom = await query.get(chatRoomId, { useMasterKey: true });
+
+    // Check if user is participant
+    const participants = chatRoom.get('participants');
+    if (!participants.includes(user.id)) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Conversation not found');
+    }
+
+    // Toggle mute status (per-user basis using array field)
+    let mutedBy = chatRoom.get('mutedBy') || [];
+    const isMuted = mutedBy.includes(user.id);
+
+    if (isMuted) {
+      // Unmute: remove user from mutedBy array
+      mutedBy = mutedBy.filter(id => id !== user.id);
+    } else {
+      // Mute: add user to mutedBy array
+      mutedBy.push(user.id);
+    }
+
+    chatRoom.set('mutedBy', mutedBy);
+    await chatRoom.save(null, { useMasterKey: true });
+
+    return { success: true, isMuted: !isMuted };
+  } catch (error) {
+    console.error('Mute conversation error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to mute/unmute conversation');
+  }
+});
+
+// Delete conversation (soft delete - mark as deleted for user)
+Parse.Cloud.define('deleteConversation', async (request) => {
+  const { chatRoomId } = request.params;
+  const user = request.user;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+
+  try {
+    const ChatRoom = Parse.Object.extend('ChatRoom');
+    const query = new Parse.Query(ChatRoom);
+    const chatRoom = await query.get(chatRoomId, { useMasterKey: true });
+
+    // Check if user is participant
+    const participants = chatRoom.get('participants');
+    if (!participants.includes(user.id)) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Conversation not found');
+    }
+
+    // Soft delete: add user to deletedBy array (conversation hidden for this user only)
+    let deletedBy = chatRoom.get('deletedBy') || [];
+    if (!deletedBy.includes(user.id)) {
+      deletedBy.push(user.id);
+    }
+
+    chatRoom.set('deletedBy', deletedBy);
+
+    // If both participants deleted, mark as inactive
+    if (deletedBy.length === participants.length) {
+      chatRoom.set('isActive', false);
+    }
+
+    await chatRoom.save(null, { useMasterKey: true });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to delete conversation');
+  }
 });
 
 // ===== DYNAMIC DASHBOARD SYSTEM =====

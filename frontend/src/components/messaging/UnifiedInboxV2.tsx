@@ -12,7 +12,6 @@ import { useThemeContext } from '@/hooks/useThemeContext';
 import { toast } from 'sonner';
 import type { ThemeRole } from '@/types';
 import {
-  togglePinConversation as apiTogglePin,
   toggleStarMessage as apiToggleStar,
   toggleReaction as apiToggleReaction,
   getUserChatPreferences,
@@ -43,6 +42,9 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
     sendMessage,
     setCurrentRoom,
     archiveConversation,
+    pinConversation,
+    muteConversation,
+    deleteConversation,
   } = useChat();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,37 +95,22 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
     loadPreferences();
   }, [user, currentRoom?.id]);
 
-  // Handler: Toggle pinned conversation (optimistic UI + backend sync)
+  // Handler: Toggle pinned conversation (uses backend directly)
   const togglePinnedConversation = useCallback(
     async (conversationId: string) => {
-      // Optimistic UI update
-      const previousState = pinnedConversationIds;
-      const isPinned = previousState.includes(conversationId);
-
-      setPinnedConversationIds((prev) => {
-        if (isPinned) {
-          return prev.filter((id) => id !== conversationId);
-        } else {
-          return [conversationId, ...prev];
-        }
-      });
-
-      // Sync to backend
       try {
-        const result = await apiTogglePin(conversationId);
-
+        const result = await pinConversation(conversationId);
         if (result.success) {
           toast.success(result.isPinned ? 'Conversation pinned' : 'Conversation unpinned');
+        } else {
+          toast.error('Failed to pin conversation');
         }
       } catch (error) {
-        console.warn('Failed to sync pin to backend, reverting:', error);
-
-        // Revert on error
-        setPinnedConversationIds(previousState);
-        toast.error('Failed to update pin status');
+        console.error('Failed to pin conversation:', error);
+        toast.error('Failed to pin conversation');
       }
     },
-    [pinnedConversationIds]
+    [pinConversation]
   );
 
   // Handler: Toggle starred message (optimistic UI + backend sync)
@@ -309,16 +296,44 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
   );
 
   // Handler: Mute conversation
-  const handleMuteConversation = useCallback(async (_conversationId: string) => {
-    // TODO: Implement backend mute functionality
-    toast.info('Mute feature coming soon');
-  }, []);
+  const handleMuteConversation = useCallback(
+    async (conversationId: string) => {
+      try {
+        const result = await muteConversation(conversationId);
+        if (result.success) {
+          toast.success(result.isMuted ? 'Conversation muted' : 'Conversation unmuted');
+        } else {
+          toast.error('Failed to mute conversation');
+        }
+      } catch (error) {
+        console.error('Failed to mute conversation:', error);
+        toast.error('Failed to mute conversation');
+      }
+    },
+    [muteConversation]
+  );
 
   // Handler: Delete conversation
-  const handleDeleteConversation = useCallback(async (_conversationId: string) => {
-    // TODO: Implement backend delete functionality
-    toast.error('Delete functionality coming soon');
-  }, []);
+  const handleDeleteConversation = useCallback(
+    async (conversationId: string) => {
+      try {
+        const result = await deleteConversation(conversationId);
+        if (result.success) {
+          toast.success('Conversation deleted');
+          // Close chat panel if deleted conversation was open
+          if (currentRoom?.id === conversationId) {
+            setCurrentRoom(undefined);
+          }
+        } else {
+          toast.error('Failed to delete conversation');
+        }
+      } catch (error) {
+        console.error('Failed to delete conversation:', error);
+        toast.error('Failed to delete conversation');
+      }
+    },
+    [deleteConversation, currentRoom, setCurrentRoom]
+  );
 
   // Transform chat rooms to conversations
   const conversations = useMemo(() => {
@@ -344,6 +359,8 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
         isOnline: room.isActive,
         lastActivity: room.lastActivity,
         participantId,
+        isPinned: room.isPinned || false,
+        isMuted: room.isMuted || false,
       };
     });
   }, [rooms, user?.id, messages]);
@@ -352,14 +369,14 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
   const filteredByTab = useMemo(() => {
     switch (activeTab) {
       case 'pinned':
-        return conversations.filter((conv) => pinnedConversationIds.includes(conv.id));
+        return conversations.filter((conv) => conv.isPinned);
       case 'archived':
         return []; // Archived conversations would come from a separate backend call
       case 'all':
       default:
         return conversations;
     }
-  }, [conversations, activeTab, pinnedConversationIds]);
+  }, [conversations, activeTab]);
 
   // Filter and sort conversations (search + pinned first)
   const filteredConversations = useMemo(() => {
@@ -517,7 +534,7 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
                   timestamp={formatRelativeTime(conv.lastActivity)}
                   unreadCount={conv.unreadCount}
                   isOnline={conv.isOnline}
-                  isPinned={pinnedConversationIds.includes(conv.id)}
+                  isPinned={conv.isPinned || false}
                   isSelected={currentRoom?.id === conv.id}
                   onClick={handleConversationClick}
                   onPin={togglePinnedConversation}
@@ -547,7 +564,7 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
               participantInitials={(currentRoom.title || 'C').substring(0, 2).toUpperCase()}
               participantTitle={currentRoom.type}
               isOnline={currentRoom.isActive}
-              isPinned={pinnedConversationIds.includes(currentRoom.id)}
+              isPinned={currentRoom.isPinned || false}
               messages={messages}
               currentUserId={user?.id || ''}
               isTyping={false} // TODO: Implement typing detection
