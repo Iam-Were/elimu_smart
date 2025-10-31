@@ -31,8 +31,8 @@ export const useAvailability = () => {
     try {
       const result = await Parse.Cloud.run('setAvailability', { schedule });
       return result;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to set availability';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to set availability';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -50,8 +50,8 @@ export const useAvailability = () => {
     try {
       const result = await Parse.Cloud.run('blockTimeSlot', params);
       return result;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to block time slot';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to block time slot';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -77,8 +77,8 @@ export const useAvailability = () => {
         counselorId
       });
       return result.slots || [];
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to get available slots';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to get available slots';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -96,8 +96,8 @@ export const useAvailability = () => {
     try {
       const result = await Parse.Cloud.run('getAvailabilitySchedule');
       return result;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to get availability schedule';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Operation failed" || 'Failed to get availability schedule';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

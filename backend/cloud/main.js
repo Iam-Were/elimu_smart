@@ -8322,3 +8322,291 @@ Parse.Cloud.define('deleteMessageTemplate', async (request) => {
     throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to delete template: ${error.message}`);
   }
 });
+
+// ============================================================================
+// PHASE 5: COUNSELOR ACTIVITY FEED & STUDENT TIMELINE
+// ============================================================================
+
+/**
+ * Get counselor activity feed
+ * Returns recent activities (messages, sessions, assessments, milestones)
+ */
+Parse.Cloud.define('getActivityFeed', async (request) => {
+  requireCounselor(request);
+  
+  const { limit = 20 } = request.params;
+  const counselor = request.user;
+  
+  try {
+    const activities = [];
+    
+    // 1. Get recent messages from assigned students
+    const CounselorStudent = Parse.Object.extend('CounselorStudent');
+    const studentQuery = new Parse.Query(CounselorStudent);
+    studentQuery.equalTo('counselor', counselor);
+    studentQuery.include('student');
+    const assignments = await studentQuery.find({ useMasterKey: true });
+    const studentIds = assignments.map(a => a.get('student').id);
+    
+    if (studentIds.length > 0) {
+      // Get recent chat messages
+      const ChatMessage = Parse.Object.extend('ChatMessage');
+      const messageQuery = new Parse.Query(ChatMessage);
+      messageQuery.containedIn('sender', studentIds.map(id => {
+        const user = new Parse.User();
+        user.id = id;
+        return user;
+      }));
+      messageQuery.descending('createdAt');
+      messageQuery.limit(10);
+      messageQuery.include('sender');
+      
+      const messages = await messageQuery.find({ useMasterKey: true });
+      messages.forEach(msg => {
+        activities.push({
+          type: 'message',
+          id: msg.id,
+          studentId: msg.get('sender').id,
+          studentName: `${msg.get('sender').get('firstName')} ${msg.get('sender').get('lastName')}`,
+          content: msg.get('text'),
+          timestamp: msg.createdAt,
+          isRead: msg.get('isRead') || false
+        });
+      });
+      
+      // Get recent sessions
+      const Session = Parse.Object.extend('Session');
+      const sessionQuery = new Parse.Query(Session);
+      sessionQuery.equalTo('counselor', counselor);
+      sessionQuery.containedIn('status', ['pending', 'confirmed', 'completed']);
+      sessionQuery.descending('scheduledTime');
+      sessionQuery.limit(10);
+      sessionQuery.include('student');
+      
+      const sessions = await sessionQuery.find({ useMasterKey: true });
+      sessions.forEach(session => {
+        const student = session.get('student');
+        activities.push({
+          type: 'session',
+          id: session.id,
+          studentId: student.id,
+          studentName: `${student.get('firstName')} ${student.get('lastName')}`,
+          status: session.get('status'),
+          scheduledTime: session.get('scheduledTime'),
+          timestamp: session.get('status') === 'completed' ? session.updatedAt : session.get('scheduledTime'),
+          duration: session.get('duration') || 60
+        });
+      });
+      
+      // Get recent assessment completions
+      const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+      const assessmentQuery = new Parse.Query(RiasecAssessment);
+      assessmentQuery.containedIn('user', studentIds.map(id => {
+        const user = new Parse.User();
+        user.id = id;
+        return user;
+      }));
+      assessmentQuery.equalTo('isComplete', true);
+      assessmentQuery.descending('updatedAt');
+      assessmentQuery.limit(10);
+      assessmentQuery.include('user');
+      
+      const assessments = await assessmentQuery.find({ useMasterKey: true });
+      assessments.forEach(assessment => {
+        const student = assessment.get('user');
+        activities.push({
+          type: 'assessment',
+          id: assessment.id,
+          studentId: student.id,
+          studentName: `${student.get('firstName')} ${student.get('lastName')}`,
+          hollandCode: assessment.get('hollandCode'),
+          primaryType: assessment.get('primaryType'),
+          timestamp: assessment.updatedAt
+        });
+      });
+      
+      // Get recent milestones
+      const StudentMilestone = Parse.Object.extend('StudentMilestone');
+      const milestoneQuery = new Parse.Query(StudentMilestone);
+      milestoneQuery.containedIn('student', studentIds.map(id => {
+        const user = new Parse.User();
+        user.id = id;
+        return user;
+      }));
+      milestoneQuery.descending('achievedAt');
+      milestoneQuery.limit(10);
+      milestoneQuery.include('student');
+      milestoneQuery.exists('achievedAt');
+      
+      const milestones = await milestoneQuery.find({ useMasterKey: true });
+      milestones.forEach(milestone => {
+        const student = milestone.get('student');
+        activities.push({
+          type: 'milestone',
+          id: milestone.id,
+          studentId: student.id,
+          studentName: `${student.get('firstName')} ${student.get('lastName')}`,
+          title: milestone.get('title'),
+          category: milestone.get('category'),
+          timestamp: milestone.get('achievedAt')
+        });
+      });
+    }
+    
+    // Sort all activities by timestamp (newest first)
+    activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    // Return limited results
+    return {
+      activities: activities.slice(0, limit),
+      total: activities.length,
+      hasMore: activities.length > limit
+    };
+    
+  } catch (error) {
+    console.error('Error getting activity feed:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get activity feed: ${error.message}`);
+  }
+});
+
+/**
+ * Get student timeline
+ * Returns chronological student journey events
+ */
+Parse.Cloud.define('getStudentTimeline', async (request) => {
+  requireCounselor(request);
+  
+  const { studentId, limit = 50 } = request.params;
+  
+  if (!studentId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID is required');
+  }
+  
+  try {
+    const timeline = [];
+    const student = new Parse.User();
+    student.id = studentId;
+    
+    // 1. Student registration
+    const studentUser = await new Parse.Query(Parse.User)
+      .get(studentId, { useMasterKey: true });
+    timeline.push({
+      type: 'registration',
+      id: studentUser.id,
+      title: 'Joined Elimu Smart',
+      timestamp: studentUser.createdAt,
+      icon: 'user-plus'
+    });
+    
+    // 2. Counselor assignment
+    const CounselorStudent = Parse.Object.extend('CounselorStudent');
+    const assignmentQuery = new Parse.Query(CounselorStudent);
+    assignmentQuery.equalTo('student', student);
+    assignmentQuery.include('counselor');
+    const assignment = await assignmentQuery.first({ useMasterKey: true });
+    if (assignment) {
+      const counselor = assignment.get('counselor');
+      timeline.push({
+        type: 'assignment',
+        id: assignment.id,
+        title: `Assigned to ${counselor.get('firstName')} ${counselor.get('lastName')}`,
+        timestamp: assignment.createdAt,
+        icon: 'user-check'
+      });
+    }
+    
+    // 3. Assessment completions
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const assessmentQuery = new Parse.Query(RiasecAssessment);
+    assessmentQuery.equalTo('user', student);
+    assessmentQuery.equalTo('isComplete', true);
+    const assessments = await assessmentQuery.find({ useMasterKey: true });
+    assessments.forEach(assessment => {
+      timeline.push({
+        type: 'assessment',
+        id: assessment.id,
+        title: 'Completed RIASEC Assessment',
+        hollandCode: assessment.get('hollandCode'),
+        primaryType: assessment.get('primaryType'),
+        timestamp: assessment.updatedAt,
+        icon: 'clipboard-check'
+      });
+    });
+    
+    // 4. Sessions (all statuses)
+    const Session = Parse.Object.extend('Session');
+    const sessionQuery = new Parse.Query(Session);
+    sessionQuery.equalTo('student', student);
+    sessionQuery.include('counselor');
+    const sessions = await sessionQuery.find({ useMasterKey: true });
+    sessions.forEach(session => {
+      const counselor = session.get('counselor');
+      const status = session.get('status');
+      let title = 'Session Scheduled';
+      if (status === 'completed') title = 'Session Completed';
+      if (status === 'cancelled') title = 'Session Cancelled';
+      
+      timeline.push({
+        type: 'session',
+        id: session.id,
+        title,
+        counselorName: `${counselor.get('firstName')} ${counselor.get('lastName')}`,
+        status,
+        scheduledTime: session.get('scheduledTime'),
+        duration: session.get('duration') || 60,
+        timestamp: status === 'completed' ? session.updatedAt : session.get('scheduledTime'),
+        icon: status === 'completed' ? 'check-circle' : 'calendar'
+      });
+    });
+    
+    // 5. Milestones
+    const StudentMilestone = Parse.Object.extend('StudentMilestone');
+    const milestoneQuery = new Parse.Query(StudentMilestone);
+    milestoneQuery.equalTo('student', student);
+    const milestones = await milestoneQuery.find({ useMasterKey: true });
+    milestones.forEach(milestone => {
+      const achieved = milestone.get('achievedAt');
+      timeline.push({
+        type: 'milestone',
+        id: milestone.id,
+        title: milestone.get('title'),
+        category: milestone.get('category'),
+        achieved: !!achieved,
+        timestamp: achieved || milestone.createdAt,
+        icon: achieved ? 'trophy' : 'target'
+      });
+    });
+    
+    // 6. Important notes (flagged as important)
+    const StudentNote = Parse.Object.extend('StudentNote');
+    const noteQuery = new Parse.Query(StudentNote);
+    noteQuery.equalTo('student', student);
+    noteQuery.containsAll('tags', ['important']);
+    const notes = await noteQuery.find({ useMasterKey: true });
+    notes.forEach(note => {
+      timeline.push({
+        type: 'note',
+        id: note.id,
+        title: 'Important Note Added',
+        content: note.get('content').substring(0, 100) + (note.get('content').length > 100 ? '...' : ''),
+        timestamp: note.createdAt,
+        icon: 'file-text'
+      });
+    });
+    
+    // Sort timeline by timestamp (newest first)
+    timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    return {
+      studentId,
+      timeline: timeline.slice(0, limit),
+      total: timeline.length,
+      hasMore: timeline.length > limit
+    };
+    
+  } catch (error) {
+    console.error('Error getting student timeline:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get student timeline: ${error.message}`);
+  }
+});
+

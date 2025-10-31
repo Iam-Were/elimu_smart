@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   CheckCircle,
   XCircle,
@@ -12,6 +21,7 @@ import {
   Clock,
   User
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useSessionManagement } from '@/hooks/counselor/useSessionManagement';
 import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
 
@@ -25,15 +35,14 @@ interface SessionActionsProps {
 
 /**
  * Session Actions Component
- * Demonstrates Phase 1 (Session Management) integration
+ * Demonstrates Phase 3/4 (Session Management) integration with shadcn V2
  */
-export const SessionActions: React.FC<SessionActionsProps> = ({
+export const SessionActions = ({
   sessionId,
   sessionStatus,
-  studentId,
   studentName,
   onUpdate
-}) => {
+}: SessionActionsProps) => {
   const {
     confirmSession,
     cancelSession,
@@ -44,27 +53,33 @@ export const SessionActions: React.FC<SessionActionsProps> = ({
 
   const [notes, setNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const handleConfirm = async () => {
     try {
       await confirmSession(sessionId, `Confirmed session with ${studentName}`);
       onUpdate?.();
-      alert('Session confirmed successfully!');
-    } catch (error) {
-      console.error('Failed to confirm session:', error);
+      toast.success('Session confirmed successfully!');
+    } catch {
+      toast.error('Failed to confirm session');
     }
   };
 
-  const handleCancel = async () => {
-    const reason = prompt('Reason for cancellation:');
-    if (!reason) return;
+  const handleCancelSubmit = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
 
     try {
-      await cancelSession(sessionId, reason);
+      await cancelSession(sessionId, cancelReason);
       onUpdate?.();
-      alert('Session cancelled successfully!');
-    } catch (error) {
-      console.error('Failed to cancel session:', error);
+      setShowCancelDialog(false);
+      setCancelReason('');
+      toast.success('Session cancelled successfully');
+    } catch {
+      toast.error('Failed to cancel session');
     }
   };
 
@@ -77,9 +92,9 @@ export const SessionActions: React.FC<SessionActionsProps> = ({
       onUpdate?.();
       setNotes('');
       setShowNotes(false);
-      alert('Session marked as completed!');
-    } catch (error) {
-      console.error('Failed to complete session:', error);
+      toast.success('Session marked as completed!');
+    } catch {
+      toast.error('Failed to complete session');
     }
   };
 
@@ -90,10 +105,10 @@ export const SessionActions: React.FC<SessionActionsProps> = ({
         notes,
         nextSteps: 'Follow up on university applications next week'
       });
-      alert('Notes saved successfully!');
+      toast.success('Notes saved successfully!');
       setShowNotes(false);
-    } catch (error) {
-      console.error('Failed to save notes:', error);
+    } catch {
+      toast.error('Failed to save notes');
     }
   };
 
@@ -133,7 +148,7 @@ export const SessionActions: React.FC<SessionActionsProps> = ({
               Confirm
             </Button>
             <Button
-              onClick={handleCancel}
+              onClick={() => setShowCancelDialog(true)}
               disabled={isLoading}
               variant="destructive"
               className="flex-1"
@@ -186,22 +201,68 @@ export const SessionActions: React.FC<SessionActionsProps> = ({
         )}
 
         {isLoading && (
-          <p className="text-sm text-slate-500 text-center">Processing...</p>
+          <p className="text-sm text-muted-foreground text-center">Processing...</p>
         )}
       </CardContent>
+
+      {/* Cancel Session Dialog */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Session</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for cancelling this session with {studentName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cancel-reason">Cancellation Reason</Label>
+              <Textarea
+                id="cancel-reason"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="e.g., Student requested reschedule, Emergency conflict..."
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCancelDialog(false);
+                setCancelReason('');
+              }}
+            >
+              Nevermind
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelSubmit}
+              disabled={!cancelReason.trim()}
+            >
+              Confirm Cancellation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
 
 /**
  * Student Management Component
- * Demonstrates Phase 2 (Student Management) integration
+ * Demonstrates Phase 3/4 (Student Management) integration with shadcn V2
  */
-export const StudentManagementPanel: React.FC<{
+export const StudentManagementPanel = ({
+  studentId,
+  studentName,
+  currentPriority = 'medium'
+}: {
   studentId: string;
   studentName: string;
   currentPriority?: string;
-}> = ({ studentId, studentName, currentPriority = 'medium' }) => {
+}) => {
   const {
     updateStudentPriority,
     addStudentNote,
@@ -211,7 +272,7 @@ export const StudentManagementPanel: React.FC<{
   } = useStudentManagement();
 
   const [note, setNote] = useState('');
-  const [assessments, setAssessments] = useState<any>(null);
+  const [assessments, setAssessments] = useState<unknown>(null);
 
   const handlePriorityChange = async (priority: 'low' | 'medium' | 'high' | 'urgent') => {
     try {
@@ -220,21 +281,9 @@ export const StudentManagementPanel: React.FC<{
         priority,
         reason: `Priority updated to ${priority} for ${studentName}`
       });
-      alert(`Priority updated to ${priority}`);
-    } catch (error) {
-      console.error('Failed to update priority:', error);
-    }
-  };
-
-  const handleFlagUrgent = async () => {
-    const reason = prompt('Why is this student urgent?');
-    if (!reason) return;
-
-    try {
-      await flagAsUrgent(studentId, reason);
-      alert('Student flagged as urgent!');
-    } catch (error) {
-      console.error('Failed to flag as urgent:', error);
+      toast.success(`Priority updated to ${priority}`);
+    } catch {
+      toast.error('Failed to update priority');
     }
   };
 
@@ -249,9 +298,9 @@ export const StudentManagementPanel: React.FC<{
         tags: ['follow-up', 'counseling']
       });
       setNote('');
-      alert('Note added successfully!');
-    } catch (error) {
-      console.error('Failed to add note:', error);
+      toast.success('Note added successfully!');
+    } catch {
+      toast.error('Failed to add note');
     }
   };
 

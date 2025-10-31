@@ -1,7 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Users, MessageSquare, Save, Edit2, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
-import { useMessaging } from '../../hooks/counselor/useMessaging';
-import { useAssignedStudents } from '../../hooks/counselor/useAssignedStudents';
+import { useMessaging } from '@/hooks/counselor/useMessaging';
+import { useAssignedStudents } from '@/hooks/useAssignedStudents';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { IconContainer } from '@/components/ui/icon-container';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface MessageTemplate {
   id?: string;
@@ -11,7 +34,7 @@ interface MessageTemplate {
   placeholders?: string[];
 }
 
-export const BulkMessaging: React.FC = () => {
+export const BulkMessaging = () => {
   const { sendBulkMessage, createMessageTemplate, getMessageTemplates, updateMessageTemplate, deleteMessageTemplate, isLoading, error } = useMessaging();
   const { students } = useAssignedStudents();
   
@@ -22,10 +45,11 @@ export const BulkMessaging: React.FC = () => {
   const [showTemplates, setShowTemplates] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MessageTemplate | null>(null);
   const [newTemplate, setNewTemplate] = useState<MessageTemplate>({ title: '', content: '', category: 'general' });
-  const [sendResult, setSendResult] = useState<{ success: any[]; failed: any[] } | null>(null);
+  const [sendResult, setSendResult] = useState<{ success: string[]; failed: string[] } | null>(null);
 
   useEffect(() => {
     loadTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTemplates = async () => {
@@ -53,11 +77,11 @@ export const BulkMessaging: React.FC = () => {
 
   const handleSendMessage = async () => {
     if (selectedStudents.length === 0) {
-      alert('Please select at least one student');
+      toast.error('Please select at least one student');
       return;
     }
     if (!message.trim()) {
-      alert('Please enter a message');
+      toast.error('Please enter a message');
       return;
     }
 
@@ -71,14 +95,16 @@ export const BulkMessaging: React.FC = () => {
       setMessage('');
       setSubject('');
       setSelectedStudents([]);
-    } catch (err: any) {
-      alert(`Failed to send messages: ${err.message}`);
+      toast.success(`Successfully sent to ${result.success.length} student(s)`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send messages';
+      toast.error(message);
     }
   };
 
   const handleSaveTemplate = async () => {
     if (!newTemplate.title || !newTemplate.content) {
-      alert('Please fill in title and content');
+      toast.error('Please fill in title and content');
       return;
     }
 
@@ -86,9 +112,10 @@ export const BulkMessaging: React.FC = () => {
       await createMessageTemplate(newTemplate);
       setNewTemplate({ title: '', content: '', category: 'general' });
       loadTemplates();
-      alert('Template saved successfully!');
-    } catch (err: any) {
-      alert(`Failed to save template: ${err.message}`);
+      toast.success('Template saved successfully!');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save template';
+      toast.error(message);
     }
   };
 
@@ -103,20 +130,21 @@ export const BulkMessaging: React.FC = () => {
       });
       setEditingTemplate(null);
       loadTemplates();
-      alert('Template updated successfully!');
-    } catch (err: any) {
-      alert(`Failed to update template: ${err.message}`);
+      toast.success('Template updated successfully!');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update template';
+      toast.error(message);
     }
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
-
     try {
       await deleteMessageTemplate(templateId);
       loadTemplates();
-    } catch (err: any) {
-      alert(`Failed to delete template: ${err.message}`);
+      toast.success('Template deleted');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete template';
+      toast.error(message);
     }
   };
 
@@ -127,225 +155,273 @@ export const BulkMessaging: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="p-6 border-b border-gray-200">
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <Card>
+        <CardHeader>
           <div className="flex items-center gap-3">
-            <MessageSquare className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Bulk Messaging</h2>
-          </div>
-          <p className="text-gray-600 mt-2">Send messages to multiple students at once</p>
-        </div>
-
-        {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
-
-        {sendResult && (
-          <div className="p-4 bg-green-50 border-l-4 border-green-500">
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <p className="font-semibold text-green-800">Messages Sent!</p>
+            <IconContainer variant="yellow" size="lg">
+              <MessageSquare className="w-6 h-6" />
+            </IconContainer>
+            <div>
+              <CardTitle>Bulk Messaging</CardTitle>
+              <CardDescription>Send messages to multiple students at once</CardDescription>
             </div>
-            <p className="text-sm text-green-700">Successfully sent to {sendResult.success.length} student(s)</p>
-            {sendResult.failed.length > 0 && (
-              <p className="text-sm text-red-600 mt-1">Failed to send to {sendResult.failed.length} student(s)</p>
-            )}
           </div>
-        )}
+        </CardHeader>
 
-        <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Student Selection */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Select Students</h3>
-              <button
-                onClick={handleSelectAll}
-                className="text-sm text-yellow-600 hover:text-yellow-700"
-              >
-                {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
-              </button>
-            </div>
-            <div className="border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
-              {students.map(student => (
-                <label
-                  key={student.id}
-                  className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {sendResult && (
+            <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-950">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
+                Successfully sent to {sendResult.success.length} student(s)
+                {sendResult.failed.length > 0 && ` · Failed: ${sendResult.failed.length}`}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Student Selection */}
+            <div className="lg:col-span-1">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-base font-semibold">Select Students</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedStudents.includes(student.id)}
-                    onChange={() => handleToggleStudent(student.id)}
-                    className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500"
-                  />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-800">{student.name}</p>
-                    <p className="text-xs text-gray-500">{student.email}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-              <Users className="w-4 h-4" />
-              <span>{selectedStudents.length} selected</span>
-            </div>
-          </div>
+                  {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
+                </Button>
+              </div>
 
-          {/* Message Composer */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">Compose Message</h3>
-              <button
-                onClick={() => setShowTemplates(!showTemplates)}
-                className="text-sm text-yellow-600 hover:text-yellow-700 flex items-center gap-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                {showTemplates ? 'Hide Templates' : 'Use Template'}
-              </button>
-            </div>
-
-            {showTemplates && (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h4 className="font-medium text-gray-800 mb-3">Saved Templates</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {templates.map(template => (
-                    <div key={template.id} className="bg-white p-3 rounded border border-gray-200 flex items-start justify-between">
-                      <div className="flex-1 cursor-pointer" onClick={() => handleUseTemplate(template)}>
-                        <p className="font-medium text-gray-800 text-sm">{template.title}</p>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{template.content}</p>
+              <Card className="max-h-96 overflow-y-auto">
+                <div className="divide-y">
+                  {students.map(student => (
+                    <label
+                      key={student.id}
+                      className="flex items-center p-3 hover:bg-accent cursor-pointer transition-colors"
+                    >
+                      <Checkbox
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={() => handleToggleStudent(student.id)}
+                      />
+                      <div className="ml-3">
+                        <p className="text-sm font-medium">{student.name}</p>
+                        <p className="text-xs text-muted-foreground">{student.email}</p>
                       </div>
-                      <div className="flex gap-2 ml-2">
-                        <button
-                          onClick={() => setEditingTemplate(template)}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTemplate(template.id!)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                    </label>
                   ))}
                 </div>
-              </div>
-            )}
+              </Card>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Subject (Optional)</label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Message subject..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
-              />
+              <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>{selectedStudents.length} selected</span>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={8}
-                placeholder="Type your message here..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 resize-none"
-              />
-            </div>
-
-            <button
-              onClick={handleSendMessage}
-              disabled={isLoading || selectedStudents.length === 0 || !message.trim()}
-              className="w-full bg-yellow-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Send className="w-5 h-5" />
-              {isLoading ? 'Sending...' : `Send to ${selectedStudents.length} Student(s)`}
-            </button>
-
-            {/* Save as Template */}
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <h4 className="font-medium text-gray-800 mb-3">Save as Template</h4>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={newTemplate.title}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
-                  placeholder="Template title..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
-                />
-                <textarea
-                  value={newTemplate.content}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
-                  rows={4}
-                  placeholder="Template content..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 resize-none"
-                />
-                <select
-                  value={newTemplate.category}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+            {/* Message Composer */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Compose Message</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTemplates(!showTemplates)}
+                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
                 >
-                  <option value="general">General</option>
-                  <option value="reminder">Reminder</option>
-                  <option value="announcement">Announcement</option>
-                  <option value="followup">Follow-up</option>
-                </select>
-                <button
-                  onClick={handleSaveTemplate}
-                  disabled={isLoading}
-                  className="w-full bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Template
-                </button>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  {showTemplates ? 'Hide Templates' : 'Use Template'}
+                </Button>
               </div>
+
+              {showTemplates && (
+                <Card className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Saved Templates</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+                    {templates.map(template => (
+                      <Card key={template.id} className="hover:bg-accent transition-colors cursor-pointer">
+                        <CardContent className="p-3 flex items-start justify-between">
+                          <div className="flex-1" onClick={() => handleUseTemplate(template)}>
+                            <p className="font-medium text-sm">{template.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{template.content}</p>
+                          </div>
+                          <div className="flex gap-1 ml-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTemplate(template);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTemplate(template.id!);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="subject">Subject (Optional)</Label>
+                <Input
+                  id="subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Message subject..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={8}
+                  placeholder="Type your message here..."
+                />
+              </div>
+
+              <Button
+                onClick={handleSendMessage}
+                disabled={isLoading || selectedStudents.length === 0 || !message.trim()}
+                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                size="lg"
+              >
+                <Send className="w-5 h-5 mr-2" />
+                {isLoading ? 'Sending...' : `Send to ${selectedStudents.length} Student(s)`}
+              </Button>
+
+              {/* Save as Template */}
+              <Card className="border-dashed mt-4">
+                <CardHeader>
+                  <CardTitle className="text-sm">Save as Template</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="template-title">Template Title</Label>
+                    <Input
+                      id="template-title"
+                      value={newTemplate.title}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
+                      placeholder="Template title..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="template-content">Content</Label>
+                    <Textarea
+                      id="template-content"
+                      value={newTemplate.content}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
+                      rows={4}
+                      placeholder="Template content..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="template-category">Category</Label>
+                    <Select
+                      value={newTemplate.category}
+                      onValueChange={(value) => setNewTemplate({ ...newTemplate, category: value })}
+                    >
+                      <SelectTrigger id="template-category">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">General</SelectItem>
+                        <SelectItem value="reminder">Reminder</SelectItem>
+                        <SelectItem value="announcement">Announcement</SelectItem>
+                        <SelectItem value="followup">Follow-up</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={handleSaveTemplate}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Template
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Edit Template Modal */}
-      {editingTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Edit Template</h3>
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={editingTemplate.title}
-                onChange={(e) => setEditingTemplate({ ...editingTemplate, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+      {/* Edit Template Dialog */}
+      <Dialog open={!!editingTemplate} onOpenChange={() => setEditingTemplate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Template</DialogTitle>
+            <DialogDescription>Update your message template</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editingTemplate?.title || ''}
+                onChange={(e) => editingTemplate && setEditingTemplate({ ...editingTemplate, title: e.target.value })}
               />
-              <textarea
-                value={editingTemplate.content}
-                onChange={(e) => setEditingTemplate({ ...editingTemplate, content: e.target.value })}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Content</Label>
+              <Textarea
+                id="edit-content"
+                value={editingTemplate?.content || ''}
+                onChange={(e) => editingTemplate && setEditingTemplate({ ...editingTemplate, content: e.target.value })}
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 resize-none"
               />
-              <div className="flex gap-3">
-                <button
-                  onClick={handleUpdateTemplate}
-                  className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => setEditingTemplate(null)}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleUpdateTemplate}
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700"
+              >
+                Update
+              </Button>
+              <Button
+                onClick={() => setEditingTemplate(null)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

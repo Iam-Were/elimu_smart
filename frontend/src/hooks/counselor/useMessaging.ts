@@ -30,8 +30,9 @@ export const useMessaging = () => {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('sendBulkMessage', params);
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to send bulk message');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send bulk message';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -49,8 +50,9 @@ export const useMessaging = () => {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('createMessageTemplate', template);
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to create template');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create template';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -68,8 +70,9 @@ export const useMessaging = () => {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('getMessageTemplates');
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch templates');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch templates';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -90,8 +93,9 @@ export const useMessaging = () => {
         ...updates
       });
       return result;
-    } catch (err: any) {
-      setError(err.message || 'Failed to update template');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update template';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -108,8 +112,9 @@ export const useMessaging = () => {
     try {
       const Parse = await getParse();
       await Parse.Cloud.run('deleteMessageTemplate', { templateId });
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete template');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete template';
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
