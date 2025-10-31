@@ -8,7 +8,7 @@ export interface Student {
   grade: string;
   school: string;
   profileCompletion: number;
-  priority: 'high' | 'medium' | 'low';
+  priority: 'high' | 'medium' | 'low' | 'urgent';
   status: 'active' | 'pending' | 'inactive';
   assessments: number;
   careerMatches: number;
