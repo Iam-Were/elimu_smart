@@ -1,5 +1,6 @@
 import React from 'react';
 import CounselorDashboardCards from '../../components/counselor/CounselorDashboardCards';
+import CounselorProfileSidebar from '../../components/counselor/CounselorProfileSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useCounselorPerformance } from '../../hooks/useCounselorPerformance';
@@ -16,10 +17,17 @@ const CounselorDashboardPage: React.FC = () => {
   const { performance, isLoading, error, refetch } = useCounselorPerformance('30days');
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
-      <div className="container max-w-6xl mx-auto py-8 space-y-8">
-        
-        {/* Dashboard Content - Removed duplicate header and badges that were in top nav */}
-        <div className="space-y-8">
+      <div className="container max-w-7xl mx-auto py-8">
+        {/* Grid Layout: Sidebar + Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+          
+          {/* Left Sidebar - Hidden on mobile, visible on desktop */}
+          <div className="hidden lg:block">
+            <CounselorProfileSidebar />
+          </div>
+
+          {/* Main Content Area */}
+          <div className="space-y-8">
           <CounselorDashboardCards showAll={true} className="mt-6" />
           
           {/* Performance Summary */}
@@ -138,7 +146,10 @@ const CounselorDashboardPage: React.FC = () => {
             </CardContent>
           </Card>
           )}
+          </div>
+          {/* End Main Content Area */}
         </div>
+        {/* End Grid Layout */}
       </div>
     </div>
   );
