@@ -5338,12 +5338,6 @@ const requireCounselor = (request) => {
   return request.user;
 };
 
-// Get assigned students (wrapper for getCounselorAssignedStudents)
-Parse.Cloud.define('getAssignedStudents', async (request) => {
-  // Simply call the existing getCounselorAssignedStudents function
-  return await Parse.Cloud.run('getCounselorAssignedStudents', {}, { sessionToken: request.user?.getSessionToken() });
-});
-
 // Log counselor activity
 Parse.Cloud.define('logCounselorActivity', async (request) => {
   const user = requireCounselor(request);
@@ -5467,20 +5461,6 @@ Parse.Cloud.define('getAllCounselors', async (request) => {
 // ============================================================================
 // COUNSELOR DASHBOARD CLOUD FUNCTIONS
 // ============================================================================
-
-// Helper function to check counselor authentication
-const requireCounselor = (request) => {
-  if (!request.user) {
-    throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'User must be authenticated');
-  }
-
-  const userRole = request.user.get('role');
-  if (userRole !== 'counselor') {
-    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Counselor access required');
-  }
-
-  return request.user;
-};
 
 // Get counselor dashboard statistics
 Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
