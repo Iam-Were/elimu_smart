@@ -11,6 +11,8 @@ import {
   Calendar,
   BarChart3,
   FileText,
+  AlertTriangle,
+  Bell,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -358,7 +360,6 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         return 'grid grid-cols-1 md:grid-cols-2 gap-5';
     }
   };
-  };
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -374,7 +375,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
 
       {/* Dynamic Quick Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {loading ? (
+        {isLoading ? (
           // Loading skeleton
           Array.from({ length: 4 }, (_, i) => (
             <Card key={i} className="bg-gradient-to-r from-gray-25 to-gray-50 border-gray-100">
@@ -390,7 +391,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
           <>
             <Card className={`bg-gradient-to-r from-amber-25 to-amber-50 border-amber-100 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300' : ''}`}>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-700">{assignedStudents.length}</div>
+                <div className="text-2xl font-bold text-amber-700">{stats.assignedStudents}</div>
                 <div className="text-sm text-amber-600">Assigned Students</div>
                 {getDerivedMetrics.urgentStudents > 0 && (
                   <div className="text-xs text-amber-500 mt-1">
@@ -400,13 +401,13 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               </CardContent>
             </Card>
             
-            <Card className={`bg-gradient-to-r from-orange-25 to-orange-50 border-orange-100 ${getDerivedMetrics.activeChats > 5 ? 'ring-2 ring-orange-300' : ''}`}>
+            <Card className={`bg-gradient-to-r from-orange-25 to-orange-50 border-orange-100 ${stats.activeChats > 5 ? 'ring-2 ring-orange-300' : ''}`}>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-700">{getDerivedMetrics.activeChats}</div>
+                <div className="text-2xl font-bold text-orange-700">{stats.activeChats}</div>
                 <div className="text-sm text-orange-600">Active Chats</div>
-                {getDerivedMetrics.waitingChats > 0 && (
+                {stats.unreadMessages > 0 && (
                   <div className="text-xs text-orange-500 mt-1">
-                    {getDerivedMetrics.waitingChats} waiting
+                    {stats.unreadMessages} unread
                   </div>
                 )}
               </CardContent>
@@ -414,47 +415,29 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
             
             <Card className="bg-gradient-to-r from-blue-25 to-blue-50 border-blue-100">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-700">{getDerivedMetrics.todaysAppointments}</div>
+                <div className="text-2xl font-bold text-blue-700">{stats.todaySessions}</div>
                 <div className="text-sm text-blue-600">Today's Sessions</div>
-                {getDerivedMetrics.nextAppointment && (
-                  <div className="text-xs text-blue-500 mt-1">
-                    Next: {getDerivedMetrics.nextAppointment.scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                )}
+                <div className="text-xs text-blue-500 mt-1">
+                  KES {stats.todayEarnings.toLocaleString()}
+                </div>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-r from-emerald-25 to-emerald-50 border-emerald-100">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-700">
-                  {analytics ? analytics.studentSatisfactionScore.toFixed(1) : '--'}
+                <div className="text-2xl font-bold text-emerald-700">{stats.premiumStudents}</div>
+                <div className="text-sm text-emerald-600">Premium Students</div>
+                <div className="text-xs text-emerald-500 mt-1">
+                  KES {stats.monthlyEarnings.toLocaleString()}/mo
                 </div>
-                <div className="text-sm text-emerald-600">Avg Satisfaction</div>
-                {analytics && (
-                  <div className="text-xs text-emerald-500 mt-1">
-                    {analytics.successRate}% success rate
-                  </div>
-                )}
               </CardContent>
             </Card>
           </>
         )}
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-700">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Unable to load some counselor data: {error}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Workload Alert */}
-      {!loading && getDerivedMetrics.totalWorkload > 15 && (
+      {!isLoading && getDerivedMetrics.totalWorkload > 15 && (
         <Card className="mb-6 bg-amber-50 border-amber-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-amber-700">
@@ -532,7 +515,6 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
                 <a
                   href={card.actionLink}
                   className="flex items-center justify-center"
-                  onClick={() => handleCardClick(card)}
                 >
                   {card.actionText}
                 </a>
