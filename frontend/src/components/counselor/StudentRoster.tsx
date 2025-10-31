@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAssignedStudents } from '@/hooks/useAssignedStudents';
+import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
 import type { Student } from '@/hooks/useAssignedStudents';
 import {
   MagnifyingGlassIcon,
@@ -22,10 +23,18 @@ import {
   ExclamationTriangleIcon,
   ReloadIcon,
 } from '@radix-ui/react-icons';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, FileText, Target } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
   const { students: allStudents, isLoading, error, refetch } = useAssignedStudents();
+  const {
+    updateStudentPriority,
+    addStudentNote,
+    getStudentAssessmentResults,
+    getStudentNotes,
+    isLoading: managementLoading
+  } = useStudentManagement();
+  
   const [students, setStudents] = React.useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -33,6 +42,8 @@ export const StudentRoster: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
+  const [studentNotes, setStudentNotes] = useState<any[]>([]);
+  const [assessmentResults, setAssessmentResults] = useState<any>(null);
 
   // Update local students when hook data changes
   React.useEffect(() => {
@@ -53,17 +64,60 @@ export const StudentRoster: React.FC = () => {
     return matchesSearch && matchesPriority && matchesStatus;
   });
 
-  const handleViewStudent = (student: Student) => {
+  const handleViewStudent = async (student: Student) => {
     setSelectedStudent(student);
     setNewNote('');
     setOpened(true);
+    
+    // Load student notes and assessments
+    try {
+      const [notes, assessments] = await Promise.all([
+        getStudentNotes(student.id),
+        getStudentAssessmentResults(student.id)
+      ]);
+      setStudentNotes(notes.notes || []);
+      setAssessmentResults(assessments);
+    } catch (error) {
+      console.error('Failed to load student data:', error);
+    }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (selectedStudent && newNote.trim()) {
-      // In a real app, this would update the database
-      console.log(`Adding note for ${selectedStudent.name}: ${newNote}`);
-      setNewNote('');
+      try {
+        await addStudentNote({
+          studentId: selectedStudent.id,
+          note: newNote,
+          isPrivate: true,
+          tags: ['counseling', 'follow-up']
+        });
+        setNewNote('');
+        // Reload notes
+        const notes = await getStudentNotes(selectedStudent.id);
+        setStudentNotes(notes.notes || []);
+      } catch (error) {
+        console.error('Failed to add note:', error);
+      }
+    }
+  };
+
+  const handlePriorityChange = async (student: Student, priority: 'low' | 'medium' | 'high' | 'urgent') => {
+    try {
+      await updateStudentPriority({
+        studentId: student.id,
+        priority,
+        reason: `Priority updated to ${priority}`
+      });
+      
+      // Update local state
+      setStudents(students.map(s => 
+        s.id === student.id ? { ...s, priority } : s
+      ));
+      
+      // Refetch to ensure consistency
+      await refetch();
+    } catch (error) {
+      console.error('Failed to update priority:', error);
     }
   };
 
@@ -202,12 +256,19 @@ export const StudentRoster: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                       <Badge
-                        variant={student.priority === 'high' ? 'destructive' : 
-                                student.priority === 'medium' ? 'default' : 'secondary'}
-                        className="text-xs"
+                        variant={
+                          student.priority === 'urgent' ? 'destructive' :
+                          student.priority === 'high' ? 'destructive' :
+                          student.priority === 'medium' ? 'default' : 'secondary'
+                        }
+                        className={`text-xs ${
+                          student.priority === 'urgent' ? 'bg-red-600 hover:bg-red-700' :
+                          student.priority === 'high' ? 'bg-orange-500 hover:bg-orange-600' : ''
+                        }`}
                       >
+                        {student.priority === 'urgent' && <AlertTriangle className="w-3 h-3 mr-1" />}
                         {student.priority}
                       </Badge>
                       <Badge
@@ -351,15 +412,63 @@ export const StudentRoster: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Badge variant={selectedStudent.priority === 'high' ? 'destructive' : 'secondary'}>
-                      {selectedStudent.priority} priority
-                    </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Priority Management Buttons */}
+                    <div className="flex gap-1">
+                      {(['low', 'medium', 'high', 'urgent'] as const).map((priority) => (
+                        <Button
+                          key={priority}
+                          size="sm"
+                          variant={selectedStudent.priority === priority ? 'default' : 'outline'}
+                          onClick={() => handlePriorityChange(selectedStudent, priority)}
+                          disabled={managementLoading}
+                          className={
+                            priority === 'urgent'
+                              ? 'bg-red-500 hover:bg-red-600 text-white'
+                              : priority === 'high'
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                              : ''
+                          }
+                        >
+                          {priority}
+                        </Button>
+                      ))}
+                    </div>
                     <Badge variant={selectedStudent.status === 'active' ? 'default' : 'secondary'}>
                       {selectedStudent.status}
                     </Badge>
                   </div>
                 </div>
+
+                {/* Assessment Results */}
+                {assessmentResults && assessmentResults.summary && (
+                  <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Target className="w-5 h-5 text-blue-600" />
+                        <h4 className="font-semibold">Assessment Summary</h4>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Holland Code:</span>
+                          <span className="font-medium">{assessmentResults.summary.hollandCode || 'Not completed'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Primary Type:</span>
+                          <span className="font-medium">{assessmentResults.summary.primaryType || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Assessments Completed:</span>
+                          <span className="font-medium">{assessmentResults.summary.assessmentsCompleted}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Profile Completion:</span>
+                          <span className="font-medium">{assessmentResults.summary.profileCompletion}%</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Progress Overview */}
                 <Card>
@@ -387,21 +496,64 @@ export const StudentRoster: React.FC = () => {
                   </CardContent>
                 </Card>
 
+                {/* Previous Notes */}
+                {studentNotes.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      <h4 className="font-medium text-sm">Previous Notes ({studentNotes.length})</h4>
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {studentNotes.slice(0, 5).map((note) => (
+                        <Card key={note.id} className="bg-slate-50 dark:bg-slate-900">
+                          <CardContent className="p-3">
+                            <p className="text-sm">{note.content}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(note.createdAt).toLocaleDateString()}
+                              </span>
+                              {note.tags && note.tags.length > 0 && (
+                                <div className="flex gap-1">
+                                  {note.tags.map((tag: string) => (
+                                    <Badge key={tag} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Add Note */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm">Add New Note</h4>
                   <Textarea
-                    placeholder="Add a note about this student..."
+                    placeholder="Add a private note about this student..."
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     rows={3}
                   />
                   <Button
                     onClick={handleAddNote}
-                    disabled={!newNote.trim()}
+                    disabled={!newNote.trim() || managementLoading}
                     className="w-full"
                   >
-                    Add Note
+                    {managementLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Add Note
+                      </>
+                    )}
                   </Button>
                 </div>
 
