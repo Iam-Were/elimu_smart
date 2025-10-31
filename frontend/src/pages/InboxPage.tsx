@@ -102,19 +102,39 @@ const InboxPage: React.FC = () => {
     try {
       const Parse = getParse();
       const sessionToken = Parse.User.current()?.getSessionToken() || undefined;
-      const result = await ParseApi.callCloudFunction(
-        'getInboxConversations', 
-        { limit: 50, skip: 0 },
-        sessionToken
-      );
+      
+      // Try getInboxConversations first (preferred API with full data)
+      let result;
+      try {
+        result = await ParseApi.callCloudFunction(
+          'getInboxConversations', 
+          { limit: 50, skip: 0 },
+          sessionToken
+        );
+      } catch (inboxError) {
+        console.warn('getInboxConversations failed, falling back to getChatRooms:', inboxError);
+        
+        // Fallback: Use getChatRooms API directly
+        result = await ParseApi.callCloudFunction(
+          'getChatRooms',
+          {},
+          sessionToken
+        );
+      }
 
-      if (Array.isArray(result)) {
+      if (Array.isArray(result) && result.length > 0) {
         const formattedConversations: LinkedInConversation[] = result.map((conv: unknown) => {
           const convData = conv as Record<string, unknown>;
+          
+          // Handle both getInboxConversations and getChatRooms response formats
+          const participantIds = (convData.participants as string[]) || [];
+          const currentUserId = user.id;
+          const otherParticipantId = participantIds.find(id => id !== currentUserId) || participantIds[0] || 'unknown';
+          
           return {
             id: (convData.objectId || convData.id || '') as string,
             participant: {
-              id: (convData.participantId || (convData.participants as string[])?.[0] || 'unknown') as string,
+              id: otherParticipantId,
               name: (convData.title || convData.participantName || 'Chat') as string,
               avatar: (convData.avatar || undefined) as string | undefined,
               role: (convData.participantRole || 'counselor') as 'counselor',
@@ -138,27 +158,34 @@ const InboxPage: React.FC = () => {
         });
         
         setConversations(formattedConversations);
+      } else {
+        // No conversations found
+        setConversations([]);
       }
     } catch (error) {
-      console.warn('Failed to load conversations:', error);
-      // Fallback to rooms from useChat hook
-      setConversations(rooms.map(room => ({
-        id: room.id,
-        participant: {
-          id: room.participants[0] || 'unknown',
-          name: room.title || 'Chat',
-          role: 'counselor' as const,
-          isOnline: room.isActive
-        },
-        lastMessage: {
-          id: 'last',
-          content: room.lastMessage || 'Start a conversation...',
-          sender: { id: 'system', name: 'System', role: 'system' },
-          timestamp: room.lastActivity,
-          isRead: true
-        },
-        unreadCount: room.unreadCount || 0
-      })));
+      console.error('Failed to load conversations from both APIs:', error);
+      // Last resort: Use rooms from useChat hook if available
+      if (rooms && rooms.length > 0) {
+        setConversations(rooms.map(room => ({
+          id: room.id,
+          participant: {
+            id: room.participants[0] || 'unknown',
+            name: room.title || 'Chat',
+            role: 'counselor' as const,
+            isOnline: room.isActive
+          },
+          lastMessage: {
+            id: 'last',
+            content: room.lastMessage || 'Start a conversation...',
+            sender: { id: 'system', name: 'System', role: 'system' },
+            timestamp: room.lastActivity,
+            isRead: true
+          },
+          unreadCount: room.unreadCount || 0
+        })));
+      } else {
+        setConversations([]);
+      }
     } finally {
       setIsLoadingConversations(false);
     }
