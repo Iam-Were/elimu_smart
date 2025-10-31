@@ -3,15 +3,14 @@ import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/componen
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { IconContainer } from '@/components/ui/icon-container';
-import { useCounselorDashboard } from '@/hooks/useCounselorDashboard';
+import { useCounselorStats } from '@/hooks/useCounselorStats';
+import { Loader2 } from 'lucide-react';
 import {
   Users,
   MessageSquare,
   Calendar,
   BarChart3,
   FileText,
-  AlertTriangle,
-  Bell,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -179,131 +178,153 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
   size = 'medium',
   cardOffset = 0
 }) => {
-  const { 
-    assignedStudents, 
-    activeChatSessions, 
-    analytics, 
-    loading, 
-    error,
-    logCounselorActivity,
-    getDerivedMetrics
-  } = useCounselorDashboard();
+  const { stats, isLoading, error } = useCounselorStats();
 
-  // Transform static cards with dynamic data
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
+        <span className="ml-3 text-yellow-700">Loading dashboard...</span>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-700">Failed to load dashboard: {error.message}</p>
+      </div>
+    );
+  }
+
+  // No data
+  if (!stats) {
+    return (
+      <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p className="text-yellow-700">No data available</p>
+      </div>
+    );
+  }
+
+  // Transform static cards with dynamic API data
   const getDynamicCounselorCards = (): CounselorDashboardCard[] => {
-    const baseCards = [...counselorDashboardCards];
-    const metrics = getDerivedMetrics;
-
-    baseCards.forEach(card => {
-      switch (card.id) {
-        case 'assigned-students':
-          card.stats = {
-            primary: `${assignedStudents.length} Students`,
-            secondary: `${metrics.urgentStudents} need immediate attention`,
-            trend: metrics.urgentStudents > 5 ? 'up' : metrics.urgentStudents < 2 ? 'down' : 'stable'
-          };
-          card.metadata = {
-            count: assignedStudents.length,
-            nextAction: metrics.urgentStudents > 0 ? 'Review at-risk students' : 'Check student progress',
-            urgent: metrics.urgentStudents > 0,
-            lastUpdated: 'Live data'
-          };
-          card.status = metrics.urgentStudents > 3 ? 'attention' : 'active';
-          card.priority = metrics.urgentStudents > 5 ? 'high' : 'medium';
-          break;
-
-        case 'active-chat-sessions': {
-          const avgResponseTime = activeChatSessions.reduce((sum, session) => sum + session.responseTime, 0) / 
-                                  (activeChatSessions.length || 1);
-          card.stats = {
-            primary: `${metrics.activeChats} Active`,
-            secondary: `Avg response: ${Math.round(avgResponseTime / 60)} mins`,
-            trend: avgResponseTime < 300000 ? 'up' : avgResponseTime > 600000 ? 'down' : 'stable' // 5-10 mins
-          };
-          card.metadata = {
-            count: metrics.activeChats,
-            nextAction: metrics.waitingChats > 0 ? 'Respond to waiting messages' : 'Monitor active chats',
-            urgent: metrics.waitingChats > 0,
-            lastUpdated: 'Live data'
-          };
-          card.status = metrics.activeChats > 0 ? 'active' : 'completed';
-          card.priority = metrics.waitingChats > 0 ? 'high' : 'medium';
-          break;
+    return [
+      {
+        id: 'premium-students',
+        title: 'Premium Students',
+        description: 'Active paying clients',
+        icon: Users,
+        iconEmphasis: 'high',
+        status: 'attention',
+        priority: 'high',
+        actionText: 'View Students',
+        actionLink: '/counselor/students?filter=premium',
+        stats: {
+          primary: `${stats.premiumStudents} Premium`,
+          secondary: `KES ${(stats.monthlyEarnings || 0).toLocaleString()}/month`,
+          trend: 'up'
+        },
+        metadata: {
+          count: stats.premiumStudents,
+          nextAction: 'Check pending messages',
+          urgent: true,
+          lastUpdated: 'Live data'
         }
-
-        case 'upcoming-appointments': {
-          const nextAppointment = metrics.nextAppointment;
-          card.stats = {
-            primary: `${metrics.todaysAppointments} Sessions`,
-            secondary: nextAppointment 
-              ? `Next: ${nextAppointment.scheduledTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} with ${nextAppointment.studentName}`
-              : 'No upcoming sessions today',
-            trend: metrics.todaysAppointments > 5 ? 'up' : 'stable'
-          };
-          card.metadata = {
-            count: metrics.todaysAppointments,
-            nextAction: nextAppointment ? 'Prepare for next session' : 'Schedule more sessions',
-            lastUpdated: 'Live data'
-          };
-          card.status = nextAppointment ? 'scheduled' : 'completed';
-          break;
+      },
+      {
+        id: 'premium-inbox',
+        title: 'Premium Inbox',
+        description: 'Messages from paid students',
+        icon: MessageSquare,
+        iconEmphasis: 'medium',
+        status: 'active',
+        priority: 'high',
+        actionText: 'Open Inbox',
+        actionLink: '/inbox?filter=premium',
+        stats: {
+          primary: `${stats.unreadMessages} Unread`,
+          secondary: `${stats.activeChats} active chats`,
+          trend: 'stable'
+        },
+        metadata: {
+          count: stats.unreadMessages,
+          nextAction: 'Reply to messages',
+          urgent: stats.unreadMessages > 0,
+          lastUpdated: 'Live data'
         }
+      },
+      {
+        id: 'paid-sessions',
+        title: 'Booked Sessions',
+        description: 'Scheduled paid counseling sessions',
+        icon: Calendar,
+        iconEmphasis: 'medium',
+        status: 'scheduled',
+        priority: 'high',
+        actionText: 'View Sessions',
+        actionLink: '/counselor/sessions',
+        stats: {
+          primary: `${stats.todaySessions} Today`,
+          secondary: `KES ${(stats.todayEarnings || 0).toLocaleString()} earnings`,
+          trend: 'up'
+        },
+        metadata: {
+          count: stats.todaySessions,
+          nextAction: stats.todaySessions > 0 ? 'Prepare for next session' : 'No sessions today',
+          lastUpdated: 'Live data'
+        }
+      },
+      {
+        id: 'community-qa',
+        title: 'Community Q&A',
+        description: 'Answer free tier questions (optional)',
+        icon: FileText,
+        iconEmphasis: 'subtle',
+        status: 'active',
+        priority: 'medium',
+        actionText: 'Browse Questions',
+        actionLink: '/counselor/questions',
+        stats: {
+          primary: '15 Pending',
+          secondary: 'Build reputation',
+          trend: 'stable'
+        },
+        metadata: {
+          count: 15,
+          nextAction: 'Answer when available',
+          urgent: false,
+          lastUpdated: 'Live data'
+        }
+      },
+      {
+        id: 'counseling-analytics',
+        title: 'Performance',
+        description: 'Track effectiveness & retention',
+        icon: BarChart3,
+        iconEmphasis: 'subtle',
+        status: 'completed',
+        priority: 'medium',
+        actionText: 'View Stats',
+        actionLink: '/counselor/dashboard',
+        stats: {
+          primary: `${stats.assignedStudents} Students`,
+          secondary: `${stats.urgentCount} need attention`,
+          trend: 'stable'
+        },
+        metadata: {
+          completion: 92,
+          nextAction: 'Review student progress',
+          lastUpdated: 'Live data'
+        }
+      },
+    ];
+  };
 
-        case 'counseling-analytics':
-          if (analytics) {
-            card.stats = {
-              primary: `${Math.round(analytics.successRate)}% Success`,
-              secondary: `Student satisfaction: ${analytics.studentSatisfactionScore.toFixed(1)}/5`,
-              trend: analytics.trend.sessionEffectiveness
-            };
-            card.metadata = {
-              completion: analytics.successRate,
-              nextAction: analytics.successRate < 80 ? 'Review session strategies' : 'Maintain excellence',
-              lastUpdated: 'Live data'
-            };
-            card.status = analytics.successRate > 85 ? 'completed' : 'attention';
-            card.priority = analytics.successRate < 70 ? 'high' : 'medium';
-          }
-          break;
-
-        case 'pending-question-queue':
-          card.stats = {
-            primary: `${metrics.unansweredQuestions} Pending`,
-            secondary: `${metrics.highPriorityQuestions} high priority`,
-            trend: metrics.unansweredQuestions > 10 ? 'up' : metrics.unansweredQuestions < 5 ? 'down' : 'stable'
-          };
-          card.metadata = {
-            count: metrics.unansweredQuestions,
-            nextAction: metrics.highPriorityQuestions > 0 ? 'Answer urgent questions' : 'Continue responding',
-            urgent: metrics.highPriorityQuestions > 0,
-            lastUpdated: 'Live data'
-          };
-          card.status = metrics.unansweredQuestions > 8 ? 'attention' : 'active';
-          card.priority = metrics.highPriorityQuestions > 2 ? 'high' : 'medium';
-          break;
-
-        default:
-          break;
-      }
-
-      // Update priority based on overall workload
-      if (metrics.totalWorkload > 15) {
-        if (card.priority === 'medium') card.priority = 'high';
-      } else if (metrics.totalWorkload < 5) {
-        if (card.priority === 'high' && card.id !== 'active-chat-sessions') card.priority = 'medium';
-      }
-    });
-
-    // Sort by urgency and priority for better counselor workflow
-    return baseCards.sort((a, b) => {
-      const priorityWeight = { 'high': 3, 'medium': 2, 'low': 1 };
-      const statusWeight = { 'attention': 4, 'active': 3, 'scheduled': 2, 'completed': 1 };
-      
-      const aScore = priorityWeight[a.priority] + statusWeight[a.status] + (a.metadata.urgent ? 2 : 0);
-      const bScore = priorityWeight[b.priority] + statusWeight[b.status] + (b.metadata.urgent ? 2 : 0);
-      
-      return bScore - aScore;
-    });
+  const getDerivedMetrics = {
+    totalWorkload: stats.urgentCount + stats.unreadMessages,
+    urgentStudents: stats.urgentCount
   };
 
   const dynamicCards = getDynamicCounselorCards();
@@ -337,19 +358,6 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         return 'grid grid-cols-1 md:grid-cols-2 gap-5';
     }
   };
-  
-
-  // Handle card clicks with activity logging
-  const handleCardClick = (card: CounselorDashboardCard) => {
-    logCounselorActivity('counselor_card_click', {
-      cardId: card.id,
-      cardTitle: card.title,
-      priority: card.priority,
-      status: card.status,
-      currentStats: card.stats,
-      urgentFlags: card.metadata.urgent || false,
-      workloadLevel: getDerivedMetrics.totalWorkload
-    });
   };
 
   return (
