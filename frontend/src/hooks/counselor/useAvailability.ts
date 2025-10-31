@@ -1,20 +1,11 @@
 import { useState } from 'react';
-import Parse from 'parse';
+import { getParse } from '@/config/parse';
 
-interface AvailabilitySchedule {
-  [key: string]: string[]; // e.g., { monday: ['09:00-12:00', '14:00-17:00'] }
-}
-
-interface BlockedSlot {
-  startTime: Date;
-  endTime: Date;
-  reason?: string;
-}
-
-interface AvailableSlot {
-  startTime: Date;
-  endTime: Date;
-  duration: number;
+export interface AvailabilitySlot {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
 }
 
 export const useAvailability = () => {
@@ -22,65 +13,19 @@ export const useAvailability = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Set weekly availability schedule
+   * Set counselor availability schedule
    */
-  const setAvailability = async (schedule: AvailabilitySchedule) => {
+  const setAvailability = async (slots: AvailabilitySlot[]) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await Parse.Cloud.run('setAvailability', { schedule });
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('setAvailability', { slots });
       return result;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to set availability';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Block specific time slot
-   */
-  const blockTimeSlot = async (params: BlockedSlot) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await Parse.Cloud.run('blockTimeSlot', params);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to block time slot';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Get available time slots for a specific date
-   */
-  const getAvailableSlots = async (
-    date: Date,
-    duration: number = 60,
-    counselorId?: string
-  ): Promise<AvailableSlot[]> => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await Parse.Cloud.run('getAvailableSlots', {
-        date,
-        duration,
-        counselorId
-      });
-      return result.slots || [];
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to get available slots';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to set availability');
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -94,23 +39,21 @@ export const useAvailability = () => {
     setError(null);
 
     try {
+      const Parse = await getParse();
       const result = await Parse.Cloud.run('getAvailabilitySchedule');
       return result;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to get availability schedule';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(err.message || 'Failed to fetch availability');
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    isLoading,
-    error,
     setAvailability,
-    blockTimeSlot,
-    getAvailableSlots,
-    getAvailabilitySchedule
+    getAvailabilitySchedule,
+    isLoading,
+    error
   };
 };
