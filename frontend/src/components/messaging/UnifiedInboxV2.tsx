@@ -448,7 +448,7 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
   };
 
   return (
-    <div className={className} style={{ position: 'relative', minHeight: '600px' }}>
+    <div className={className} style={{ position: 'relative', height: 'calc(100vh - 200px)', minHeight: '600px' }}>
       <div className="flex h-full bg-white border border-gray-200 rounded-lg overflow-hidden">
         {/* LEFT SIDEBAR - Conversation List */}
         <div

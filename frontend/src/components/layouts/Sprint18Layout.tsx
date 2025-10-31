@@ -36,10 +36,12 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       </main>
 
 
-      {/* Pre-Footer CTA Section - Only on student pages (exclude dashboard, counselor, admin) */}
+      {/* Pre-Footer CTA Section - Only on student pages (exclude dashboard, counselor, admin, messaging) */}
       {location.pathname !== '/dashboard' &&
        !location.pathname.startsWith('/counselor') &&
-       !location.pathname.startsWith('/admin') && <PreFooterCTA />}
+       !location.pathname.startsWith('/admin') &&
+       !location.pathname.startsWith('/inbox') &&
+       !location.pathname.startsWith('/messages') && <PreFooterCTA />}
 
       {/* Modern Minimalist Footer */}
       <ModernFooter />
