@@ -7171,3 +7171,598 @@ Parse.Cloud.define('getUserAssessmentResults', async (request) => {
     );
   }
 });
+
+// ==========================================
+// PHASE 1: SESSION MANAGEMENT CLOUD FUNCTIONS
+// ==========================================
+
+/**
+ * Update session status (confirm, cancel, complete)
+ * @param {string} sessionId - Session ID
+ * @param {string} status - New status: 'confirmed', 'cancelled', 'completed', 'in_progress'
+ * @param {string} notes - Optional session notes
+ * @param {object} outcomes - Optional session outcomes
+ */
+Parse.Cloud.define('updateSessionStatus', async (request) => {
+  const counselor = requireCounselor(request);
+  const { sessionId, status, notes, outcomes, cancellationReason } = request.params;
+
+  if (!sessionId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Session ID is required');
+  }
+
+  const validStatuses = ['confirmed', 'cancelled', 'completed', 'in_progress', 'pending'];
+  if (!status || !validStatuses.includes(status)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, `Status must be one of: ${validStatuses.join(', ')}`);
+  }
+
+  try {
+    const Session = Parse.Object.extend('Session');
+    const query = new Parse.Query(Session);
+    const session = await query.get(sessionId, { useMasterKey: true });
+
+    // Verify counselor owns this session
+    if (session.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only update your own sessions');
+    }
+
+    const oldStatus = session.get('status');
+    session.set('status', status);
+    session.set('updatedAt', new Date());
+
+    if (notes) {
+      session.set('counselorNotes', notes);
+    }
+
+    if (status === 'completed') {
+      session.set('completedAt', new Date());
+      if (outcomes) {
+        session.set('outcomes', outcomes);
+      }
+    }
+
+    if (status === 'cancelled' && cancellationReason) {
+      session.set('cancellationReason', cancellationReason);
+      session.set('cancelledBy', 'counselor');
+    }
+
+    await session.save(null, { useMasterKey: true });
+
+    // Send notification to student
+    const studentId = session.get('studentId');
+    if (studentId && status !== oldStatus) {
+      try {
+        const Student = Parse.Object.extend('_User');
+        const studentQuery = new Parse.Query(Student);
+        const student = await studentQuery.get(studentId, { useMasterKey: true });
+
+        const Notification = Parse.Object.extend('Notification');
+        const notification = new Notification();
+        notification.set('user', student);
+        notification.set('type', `session_${status}`);
+        notification.set('title', `Session ${status}`);
+        notification.set('message', `Your session has been ${status} by ${counselor.get('firstName')} ${counselor.get('lastName')}`);
+        notification.set('isRead', false);
+        notification.set('relatedObjectId', sessionId);
+        notification.set('relatedObjectType', 'Session');
+        await notification.save(null, { useMasterKey: true });
+      } catch (notificationError) {
+        console.error('Failed to send notification:', notificationError);
+      }
+    }
+
+    return {
+      success: true,
+      session: {
+        id: session.id,
+        status: session.get('status'),
+        studentId: session.get('studentId'),
+        scheduledTime: session.get('scheduledTime'),
+        topic: session.get('topic'),
+        notes: session.get('counselorNotes'),
+        completedAt: session.get('completedAt'),
+        outcomes: session.get('outcomes')
+      }
+    };
+  } catch (error) {
+    console.error('Error updating session status:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to update session: ${error.message}`);
+  }
+});
+
+/**
+ * Reschedule a session to a new time
+ * @param {string} sessionId - Session ID
+ * @param {Date} newTime - New scheduled time
+ * @param {string} reason - Optional reason for rescheduling
+ */
+Parse.Cloud.define('rescheduleSession', async (request) => {
+  const counselor = requireCounselor(request);
+  const { sessionId, newTime, reason } = request.params;
+
+  if (!sessionId || !newTime) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Session ID and new time are required');
+  }
+
+  const newDate = new Date(newTime);
+  if (isNaN(newDate.getTime())) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Invalid date format');
+  }
+
+  // Check if new time is in the past
+  if (newDate < new Date()) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Cannot reschedule to a past date');
+  }
+
+  try {
+    const Session = Parse.Object.extend('Session');
+    const query = new Parse.Query(Session);
+    const session = await query.get(sessionId, { useMasterKey: true });
+
+    // Verify counselor owns this session
+    if (session.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only reschedule your own sessions');
+    }
+
+    const oldTime = session.get('scheduledTime');
+    session.set('scheduledTime', newDate);
+    session.set('rescheduledAt', new Date());
+    session.set('rescheduledBy', 'counselor');
+    if (reason) {
+      session.set('rescheduleReason', reason);
+    }
+
+    await session.save(null, { useMasterKey: true });
+
+    // Send notification to student
+    const studentId = session.get('studentId');
+    if (studentId) {
+      try {
+        const Student = Parse.Object.extend('_User');
+        const studentQuery = new Parse.Query(Student);
+        const student = await studentQuery.get(studentId, { useMasterKey: true });
+
+        const Notification = Parse.Object.extend('Notification');
+        const notification = new Notification();
+        notification.set('user', student);
+        notification.set('type', 'session_rescheduled');
+        notification.set('title', 'Session Rescheduled');
+        notification.set('message', `Your session has been rescheduled to ${newDate.toLocaleString()}`);
+        notification.set('isRead', false);
+        notification.set('relatedObjectId', sessionId);
+        notification.set('relatedObjectType', 'Session');
+        await notification.save(null, { useMasterKey: true });
+      } catch (notificationError) {
+        console.error('Failed to send notification:', notificationError);
+      }
+    }
+
+    return {
+      success: true,
+      session: {
+        id: session.id,
+        oldTime,
+        newTime: newDate,
+        studentId: session.get('studentId'),
+        topic: session.get('topic'),
+        reason
+      }
+    };
+  } catch (error) {
+    console.error('Error rescheduling session:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to reschedule session: ${error.message}`);
+  }
+});
+
+/**
+ * Add or update session notes
+ * @param {string} sessionId - Session ID
+ * @param {string} notes - Session notes
+ * @param {string} nextSteps - Recommended next steps for student
+ * @param {array} resources - Resources shared during session
+ */
+Parse.Cloud.define('addSessionNotes', async (request) => {
+  const counselor = requireCounselor(request);
+  const { sessionId, notes, nextSteps, resources, outcomes } = request.params;
+
+  if (!sessionId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Session ID is required');
+  }
+
+  try {
+    const Session = Parse.Object.extend('Session');
+    const query = new Parse.Query(Session);
+    const session = await query.get(sessionId, { useMasterKey: true });
+
+    // Verify counselor owns this session
+    if (session.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only add notes to your own sessions');
+    }
+
+    if (notes) {
+      session.set('counselorNotes', notes);
+    }
+
+    if (nextSteps) {
+      session.set('nextSteps', nextSteps);
+    }
+
+    if (resources && Array.isArray(resources)) {
+      session.set('sharedResources', resources);
+    }
+
+    if (outcomes) {
+      session.set('outcomes', outcomes);
+    }
+
+    session.set('notesUpdatedAt', new Date());
+
+    await session.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      session: {
+        id: session.id,
+        notes: session.get('counselorNotes'),
+        nextSteps: session.get('nextSteps'),
+        resources: session.get('sharedResources'),
+        outcomes: session.get('outcomes'),
+        updatedAt: session.get('notesUpdatedAt')
+      }
+    };
+  } catch (error) {
+    console.error('Error adding session notes:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to add session notes: ${error.message}`);
+  }
+});
+
+/**
+ * Get session details including notes (counselor only)
+ * @param {string} sessionId - Session ID
+ */
+Parse.Cloud.define('getSessionDetails', async (request) => {
+  const counselor = requireCounselor(request);
+  const { sessionId } = request.params;
+
+  if (!sessionId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Session ID is required');
+  }
+
+  try {
+    const Session = Parse.Object.extend('Session');
+    const query = new Parse.Query(Session);
+    const session = await query.get(sessionId, { useMasterKey: true });
+
+    // Verify counselor owns this session
+    if (session.get('counselorId') !== counselor.id) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You can only view your own sessions');
+    }
+
+    // Get student details
+    const studentId = session.get('studentId');
+    let studentInfo = null;
+    if (studentId) {
+      try {
+        const Student = Parse.Object.extend('_User');
+        const studentQuery = new Parse.Query(Student);
+        const student = await studentQuery.get(studentId, { useMasterKey: true });
+        
+        studentInfo = {
+          id: student.id,
+          name: `${student.get('firstName')} ${student.get('lastName')}`,
+          email: student.get('email'),
+          phone: student.get('phone'),
+          subscriptionTier: student.get('subscriptionTier') || 'free'
+        };
+      } catch (studentError) {
+        console.error('Error fetching student:', studentError);
+      }
+    }
+
+    return {
+      success: true,
+      session: {
+        id: session.id,
+        status: session.get('status'),
+        scheduledTime: session.get('scheduledTime'),
+        duration: session.get('duration') || 60,
+        topic: session.get('topic'),
+        type: session.get('sessionType') || 'general',
+        notes: session.get('counselorNotes'),
+        nextSteps: session.get('nextSteps'),
+        sharedResources: session.get('sharedResources') || [],
+        outcomes: session.get('outcomes'),
+        completedAt: session.get('completedAt'),
+        createdAt: session.get('createdAt'),
+        student: studentInfo
+      }
+    };
+  } catch (error) {
+    console.error('Error getting session details:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get session details: ${error.message}`);
+  }
+});
+
+// ==========================================
+// PHASE 2: STUDENT MANAGEMENT CLOUD FUNCTIONS
+// ==========================================
+
+/**
+ * Update student priority level
+ * @param {string} studentId - Student user ID
+ * @param {string} priority - Priority level: 'low', 'medium', 'high', 'urgent'
+ * @param {string} reason - Optional reason for priority change
+ */
+Parse.Cloud.define('updateStudentPriority', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId, priority, reason } = request.params;
+
+  if (!studentId || !priority) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID and priority are required');
+  }
+
+  const validPriorities = ['low', 'medium', 'high', 'urgent'];
+  if (!validPriorities.includes(priority)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, `Priority must be one of: ${validPriorities.join(', ')}`);
+  }
+
+  try {
+    // Check if counselor-student relationship exists
+    const CounselorStudent = Parse.Object.extend('CounselorStudent');
+    const query = new Parse.Query(CounselorStudent);
+    query.equalTo('counselorId', counselor.id);
+    query.equalTo('studentId', studentId);
+    
+    let relationship = await query.first({ useMasterKey: true });
+
+    if (!relationship) {
+      // Create new relationship if doesn't exist
+      relationship = new CounselorStudent();
+      relationship.set('counselorId', counselor.id);
+      relationship.set('studentId', studentId);
+      relationship.set('status', 'active');
+      relationship.set('assignedAt', new Date());
+    }
+
+    relationship.set('priority', priority);
+    relationship.set('priorityUpdatedAt', new Date());
+    if (reason) {
+      relationship.set('priorityReason', reason);
+    }
+
+    await relationship.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      studentId,
+      priority,
+      reason,
+      updatedAt: new Date()
+    };
+  } catch (error) {
+    console.error('Error updating student priority:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to update student priority: ${error.message}`);
+  }
+});
+
+/**
+ * Add private note about a student
+ * @param {string} studentId - Student user ID
+ * @param {string} note - Note content
+ * @param {boolean} isPrivate - Whether note is private to counselor (default: true)
+ * @param {array} tags - Optional tags for categorizing notes
+ */
+Parse.Cloud.define('addStudentNote', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId, note, isPrivate = true, tags } = request.params;
+
+  if (!studentId || !note) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID and note are required');
+  }
+
+  try {
+    const StudentNote = Parse.Object.extend('StudentNote');
+    const newNote = new StudentNote();
+    
+    newNote.set('counselorId', counselor.id);
+    newNote.set('studentId', studentId);
+    newNote.set('content', note);
+    newNote.set('isPrivate', isPrivate);
+    newNote.set('createdAt', new Date());
+    
+    if (tags && Array.isArray(tags)) {
+      newNote.set('tags', tags);
+    }
+
+    await newNote.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      note: {
+        id: newNote.id,
+        studentId,
+        content: note,
+        isPrivate,
+        tags: tags || [],
+        createdAt: newNote.get('createdAt')
+      }
+    };
+  } catch (error) {
+    console.error('Error adding student note:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to add student note: ${error.message}`);
+  }
+});
+
+/**
+ * Get student's assessment results (for counselor review)
+ * @param {string} studentId - Student user ID
+ */
+Parse.Cloud.define('getStudentAssessmentResults', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId } = request.params;
+
+  if (!studentId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID is required');
+  }
+
+  try {
+    // Get student
+    const Student = Parse.Object.extend('_User');
+    const studentQuery = new Parse.Query(Student);
+    const student = await studentQuery.get(studentId, { useMasterKey: true });
+
+    // Get RIASEC assessments
+    const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
+    const riasecQuery = new Parse.Query(RiasecAssessment);
+    riasecQuery.equalTo('user', student);
+    riasecQuery.equalTo('status', 'completed');
+    riasecQuery.descending('completedAt');
+    riasecQuery.limit(5);
+    const riasecResults = await riasecQuery.find({ useMasterKey: true });
+
+    // Get student progress
+    const StudentProgress = Parse.Object.extend('StudentProgress');
+    const progressQuery = new Parse.Query(StudentProgress);
+    progressQuery.equalTo('user', student);
+    const progress = await progressQuery.first({ useMasterKey: true });
+
+    const assessments = riasecResults.map(assessment => ({
+      id: assessment.id,
+      type: 'riasec',
+      title: 'RIASEC Career Assessment',
+      completedAt: assessment.get('completedAt'),
+      hollandCode: assessment.get('hollandCode'),
+      primaryType: assessment.get('primaryType'),
+      scores: assessment.get('results')?.scores || {},
+      careerMatches: assessment.get('results')?.careerMatches?.slice(0, 5) || []
+    }));
+
+    return {
+      success: true,
+      student: {
+        id: student.id,
+        name: `${student.get('firstName')} ${student.get('lastName')}`,
+        email: student.get('email')
+      },
+      assessments,
+      summary: progress ? {
+        hollandCode: progress.get('hollandCode'),
+        primaryType: progress.get('lastRiasecResults')?.primaryType,
+        assessmentsCompleted: progress.get('assessmentsCompleted') || 0,
+        profileCompletion: progress.get('profileCompletion') || 0
+      } : null
+    };
+  } catch (error) {
+    console.error('Error getting student assessment results:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get assessment results: ${error.message}`);
+  }
+});
+
+/**
+ * Track student progress milestone
+ * @param {string} studentId - Student user ID
+ * @param {string} milestone - Milestone type: 'assessment_completed', 'career_decided', 'application_submitted', etc.
+ * @param {string} status - Status: 'achieved', 'in_progress', 'not_started'
+ * @param {object} metadata - Additional milestone data
+ */
+Parse.Cloud.define('trackStudentProgress', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId, milestone, status, metadata } = request.params;
+
+  if (!studentId || !milestone || !status) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID, milestone, and status are required');
+  }
+
+  const validStatuses = ['achieved', 'in_progress', 'not_started'];
+  if (!validStatuses.includes(status)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, `Status must be one of: ${validStatuses.join(', ')}`);
+  }
+
+  try {
+    const StudentMilestone = Parse.Object.extend('StudentMilestone');
+    
+    // Check if milestone already exists
+    const query = new Parse.Query(StudentMilestone);
+    query.equalTo('studentId', studentId);
+    query.equalTo('milestoneType', milestone);
+    
+    let milestoneRecord = await query.first({ useMasterKey: true });
+
+    if (milestoneRecord) {
+      // Update existing milestone
+      milestoneRecord.set('status', status);
+      milestoneRecord.set('updatedAt', new Date());
+      milestoneRecord.set('updatedBy', counselor.id);
+    } else {
+      // Create new milestone
+      milestoneRecord = new StudentMilestone();
+      milestoneRecord.set('studentId', studentId);
+      milestoneRecord.set('milestoneType', milestone);
+      milestoneRecord.set('status', status);
+      milestoneRecord.set('createdBy', counselor.id);
+    }
+
+    if (status === 'achieved') {
+      milestoneRecord.set('achievedAt', new Date());
+    }
+
+    if (metadata) {
+      milestoneRecord.set('metadata', metadata);
+    }
+
+    await milestoneRecord.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      milestone: {
+        id: milestoneRecord.id,
+        studentId,
+        type: milestone,
+        status,
+        achievedAt: milestoneRecord.get('achievedAt'),
+        metadata
+      }
+    };
+  } catch (error) {
+    console.error('Error tracking student progress:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to track student progress: ${error.message}`);
+  }
+});
+
+/**
+ * Get student notes (counselor's private notes)
+ * @param {string} studentId - Student user ID
+ */
+Parse.Cloud.define('getStudentNotes', async (request) => {
+  const counselor = requireCounselor(request);
+  const { studentId } = request.params;
+
+  if (!studentId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Student ID is required');
+  }
+
+  try {
+    const StudentNote = Parse.Object.extend('StudentNote');
+    const query = new Parse.Query(StudentNote);
+    query.equalTo('counselorId', counselor.id);
+    query.equalTo('studentId', studentId);
+    query.descending('createdAt');
+    query.limit(50);
+
+    const notes = await query.find({ useMasterKey: true });
+
+    return {
+      success: true,
+      notes: notes.map(note => ({
+        id: note.id,
+        content: note.get('content'),
+        isPrivate: note.get('isPrivate'),
+        tags: note.get('tags') || [],
+        createdAt: note.get('createdAt')
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting student notes:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to get student notes: ${error.message}`);
+  }
+});
