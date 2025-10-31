@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
-import { getParse } from '@/config/parse';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAssignedStudents } from '@/hooks/useAssignedStudents';
+import type { Student } from '@/hooks/useAssignedStudents';
 import {
   MagnifyingGlassIcon,
   PersonIcon,
@@ -17,113 +19,14 @@ import {
   CalendarIcon,
   Pencil1Icon,
   EyeOpenIcon,
-  StarIcon,
   ExclamationTriangleIcon,
+  ReloadIcon,
 } from '@radix-ui/react-icons';
-
-interface Student {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  grade: string;
-  school: string;
-  assignedDate: string;
-  lastInteraction: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'active' | 'completed' | 'on-hold';
-  profileCompletion: number;
-  assessmentsCompleted: number;
-  totalAssessments: number;
-  careerMatches: number;
-  notes: string;
-  interests: string[];
-  topCareers: string[];
-}
-
-// Mock data for students
-const mockStudents: Student[] = [
-  {
-    id: '1',
-    firstName: 'Sarah',
-    lastName: 'Wilson',
-    email: 'sarah.wilson@school.edu',
-    grade: 'Form 4',
-    school: 'Nairobi High School',
-    assignedDate: '2024-01-15',
-    lastInteraction: '2024-01-18',
-    priority: 'high',
-    status: 'active',
-    profileCompletion: 85,
-    assessmentsCompleted: 3,
-    totalAssessments: 4,
-    careerMatches: 15,
-    notes: 'Interested in STEM careers, particularly engineering. Needs guidance on university applications.',
-    interests: ['Mathematics', 'Physics', 'Technology'],
-    topCareers: ['Software Engineer', 'Civil Engineer', 'Data Scientist'],
-  },
-  {
-    id: '2',
-    firstName: 'David',
-    lastName: 'Brown',
-    email: 'david.brown@school.edu',
-    grade: 'Form 3',
-    school: 'Mombasa Secondary',
-    assignedDate: '2024-01-10',
-    lastInteraction: '2024-01-17',
-    priority: 'medium',
-    status: 'active',
-    profileCompletion: 60,
-    assessmentsCompleted: 2,
-    totalAssessments: 4,
-    careerMatches: 8,
-    notes: 'Exploring business and commerce careers. Good leadership potential.',
-    interests: ['Business', 'Leadership', 'Communication'],
-    topCareers: ['Business Manager', 'Marketing Specialist', 'Entrepreneur'],
-  },
-  {
-    id: '3',
-    firstName: 'Lisa',
-    lastName: 'Chen',
-    email: 'lisa.chen@school.edu',
-    grade: 'Form 4',
-    school: 'Kisumu Girls School',
-    assignedDate: '2024-01-08',
-    lastInteraction: '2024-01-16',
-    priority: 'low',
-    status: 'completed',
-    profileCompletion: 100,
-    assessmentsCompleted: 4,
-    totalAssessments: 4,
-    careerMatches: 20,
-    notes: 'Successfully completed career planning. Ready for university applications.',
-    interests: ['Healthcare', 'Biology', 'Community Service'],
-    topCareers: ['Doctor', 'Nurse', 'Public Health Officer'],
-  },
-  {
-    id: '4',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@school.edu',
-    grade: 'Form 2',
-    school: 'Eldoret Boys High',
-    assignedDate: '2024-01-20',
-    lastInteraction: '2024-01-20',
-    priority: 'medium',
-    status: 'active',
-    profileCompletion: 30,
-    assessmentsCompleted: 1,
-    totalAssessments: 4,
-    careerMatches: 5,
-    notes: 'New student, just started career exploration journey.',
-    interests: ['Sports', 'Physical Education'],
-    topCareers: ['Sports Coach', 'Physical Therapist', 'Fitness Trainer'],
-  },
-];
+import { Loader2 } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { students: allStudents, isLoading, error, refetch } = useAssignedStudents();
+  const [students, setStudents] = React.useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -131,35 +34,16 @@ export const StudentRoster: React.FC = () => {
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
 
-  // Fetch assigned students from database
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const Parse = getParse();
-        const result = await Parse.Cloud.run('getAssignedStudents');
-
-        if (result.success) {
-          setStudents(result.students);
-        } else {
-          console.warn('Failed to fetch students:', result.error);
-          // Fallback to mock data
-          setStudents(mockStudents);
-        }
-      } catch (error) {
-        console.warn('Error fetching students, using mock data:', error);
-        setStudents(mockStudents);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
+  // Update local students when hook data changes
+  React.useEffect(() => {
+    if (allStudents) {
+      setStudents(allStudents);
+    }
+  }, [allStudents]);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = 
-      student.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.school.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -178,13 +62,13 @@ export const StudentRoster: React.FC = () => {
   const handleAddNote = () => {
     if (selectedStudent && newNote.trim()) {
       // In a real app, this would update the database
-      console.log(`Adding note for ${selectedStudent.firstName}: ${newNote}`);
+      console.log(`Adding note for ${selectedStudent.name}: ${newNote}`);
       setNewNote('');
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -253,26 +137,49 @@ export const StudentRoster: React.FC = () => {
         </Card>
 
         {/* Loading State */}
-        {loading && (
+        {isLoading && (
           <Card>
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 text-center flex flex-col items-center gap-4">
+              <Loader2 className="h-12 w-12 animate-spin text-yellow-600" />
               <p className="text-muted-foreground">Loading students...</p>
             </CardContent>
           </Card>
         )}
 
+        {/* Error State */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error Loading Students</AlertTitle>
+            <AlertDescription className="mt-2 space-y-3">
+              <p>{error.message}</p>
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                className="flex items-center gap-2"
+              >
+                <ReloadIcon className="h-4 w-4" />
+                Try Again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Empty State */}
-        {!loading && filteredStudents.length === 0 && (
+        {!isLoading && !error && filteredStudents.length === 0 && (
           <Card>
             <CardContent className="pt-6 text-center space-y-2">
               <PersonIcon className="w-12 h-12 mx-auto text-muted-foreground" />
-              <p className="text-muted-foreground">No students assigned yet</p>
+              <p className="text-muted-foreground">
+                {students.length === 0
+                  ? 'No students assigned yet'
+                  : 'No students match your current filters'}
+              </p>
             </CardContent>
           </Card>
         )}
 
         {/* Students Grid */}
-        {!loading && filteredStudents.length > 0 && (
+        {!isLoading && !error && filteredStudents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map(student => (
             <Card key={student.id} className="hover:shadow-md transition-shadow">
@@ -283,12 +190,12 @@ export const StudentRoster: React.FC = () => {
                     <div className="flex gap-3">
                       <Avatar>
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                          {student.firstName[0]}{student.lastName[0]}
+                          {student.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
                         <h3 className="font-medium text-sm">
-                          {student.firstName} {student.lastName}
+                          {student.name}
                         </h3>
                         <p className="text-xs text-muted-foreground">
                           {student.grade} • {student.school}
@@ -305,7 +212,7 @@ export const StudentRoster: React.FC = () => {
                       </Badge>
                       <Badge
                         variant={student.status === 'active' ? 'default' : 
-                                student.status === 'completed' ? 'secondary' : 'outline'}
+                                student.status === 'pending' ? 'outline' : 'secondary'}
                         className="text-xs"
                       >
                         {student.status}
@@ -329,7 +236,7 @@ export const StudentRoster: React.FC = () => {
                     <div className="text-center space-y-1">
                       <p className="text-xs text-muted-foreground">Assessments</p>
                       <p className="font-medium text-sm text-primary">
-                        {student.assessmentsCompleted}/{student.totalAssessments}
+                        {student.assessments}
                       </p>
                     </div>
                     <div className="text-center space-y-1">
@@ -341,7 +248,7 @@ export const StudentRoster: React.FC = () => {
                     <div className="text-center space-y-1">
                       <p className="text-xs text-muted-foreground">Last Contact</p>
                       <p className="font-medium text-xs text-primary">
-                        {formatDate(student.lastInteraction)}
+                        {formatDate(student.lastContact)}
                       </p>
                     </div>
                   </div>
@@ -418,7 +325,7 @@ export const StudentRoster: React.FC = () => {
             <DialogHeader>
               <DialogTitle>
                 {selectedStudent
-                  ? `${selectedStudent.firstName} ${selectedStudent.lastName}`
+                  ? selectedStudent.name
                   : 'Student Details'}
               </DialogTitle>
             </DialogHeader>
@@ -429,12 +336,12 @@ export const StudentRoster: React.FC = () => {
                   <div className="flex gap-3">
                     <Avatar className="w-12 h-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
+                        {selectedStudent.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
                       <h3 className="font-medium">
-                        {selectedStudent.firstName} {selectedStudent.lastName}
+                        {selectedStudent.name}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {selectedStudent.email}
@@ -467,7 +374,7 @@ export const StudentRoster: React.FC = () => {
                       <div className="text-center space-y-1">
                         <p className="text-xs text-muted-foreground">Assessments</p>
                         <p className="font-medium text-primary">
-                          {selectedStudent.assessmentsCompleted}/{selectedStudent.totalAssessments}
+                          {selectedStudent.assessments}
                         </p>
                       </div>
                       <div className="text-center space-y-1">
@@ -479,39 +386,6 @@ export const StudentRoster: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Interests */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Interests</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStudent.interests.map((interest, index) => (
-                      <Badge key={index} variant="secondary">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Top Career Matches */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Top Career Matches</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStudent.topCareers.map((career, index) => (
-                      <Badge key={index} variant="outline" className="gap-1">
-                        <StarIcon className="w-3 h-3" />
-                        {career}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Notes */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Notes</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedStudent.notes}
-                  </p>
-                </div>
 
                 {/* Add Note */}
                 <div className="space-y-3">
