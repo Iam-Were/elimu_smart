@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getParse } from '@/config/parse';
+import { useCounselorSessions } from '@/hooks/useCounselorSessions';
+import type { Session } from '@/hooks/useCounselorSessions';
 import {
   CalendarIcon,
   ClockIcon,
@@ -18,119 +19,13 @@ import {
   TrashIcon,
   VideoIcon,
   CheckCircledIcon,
+  ReloadIcon,
 } from '@radix-ui/react-icons';
-
-interface Session {
-  id: string;
-  studentId: string;
-  studentName: string;
-  studentEmail: string;
-  studentGrade: string;
-  title: string;
-  description: string;
-  type: 'individual' | 'group' | 'virtual' | 'phone';
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
-  scheduledAt: Date;
-  duration: number; // minutes
-  location: string;
-  notes: string;
-  outcomes: string[];
-  nextSteps: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Mock data for sessions
-const mockSessions: Session[] = [
-  {
-    id: '1',
-    studentId: '1',
-    studentName: 'Sarah Wilson',
-    studentEmail: 'sarah.wilson@school.edu',
-    studentGrade: 'Form 4',
-    title: 'Career Guidance - Engineering vs Medicine',
-    description: 'Discuss career options, requirements, and help student make informed decision',
-    type: 'individual',
-    status: 'scheduled',
-    scheduledAt: new Date('2024-01-19T14:00:00'),
-    duration: 60,
-    location: 'Counseling Office Room 201',
-    notes: 'Student is torn between engineering and medicine. Prepare KUCCPS requirements for both fields.',
-    outcomes: [],
-    nextSteps: [],
-    createdAt: new Date('2024-01-18T10:30:00'),
-    updatedAt: new Date('2024-01-18T10:30:00'),
-  },
-  {
-    id: '2',
-    studentId: '2',
-    studentName: 'David Brown',
-    studentEmail: 'david.brown@school.edu',
-    studentGrade: 'Form 3',
-    title: 'Business Career Planning Session',
-    description: 'Explore business career options and university programs',
-    type: 'virtual',
-    status: 'scheduled',
-    scheduledAt: new Date('2024-01-20T10:00:00'),
-    duration: 45,
-    location: 'Zoom Meeting',
-    notes: 'Student interested in entrepreneurship. Discuss business programs and practical experience opportunities.',
-    outcomes: [],
-    nextSteps: [],
-    createdAt: new Date('2024-01-17T14:20:00'),
-    updatedAt: new Date('2024-01-17T14:20:00'),
-  },
-  {
-    id: '3',
-    studentId: '3',
-    studentName: 'Lisa Chen',
-    studentEmail: 'lisa.chen@school.edu',
-    studentGrade: 'Form 4',
-    title: 'Medical School Application Review',
-    description: 'Review university applications and prepare for interviews',
-    type: 'individual',
-    status: 'completed',
-    scheduledAt: new Date('2024-01-17T11:00:00'),
-    duration: 90,
-    location: 'Counseling Office Room 201',
-    notes: 'Reviewed application essays and practiced interview questions.',
-    outcomes: [
-      'Improved personal statement',
-      'Gained confidence in interview skills',
-      'Clarified university preferences'
-    ],
-    nextSteps: [
-      'Submit university applications by February 1st',
-      'Schedule mock interview sessions',
-      'Research scholarship opportunities'
-    ],
-    createdAt: new Date('2024-01-16T09:15:00'),
-    updatedAt: new Date('2024-01-17T12:30:00'),
-  },
-  {
-    id: '4',
-    studentId: '4',
-    studentName: 'John Doe',
-    studentEmail: 'john.doe@school.edu',
-    studentGrade: 'Form 2',
-    title: 'Sports Career Exploration',
-    description: 'Discuss professional sports career possibilities and alternatives',
-    type: 'individual',
-    status: 'scheduled',
-    scheduledAt: new Date('2024-01-21T15:30:00'),
-    duration: 45,
-    location: 'Counseling Office Room 203',
-    notes: 'Student passionate about football. Need to discuss realistic expectations and backup plans.',
-    outcomes: [],
-    nextSteps: [],
-    createdAt: new Date('2024-01-15T16:45:00'),
-    updatedAt: new Date('2024-01-15T16:45:00'),
-  },
-];
+import { Loader2 } from 'lucide-react';
 
 export const SessionManager: React.FC = () => {
+  const { sessions: allSessions, isLoading, error, refetch } = useCounselorSessions();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
   const [opened, setOpened] = useState(false);
   const open = () => setOpened(true);
   const close = () => setOpened(false);
@@ -151,58 +46,12 @@ export const SessionManager: React.FC = () => {
     notes: '',
   });
 
-  // Fetch sessions from database
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const Parse = getParse();
-        const result = await Parse.Cloud.run('getPendingSessionRequests');
-
-        if (result.success) {
-          // Transform backend data to match frontend interface
-          const transformedSessions = result.sessions.map((s: {
-            id: string;
-            studentId: string;
-            studentName: string;
-            sessionType: string;
-            status: string;
-            scheduledAt: string;
-            topic: string;
-            duration: number;
-          }) => ({
-            id: s.id,
-            studentId: s.studentId,
-            studentName: s.studentName,
-            studentEmail: `${s.studentName.toLowerCase().replace(' ', '.')}@school.edu`,
-            studentGrade: 'Form 4',
-            title: s.topic || 'Career Counseling Session',
-            description: s.topic || 'Counseling session',
-            type: s.sessionType === 'career' ? 'individual' : s.sessionType as Session['type'],
-            status: s.status as Session['status'],
-            scheduledAt: new Date(s.scheduledAt),
-            duration: s.duration || 60,
-            location: 'Counseling Office',
-            notes: '',
-            outcomes: [],
-            nextSteps: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }));
-          setSessions(transformedSessions);
-        } else {
-          console.warn('Failed to fetch sessions:', result.error);
-          setSessions(mockSessions);
-        }
-      } catch (error) {
-        console.warn('Error fetching sessions, using mock data:', error);
-        setSessions(mockSessions);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSessions();
-  }, []);
+  // Update local sessions when hook data changes
+  React.useEffect(() => {
+    if (allSessions) {
+      setSessions(allSessions);
+    }
+  }, [allSessions]);
 
   const filteredSessions = sessions.filter(session => {
     const matchesStatus = !filterStatus || session.status === filterStatus;
@@ -337,6 +186,39 @@ export const SessionManager: React.FC = () => {
     });
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6 max-w-7xl">
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-yellow-600" />
+          <p className="text-lg text-muted-foreground">Loading sessions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto py-6 max-w-7xl">
+        <Alert variant="destructive">
+          <AlertTitle>Error Loading Sessions</AlertTitle>
+          <AlertDescription className="mt-2 space-y-3">
+            <p>{error.message}</p>
+            <Button
+              variant="outline"
+              onClick={() => refetch()}
+              className="flex items-center gap-2"
+            >
+              <ReloadIcon className="h-4 w-4" />
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 max-w-7xl">
@@ -453,16 +335,8 @@ export const SessionManager: React.FC = () => {
           </Alert>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <Card className="p-6 text-center">
-            <p className="text-muted-foreground">Loading sessions...</p>
-          </Card>
-        )}
-
         {/* Sessions List */}
-        {!loading && (
-          <div className="space-y-4">
+        <div className="space-y-4">
             {filteredSessions.length === 0 ? (
               <Alert>
                 <CalendarIcon className="h-4 w-4" />
@@ -580,9 +454,8 @@ export const SessionManager: React.FC = () => {
                 </div>
               </Card>
             ))
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Session Form Modal */}
         <Dialog open={opened} onOpenChange={(open) => !open && close()}>
