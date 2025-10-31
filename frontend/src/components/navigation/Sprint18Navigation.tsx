@@ -124,24 +124,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     return getRoleColor(theme);
   };
 
-  const getActiveNavStyles = () => {
-    const baseColor = getThemeColor(currentTheme);
-    return {
-      background: `linear-gradient(to right, ${baseColor}, ${baseColor}dd)`,
-      color: 'white'
-    };
-  };
-
-  // Removed unused function - using getActiveNavStyles() with inline styles instead
-
-  const getHeaderStyles = () => {
-    const baseColor = getThemeColor(currentTheme);
-    return {
-      borderColor: `${baseColor}33`, // 20% opacity
-      background: 'rgba(255, 255, 255, 0.8)'
-    };
-  };
-
   const getLogoStyles = () => {
     const baseColor = getThemeColor(currentTheme);
     return {
