@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { getParse } from '@/config/parse';
+import { toast } from 'sonner';
 import {
   Search,
   Plus,
@@ -114,7 +115,9 @@ const CommunityQA: React.FC = () => {
 
   const handlePostQuestion = async () => {
     if (!questionTitle.trim() || !questionDetails.trim()) {
-      alert('Please fill in both title and details');
+      toast.error('Please fill in both title and details', {
+        description: 'Both title and details are required'
+      });
       return;
     }
 
@@ -127,14 +130,18 @@ const CommunityQA: React.FC = () => {
         category: selectedCategory === 'all' ? 'general' : selectedCategory
       });
 
-      alert('Question posted successfully!');
+      toast.success('Question posted successfully!', {
+        description: 'Your question is now visible to the community'
+      });
       setQuestionTitle('');
       setQuestionDetails('');
       setShowAskForm(false);
       await reloadQuestions();
     } catch (error) {
       console.error('Failed to post question:', error);
-      alert('Failed to post question. Please try again.');
+      toast.error('Failed to post question', {
+        description: 'Please check your input and try again'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -156,7 +163,9 @@ const CommunityQA: React.FC = () => {
       await reloadQuestions();
     } catch (error) {
       console.error('Failed to post reply:', error);
-      alert('Failed to post reply. Please try again.');
+      toast.error('Failed to post reply', {
+        description: 'Please check your reply and try again'
+      });
     } finally {
       setSubmittingReply({ ...submittingReply, [questionId]: false });
     }
