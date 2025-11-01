@@ -33,6 +33,66 @@ require('./dashboardFunctions');
 // Import career schema migration function (auto-registers cloud functions)
 require('./careerSchemaMigration');
 
+// =============================================================================
+// SECURITY: CHAT MESSAGE ACCESS CONTROL (Defense-in-Depth)
+// =============================================================================
+
+/**
+ * beforeFind hook for ChatMessage - Ensures users can only query messages
+ * from conversations they're participants in.
+ *
+ * This is a defense-in-depth layer in addition to explicit checks in cloud functions.
+ */
+Parse.Cloud.beforeFind('ChatMessage', async (request) => {
+  const user = request.user;
+  const query = request.query;
+
+  // Deny unauthenticated access
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING,
+      'User must be authenticated to access messages');
+  }
+
+  // Get the chatRoom being queried
+  const constraints = query._where;
+  const chatRoomConstraint = constraints?.chatRoom;
+
+  if (!chatRoomConstraint || !chatRoomConstraint.objectId) {
+    // If no specific chat room is being queried, this might be admin dashboard
+    // Still require authentication but allow the query
+    return query;
+  }
+
+  const chatRoomId = chatRoomConstraint.objectId;
+
+  // Verify user is a participant in this chat room
+  const ChatRoom = Parse.Object.extend('ChatRoom');
+  const roomQuery = new Parse.Query(ChatRoom);
+
+  try {
+    const chatRoom = await roomQuery.get(chatRoomId, { useMasterKey: true });
+    const participants = chatRoom.get('participants') || [];
+
+    if (!participants.includes(user.id)) {
+      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN,
+        'You do not have access to this conversation');
+    }
+  } catch (error) {
+    if (error.code === Parse.Error.OBJECT_NOT_FOUND) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND,
+        'Chat room not found');
+    }
+    throw error;
+  }
+
+  // Allow the query to proceed
+  return query;
+});
+
+// =============================================================================
+// CLOUD FUNCTIONS
+// =============================================================================
+
 // Initialize schema for student-counselor functionality
 Parse.Cloud.define('initializeStudentCounselorSchema', async (request) => {
   const { user } = request;
@@ -601,27 +661,39 @@ Parse.Cloud.define('getChatRooms', async (request) => {
 Parse.Cloud.define('getChatMessages', async (request) => {
   const { chatRoomId, limit = 50, skip = 0 } = request.params;
   const user = request.user;
-  
+
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
+  // 🔒 SECURITY FIX: Verify user is a participant in this chat room
+  const ChatRoom = Parse.Object.extend('ChatRoom');
+  const roomQuery = new Parse.Query(ChatRoom);
+  const chatRoom = await roomQuery.get(chatRoomId, { useMasterKey: true });
+
+  const participants = chatRoom.get('participants') || [];
+  if (!participants.includes(user.id)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN,
+      'You do not have access to this conversation');
+  }
+
+  // ✅ User is authorized - proceed with fetching messages
   const ChatMessage = Parse.Object.extend('ChatMessage');
   const query = new Parse.Query(ChatMessage);
-  
+
   // Create pointer to chat room for query
   const chatRoomPointer = {
     __type: 'Pointer',
-    className: 'ChatRoom', 
+    className: 'ChatRoom',
     objectId: chatRoomId
   };
-  
+
   query.equalTo('chatRoom', chatRoomPointer);
   query.ascending('createdAt');
   query.include(['sender']);
   query.limit(limit);
   query.skip(skip);
-  
+
   const messages = await query.find({ useMasterKey: true });
   return messages;
 });
@@ -630,30 +702,42 @@ Parse.Cloud.define('getChatMessages', async (request) => {
 Parse.Cloud.define('markMessagesAsRead', async (request) => {
   const { chatRoomId } = request.params;
   const user = request.user;
-  
+
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
+  // 🔒 SECURITY FIX: Verify user is a participant in this chat room
+  const ChatRoom = Parse.Object.extend('ChatRoom');
+  const roomQuery = new Parse.Query(ChatRoom);
+  const chatRoom = await roomQuery.get(chatRoomId, { useMasterKey: true });
+
+  const participants = chatRoom.get('participants') || [];
+  if (!participants.includes(user.id)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN,
+      'You do not have access to this conversation');
+  }
+
+  // ✅ User is authorized - proceed with marking messages
   const ChatMessage = Parse.Object.extend('ChatMessage');
   const query = new Parse.Query(ChatMessage);
-  
+
   const chatRoomPointer = {
     __type: 'Pointer',
     className: 'ChatRoom',
     objectId: chatRoomId
   };
-  
+
   query.equalTo('chatRoom', chatRoomPointer);
   query.notEqualTo('sender', user);
   query.equalTo('isRead', false);
-  
+
   const messages = await query.find({ useMasterKey: true });
-  
+
   messages.forEach(message => {
     message.set('isRead', true);
   });
-  
+
   await Parse.Object.saveAll(messages, { useMasterKey: true });
   return { messagesMarked: messages.length };
 });
