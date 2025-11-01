@@ -54,7 +54,7 @@ const CommunityQA: React.FC = () => {
       try {
         setLoading(true);
         const Parse = await getParse();
-        const result = await Parse.Cloud.run('getStudentQuestions', {
+        const result = await Parse.Cloud.run('getAllQuestions', {
           category: selectedCategory === 'all' ? undefined : selectedCategory
         });
 
@@ -87,7 +87,7 @@ const CommunityQA: React.FC = () => {
   const reloadQuestions = async () => {
     try {
       const Parse = await getParse();
-      const result = await Parse.Cloud.run('getStudentQuestions', {
+      const result = await Parse.Cloud.run('getAllQuestions', {
         category: selectedCategory === 'all' ? undefined : selectedCategory
       });
 
@@ -159,6 +159,26 @@ const CommunityQA: React.FC = () => {
       alert('Failed to post reply. Please try again.');
     } finally {
       setSubmittingReply({ ...submittingReply, [questionId]: false });
+    }
+  };
+
+  const handleUpvoteQuestion = async (questionId: string) => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('upvoteQuestion', { questionId });
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to upvote question:', error);
+    }
+  };
+
+  const handleUpvoteAnswer = async (questionId: string, answerId: string) => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('upvoteAnswer', { questionId, answerId });
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to upvote answer:', error);
     }
   };
 
@@ -308,8 +328,14 @@ const CommunityQA: React.FC = () => {
                     <div className="flex gap-4 mb-3">
                       {/* Upvote Column */}
                       <div className="flex flex-col items-center gap-1">
-                        <button className="hover:bg-gray-100 p-1 rounded">
-                          <ArrowBigUp className="h-6 w-6 text-gray-400" />
+                        <button
+                          className="hover:bg-orange-100 p-1 rounded transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpvoteQuestion(question.id);
+                          }}
+                        >
+                          <ArrowBigUp className="h-6 w-6 text-gray-600 hover:text-orange-600" />
                         </button>
                         <span className="text-sm font-semibold">{question.upvotes}</span>
                       </div>
@@ -347,9 +373,15 @@ const CommunityQA: React.FC = () => {
                       {question.answers.map((answer) => (
                         <div key={answer.id} className="py-3 border-b border-gray-100 last:border-0">
                           <div className="flex gap-3">
-                            <button className="hover:bg-gray-100 p-1 rounded self-start">
-                              <ArrowBigUp className="h-5 w-5 text-gray-400" />
-                            </button>
+                            <div className="flex flex-col items-center gap-1">
+                              <button
+                                className="hover:bg-orange-100 p-1 rounded transition-colors self-start"
+                                onClick={() => handleUpvoteAnswer(question.id, answer.id)}
+                              >
+                                <ArrowBigUp className="h-5 w-5 text-gray-600 hover:text-orange-600" />
+                              </button>
+                              <span className="text-xs font-semibold">{answer.upvotes || 0}</span>
+                            </div>
                             <div className="flex-1">
                               <p className="text-gray-800 mb-2">{answer.answer}</p>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">

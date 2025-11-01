@@ -23,7 +23,10 @@
       "mcp__chrome-devtools__get_network_request",
       "Bash(npm run lint:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__chrome-devtools__handle_dialog",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": [],
