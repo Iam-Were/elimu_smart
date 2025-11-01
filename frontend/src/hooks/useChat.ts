@@ -237,11 +237,12 @@ export const useChat = () => {
       chatAnalytics.trackConversationActivity(chatRoomId);
 
       // Update optimistic message with real data
+      const messageId = (result as { objectId?: string })?.objectId || optimisticMessage.id;
       setChatState(prev => ({
         ...prev,
         messages: prev.messages.map(msg =>
           msg.id === optimisticMessage.id
-            ? { ...optimisticMessage, id: result.objectId, status: 'sent' }
+            ? { ...optimisticMessage, id: messageId, status: 'sent' }
             : msg
         )
       }));
