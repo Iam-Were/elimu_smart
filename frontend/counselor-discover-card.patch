@@ -1,0 +1,38 @@
+--- a/frontend/src/components/counselor/CounselorDashboardCards.tsx
++++ b/frontend/src/components/counselor/CounselorDashboardCards.tsx
+@@ -13,6 +13,7 @@ import {
+   FileText,
+   AlertTriangle,
+   Bell,
++  Search,
+   type LucideIcon,
+ } from 'lucide-react';
+
+@@ -166,6 +167,27 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
+           lastUpdated: 'Live data'
+         }
+       },
++      {
++        id: 'discover-students',
++        title: 'Discover Students',
++        description: 'Find and reach out to students proactively',
++        icon: Search,
++        iconEmphasis: 'medium',
++        status: 'active',
++        priority: 'high',
++        actionText: 'Search Students',
++        actionLink: '/counselor/discover',
++        stats: {
++          primary: 'Proactive Outreach',
++          secondary: 'Find students who need help',
++          trend: 'up'
++        },
++        metadata: {
++          nextAction: 'Search by grade, school, or career interest',
++          urgent: false,
++          lastUpdated: 'Live data'
++        }
++      },
+       {
+         id: 'community-qa',
+         title: 'Community Q&A',
