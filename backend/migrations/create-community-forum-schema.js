@@ -13,6 +13,9 @@
  * Run: node backend/migrations/create-community-forum-schema.js
  */
 
+// Load environment variables first
+require('dotenv').config();
+
 const Parse = require('parse/node');
 
 // Initialize Parse
@@ -22,6 +25,12 @@ Parse.initialize(
   process.env.PARSE_MASTER_KEY || 'elimu_smart_master_key_2024'
 );
 Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
+
+console.log('📋 Using Parse configuration:');
+console.log('  - App ID:', process.env.PARSE_APP_ID || 'elimu_smart_app_2024');
+console.log('  - Server URL:', process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse');
+console.log('  - Master Key:', process.env.PARSE_MASTER_KEY ? '✓ Set' : '✗ Missing');
+console.log('');
 
 async function createCommunityForumSchema() {
   console.log('🚀 Starting Community Forum schema creation...\n');
