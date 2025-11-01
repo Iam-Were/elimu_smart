@@ -38,6 +38,32 @@ interface Answer {
   isVerified?: boolean;
 }
 
+// Serialized Parse Object from backend API
+interface SerializedQuestion {
+  objectId: string;
+  title: string;
+  question: string;
+  category: string;
+  askedBy: string;
+  askedByName: string;
+  createdAt: string;
+  upvotes: number;
+  hasBestAnswer: boolean;
+  isPinned: boolean;
+}
+
+interface SerializedAnswer {
+  objectId: string;
+  answer: string;
+  answeredBy: string;
+  answeredByName: string;
+  createdAt: string;
+  upvotes: number;
+  isCounselor: boolean;
+  isBestAnswer: boolean;
+  isVerified: boolean;
+}
+
 interface Question {
   id: string;
   title: string;
@@ -99,21 +125,19 @@ const CommunityQA: React.FC = () => {
         });
 
         // Backend returns { questions, total, page, hasMore }
-        const formattedQuestions: Question[] = result.questions.map((q: {
-          id: string;
-          get: (field: string) => unknown;
-        }) => ({
-          id: q.id,
-          title: q.get('title') as string,
-          question: q.get('question') as string,
-          category: q.get('category') as string || 'general',
-          askedBy: q.get('askedBy') as string,
-          askedByName: q.get('askedByName') as string || 'Anonymous',
-          createdAt: new Date(q.get('createdAt') as string),
+        // Questions are serialized JSON objects, not Parse Objects
+        const formattedQuestions: Question[] = result.questions.map((q: SerializedQuestion) => ({
+          id: q.objectId,
+          title: q.title,
+          question: q.question,
+          category: q.category || 'general',
+          askedBy: q.askedBy,
+          askedByName: q.askedByName || 'Anonymous',
+          createdAt: new Date(q.createdAt),
           answers: [], // Loaded separately when expanded
-          upvotes: (q.get('upvotes') as number) || 0,
-          hasBestAnswer: (q.get('hasBestAnswer') as boolean) || false,
-          isPinned: (q.get('isPinned') as boolean) || false,
+          upvotes: q.upvotes || 0,
+          hasBestAnswer: q.hasBestAnswer || false,
+          isPinned: q.isPinned || false,
         }));
 
         setQuestions(formattedQuestions);
@@ -139,19 +163,18 @@ const CommunityQA: React.FC = () => {
         limit: 20
       });
 
-      const formattedQuestions: Question[] = result.questions.map((q: {
-        id: string;
-        get: (field: string) => unknown;
-      }) => ({
-        id: q.id,
-        title: q.get('title') as string,
-        question: q.get('question') as string,
-        category: q.get('category') as string || 'general',
-        askedBy: q.get('askedBy') as string,
-        askedByName: q.get('askedByName') as string || 'Anonymous',
-        createdAt: new Date(q.get('createdAt') as string),
+      const formattedQuestions: Question[] = result.questions.map((q: SerializedQuestion) => ({
+        id: q.objectId,
+        title: q.title,
+        question: q.question,
+        category: q.category || 'general',
+        askedBy: q.askedBy,
+        askedByName: q.askedByName || 'Anonymous',
+        createdAt: new Date(q.createdAt),
         answers: [], // Loaded separately
-        upvotes: (q.get('upvotes') as number) || 0,
+        upvotes: q.upvotes || 0,
+        hasBestAnswer: q.hasBestAnswer || false,
+        isPinned: q.isPinned || false,
       }));
 
       setQuestions(formattedQuestions);
@@ -255,19 +278,17 @@ const CommunityQA: React.FC = () => {
       });
 
       // Backend returns { answers, total }
-      const formattedAnswers: Answer[] = result.answers.map((a: {
-        id: string;
-        get: (field: string) => unknown;
-      }) => ({
-        id: a.id,
-        answer: a.get('answer') as string,
-        answeredBy: a.get('answeredBy') as string,
-        answeredByName: a.get('answeredByName') as string || 'Anonymous',
-        answeredAt: new Date(a.get('createdAt') as string),
-        upvotes: (a.get('upvotes') as number) || 0,
-        isCounselor: (a.get('isCounselor') as boolean) || false,
-        isBestAnswer: (a.get('isBestAnswer') as boolean) || false,
-        isVerified: (a.get('isVerified') as boolean) || false,
+      // Answers are serialized JSON objects, not Parse Objects
+      const formattedAnswers: Answer[] = result.answers.map((a: SerializedAnswer) => ({
+        id: a.objectId,
+        answer: a.answer,
+        answeredBy: a.answeredBy,
+        answeredByName: a.answeredByName || 'Anonymous',
+        answeredAt: new Date(a.createdAt),
+        upvotes: a.upvotes || 0,
+        isCounselor: a.isCounselor || false,
+        isBestAnswer: a.isBestAnswer || false,
+        isVerified: a.isVerified || false,
       }));
 
       // Update answers for this specific question
