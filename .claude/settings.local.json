@@ -26,7 +26,13 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "mcp__chrome-devtools__handle_dialog",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "WebSearch",
+      "Bash(psql:*)",
+      "Bash(PGPASSWORD=password psql:*)",
+      "Bash(export PGPASSWORD=password)",
+      "Bash(curl:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": [],

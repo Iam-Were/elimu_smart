@@ -56,10 +56,13 @@ const CommunityQA: React.FC = () => {
         setLoading(true);
         const Parse = await getParse();
         const result = await Parse.Cloud.run('getAllQuestions', {
-          category: selectedCategory === 'all' ? undefined : selectedCategory
+          category: selectedCategory === 'all' ? undefined : selectedCategory,
+          page: 0,
+          limit: 20
         });
 
-        const formattedQuestions: Question[] = result.map((q: {
+        // Backend returns { questions, total, page, hasMore }
+        const formattedQuestions: Question[] = result.questions.map((q: {
           id: string;
           get: (field: string) => unknown;
         }) => ({
@@ -70,13 +73,16 @@ const CommunityQA: React.FC = () => {
           askedBy: q.get('askedBy') as string,
           askedByName: q.get('askedByName') as string || 'Anonymous',
           createdAt: new Date(q.get('createdAt') as string),
-          answers: (q.get('answers') as Answer[]) || [],
+          answers: [], // Loaded separately when expanded
           upvotes: (q.get('upvotes') as number) || 0,
         }));
 
         setQuestions(formattedQuestions);
       } catch (error) {
         console.error('Failed to load questions:', error);
+        toast.error('Failed to load questions', {
+          description: 'Please refresh the page to try again'
+        });
       } finally {
         setLoading(false);
       }
@@ -89,10 +95,12 @@ const CommunityQA: React.FC = () => {
     try {
       const Parse = await getParse();
       const result = await Parse.Cloud.run('getAllQuestions', {
-        category: selectedCategory === 'all' ? undefined : selectedCategory
+        category: selectedCategory === 'all' ? undefined : selectedCategory,
+        page: 0,
+        limit: 20
       });
 
-      const formattedQuestions: Question[] = result.map((q: {
+      const formattedQuestions: Question[] = result.questions.map((q: {
         id: string;
         get: (field: string) => unknown;
       }) => ({
@@ -103,7 +111,7 @@ const CommunityQA: React.FC = () => {
         askedBy: q.get('askedBy') as string,
         askedByName: q.get('askedByName') as string || 'Anonymous',
         createdAt: new Date(q.get('createdAt') as string),
-        answers: (q.get('answers') as Answer[]) || [],
+        answers: [], // Loaded separately
         upvotes: (q.get('upvotes') as number) || 0,
       }));
 
@@ -159,8 +167,11 @@ const CommunityQA: React.FC = () => {
         answer: reply
       });
 
+      toast.success('Reply posted successfully!');
       setReplyText({ ...replyText, [questionId]: '' });
-      await reloadQuestions();
+
+      // Reload answers for this question
+      await loadAnswers(questionId);
     } catch (error) {
       console.error('Failed to post reply:', error);
       toast.error('Failed to post reply', {
@@ -181,13 +192,65 @@ const CommunityQA: React.FC = () => {
     }
   };
 
-  const handleUpvoteAnswer = async (questionId: string, answerId: string) => {
+  const handleUpvoteAnswer = async (answerId: string) => {
     try {
       const Parse = await getParse();
-      await Parse.Cloud.run('upvoteAnswer', { questionId, answerId });
-      await reloadQuestions();
+      await Parse.Cloud.run('upvoteAnswer', { answerId });
+
+      // Reload answers for current expanded question
+      if (expandedQuestion) {
+        await loadAnswers(expandedQuestion);
+      }
     } catch (error) {
       console.error('Failed to upvote answer:', error);
+    }
+  };
+
+  const loadAnswers = async (questionId: string) => {
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getQuestionAnswers', {
+        questionId,
+        page: 0,
+        limit: 50
+      });
+
+      // Backend returns { answers, total }
+      const formattedAnswers: Answer[] = result.answers.map((a: {
+        id: string;
+        get: (field: string) => unknown;
+      }) => ({
+        id: a.id,
+        answer: a.get('answer') as string,
+        answeredBy: a.get('answeredBy') as string,
+        answeredByName: a.get('answeredByName') as string || 'Anonymous',
+        answeredAt: new Date(a.get('createdAt') as string),
+        upvotes: (a.get('upvotes') as number) || 0,
+        isCounselor: (a.get('isCounselor') as boolean) || false,
+      }));
+
+      // Update answers for this specific question
+      setQuestions(prevQuestions =>
+        prevQuestions.map(q =>
+          q.id === questionId
+            ? { ...q, answers: formattedAnswers }
+            : q
+        )
+      );
+    } catch (error) {
+      console.error('Failed to load answers:', error);
+    }
+  };
+
+  const handleExpandQuestion = async (questionId: string) => {
+    const isExpanded = expandedQuestion === questionId;
+
+    if (isExpanded) {
+      setExpandedQuestion(null);
+    } else {
+      setExpandedQuestion(questionId);
+      // Load answers when expanding
+      await loadAnswers(questionId);
     }
   };
 
@@ -332,7 +395,7 @@ const CommunityQA: React.FC = () => {
                   {/* Question Header */}
                   <div
                     className="cursor-pointer"
-                    onClick={() => setExpandedQuestion(isExpanded ? null : question.id)}
+                    onClick={() => handleExpandQuestion(question.id)}
                   >
                     <div className="flex gap-4 mb-3">
                       {/* Upvote Column */}
@@ -385,7 +448,7 @@ const CommunityQA: React.FC = () => {
                             <div className="flex flex-col items-center gap-1">
                               <button
                                 className="hover:bg-orange-100 p-1 rounded transition-colors self-start"
-                                onClick={() => handleUpvoteAnswer(question.id, answer.id)}
+                                onClick={() => handleUpvoteAnswer(answer.id)}
                               >
                                 <ArrowBigUp className="h-5 w-5 text-gray-600 hover:text-orange-600" />
                               </button>
