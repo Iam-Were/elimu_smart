@@ -1,27 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run lint)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(inbox): Upgrade to LinkedIn-style messaging UI with shadcn components\n\n- Replace Chatscope UI library with pure shadcn components (-150KB bundle)\n- Implement LinkedIn-style conversation list with professional polish\n- Add segmented tabs (All/Pinned/Archived) for inbox organization\n- Create MessageBubble with read receipts (✓/✓✓), reactions, and hover actions\n- Implement TypingIndicator with animated dots for real-time feedback\n- Add ChatThreadPanel with date dividers, message grouping, and rich interactions\n- Include ConversationListItem with online presence, pin/archive/mute/delete\n- Support mobile-responsive layout with back navigation\n- Maintain backend integration with existing useChat hook\n- Preserve all functionality: pin, star, reactions, archive, search\n\nImplements Phase 1 of LINKEDIN_UX_SCOPING.md recommendations:\n✅ Segmented tabs\n✅ Read receipts & delivery status\n✅ Typing indicators  \n✅ Professional shadcn-only components\n✅ Conversation actions (pin/archive/mute/delete)\n✅ WCAG 2.1 AA accessibility compliance\n\nAddresses counselor UX gaps identified in evaluation:\n- Unified professional design across student and counselor journeys\n- Eliminated third-party UI dependency for better customization\n- LinkedIn-quality messaging experience for premium users\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push:*)",
-      "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && curl -s https://elimu-smart.co.ke/parse/health')",
-      "mcp__chrome-devtools__list_pages",
-      "mcp__chrome-devtools__navigate_page",
-      "mcp__chrome-devtools__take_snapshot",
-      "mcp__chrome-devtools__click",
-      "mcp__chrome-devtools__wait_for",
-      "Bash(git commit:*)",
-      "mcp__chrome-devtools__take_screenshot",
-      "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Button fix deployed\"\"')",
-      "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Header fix deployed\"\"')",
-      "mcp__chrome-devtools__evaluate_script",
-      "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Layout fixes deployed\"\"')",
-      "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Height constraint fix deployed\"\"')",
-      "Bash(find:*)",
-      "Bash(ssh root@145.239.42.121:*)",
-      "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(node -e \"\n(async () => {\n  const response = await fetch(''https://elimu-smart.co.ke/parse/classes/_User?limit=10'', {\n    headers: {\n      ''X-Parse-Application-Id'': ''elimu_smart_app_2024'',\n      ''X-Parse-Master-Key'': ''eL1mu_Sm4rt_M45t3r_K3y_2024_Pr0d''\n    }\n  });\n  const data = await response.json();\n  console.log(JSON.stringify(data, null, 2));\n})();\n\")"
     ],
     "deny": [],
     "ask": [],

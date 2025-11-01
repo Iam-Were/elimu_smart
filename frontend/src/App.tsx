@@ -64,6 +64,7 @@ const QuestionsPage = lazy(() => import('./pages/counselor/QuestionsPage').then(
 const SessionsPage = lazy(() => import('./pages/counselor/SessionsPage').then(m => ({ default: m.SessionsPage })));
 const GroupSessionsPage = lazy(() => import('./pages/counselor/GroupSessionsPage').then(m => ({ default: m.GroupSessionsPage })));
 const AnalyticsPage = lazy(() => import('./pages/counselor/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
+const DiscoverStudentsPage = lazy(() => import('./pages/counselor/DiscoverStudentsPage').then(m => ({ default: m.DiscoverStudentsPage })));
 
 // Admin pages
 const AdminPortal = lazy(() => import('./pages/admin/AdminPortal'));
@@ -156,6 +157,7 @@ const AppContent: React.FC = () => {
           <Route path="/counselor/sessions" element={<SessionsPage />} />
           <Route path="/counselor/group-sessions" element={<GroupSessionsPage />} />
           <Route path="/counselor/analytics" element={<AnalyticsPage />} />
+          <Route path="/counselor/discover-students" element={<DiscoverStudentsPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/content" element={<AdminContentManagementPage />} />
           <Route path="/admin/content/universities" element={<UniversitiesManagementPage />} />

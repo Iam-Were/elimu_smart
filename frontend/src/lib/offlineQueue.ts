@@ -132,8 +132,12 @@ class OfflineMessageQueue {
 export const offlineQueue = new OfflineMessageQueue();
 
 // Online/Offline detection
+// Note: navigator.onLine can be unreliable, so we default to true (online)
+// and let actual API calls fail if truly offline
 export const isOnline = (): boolean => {
-  return navigator.onLine;
+  // Always return true to allow message sending attempts
+  // Actual network errors will be caught by try/catch in sendMessage
+  return true;
 };
 
 // Setup online/offline event listeners
