@@ -1,90 +1,173 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { getParse } from '@/config/parse';
 import {
-  MessageSquare,
   Search,
   Plus,
-  ThumbsUp,
   MessageCircle,
-  CheckCircle2,
-  Clock,
+  ArrowBigUp,
+  Send,
 } from 'lucide-react';
+
+interface Answer {
+  id: string;
+  answer: string;
+  answeredBy: string;
+  answeredByName: string;
+  answeredAt: Date;
+  upvotes: number;
+  isCounselor: boolean;
+}
 
 interface Question {
   id: string;
   title: string;
-  category: 'career' | 'academic' | 'university' | 'personal';
+  question: string;
+  category: string;
   askedBy: string;
-  askedDate: Date;
-  views: number;
-  likes: number;
-  answers: number;
-  hasAcceptedAnswer: boolean;
-  preview: string;
-  tags: string[];
+  askedByName: string;
+  createdAt: Date;
+  answers: Answer[];
+  upvotes: number;
 }
 
-// Sample questions - Replace with backend API
-const sampleQuestions: Question[] = [
-  {
-    id: '1',
-    title: 'Should I take Biology or Physics for Medicine?',
-    category: 'academic',
-    askedBy: 'Form 3 Student',
-    askedDate: new Date('2025-10-05'),
-    views: 234,
-    likes: 45,
-    answers: 8,
-    hasAcceptedAnswer: true,
-    preview: 'I want to study Medicine at UoN. Which is more important - Biology or Physics? I can only choose one...',
-    tags: ['medicine', 'kcse', 'subjects']
-  },
-  {
-    id: '2',
-    title: 'What careers are available for Business students?',
-    category: 'career',
-    askedBy: 'Sarah K.',
-    askedDate: new Date('2025-10-04'),
-    views: 189,
-    likes: 32,
-    answers: 12,
-    hasAcceptedAnswer: true,
-    preview: "I'm doing Business, Commerce, and Economics. What career paths can I pursue after KCSE?",
-    tags: ['business', 'careers', 'kuccps']
-  },
-  {
-    id: '3',
-    title: 'How do I choose between multiple university offers?',
-    category: 'university',
-    askedBy: 'John M.',
-    askedDate: new Date('2025-10-03'),
-    views: 456,
-    likes: 87,
-    answers: 15,
-    hasAcceptedAnswer: false,
-    preview: 'I got offers from UoN, JKUAT, and Strathmore for different courses. How do I decide?',
-    tags: ['university', 'kuccps', 'decisions']
-  },
-];
-
 const CommunityQA: React.FC = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAskForm, setShowAskForm] = useState(false);
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionDetails, setQuestionDetails] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
+  const [submittingReply, setSubmittingReply] = useState<Record<string, boolean>>({});
+
+  // Load questions from backend
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setLoading(true);
+        const Parse = await getParse();
+        const result = await Parse.Cloud.run('getStudentQuestions', {
+          category: selectedCategory === 'all' ? undefined : selectedCategory
+        });
+
+        const formattedQuestions: Question[] = result.map((q: {
+          id: string;
+          get: (field: string) => unknown;
+        }) => ({
+          id: q.id,
+          title: q.get('title') as string,
+          question: q.get('question') as string,
+          category: q.get('category') as string || 'general',
+          askedBy: q.get('askedBy') as string,
+          askedByName: q.get('askedByName') as string || 'Anonymous',
+          createdAt: new Date(q.get('createdAt') as string),
+          answers: (q.get('answers') as Answer[]) || [],
+          upvotes: (q.get('upvotes') as number) || 0,
+        }));
+
+        setQuestions(formattedQuestions);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, [selectedCategory]);
+
+  const reloadQuestions = async () => {
+    try {
+      const Parse = await getParse();
+      const result = await Parse.Cloud.run('getStudentQuestions', {
+        category: selectedCategory === 'all' ? undefined : selectedCategory
+      });
+
+      const formattedQuestions: Question[] = result.map((q: {
+        id: string;
+        get: (field: string) => unknown;
+      }) => ({
+        id: q.id,
+        title: q.get('title') as string,
+        question: q.get('question') as string,
+        category: q.get('category') as string || 'general',
+        askedBy: q.get('askedBy') as string,
+        askedByName: q.get('askedByName') as string || 'Anonymous',
+        createdAt: new Date(q.get('createdAt') as string),
+        answers: (q.get('answers') as Answer[]) || [],
+        upvotes: (q.get('upvotes') as number) || 0,
+      }));
+
+      setQuestions(formattedQuestions);
+    } catch (error) {
+      console.error('Failed to reload questions:', error);
+    }
+  };
+
+  const handlePostQuestion = async () => {
+    if (!questionTitle.trim() || !questionDetails.trim()) {
+      alert('Please fill in both title and details');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('submitQuestion', {
+        title: questionTitle,
+        question: questionDetails,
+        category: selectedCategory === 'all' ? 'general' : selectedCategory
+      });
+
+      alert('Question posted successfully!');
+      setQuestionTitle('');
+      setQuestionDetails('');
+      setShowAskForm(false);
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to post question:', error);
+      alert('Failed to post question. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePostReply = async (questionId: string) => {
+    const reply = replyText[questionId]?.trim();
+    if (!reply) return;
+
+    setSubmittingReply({ ...submittingReply, [questionId]: true });
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('answerQuestion', {
+        questionId,
+        answer: reply
+      });
+
+      setReplyText({ ...replyText, [questionId]: '' });
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to post reply:', error);
+      alert('Failed to post reply. Please try again.');
+    } finally {
+      setSubmittingReply({ ...submittingReply, [questionId]: false });
+    }
+  };
 
   const categories = [
-    { value: 'all', label: 'All Questions', count: 200 },
-    { value: 'career', label: 'Career', count: 85 },
-    { value: 'academic', label: 'Academic', count: 62 },
-    { value: 'university', label: 'University', count: 43 },
-    { value: 'personal', label: 'Personal', count: 10 },
+    { value: 'all', label: 'All Questions' },
+    { value: 'career', label: 'Career' },
+    { value: 'academic', label: 'Academic' },
+    { value: 'university', label: 'University' },
+    { value: 'personal', label: 'Personal' },
   ];
 
   const getCategoryColor = (category: string) => {
@@ -97,101 +180,28 @@ const CommunityQA: React.FC = () => {
     }
   };
 
-  const handlePostQuestion = async () => {
-    if (!questionTitle.trim() || !questionDetails.trim()) {
-      alert('Please fill in both title and details');
-      return;
-    }
+  const filteredQuestions = questions.filter(q =>
+    searchTerm === '' ||
+    q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    q.question.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    setIsSubmitting(true);
-    try {
-      // TODO: Integrate with backend submitQuestion cloud function
-      // await Parse.Cloud.run('submitQuestion', { title: questionTitle, question: questionDetails, category: 'career' });
-
-      // For now, just simulate success
-      console.log('Question submitted:', { title: questionTitle, details: questionDetails });
-      alert('Question posted successfully! A counselor will answer soon.');
-
-      // Reset form
-      setQuestionTitle('');
-      setQuestionDetails('');
-      setShowAskForm(false);
-    } catch (error) {
-      console.error('Failed to post question:', error);
-      alert('Failed to post question. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="text-center py-12">Loading questions...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Note: H1 "Guidance Center" is provided by Sprint18Layout */}
+    <div className="container mx-auto py-8 px-4 max-w-5xl">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">Community Q&A</h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold mb-2">Community Forum</h2>
         <p className="text-muted-foreground">
-          Get answers from counselors and fellow students. Over 200 questions answered.
+          Ask questions, share experiences, get advice from counselors and fellow students
         </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <MessageSquare className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">200+</p>
-                <p className="text-sm text-muted-foreground">Questions</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">92%</p>
-                <p className="text-sm text-muted-foreground">Answered</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <MessageCircle className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">1.2k</p>
-                <p className="text-sm text-muted-foreground">Answers</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Clock className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">2.5hrs</p>
-                <p className="text-sm text-muted-foreground">Avg Response</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Search and Ask Button */}
@@ -271,69 +281,121 @@ const CommunityQA: React.FC = () => {
             size="sm"
             onClick={() => setSelectedCategory(cat.value)}
           >
-            {cat.label} ({cat.count})
+            {cat.label}
           </Button>
         ))}
       </div>
 
       {/* Questions List */}
       <div className="space-y-4">
-        {sampleQuestions.map((question) => (
-          <Card key={question.id} className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
-                {/* Stats Column */}
-                <div className="flex flex-col items-center gap-2 min-w-[80px]">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-muted-foreground">{question.answers}</p>
-                    <p className="text-xs text-muted-foreground">answers</p>
-                  </div>
-                  {question.hasAcceptedAnswer && (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  )}
-                </div>
-
-                {/* Question Content */}
-                <div className="flex-1">
-                  <div className="flex items-start gap-2 mb-2">
-                    <h3 className="text-lg font-semibold flex-1">{question.title}</h3>
-                    <Badge className={getCategoryColor(question.category)}>
-                      {question.category}
-                    </Badge>
-                  </div>
-
-                  <p className="text-muted-foreground mb-3 line-clamp-2">{question.preview}</p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {question.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Meta Info */}
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Asked by {question.askedBy}</span>
-                    <span>•</span>
-                    <span>{question.views} views</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <ThumbsUp className="h-4 w-4" />
-                      {question.likes}
-                    </span>
-                  </div>
-                </div>
-              </div>
+        {filteredQuestions.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No questions yet. Be the first to ask!
             </CardContent>
           </Card>
-        ))}
-      </div>
+        ) : (
+          filteredQuestions.map((question) => {
+            const isExpanded = expandedQuestion === question.id;
+            return (
+              <Card key={question.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  {/* Question Header */}
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setExpandedQuestion(isExpanded ? null : question.id)}
+                  >
+                    <div className="flex gap-4 mb-3">
+                      {/* Upvote Column */}
+                      <div className="flex flex-col items-center gap-1">
+                        <button className="hover:bg-gray-100 p-1 rounded">
+                          <ArrowBigUp className="h-6 w-6 text-gray-400" />
+                        </button>
+                        <span className="text-sm font-semibold">{question.upvotes}</span>
+                      </div>
 
-      {/* Load More */}
-      <div className="text-center mt-8">
-        <Button variant="outline">Load More Questions</Button>
+                      {/* Question Content */}
+                      <div className="flex-1">
+                        <div className="flex items-start gap-2 mb-2">
+                          <h3 className="text-lg font-semibold flex-1">{question.title}</h3>
+                          <Badge className={getCategoryColor(question.category)}>
+                            {question.category}
+                          </Badge>
+                        </div>
+
+                        <p className="text-muted-foreground mb-3">{question.question}</p>
+
+                        {/* Meta Info */}
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <span className="font-medium text-orange-600">{question.askedByName}</span>
+                          <span>•</span>
+                          <span>{new Date(question.createdAt).toLocaleDateString()}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="h-4 w-4" />
+                            {question.answers.length} replies
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Replies Section */}
+                  {isExpanded && (
+                    <div className="ml-10 mt-4 space-y-4 border-l-2 border-gray-200 pl-4">
+                      {/* Existing Replies */}
+                      {question.answers.map((answer) => (
+                        <div key={answer.id} className="py-3 border-b border-gray-100 last:border-0">
+                          <div className="flex gap-3">
+                            <button className="hover:bg-gray-100 p-1 rounded self-start">
+                              <ArrowBigUp className="h-5 w-5 text-gray-400" />
+                            </button>
+                            <div className="flex-1">
+                              <p className="text-gray-800 mb-2">{answer.answer}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className={answer.isCounselor ? 'text-blue-600 font-semibold' : 'font-medium'}>
+                                  {answer.answeredByName}
+                                  {answer.isCounselor && (
+                                    <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700">
+                                      Counselor
+                                    </Badge>
+                                  )}
+                                </span>
+                                <span>•</span>
+                                <span>{new Date(answer.answeredAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Reply Form */}
+                      <div className="pt-4">
+                        <Textarea
+                          placeholder="Write your reply..."
+                          rows={3}
+                          value={replyText[question.id] || ''}
+                          onChange={(e) => setReplyText({ ...replyText, [question.id]: e.target.value })}
+                          disabled={submittingReply[question.id]}
+                          className="mb-2"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handlePostReply(question.id)}
+                          disabled={!replyText[question.id]?.trim() || submittingReply[question.id]}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          {submittingReply[question.id] ? 'Posting...' : 'Post Reply'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );
