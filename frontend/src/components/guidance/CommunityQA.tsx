@@ -44,7 +44,7 @@ interface SerializedQuestion {
   title: string;
   question: string;
   category: string;
-  askedBy: string;
+  askedBy?: string; // Optional - may not be in response
   askedByName: string;
   createdAt: string;
   upvotes: number;
@@ -131,7 +131,7 @@ const CommunityQA: React.FC = () => {
           title: q.title,
           question: q.question,
           category: q.category || 'general',
-          askedBy: q.askedBy,
+          askedBy: q.askedBy || '',
           askedByName: q.askedByName || 'Anonymous',
           createdAt: new Date(q.createdAt),
           answers: [], // Loaded separately when expanded
@@ -168,7 +168,7 @@ const CommunityQA: React.FC = () => {
         title: q.title,
         question: q.question,
         category: q.category || 'general',
-        askedBy: q.askedBy,
+        askedBy: q.askedBy || '',
         askedByName: q.askedByName || 'Anonymous',
         createdAt: new Date(q.createdAt),
         answers: [], // Loaded separately
