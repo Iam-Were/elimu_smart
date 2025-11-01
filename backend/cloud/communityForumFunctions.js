@@ -11,6 +11,135 @@
 
 const Parse = require('parse/node');
 
+// =============================================================================
+// SCHEMA INITIALIZATION (Run Once)
+// =============================================================================
+
+/**
+ * Initialize Community Forum Schema
+ * Creates CommunityQuestion and CommunityAnswer tables with indexes
+ * Call this once after deployment: Parse.Cloud.run('initializeCommunityForumSchema', {}, { sessionToken })
+ */
+Parse.Cloud.define('initializeCommunityForumSchema', async (request) => {
+  const { user } = request;
+
+  // Only admins can initialize schema
+  if (!user || user.get('role') !== 'admin') {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Only admins can initialize schema');
+  }
+
+  try {
+    console.log('🚀 Starting Community Forum schema initialization...');
+
+    // 1. Create CommunityQuestion Schema
+    console.log('1️⃣ Creating CommunityQuestion table...');
+    const CommunityQuestion = new Parse.Schema('CommunityQuestion');
+
+    CommunityQuestion
+      // Content fields
+      .addString('title', { required: true })
+      .addString('question', { required: true })
+      .addString('category', { required: true })
+
+      // Author fields (always show names - no anonymity)
+      .addPointer('askedBy', '_User', { required: true })
+      .addString('askedByName', { required: true })
+
+      // Engagement fields
+      .addNumber('upvotes', { defaultValue: 0 })
+      .addArray('upvotedBy')
+      .addNumber('viewCount', { defaultValue: 0 })
+      .addNumber('answerCount', { defaultValue: 0 })
+
+      // Status fields
+      .addString('status', { defaultValue: 'open' })
+      .addBoolean('hasBestAnswer', { defaultValue: false })
+      .addBoolean('isPinned', { defaultValue: false })
+      .addBoolean('isDeleted', { defaultValue: false })
+      .addString('deletedReason')
+      .addPointer('deletedBy', '_User')
+
+      // Timestamps
+      .addDate('lastActivityAt');
+
+    await CommunityQuestion.save(null, { useMasterKey: true });
+    console.log('✅ CommunityQuestion table created');
+
+    // 2. Create CommunityAnswer Schema
+    console.log('2️⃣ Creating CommunityAnswer table...');
+    const CommunityAnswer = new Parse.Schema('CommunityAnswer');
+
+    CommunityAnswer
+      // Relationship fields
+      .addPointer('question', 'CommunityQuestion', { required: true })
+      .addPointer('parentAnswer', 'CommunityAnswer')
+
+      // Content field
+      .addString('answer', { required: true })
+
+      // Author fields
+      .addPointer('answeredBy', '_User', { required: true })
+      .addString('answeredByName', { required: true })
+      .addBoolean('isCounselor', { defaultValue: false })
+
+      // Engagement fields
+      .addNumber('upvotes', { defaultValue: 0 })
+      .addArray('upvotedBy')
+
+      // Moderation fields
+      .addBoolean('isBestAnswer', { defaultValue: false })
+      .addBoolean('isVerified', { defaultValue: false })
+      .addPointer('verifiedBy', '_User')
+      .addBoolean('isDeleted', { defaultValue: false })
+      .addString('deletedReason')
+      .addPointer('deletedBy', '_User')
+
+      // Nesting level
+      .addNumber('depth', { defaultValue: 0 });
+
+    await CommunityAnswer.save(null, { useMasterKey: true });
+    console.log('✅ CommunityAnswer table created');
+
+    // 3. Add Indexes for Performance
+    console.log('3️⃣ Adding indexes for query performance...');
+
+    // CommunityQuestion indexes
+    const questionSchema = new Parse.Schema('CommunityQuestion');
+    questionSchema.addIndex('category_activity', { category: 1, lastActivityAt: -1 });
+    questionSchema.addIndex('popular', { upvotes: -1, createdAt: -1 });
+    questionSchema.addIndex('status', { status: 1, isPinned: -1 });
+    questionSchema.addIndex('pinned_date', { isPinned: -1, createdAt: -1 });
+    await questionSchema.update({ useMasterKey: true });
+
+    // CommunityAnswer indexes
+    const answerSchema = new Parse.Schema('CommunityAnswer');
+    answerSchema.addIndex('question_score', { question: 1, upvotes: -1 });
+    answerSchema.addIndex('parent_depth', { question: 1, parentAnswer: 1, depth: 1 });
+    answerSchema.addIndex('best_answer', { question: 1, isBestAnswer: -1 });
+    await answerSchema.update({ useMasterKey: true });
+
+    console.log('✅ Indexes created');
+
+    return {
+      success: true,
+      message: 'Community Forum schema initialized successfully',
+      tables: ['CommunityQuestion', 'CommunityAnswer'],
+      indexes: {
+        CommunityQuestion: ['category_activity', 'popular', 'status', 'pinned_date'],
+        CommunityAnswer: ['question_score', 'parent_depth', 'best_answer']
+      }
+    };
+
+  } catch (error) {
+    console.error('❌ Error initializing schema:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Schema initialization failed: ${error.message}`);
+  }
+});
+
+// =============================================================================
+// COMMUNITY Q&A FUNCTIONS
+// =============================================================================
+
 // Rate limiting helper
 const rateLimit = {
   cache: new Map(),
