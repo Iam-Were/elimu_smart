@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"\n(async () => {\n  const response = await fetch(''https://elimu-smart.co.ke/parse/classes/_User?limit=10'', {\n    headers: {\n      ''X-Parse-Application-Id'': ''elimu_smart_app_2024'',\n      ''X-Parse-Master-Key'': ''eL1mu_Sm4rt_M45t3r_K3y_2024_Pr0d''\n    }\n  });\n  const data = await response.json();\n  console.log(JSON.stringify(data, null, 2));\n})();\n\")"
+      "mcp__chrome-devtools__fill_form"
     ],
     "deny": [],
     "ask": [],

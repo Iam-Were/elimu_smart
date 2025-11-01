@@ -204,6 +204,27 @@ export const useChat = () => {
       return;
     }
 
+    // Add optimistic message immediately
+    const optimisticMessage: ChatMessage = {
+      id: `temp_${Date.now()}`,
+      chatRoomId,
+      sender: {
+        id: user.id,
+        firstName: user.firstName || 'You',
+        lastName: user.lastName || ''
+      },
+      message,
+      messageType,
+      timestamp: new Date(),
+      isRead: false,
+      status: 'sending'
+    };
+
+    setChatState(prev => ({
+      ...prev,
+      messages: [...prev.messages, optimisticMessage]
+    }));
+
     try {
       const result = await ParseApi.callCloudFunction('sendMessage', {
         chatRoomId,
@@ -215,12 +236,32 @@ export const useChat = () => {
       chatAnalytics.trackMessageSent(messageType);
       chatAnalytics.trackConversationActivity(chatRoomId);
 
-      // Reload messages to show the new message
-      await loadMessages(chatRoomId);
+      // Update optimistic message with real data
+      setChatState(prev => ({
+        ...prev,
+        messages: prev.messages.map(msg =>
+          msg.id === optimisticMessage.id
+            ? { ...optimisticMessage, id: result.objectId, status: 'sent' }
+            : msg
+        )
+      }));
+
+      // Reload messages in background (non-blocking)
+      loadMessages(chatRoomId).catch(err => {
+        console.warn('Failed to reload messages after send:', err);
+      });
+
       return result;
     } catch (error) {
       console.error('Failed to send message:', error);
-      
+
+      // Remove optimistic message and show error
+      setChatState(prev => ({
+        ...prev,
+        messages: prev.messages.filter(msg => msg.id !== optimisticMessage.id),
+        error: 'Failed to send message. Please try again.'
+      }));
+
       // If network error, queue the message
       if (error instanceof Error && error.message.includes('network')) {
         console.log('📴 Network error: Queueing message');
@@ -231,11 +272,7 @@ export const useChat = () => {
           timestamp: new Date()
         });
       }
-      
-      setChatState(prev => ({
-        ...prev,
-        error: 'Failed to send message. Please try again.'
-      }));
+
       throw error;
     }
   }, [user, loadMessages, getSessionToken]);
