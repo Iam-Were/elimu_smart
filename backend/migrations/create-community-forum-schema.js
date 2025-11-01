@@ -18,18 +18,20 @@ require('dotenv').config();
 
 const Parse = require('parse/node');
 
-// Initialize Parse
+// Initialize Parse (check both PARSE_MASTER_KEY and MASTER_KEY)
+const masterKey = process.env.PARSE_MASTER_KEY || process.env.MASTER_KEY || 'elimu_smart_master_key_2024';
+
 Parse.initialize(
   process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
   null, // JavaScript key (not needed for Node.js)
-  process.env.PARSE_MASTER_KEY || 'elimu_smart_master_key_2024'
+  masterKey
 );
 Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
 
 console.log('📋 Using Parse configuration:');
 console.log('  - App ID:', process.env.PARSE_APP_ID || 'elimu_smart_app_2024');
 console.log('  - Server URL:', process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse');
-console.log('  - Master Key:', process.env.PARSE_MASTER_KEY ? '✓ Set' : '✗ Missing');
+console.log('  - Master Key:', masterKey ? '✓ Set' : '✗ Missing');
 console.log('');
 
 async function createCommunityForumSchema() {
@@ -115,7 +117,7 @@ async function createCommunityForumSchema() {
       url: `${Parse.serverURL}/schemas/CommunityQuestion`,
       headers: {
         'X-Parse-Application-Id': Parse.applicationId,
-        'X-Parse-Master-Key': Parse.masterKey,
+        'X-Parse-Master-Key': masterKey,
         'Content-Type': 'application/json',
       },
       body: {
@@ -139,7 +141,7 @@ async function createCommunityForumSchema() {
       url: `${Parse.serverURL}/schemas/CommunityAnswer`,
       headers: {
         'X-Parse-Application-Id': Parse.applicationId,
-        'X-Parse-Master-Key': Parse.masterKey,
+        'X-Parse-Master-Key': masterKey,
         'Content-Type': 'application/json',
       },
       body: {
@@ -174,7 +176,7 @@ async function createCommunityForumSchema() {
       url: `${Parse.serverURL}/schemas/CommunityQuestion`,
       headers: {
         'X-Parse-Application-Id': Parse.applicationId,
-        'X-Parse-Master-Key': Parse.masterKey,
+        'X-Parse-Master-Key': masterKey,
         'Content-Type': 'application/json',
       },
       body: {
@@ -197,7 +199,7 @@ async function createCommunityForumSchema() {
       url: `${Parse.serverURL}/schemas/CommunityAnswer`,
       headers: {
         'X-Parse-Application-Id': Parse.applicationId,
-        'X-Parse-Master-Key': Parse.masterKey,
+        'X-Parse-Master-Key': masterKey,
         'Content-Type': 'application/json',
       },
       body: {
