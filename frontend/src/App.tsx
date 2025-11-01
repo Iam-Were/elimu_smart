@@ -57,6 +57,7 @@ const BookSession = lazy(() => import('./components/guidance/BookSession'));
 
 // Counselor pages
 const CounselorDashboardPage = lazy(() => import('./pages/counselor/CounselorDashboardPage'));
+const CounselorProfilePage = lazy(() => import('./pages/counselor/CounselorProfilePage').then(m => ({ default: m.CounselorProfilePage })));
 const CounselorToolkit = lazy(() => import('./pages/counselor/CounselorToolkit'));
 const StudentsPage = lazy(() => import('./pages/counselor/StudentsPage').then(m => ({ default: m.StudentsPage })));
 const QuestionsPage = lazy(() => import('./pages/counselor/QuestionsPage').then(m => ({ default: m.QuestionsPage })));
@@ -148,6 +149,7 @@ const AppContent: React.FC = () => {
           <Route path="/student/skills-development" element={<SkillsDevelopment />} />
           <Route path="/admin/portal" element={<AdminPortal />} />
           <Route path="/counselor/dashboard" element={<CounselorDashboardPage />} />
+          <Route path="/counselor/profile" element={<CounselorProfilePage />} />
           <Route path="/counselor/toolkit" element={<CounselorToolkit />} />
           <Route path="/counselor/students" element={<StudentsPage />} />
           <Route path="/counselor/questions" element={<QuestionsPage />} />
