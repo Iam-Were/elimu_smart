@@ -9026,3 +9026,8 @@ Parse.Cloud.define('getStudentTimeline', async (request) => {
   }
 });
 
+// =============================================================================
+// COMMUNITY FORUM FUNCTIONS (Reddit-Style Q&A)
+// =============================================================================
+require('./communityForumFunctions');
+
