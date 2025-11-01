@@ -4,6 +4,14 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { getParse } from '@/config/parse';
 import { toast } from 'sonner';
 import {
@@ -12,6 +20,10 @@ import {
   MessageCircle,
   ArrowBigUp,
   Send,
+  CheckCircle2,
+  ShieldCheck,
+  Pin,
+  Trash2,
 } from 'lucide-react';
 
 interface Answer {
@@ -22,6 +34,8 @@ interface Answer {
   answeredAt: Date;
   upvotes: number;
   isCounselor: boolean;
+  isBestAnswer?: boolean;
+  isVerified?: boolean;
 }
 
 interface Question {
@@ -34,6 +48,8 @@ interface Question {
   createdAt: Date;
   answers: Answer[];
   upvotes: number;
+  hasBestAnswer?: boolean;
+  isPinned?: boolean;
 }
 
 const CommunityQA: React.FC = () => {
@@ -48,6 +64,27 @@ const CommunityQA: React.FC = () => {
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [submittingReply, setSubmittingReply] = useState<Record<string, boolean>>({});
+  const [isCounselor, setIsCounselor] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<{ type: 'question' | 'answer'; id: string; questionId?: string } | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
+
+  // Check if current user is counselor
+  useEffect(() => {
+    const checkUserRole = async () => {
+      try {
+        const Parse = await getParse();
+        const currentUser = Parse.User.current();
+        if (currentUser) {
+          const role = currentUser.get('role');
+          setIsCounselor(role === 'counselor');
+        }
+      } catch (error) {
+        console.error('Failed to check user role:', error);
+      }
+    };
+
+    checkUserRole();
+  }, []);
 
   // Load questions from backend
   useEffect(() => {
@@ -75,6 +112,8 @@ const CommunityQA: React.FC = () => {
           createdAt: new Date(q.get('createdAt') as string),
           answers: [], // Loaded separately when expanded
           upvotes: (q.get('upvotes') as number) || 0,
+          hasBestAnswer: (q.get('hasBestAnswer') as boolean) || false,
+          isPinned: (q.get('isPinned') as boolean) || false,
         }));
 
         setQuestions(formattedQuestions);
@@ -227,6 +266,8 @@ const CommunityQA: React.FC = () => {
         answeredAt: new Date(a.get('createdAt') as string),
         upvotes: (a.get('upvotes') as number) || 0,
         isCounselor: (a.get('isCounselor') as boolean) || false,
+        isBestAnswer: (a.get('isBestAnswer') as boolean) || false,
+        isVerified: (a.get('isVerified') as boolean) || false,
       }));
 
       // Update answers for this specific question
@@ -251,6 +292,86 @@ const CommunityQA: React.FC = () => {
       setExpandedQuestion(questionId);
       // Load answers when expanding
       await loadAnswers(questionId);
+    }
+  };
+
+  // Moderation functions (counselor only)
+  const handleMarkBestAnswer = async (questionId: string, answerId: string) => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('markBestAnswer', { questionId, answerId });
+      toast.success('Marked as best answer');
+      await loadAnswers(questionId);
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to mark best answer:', error);
+      toast.error('Failed to mark best answer');
+    }
+  };
+
+  const handleVerifyAnswer = async (answerId: string) => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('verifyAnswer', { answerId });
+      toast.success('Answer verified');
+      if (expandedQuestion) {
+        await loadAnswers(expandedQuestion);
+      }
+    } catch (error) {
+      console.error('Failed to verify answer:', error);
+      toast.error('Failed to verify answer');
+    }
+  };
+
+  const handlePinQuestion = async (questionId: string) => {
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('pinQuestion', { questionId });
+      toast.success('Question pinned');
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to pin question:', error);
+      toast.error('Failed to pin question');
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string, reason: string) => {
+    if (!reason.trim()) {
+      toast.error('Please provide a reason for deletion');
+      return;
+    }
+
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('deleteQuestion', { questionId, reason });
+      toast.success('Question deleted');
+      setShowDeleteDialog(null);
+      setDeleteReason('');
+      await reloadQuestions();
+    } catch (error) {
+      console.error('Failed to delete question:', error);
+      toast.error('Failed to delete question');
+    }
+  };
+
+  const handleDeleteAnswer = async (answerId: string, reason: string) => {
+    if (!reason.trim()) {
+      toast.error('Please provide a reason for deletion');
+      return;
+    }
+
+    try {
+      const Parse = await getParse();
+      await Parse.Cloud.run('deleteAnswer', { answerId, reason });
+      toast.success('Answer deleted');
+      setShowDeleteDialog(null);
+      setDeleteReason('');
+      if (expandedQuestion) {
+        await loadAnswers(expandedQuestion);
+      }
+    } catch (error) {
+      console.error('Failed to delete answer:', error);
+      toast.error('Failed to delete answer');
     }
   };
 
@@ -415,24 +536,62 @@ const CommunityQA: React.FC = () => {
                       {/* Question Content */}
                       <div className="flex-1">
                         <div className="flex items-start gap-2 mb-2">
-                          <h3 className="text-lg font-semibold flex-1">{question.title}</h3>
-                          <Badge className={getCategoryColor(question.category)}>
-                            {question.category}
-                          </Badge>
+                          <h3 className="text-lg font-semibold flex-1 flex items-center gap-2">
+                            {question.isPinned && (
+                              <Pin className="h-4 w-4 text-orange-600" fill="currentColor" />
+                            )}
+                            {question.title}
+                          </h3>
+                          <div className="flex gap-2">
+                            {question.hasBestAnswer && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                ✓ Answered
+                              </Badge>
+                            )}
+                            <Badge className={getCategoryColor(question.category)}>
+                              {question.category}
+                            </Badge>
+                          </div>
                         </div>
 
                         <p className="text-muted-foreground mb-3">{question.question}</p>
 
-                        {/* Meta Info */}
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          <span className="font-medium text-orange-600">{question.askedByName}</span>
-                          <span>•</span>
-                          <span>{new Date(question.createdAt).toLocaleDateString()}</span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="h-4 w-4" />
-                            {question.answers.length} replies
-                          </span>
+                        {/* Meta Info and Moderation */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <span className="font-medium text-orange-600">{question.askedByName}</span>
+                            <span>•</span>
+                            <span>{new Date(question.createdAt).toLocaleDateString()}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircle className="h-4 w-4" />
+                              {question.answers.length} replies
+                            </span>
+                          </div>
+
+                          {/* Counselor Moderation Buttons */}
+                          {isCounselor && (
+                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2"
+                                onClick={() => handlePinQuestion(question.id)}
+                                title={question.isPinned ? "Unpin question" : "Pin question"}
+                              >
+                                <Pin className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setShowDeleteDialog({ type: 'question', id: question.id })}
+                                title="Delete question"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -455,18 +614,74 @@ const CommunityQA: React.FC = () => {
                               <span className="text-xs font-semibold">{answer.upvotes || 0}</span>
                             </div>
                             <div className="flex-1">
+                              {/* Best Answer Badge */}
+                              {answer.isBestAnswer && (
+                                <div className="mb-2 flex items-center gap-1 text-sm font-semibold text-green-600">
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  <span>Best Answer</span>
+                                </div>
+                              )}
+
                               <p className="text-gray-800 mb-2">{answer.answer}</p>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className={answer.isCounselor ? 'text-blue-600 font-semibold' : 'font-medium'}>
-                                  {answer.answeredByName}
-                                  {answer.isCounselor && (
-                                    <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700">
-                                      Counselor
-                                    </Badge>
-                                  )}
-                                </span>
-                                <span>•</span>
-                                <span>{new Date(answer.answeredAt).toLocaleDateString()}</span>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className={answer.isCounselor ? 'text-blue-600 font-semibold' : 'font-medium'}>
+                                    {answer.answeredByName}
+                                    {answer.isCounselor && (
+                                      <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700">
+                                        Counselor
+                                      </Badge>
+                                    )}
+                                    {answer.isVerified && (
+                                      <Badge variant="outline" className="ml-2 text-xs bg-purple-50 text-purple-700">
+                                        <ShieldCheck className="h-3 w-3 mr-1" />
+                                        Verified
+                                      </Badge>
+                                    )}
+                                  </span>
+                                  <span>•</span>
+                                  <span>{new Date(answer.answeredAt).toLocaleDateString()}</span>
+                                </div>
+
+                                {/* Counselor Moderation for Answers */}
+                                {isCounselor && (
+                                  <div className="flex gap-1">
+                                    {!answer.isBestAnswer && !question.hasBestAnswer && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
+                                        onClick={() => handleMarkBestAnswer(question.id, answer.id)}
+                                        title="Mark as best answer"
+                                      >
+                                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                                        Best
+                                      </Button>
+                                    )}
+                                    {!answer.isVerified && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                        onClick={() => handleVerifyAnswer(answer.id)}
+                                        title="Verify answer"
+                                      >
+                                        <ShieldCheck className="h-3 w-3 mr-1" />
+                                        Verify
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      onClick={() => setShowDeleteDialog({ type: 'answer', id: answer.id, questionId: question.id })}
+                                      title="Delete answer"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -501,6 +716,55 @@ const CommunityQA: React.FC = () => {
           })
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog !== null} onOpenChange={() => setShowDeleteDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Delete {showDeleteDialog?.type === 'question' ? 'Question' : 'Answer'}
+            </DialogTitle>
+            <DialogDescription>
+              Please provide a reason for deletion. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Textarea
+            placeholder="Enter reason for deletion (required)..."
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+            rows={3}
+            className="mt-2"
+          />
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteDialog(null);
+                setDeleteReason('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (showDeleteDialog) {
+                  if (showDeleteDialog.type === 'question') {
+                    handleDeleteQuestion(showDeleteDialog.id, deleteReason);
+                  } else {
+                    handleDeleteAnswer(showDeleteDialog.id, deleteReason);
+                  }
+                }
+              }}
+              disabled={!deleteReason.trim()}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
