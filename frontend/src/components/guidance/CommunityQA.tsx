@@ -75,6 +75,9 @@ const CommunityQA: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAskForm, setShowAskForm] = useState(false);
+  const [questionTitle, setQuestionTitle] = useState('');
+  const [questionDetails, setQuestionDetails] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = [
     { value: 'all', label: 'All Questions', count: 200 },
@@ -91,6 +94,33 @@ const CommunityQA: React.FC = () => {
       case 'university': return 'bg-green-100 text-green-700';
       case 'personal': return 'bg-amber-100 text-amber-700';
       default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const handlePostQuestion = async () => {
+    if (!questionTitle.trim() || !questionDetails.trim()) {
+      alert('Please fill in both title and details');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // TODO: Integrate with backend submitQuestion cloud function
+      // await Parse.Cloud.run('submitQuestion', { title: questionTitle, question: questionDetails, category: 'career' });
+
+      // For now, just simulate success
+      console.log('Question submitted:', { title: questionTitle, details: questionDetails });
+      alert('Question posted successfully! A counselor will answer soon.');
+
+      // Reset form
+      setQuestionTitle('');
+      setQuestionDetails('');
+      setShowAskForm(false);
+    } catch (error) {
+      console.error('Failed to post question:', error);
+      alert('Failed to post question. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -195,14 +225,35 @@ const CommunityQA: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Input placeholder="Question title (e.g., 'What careers are available for...')" />
+              <Input
+                placeholder="Question title (e.g., 'What careers are available for...')"
+                value={questionTitle}
+                onChange={(e) => setQuestionTitle(e.target.value)}
+                disabled={isSubmitting}
+              />
               <Textarea
                 placeholder="Provide details: your grade level, subjects, concerns..."
                 rows={5}
+                value={questionDetails}
+                onChange={(e) => setQuestionDetails(e.target.value)}
+                disabled={isSubmitting}
               />
               <div className="flex gap-2">
-                <Button>Post Question</Button>
-                <Button variant="outline" onClick={() => setShowAskForm(false)}>
+                <Button
+                  onClick={handlePostQuestion}
+                  disabled={isSubmitting || !questionTitle.trim() || !questionDetails.trim()}
+                >
+                  {isSubmitting ? 'Posting...' : 'Post Question'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAskForm(false);
+                    setQuestionTitle('');
+                    setQuestionDetails('');
+                  }}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
               </div>
