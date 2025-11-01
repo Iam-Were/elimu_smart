@@ -19,7 +19,9 @@
       "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Layout fixes deployed\"\"')",
       "Bash(ssh root@145.239.42.121 'cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/ && echo \"\"✅ Height constraint fix deployed\"\"')",
       "Bash(find:*)",
-      "Bash(ssh root@145.239.42.121:*)"
+      "Bash(ssh root@145.239.42.121:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": [],

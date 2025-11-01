@@ -6,7 +6,7 @@ import { OutreachDialog } from '@/components/counselor/OutreachDialog';
 import { toast } from 'sonner';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import Parse from 'parse';
 
 interface StudentResult {
   id: string;
@@ -25,7 +25,7 @@ interface StudentResult {
 
 export const DiscoverStudentsPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = Parse.User.current();
   const {
     loading,
     results,

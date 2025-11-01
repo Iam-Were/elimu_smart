@@ -187,7 +187,7 @@ export const StudentSearchFilters: React.FC<StudentSearchFiltersProps> = ({
         </div>
         <Slider
           value={[minProfileCompletion]}
-          onValueChange={(value) => onMinProfileCompletionChange(value[0])}
+          onValueChange={(value: number[]) => onMinProfileCompletionChange(value[0])}
           min={0}
           max={100}
           step={5}
