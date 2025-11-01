@@ -7,9 +7,9 @@
  * - Counselor moderation (best answer, verify, pin, delete)
  * - Pagination for performance
  * - Real names only (no anonymity)
+ *
+ * NOTE: Uses global Parse object from main.js (no local require needed)
  */
-
-const Parse = require('parse/node');
 
 // =============================================================================
 // SCHEMA INITIALIZATION (Run Once)
