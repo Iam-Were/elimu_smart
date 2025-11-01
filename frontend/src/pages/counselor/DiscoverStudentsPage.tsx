@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStudentSearch } from '@/hooks/counselor/useStudentSearch';
 import { StudentSearchFilters } from '@/components/counselor/StudentSearchFilters';
 import { StudentSearchResults } from '@/components/counselor/StudentSearchResults';
@@ -47,6 +47,12 @@ export const DiscoverStudentsPage = () => {
   // Outreach dialog state
   const [outreachDialogOpen, setOutreachDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentResult | null>(null);
+
+  // Auto-load students on mount (LinkedIn-style)
+  useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async () => {
     try {
