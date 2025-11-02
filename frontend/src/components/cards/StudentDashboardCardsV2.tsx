@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
+import UpcomingSessions from '../dashboard/UpcomingSessions';
 
 interface ParseUserData {
   firstName: string;
@@ -390,6 +391,9 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
           </CardFooter>
         )}
       </Card>
+
+      {/* Upcoming Sessions */}
+      <UpcomingSessions maxSessions={3} />
 
       {/* Unified Card Grid (Dynamic Backend Data) */}
       <UnifiedCardGrid
