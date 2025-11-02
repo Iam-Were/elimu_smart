@@ -28,18 +28,31 @@ import {
   ClipboardCheck,
   TrendingUp,
   Loader2,
-  
+
   Download,
   Share2,
   Trophy,
   CheckCircle2,
-  Activity
+  Activity,
+  Brain,
+  ChevronDown,
+  Sparkles,
+  Users,
+  BookOpen,
+  Lightbulb,
+  Target as TargetIcon,
+  Award
 } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
 import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
 import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
 import { AddSkillsDialog } from '@/components/profile/AddSkillsDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from 'recharts';
+import { createAvatar } from '@dicebear/core';
+import { avataaars } from '@dicebear/collection';
+import { getRiasecTypeInfo } from '@/lib/assessmentProgress';
 
 interface ProfileProject {
   id: string;
@@ -91,6 +104,19 @@ interface AssessmentSummary {
   assessmentsCompleted: number;
 }
 
+interface RiasecTypeInfo {
+  code: string;
+  name: string;
+  description: string;
+  workStyle: string;
+  strengths: string[];
+  motivators: string[];
+  teamRole: string;
+  famousKenyans: string[];
+  learningStyle: string;
+  decisionMaking: string;
+}
+
 export const ProfilePageTabbed: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'about';
@@ -100,6 +126,8 @@ export const ProfilePageTabbed: React.FC = () => {
   const [skills, setSkills] = useState<ProfileSkill[]>([]);
   const [assessments, setAssessments] = useState<AssessmentResult[]>([]);
   const [assessmentSummary, setAssessmentSummary] = useState<AssessmentSummary | null>(null);
+  const [personalityInsights, setPersonalityInsights] = useState<Record<string, RiasecTypeInfo>>({});
+  const [expandedAssessments, setExpandedAssessments] = useState<Set<string>>(new Set());
 
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingExperience, setLoadingExperience] = useState(true);
@@ -238,6 +266,27 @@ export const ProfilePageTabbed: React.FC = () => {
     setProfileCompletion(Math.min(completionScore, 100));
   }, [user, projects, experience, skills, editFormData]);
 
+  // Fetch personality insights from backend
+  useEffect(() => {
+    const fetchPersonalityInsights = async () => {
+      try {
+        const response = await getRiasecTypeInfo();
+        if (response.types) {
+          const insightsMap: Record<string, RiasecTypeInfo> = {};
+          response.types.forEach((type: RiasecTypeInfo) => {
+            insightsMap[type.code] = type;
+          });
+          setPersonalityInsights(insightsMap);
+          console.log('✅ Loaded personality insights for all 6 RIASEC types');
+        }
+      } catch (error) {
+        console.warn('Failed to load personality insights:', error);
+      }
+    };
+
+    fetchPersonalityInsights();
+  }, [assessments]);
+
   const handleInputChange = (field: keyof typeof editFormData, value: string) => {
     setEditFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -304,6 +353,47 @@ export const ProfilePageTabbed: React.FC = () => {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  };
+
+  // Generate avatar for RIASEC personality type
+  const generateAvatar = (typeCode: string) => {
+    const avatar = createAvatar(avataaars, {
+      seed: `riasec-${typeCode}`,
+      backgroundColor: ['transparent'],
+      // Customize based on personality type
+      ...(typeCode === 'R' && { accessories: ['prescription01'], clothing: ['hoodie'] }),
+      ...(typeCode === 'I' && { accessories: ['prescription02'], clothing: ['shirtCrewNeck'] }),
+      ...(typeCode === 'A' && { accessories: ['prescription01'], clothing: ['graphicShirt'] }),
+      ...(typeCode === 'S' && { accessories: [], clothing: ['blazerAndShirt'] }),
+      ...(typeCode === 'E' && { accessories: ['sunglasses'], clothing: ['blazerAndSweater'] }),
+      ...(typeCode === 'C' && { accessories: ['prescription02'], clothing: ['shirtVNeck'] }),
+    });
+    return avatar.toDataUri();
+  };
+
+  // Prepare radar chart data for RIASEC scores
+  const prepareRadarData = (scores: Record<string, number>) => {
+    return [
+      { type: 'R', score: scores.R || 0, fullMark: 20 },
+      { type: 'I', score: scores.I || 0, fullMark: 20 },
+      { type: 'A', score: scores.A || 0, fullMark: 20 },
+      { type: 'S', score: scores.S || 0, fullMark: 20 },
+      { type: 'E', score: scores.E || 0, fullMark: 20 },
+      { type: 'C', score: scores.C || 0, fullMark: 20 },
+    ];
+  };
+
+  // Toggle expanded state for assessment insights
+  const toggleExpanded = (assessmentId: string) => {
+    setExpandedAssessments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(assessmentId)) {
+        newSet.delete(assessmentId);
+      } else {
+        newSet.add(assessmentId);
+      }
+      return newSet;
     });
   };
 
@@ -1049,39 +1139,225 @@ export const ProfilePageTabbed: React.FC = () => {
                         </CardHeader>
 
                         <CardContent>
-                          {/* RIASEC Results Preview */}
+                          {/* Enhanced RIASEC Results */}
                           {assessment.type === 'riasec' && assessment.results && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              <div className="p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
-                                <p className="text-xs text-muted-foreground mb-1">Holland Code</p>
-                                <p className="text-lg font-bold text-orange-600">{assessment.results.hollandCode}</p>
+                            <div className="space-y-6">
+                              {/* Quick Summary with Avatar */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                                  <img
+                                    src={generateAvatar(assessment.results.primaryType || '')}
+                                    alt={`${assessment.results.primaryType} personality avatar`}
+                                    className="w-16 h-16 rounded-full bg-white p-1"
+                                  />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">Primary Type</p>
+                                    <p className="text-lg font-bold text-orange-600">{assessment.results.primaryType}</p>
+                                    {personalityInsights[assessment.results.primaryType || ''] && (
+                                      <p className="text-xs text-gray-600 mt-1">
+                                        {personalityInsights[assessment.results.primaryType || ''].name}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                                  <p className="text-xs text-muted-foreground mb-1">Holland Code</p>
+                                  <p className="text-2xl font-bold text-blue-600">{assessment.results.hollandCode}</p>
+                                </div>
+
+                                <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                                  <p className="text-xs text-muted-foreground mb-1">Top Career Match</p>
+                                  <p className="text-sm font-semibold text-green-600">
+                                    {assessment.results.careerMatches?.[0]?.name || 'See results below'}
+                                  </p>
+                                  {assessment.results.careerMatches?.[0]?.compatibility && (
+                                    <p className="text-xs text-gray-600 mt-1">
+                                      {assessment.results.careerMatches[0].compatibility}% match
+                                    </p>
+                                  )}
+                                </div>
                               </div>
 
-                              <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                                <p className="text-xs text-muted-foreground mb-1">Primary Type</p>
-                                <p className="text-sm font-semibold text-blue-600">{assessment.results.primaryType}</p>
-                              </div>
+                              {/* Radar Chart */}
+                              {assessment.results.scores && (
+                                <div className="p-4 bg-gray-50 rounded-lg">
+                                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <Trophy className="h-4 w-4 text-orange-600" />
+                                    RIASEC Score Visualization
+                                  </h4>
+                                  <ResponsiveContainer width="100%" height={300}>
+                                    <RadarChart data={prepareRadarData(assessment.results.scores)}>
+                                      <PolarGrid stroke="#e2e8f0" />
+                                      <PolarAngleAxis dataKey="type" tick={{ fill: '#64748b', fontSize: 12 }} />
+                                      <PolarRadiusAxis angle={90} domain={[0, 20]} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                      <Radar name="Your Scores" dataKey="score" stroke="#f97316" fill="#f97316" fillOpacity={0.6} />
+                                      <Legend />
+                                    </RadarChart>
+                                  </ResponsiveContainer>
+                                  <div className="grid grid-cols-6 gap-2 mt-3">
+                                    {Object.entries(assessment.results.scores).map(([type, score]) => (
+                                      <div key={type} className="text-center">
+                                        <p className="text-xs font-semibold text-gray-700">{type}</p>
+                                        <p className="text-sm text-gray-600">{score}/20</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
 
-                              <div className="p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg col-span-2">
-                                <p className="text-xs text-muted-foreground mb-1">Top Career Match</p>
-                                <p className="text-sm font-semibold text-green-600 truncate">
-                                  {assessment.results.careerMatches?.[0]?.name || 'N/A'}
-                                </p>
+                              {/* Expandable Personality Insights */}
+                              {assessment.results.primaryType && personalityInsights[assessment.results.primaryType] && (
+                                <Collapsible open={expandedAssessments.has(assessment.id)}>
+                                  <CollapsibleTrigger
+                                    onClick={() => toggleExpanded(assessment.id)}
+                                    className="w-full"
+                                  >
+                                    <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors cursor-pointer">
+                                      <div className="flex items-center gap-2">
+                                        <Brain className="h-5 w-5 text-purple-600" />
+                                        <span className="font-semibold text-purple-900">Personality Insights</span>
+                                      </div>
+                                      <ChevronDown
+                                        className={`h-5 w-5 text-purple-600 transition-transform ${
+                                          expandedAssessments.has(assessment.id) ? 'rotate-180' : ''
+                                        }`}
+                                      />
+                                    </div>
+                                  </CollapsibleTrigger>
+
+                                  <CollapsibleContent>
+                                    <div className="mt-4 space-y-4 p-4 border border-purple-100 rounded-lg">
+                                      {(() => {
+                                        const typeInfo = personalityInsights[assessment.results.primaryType || ''];
+                                        return (
+                                          <>
+                                            {/* Work Style */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <Briefcase className="h-4 w-4 text-blue-600" />
+                                                Your Work Style
+                                              </h5>
+                                              <p className="text-sm text-gray-700">{typeInfo.workStyle}</p>
+                                            </div>
+
+                                            {/* Strengths */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <Award className="h-4 w-4 text-green-600" />
+                                                Top Strengths
+                                              </h5>
+                                              <ul className="space-y-1">
+                                                {typeInfo.strengths.map((strength, idx) => (
+                                                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <span className="text-green-600 mt-0.5">•</span>
+                                                    {strength}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+
+                                            {/* Motivators */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <Lightbulb className="h-4 w-4 text-yellow-600" />
+                                                What Motivates You
+                                              </h5>
+                                              <ul className="space-y-1">
+                                                {typeInfo.motivators.map((motivator, idx) => (
+                                                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <span className="text-yellow-600 mt-0.5">•</span>
+                                                    {motivator}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+
+                                            {/* Learning Style */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <BookOpen className="h-4 w-4 text-indigo-600" />
+                                                Learning Style
+                                              </h5>
+                                              <p className="text-sm text-gray-700">{typeInfo.learningStyle}</p>
+                                            </div>
+
+                                            {/* Decision Making */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <TargetIcon className="h-4 w-4 text-red-600" />
+                                                Decision Making Approach
+                                              </h5>
+                                              <p className="text-sm text-gray-700">{typeInfo.decisionMaking}</p>
+                                            </div>
+
+                                            {/* Team Role */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <Users className="h-4 w-4 text-purple-600" />
+                                                Team Role
+                                              </h5>
+                                              <p className="text-sm text-gray-700">{typeInfo.teamRole}</p>
+                                            </div>
+
+                                            {/* Famous Kenyans */}
+                                            <div>
+                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <Sparkles className="h-4 w-4 text-amber-600" />
+                                                Successful Kenyans with {assessment.results.primaryType}-Type
+                                              </h5>
+                                              <ul className="space-y-1">
+                                                {typeInfo.famousKenyans.map((kenyan, idx) => (
+                                                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <span className="text-amber-600 mt-0.5">•</span>
+                                                    {kenyan}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              )}
+
+                              {/* Career Matches Section */}
+                              {assessment.results.careerMatches && assessment.results.careerMatches.length > 0 && (
+                                <div className="p-4 bg-green-50 rounded-lg">
+                                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <Target className="h-4 w-4 text-green-600" />
+                                    Top Career Matches
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {assessment.results.careerMatches.slice(0, 3).map((match, idx) => (
+                                      <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                                        <div>
+                                          <p className="text-sm font-semibold text-gray-900">{idx + 1}. {match.name}</p>
+                                          {match.compatibility && (
+                                            <p className="text-xs text-gray-600">{match.compatibility}% compatibility</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Action Buttons */}
+                              <div className="flex gap-3">
+                                <Button variant="outline" size="sm">
+                                  <Download className="mr-2 h-3 w-3" />
+                                  Download PDF
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Share2 className="mr-2 h-3 w-3" />
+                                  Share
+                                </Button>
                               </div>
                             </div>
                           )}
-
-                          {/* Action Buttons */}
-                          <div className="flex gap-3 mt-4">
-                            <Button variant="outline" size="sm">
-                              <Download className="mr-2 h-3 w-3" />
-                              Download PDF
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Share2 className="mr-2 h-3 w-3" />
-                              Share
-                            </Button>
-                          </div>
                         </CardContent>
                       </Card>
                     ))}
