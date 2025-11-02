@@ -155,7 +155,7 @@ Parse.Cloud.define('getAllQuestions', async (request) => {
     const total = await query.count({ useMasterKey: true });
 
     return {
-      questions,
+      questions: questions.map(q => q.toJSON()),
       total,
       page,
       hasMore: (page + 1) * limit < total
