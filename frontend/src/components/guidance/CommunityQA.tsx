@@ -126,28 +126,20 @@ const CommunityQA: React.FC = () => {
 
         // Backend returns { questions, total, page, hasMore }
         // Questions are serialized JSON objects, not Parse Objects
-        console.log('[DEBUG] Raw API result:', result);
-        console.log('[DEBUG] First question raw:', result.questions?.[0]);
+        const formattedQuestions: Question[] = result.questions.map((q: SerializedQuestion) => ({
+          id: q.objectId,
+          title: q.title,
+          question: q.question,
+          category: q.category || 'general',
+          askedBy: q.askedBy || '',
+          askedByName: q.askedByName || 'Anonymous',
+          createdAt: new Date(q.createdAt),
+          answers: [], // Loaded separately when expanded
+          upvotes: q.upvotes || 0,
+          hasBestAnswer: q.hasBestAnswer || false,
+          isPinned: q.isPinned || false,
+        }));
 
-        const formattedQuestions: Question[] = result.questions.map((q: SerializedQuestion) => {
-          const formatted = {
-            id: q.objectId,
-            title: q.title,
-            question: q.question,
-            category: q.category || 'general',
-            askedBy: q.askedBy || '',
-            askedByName: q.askedByName || 'Anonymous',
-            createdAt: new Date(q.createdAt),
-            answers: [], // Loaded separately when expanded
-            upvotes: q.upvotes || 0,
-            hasBestAnswer: q.hasBestAnswer || false,
-            isPinned: q.isPinned || false,
-          };
-          console.log('[DEBUG] Formatted question:', formatted);
-          return formatted;
-        });
-
-        console.log('[DEBUG] Setting questions state:', formattedQuestions);
         setQuestions(formattedQuestions);
       } catch (error) {
         console.error('Failed to load questions:', error);
