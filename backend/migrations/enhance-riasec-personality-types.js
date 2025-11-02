@@ -10,8 +10,8 @@
 const Parse = require('parse/node');
 require('dotenv').config();
 
-// Initialize Parse
-Parse.initialize(process.env.APP_ID, null, process.env.MASTER_KEY);
+// Initialize Parse with master key
+Parse.initialize(process.env.APP_ID);
 Parse.serverURL = process.env.SERVER_URL || 'http://localhost:1337/parse';
 Parse.masterKey = process.env.MASTER_KEY;
 
