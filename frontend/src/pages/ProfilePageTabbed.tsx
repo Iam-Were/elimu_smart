@@ -1218,7 +1218,7 @@ export const ProfilePageTabbed: React.FC = () => {
                                       transition={{ delay: 0.5, type: "spring" }}
                                       className="text-xs text-gray-600 mt-1"
                                     >
-                                      {assessment.results.careerMatches[0].compatibility}% match
+                                      {assessment.results.careerMatches[0].compatibility.toFixed(1)}% match
                                     </motion.p>
                                   )}
                                 </motion.div>
@@ -1272,7 +1272,7 @@ export const ProfilePageTabbed: React.FC = () => {
                                       {Object.entries(assessment.results.scores)
                                         .sort(([, a], [, b]) => (b as number) - (a as number))
                                         .map(([type, score], index) => {
-                                          const percentage = ((score as number) / 20) * 100;
+                                          const percentage = (((score as number) / 20) * 100).toFixed(1);
                                           const colors: Record<string, string> = {
                                             R: 'from-red-500 to-rose-600',
                                             I: 'from-blue-500 to-indigo-600',
@@ -1498,7 +1498,7 @@ export const ProfilePageTabbed: React.FC = () => {
                                         <div>
                                           <p className="text-sm font-semibold text-gray-900">{idx + 1}. {match.name}</p>
                                           {match.compatibility && (
-                                            <p className="text-xs text-gray-600">{match.compatibility}% compatibility</p>
+                                            <p className="text-xs text-gray-600">{match.compatibility.toFixed(1)}% compatibility</p>
                                           )}
                                         </div>
                                       </div>
