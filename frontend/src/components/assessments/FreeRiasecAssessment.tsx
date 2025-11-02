@@ -59,14 +59,8 @@ interface RiasecType {
   characteristics: string[];
   workEnvironments: string[];
   kuccpsPathways: string[];
-  // Enhanced personality insights
-  workStyle: string;
-  strengths: string[];
-  motivators: string[];
-  teamRole: string;
-  famousKenyans: string[];
-  learningStyle: string;
-  decisionMaking: string;
+  // Personality insights now fetched from backend via getRiasecTypeInfo()
+  // No longer hardcoded here
 }
 
 // Backend API type info (without UI-specific fields)
@@ -74,13 +68,6 @@ interface RiasecTypeInfo {
   code: string;
   name: string;
   description: string;
-  workStyle: string;
-  strengths: string[];
-  motivators: string[];
-  teamRole: string;
-  famousKenyans: string[];
-  learningStyle: string;
-  decisionMaking: string;
 }
 
 const riasecTypes: Record<string, RiasecType> = {
@@ -118,14 +105,7 @@ const riasecTypes: Record<string, RiasecType> = {
       'Agriculture & Veterinary Sciences',
       'Built Environment',
       'Technical & Vocational Training'
-    ],
-    workStyle: 'Hands-on and practical, prefer working with tangible objects and seeing concrete results',
-    strengths: ['Problem-solving with tools', 'Physical coordination', 'Technical skills', 'Mechanical reasoning'],
-    motivators: ['Tangible results', 'Working with hands', 'Outdoor activities', 'Building things'],
-    teamRole: 'The Builder - brings practical solutions and technical expertise',
-    famousKenyans: ['Mbithi Masya (Engineer)', 'Philip Nyakiamo (Tech Innovator)', 'James Macharia (Infrastructure)'],
-    learningStyle: 'Learning by doing - prefer hands-on practice over theory',
-    decisionMaking: 'Practical and logical - focus on what works in real situations'
+    ]
   },
   I: {
     code: 'I',
@@ -162,13 +142,6 @@ const riasecTypes: Record<string, RiasecType> = {
       'Information Technology',
       'Social Sciences'
     ],
-    workStyle: 'Analytical and methodical, enjoy research and understanding complex systems',
-    strengths: ['Critical thinking', 'Research skills', 'Data analysis', 'Problem-solving'],
-    motivators: ['Discovering new knowledge', 'Solving complex problems', 'Understanding how things work', 'Intellectual challenges'],
-    teamRole: 'The Analyst - brings research-based insights and logical reasoning',
-    famousKenyans: ['Prof. Wangari Maathai (Scientist)', 'Dr. Calestous Juma (Innovation)', 'Dr. Patrick Amoth (Medicine)'],
-    learningStyle: 'Conceptual learning - prefer understanding theory before application',
-    decisionMaking: 'Data-driven and evidence-based - rely on research and analysis'
   },
   A: {
     code: 'A',
@@ -205,13 +178,6 @@ const riasecTypes: Record<string, RiasecType> = {
       'Architecture & Planning',
       'Education (Arts)'
     ],
-    workStyle: 'Creative and expressive, value originality and aesthetic beauty',
-    strengths: ['Creative thinking', 'Visual/artistic expression', 'Innovation', 'Storytelling'],
-    motivators: ['Self-expression', 'Creative freedom', 'Making beautiful things', 'Inspiring others'],
-    teamRole: 'The Innovator - brings fresh perspectives and creative solutions',
-    famousKenyans: ['Lupita Nyongo (Arts)', 'Juliana Rotich (Design)', 'Binyavanga Wainaina (Writer)'],
-    learningStyle: 'Visual and experiential - prefer creative exploration and self-expression',
-    decisionMaking: 'Intuitive and values-based - consider aesthetics and emotional impact'
   },
   S: {
     code: 'S',
@@ -249,13 +215,6 @@ const riasecTypes: Record<string, RiasecType> = {
       'Law',
       'Public Administration'
     ],
-    workStyle: 'People-focused and empathetic, motivated by helping others grow and succeed',
-    strengths: ['Interpersonal communication', 'Empathy', 'Teaching/mentoring', 'Conflict resolution'],
-    motivators: ['Helping others', 'Making a difference', 'Building relationships', 'Community impact'],
-    teamRole: 'The Supporter - brings people together and fosters collaboration',
-    famousKenyans: ['Prof. Ruth Nita Barrow (Education)', 'Dr. Koki Muli (Public Health)', 'Tecla Namachanja (Social Work)'],
-    learningStyle: 'Collaborative learning - prefer group discussions and mentorship',
-    decisionMaking: 'People-centered and consensus-driven - consider impact on others'
   },
   E: {
     code: 'E',
@@ -293,13 +252,6 @@ const riasecTypes: Record<string, RiasecType> = {
       'Public Administration',
       'Communication'
     ],
-    workStyle: 'Results-driven and persuasive, energized by leading teams and achieving goals',
-    strengths: ['Leadership', 'Persuasion', 'Strategic thinking', 'Risk-taking'],
-    motivators: ['Achievement', 'Recognition', 'Financial success', 'Influence'],
-    teamRole: 'The Leader - drives projects forward and motivates others',
-    famousKenyans: ['James Mwangi (Banking)', 'Tabitha Karanja (Entrepreneur)', 'Sam Gichuru (Business)'],
-    learningStyle: 'Action-oriented learning - prefer real-world experience and networking',
-    decisionMaking: 'Goal-focused and opportunistic - consider potential for success and impact'
   },
   C: {
     code: 'C',
@@ -337,13 +289,6 @@ const riasecTypes: Record<string, RiasecType> = {
       'Public Administration',
       'Information Management'
     ],
-    workStyle: 'Systematic and organized, thrive in structured environments with clear expectations',
-    strengths: ['Attention to detail', 'Organization', 'Accuracy', 'Following procedures'],
-    motivators: ['Order and structure', 'Completing tasks correctly', 'Reliability', 'Clear expectations'],
-    teamRole: 'The Organizer - ensures processes run smoothly and deadlines are met',
-    famousKenyans: ['Henry Rotich (Finance)', 'Betty Maina (Administration)', 'John Walubengo (Audit)'],
-    learningStyle: 'Structured learning - prefer step-by-step instruction and clear guidelines',
-    decisionMaking: 'Methodical and rule-based - follow established procedures and best practices'
   }
 };
 
