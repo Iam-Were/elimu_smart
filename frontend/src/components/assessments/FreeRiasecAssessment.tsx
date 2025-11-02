@@ -24,7 +24,9 @@ import {
   MapPin,
   Trophy,
   Sparkles,
-  Loader2
+  Loader2,
+  BookOpen
+  // Download, MessageCircle, ExternalLink - will be used for PDF and action buttons
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -36,6 +38,7 @@ import {
   resumeRiasecAssessment
 } from '@/lib/assessmentProgress';
 import { callCloudFunction } from '@/lib/parseConfig';
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 
 // IIP RIASEC Markers - Free for non-commercial use
 // Citation: Armstrong, P. I., Allison, W., & Rounds, J. (2008). 
@@ -52,6 +55,14 @@ interface RiasecType {
   characteristics: string[];
   workEnvironments: string[];
   kuccpsPathways: string[];
+  // Enhanced personality insights
+  workStyle: string;
+  strengths: string[];
+  motivators: string[];
+  teamRole: string;
+  famousKenyans: string[];
+  learningStyle: string;
+  decisionMaking: string;
 }
 
 const riasecTypes: Record<string, RiasecType> = {
@@ -89,7 +100,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Agriculture & Veterinary Sciences',
       'Built Environment',
       'Technical & Vocational Training'
-    ]
+    ],
+    workStyle: 'Hands-on and practical, prefer working with tangible objects and seeing concrete results',
+    strengths: ['Problem-solving with tools', 'Physical coordination', 'Technical skills', 'Mechanical reasoning'],
+    motivators: ['Tangible results', 'Working with hands', 'Outdoor activities', 'Building things'],
+    teamRole: 'The Builder - brings practical solutions and technical expertise',
+    famousKenyans: ['Mbithi Masya (Engineer)', 'Philip Nyakiamo (Tech Innovator)', 'James Macharia (Infrastructure)'],
+    learningStyle: 'Learning by doing - prefer hands-on practice over theory',
+    decisionMaking: 'Practical and logical - focus on what works in real situations'
   },
   I: {
     code: 'I',
@@ -125,7 +143,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Pure & Applied Sciences',
       'Information Technology',
       'Social Sciences'
-    ]
+    ],
+    workStyle: 'Analytical and methodical, enjoy research and understanding complex systems',
+    strengths: ['Critical thinking', 'Research skills', 'Data analysis', 'Problem-solving'],
+    motivators: ['Discovering new knowledge', 'Solving complex problems', 'Understanding how things work', 'Intellectual challenges'],
+    teamRole: 'The Analyst - brings research-based insights and logical reasoning',
+    famousKenyans: ['Prof. Wangari Maathai (Scientist)', 'Dr. Calestous Juma (Innovation)', 'Dr. Patrick Amoth (Medicine)'],
+    learningStyle: 'Conceptual learning - prefer understanding theory before application',
+    decisionMaking: 'Data-driven and evidence-based - rely on research and analysis'
   },
   A: {
     code: 'A',
@@ -161,7 +186,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Communication & Media',
       'Architecture & Planning',
       'Education (Arts)'
-    ]
+    ],
+    workStyle: 'Creative and expressive, value originality and aesthetic beauty',
+    strengths: ['Creative thinking', 'Visual/artistic expression', 'Innovation', 'Storytelling'],
+    motivators: ['Self-expression', 'Creative freedom', 'Making beautiful things', 'Inspiring others'],
+    teamRole: 'The Innovator - brings fresh perspectives and creative solutions',
+    famousKenyans: ['Lupita Nyongo (Arts)', 'Juliana Rotich (Design)', 'Binyavanga Wainaina (Writer)'],
+    learningStyle: 'Visual and experiential - prefer creative exploration and self-expression',
+    decisionMaking: 'Intuitive and values-based - consider aesthetics and emotional impact'
   },
   S: {
     code: 'S',
@@ -198,7 +230,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Social Sciences',
       'Law',
       'Public Administration'
-    ]
+    ],
+    workStyle: 'People-focused and empathetic, motivated by helping others grow and succeed',
+    strengths: ['Interpersonal communication', 'Empathy', 'Teaching/mentoring', 'Conflict resolution'],
+    motivators: ['Helping others', 'Making a difference', 'Building relationships', 'Community impact'],
+    teamRole: 'The Supporter - brings people together and fosters collaboration',
+    famousKenyans: ['Prof. Ruth Nita Barrow (Education)', 'Dr. Koki Muli (Public Health)', 'Tecla Namachanja (Social Work)'],
+    learningStyle: 'Collaborative learning - prefer group discussions and mentorship',
+    decisionMaking: 'People-centered and consensus-driven - consider impact on others'
   },
   E: {
     code: 'E',
@@ -235,7 +274,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Economics',
       'Public Administration',
       'Communication'
-    ]
+    ],
+    workStyle: 'Results-driven and persuasive, energized by leading teams and achieving goals',
+    strengths: ['Leadership', 'Persuasion', 'Strategic thinking', 'Risk-taking'],
+    motivators: ['Achievement', 'Recognition', 'Financial success', 'Influence'],
+    teamRole: 'The Leader - drives projects forward and motivates others',
+    famousKenyans: ['James Mwangi (Banking)', 'Tabitha Karanja (Entrepreneur)', 'Sam Gichuru (Business)'],
+    learningStyle: 'Action-oriented learning - prefer real-world experience and networking',
+    decisionMaking: 'Goal-focused and opportunistic - consider potential for success and impact'
   },
   C: {
     code: 'C',
@@ -272,7 +318,14 @@ const riasecTypes: Record<string, RiasecType> = {
       'Economics',
       'Public Administration',
       'Information Management'
-    ]
+    ],
+    workStyle: 'Systematic and organized, thrive in structured environments with clear expectations',
+    strengths: ['Attention to detail', 'Organization', 'Accuracy', 'Following procedures'],
+    motivators: ['Order and structure', 'Completing tasks correctly', 'Reliability', 'Clear expectations'],
+    teamRole: 'The Organizer - ensures processes run smoothly and deadlines are met',
+    famousKenyans: ['Henry Rotich (Finance)', 'Betty Maina (Administration)', 'John Walubengo (Audit)'],
+    learningStyle: 'Structured learning - prefer step-by-step instruction and clear guidelines',
+    decisionMaking: 'Methodical and rule-based - follow established procedures and best practices'
   }
 };
 
@@ -814,6 +867,67 @@ export const FreeRiasecAssessment: React.FC = () => {
           </CardHeader>
         </Card>
 
+        {/* Radar Chart Visualization */}
+        <Card id="radar-chart">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-600" />
+              Your RIASEC Profile Visualization
+            </CardTitle>
+            <CardDescription>
+              All 6 personality dimensions - Higher scores indicate stronger alignment
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={[
+                  { dimension: 'Realistic', score: results.scores.R },
+                  { dimension: 'Investigative', score: results.scores.I },
+                  { dimension: 'Artistic', score: results.scores.A },
+                  { dimension: 'Social', score: results.scores.S },
+                  { dimension: 'Enterprising', score: results.scores.E },
+                  { dimension: 'Conventional', score: results.scores.C }
+                ]}>
+                  <PolarGrid stroke="#e5e7eb" />
+                  <PolarAngleAxis
+                    dataKey="dimension"
+                    tick={{ fill: '#374151', fontSize: 14, fontWeight: 500 }}
+                  />
+                  <PolarRadiusAxis
+                    angle={90}
+                    domain={[0, 100]}
+                    tick={{ fill: '#6b7280', fontSize: 12 }}
+                  />
+                  <Radar
+                    name="RIASEC Scores"
+                    dataKey="score"
+                    stroke="#f97316"
+                    fill="#f97316"
+                    fillOpacity={0.6}
+                    strokeWidth={2}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Score Table Below Chart */}
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.entries(results.scores).map(([code, score]) => (
+                <div key={code} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <div className={cn("p-2 rounded text-white", riasecTypes[code].color)}>
+                    {riasecTypes[code].icon}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">{code} - {score}%</div>
+                    <div className="text-xs text-gray-600">{riasecTypes[code].name.split(' ')[0]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Primary Type Card */}
         <Card className="border-2 border-orange-200">
           <CardHeader>
@@ -850,6 +964,111 @@ export const FreeRiasecAssessment: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Personality Insights Section */}
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              About Your Personality
+            </CardTitle>
+            <CardDescription>
+              Understanding how you work best and what drives you
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Work Style */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                Work Style
+              </h4>
+              <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
+                {riasecTypes[results.primaryType].workStyle}
+              </p>
+            </div>
+
+            {/* Strengths */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Your Strengths
+              </h4>
+              <div className="grid md:grid-cols-2 gap-2">
+                {riasecTypes[results.primaryType].strengths.map((strength, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-white/70 p-2 rounded-lg">
+                    <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">{strength}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Learning Style */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Learning Style
+              </h4>
+              <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
+                {riasecTypes[results.primaryType].learningStyle}
+              </p>
+            </div>
+
+            {/* Decision Making */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Decision-Making Style
+              </h4>
+              <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
+                {riasecTypes[results.primaryType].decisionMaking}
+              </p>
+            </div>
+
+            {/* Motivators */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                What Motivates You
+              </h4>
+              <div className="grid md:grid-cols-2 gap-2">
+                {riasecTypes[results.primaryType].motivators.map((motivator, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-white/70 p-2 rounded-lg">
+                    <Star className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                    <span className="text-sm">{motivator}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Team Role */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Your Team Role
+              </h4>
+              <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
+                {riasecTypes[results.primaryType].teamRole}
+              </p>
+            </div>
+
+            {/* Famous Kenyans */}
+            <div>
+              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Famous Kenyans with Similar Profile
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {riasecTypes[results.primaryType].famousKenyans.map((person, idx) => (
+                  <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-800">
+                    {person}
+                  </Badge>
+                ))}
               </div>
             </div>
           </CardContent>
