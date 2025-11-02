@@ -53,6 +53,7 @@ import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Responsi
 import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { getRiasecTypeInfo } from '@/lib/assessmentProgress';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProfileProject {
   id: string;
@@ -1139,123 +1140,281 @@ export const ProfilePageTabbed: React.FC = () => {
                         </CardHeader>
 
                         <CardContent>
-                          {/* Enhanced RIASEC Results */}
+                          {/* Enhanced RIASEC Results with Animations */}
                           {assessment.type === 'riasec' && assessment.results && (
-                            <div className="space-y-6">
-                              {/* Quick Summary with Avatar */}
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
-                                  <img
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.5 }}
+                              className="space-y-6"
+                            >
+                              {/* Quick Summary with Avatar - Stagger Animation */}
+                              <motion.div
+                                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                initial="hidden"
+                                animate="visible"
+                                variants={{
+                                  hidden: {},
+                                  visible: {
+                                    transition: {
+                                      staggerChildren: 0.15
+                                    }
+                                  }
+                                }}
+                              >
+                                <motion.div
+                                  variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0 }
+                                  }}
+                                  className="flex items-center gap-4 p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg hover:shadow-lg transition-shadow cursor-pointer group"
+                                >
+                                  <motion.img
                                     src={generateAvatar(assessment.results.primaryType || '')}
                                     alt={`${assessment.results.primaryType} personality avatar`}
                                     className="w-16 h-16 rounded-full bg-white p-1"
+                                    whileHover={{ scale: 1.1, rotate: 5 }}
+                                    transition={{ type: "spring", stiffness: 300 }}
                                   />
-                                  <div>
+                                  <div className="font-['Inter']">
                                     <p className="text-xs text-muted-foreground">Primary Type</p>
-                                    <p className="text-lg font-bold text-orange-600">{assessment.results.primaryType}</p>
+                                    <p className="text-lg font-bold text-orange-600 group-hover:text-orange-700 transition-colors">{assessment.results.primaryType}</p>
                                     {personalityInsights[assessment.results.primaryType || ''] && (
                                       <p className="text-xs text-gray-600 mt-1">
                                         {personalityInsights[assessment.results.primaryType || ''].name}
                                       </p>
                                     )}
                                   </div>
-                                </div>
+                                </motion.div>
 
-                                <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                                <motion.div
+                                  variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0 }
+                                  }}
+                                  className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-lg transition-shadow cursor-pointer font-['Plus_Jakarta_Sans']"
+                                  whileHover={{ scale: 1.02 }}
+                                >
                                   <p className="text-xs text-muted-foreground mb-1">Holland Code</p>
                                   <p className="text-2xl font-bold text-blue-600">{assessment.results.hollandCode}</p>
-                                </div>
+                                </motion.div>
 
-                                <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                                <motion.div
+                                  variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0 }
+                                  }}
+                                  className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-lg transition-shadow cursor-pointer font-['Inter']"
+                                  whileHover={{ scale: 1.02 }}
+                                >
                                   <p className="text-xs text-muted-foreground mb-1">Top Career Match</p>
                                   <p className="text-sm font-semibold text-green-600">
                                     {assessment.results.careerMatches?.[0]?.name || 'See results below'}
                                   </p>
                                   {assessment.results.careerMatches?.[0]?.compatibility && (
-                                    <p className="text-xs text-gray-600 mt-1">
+                                    <motion.p
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      transition={{ delay: 0.5, type: "spring" }}
+                                      className="text-xs text-gray-600 mt-1"
+                                    >
                                       {assessment.results.careerMatches[0].compatibility}% match
-                                    </p>
+                                    </motion.p>
                                   )}
-                                </div>
-                              </div>
+                                </motion.div>
+                              </motion.div>
 
-                              {/* Radar Chart */}
+                              {/* Animated Radar Chart & Progress Bars */}
                               {assessment.results.scores && (
-                                <div className="p-4 bg-gray-50 rounded-lg">
-                                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                                    <Trophy className="h-4 w-4 text-orange-600" />
-                                    RIASEC Score Visualization
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.3, duration: 0.5 }}
+                                  className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-100 shadow-sm"
+                                >
+                                  <h4 className="text-base font-bold mb-4 flex items-center gap-2 font-['Plus_Jakarta_Sans']">
+                                    <Trophy className="h-5 w-5 text-orange-600" />
+                                    Your Personality Profile
                                   </h4>
-                                  <ResponsiveContainer width="100%" height={300}>
-                                    <RadarChart data={prepareRadarData(assessment.results.scores)}>
-                                      <PolarGrid stroke="#e2e8f0" />
-                                      <PolarAngleAxis dataKey="type" tick={{ fill: '#64748b', fontSize: 12 }} />
-                                      <PolarRadiusAxis angle={90} domain={[0, 20]} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                                      <Radar name="Your Scores" dataKey="score" stroke="#f97316" fill="#f97316" fillOpacity={0.6} />
-                                      <Legend />
-                                    </RadarChart>
-                                  </ResponsiveContainer>
-                                  <div className="grid grid-cols-6 gap-2 mt-3">
-                                    {Object.entries(assessment.results.scores).map(([type, score]) => (
-                                      <div key={type} className="text-center">
-                                        <p className="text-xs font-semibold text-gray-700">{type}</p>
-                                        <p className="text-sm text-gray-600">{score}/20</p>
-                                      </div>
-                                    ))}
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Radar Chart with entrance animation */}
+                                    <motion.div
+                                      initial={{ opacity: 0, rotate: -10 }}
+                                      animate={{ opacity: 1, rotate: 0 }}
+                                      transition={{ delay: 0.5, duration: 0.8, type: "spring" }}
+                                    >
+                                      <ResponsiveContainer width="100%" height={300}>
+                                        <RadarChart data={prepareRadarData(assessment.results.scores)}>
+                                          <PolarGrid stroke="#e2e8f0" strokeWidth={1.5} />
+                                          <PolarAngleAxis dataKey="type" tick={{ fill: '#475569', fontSize: 13, fontWeight: 600, fontFamily: 'Inter' }} />
+                                          <PolarRadiusAxis angle={90} domain={[0, 20]} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                                          <Radar name="Your Scores" dataKey="score" stroke="#f97316" strokeWidth={2} fill="#f97316" fillOpacity={0.7} />
+                                          <Legend wrapperStyle={{ fontFamily: 'Inter', fontSize: 12, fontWeight: 500 }} />
+                                        </RadarChart>
+                                      </ResponsiveContainer>
+                                    </motion.div>
+
+                                    {/* Animated Progress Bars */}
+                                    <motion.div
+                                      className="space-y-3"
+                                      initial="hidden"
+                                      animate="visible"
+                                      variants={{
+                                        hidden: {},
+                                        visible: {
+                                          transition: {
+                                            staggerChildren: 0.1,
+                                            delayChildren: 0.6
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      {Object.entries(assessment.results.scores)
+                                        .sort(([, a], [, b]) => (b as number) - (a as number))
+                                        .map(([type, score], index) => {
+                                          const percentage = ((score as number) / 20) * 100;
+                                          const colors: Record<string, string> = {
+                                            R: 'from-red-500 to-rose-600',
+                                            I: 'from-blue-500 to-indigo-600',
+                                            A: 'from-purple-500 to-violet-600',
+                                            S: 'from-green-500 to-emerald-600',
+                                            E: 'from-yellow-500 to-amber-600',
+                                            C: 'from-gray-500 to-slate-600'
+                                          };
+                                          const names: Record<string, string> = {
+                                            R: 'Realistic',
+                                            I: 'Investigative',
+                                            A: 'Artistic',
+                                            S: 'Social',
+                                            E: 'Enterprising',
+                                            C: 'Conventional'
+                                          };
+                                          return (
+                                            <motion.div
+                                              key={type}
+                                              variants={{
+                                                hidden: { opacity: 0, x: -20 },
+                                                visible: { opacity: 1, x: 0 }
+                                              }}
+                                              className="group"
+                                            >
+                                              <div className="flex justify-between mb-1.5">
+                                                <span className="text-sm font-semibold text-gray-700 font-['Inter'] group-hover:text-gray-900 transition-colors">
+                                                  {type} - {names[type]}
+                                                </span>
+                                                <span className="text-sm font-bold text-gray-600 font-['Plus_Jakarta_Sans']">{score}/20</span>
+                                              </div>
+                                              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <motion.div
+                                                  initial={{ width: 0 }}
+                                                  animate={{ width: `${percentage}%` }}
+                                                  transition={{ delay: 0.8 + index * 0.1, duration: 1, ease: "easeOut" }}
+                                                  className={`h-full bg-gradient-to-r ${colors[type]} rounded-full`}
+                                                  whileHover={{ opacity: 0.9 }}
+                                                />
+                                              </div>
+                                            </motion.div>
+                                          );
+                                        })}
+                                    </motion.div>
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
 
-                              {/* Expandable Personality Insights */}
+                              {/* Expandable Personality Insights with Animation */}
                               {assessment.results.primaryType && personalityInsights[assessment.results.primaryType] && (
-                                <Collapsible open={expandedAssessments.has(assessment.id)}>
-                                  <CollapsibleTrigger
-                                    onClick={() => toggleExpanded(assessment.id)}
-                                    className="w-full"
-                                  >
-                                    <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors cursor-pointer">
-                                      <div className="flex items-center gap-2">
-                                        <Brain className="h-5 w-5 text-purple-600" />
-                                        <span className="font-semibold text-purple-900">Personality Insights</span>
-                                      </div>
-                                      <ChevronDown
-                                        className={`h-5 w-5 text-purple-600 transition-transform ${
-                                          expandedAssessments.has(assessment.id) ? 'rotate-180' : ''
-                                        }`}
-                                      />
-                                    </div>
-                                  </CollapsibleTrigger>
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: 1.5 }}
+                                >
+                                  <Collapsible open={expandedAssessments.has(assessment.id)}>
+                                    <CollapsibleTrigger
+                                      onClick={() => toggleExpanded(assessment.id)}
+                                      className="w-full"
+                                    >
+                                      <motion.div
+                                        className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg hover:shadow-md cursor-pointer"
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <Brain className="h-5 w-5 text-purple-600" />
+                                          <span className="font-bold text-purple-900 font-['Plus_Jakarta_Sans']">Personality Insights</span>
+                                        </div>
+                                        <motion.div
+                                          animate={{ rotate: expandedAssessments.has(assessment.id) ? 180 : 0 }}
+                                          transition={{ duration: 0.3 }}
+                                        >
+                                          <ChevronDown className="h-5 w-5 text-purple-600" />
+                                        </motion.div>
+                                      </motion.div>
+                                    </CollapsibleTrigger>
 
-                                  <CollapsibleContent>
-                                    <div className="mt-4 space-y-4 p-4 border border-purple-100 rounded-lg">
-                                      {(() => {
-                                        const typeInfo = personalityInsights[assessment.results.primaryType || ''];
-                                        return (
-                                          <>
-                                            {/* Work Style */}
-                                            <div>
-                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                                <Briefcase className="h-4 w-4 text-blue-600" />
-                                                Your Work Style
-                                              </h5>
-                                              <p className="text-sm text-gray-700">{typeInfo.workStyle}</p>
-                                            </div>
+                                    <CollapsibleContent>
+                                      <AnimatePresence>
+                                        {expandedAssessments.has(assessment.id) && (
+                                          <motion.div
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            variants={{
+                                              hidden: { opacity: 0, height: 0 },
+                                              visible: {
+                                                opacity: 1,
+                                                height: "auto",
+                                                transition: {
+                                                  staggerChildren: 0.1,
+                                                  delayChildren: 0.1
+                                                }
+                                              }
+                                            }}
+                                            className="mt-4 space-y-4 p-5 border border-purple-100 rounded-lg bg-white shadow-sm"
+                                          >
+                                            {(() => {
+                                              const typeInfo = personalityInsights[assessment.results.primaryType || ''];
+                                              return (
+                                                <>
+                                                  {/* Work Style */}
+                                                  <motion.div
+                                                    variants={{
+                                                      hidden: { opacity: 0, x: -20 },
+                                                      visible: { opacity: 1, x: 0 }
+                                                    }}
+                                                  >
+                                                    <h5 className="text-sm font-bold mb-2 flex items-center gap-2 font-['Plus_Jakarta_Sans']">
+                                                      <Briefcase className="h-4 w-4 text-blue-600" />
+                                                      Your Work Style
+                                                    </h5>
+                                                    <p className="text-sm text-gray-700 leading-relaxed font-['Inter']">{typeInfo.workStyle}</p>
+                                                  </motion.div>
 
-                                            {/* Strengths */}
-                                            <div>
-                                              <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                                <Award className="h-4 w-4 text-green-600" />
-                                                Top Strengths
-                                              </h5>
-                                              <ul className="space-y-1">
-                                                {typeInfo.strengths.map((strength, idx) => (
-                                                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                                    <span className="text-green-600 mt-0.5">•</span>
-                                                    {strength}
-                                                  </li>
-                                                ))}
-                                              </ul>
-                                            </div>
+                                                  {/* Strengths */}
+                                                  <motion.div
+                                                    variants={{
+                                                      hidden: { opacity: 0, x: -20 },
+                                                      visible: { opacity: 1, x: 0 }
+                                                    }}
+                                                  >
+                                                    <h5 className="text-sm font-bold mb-2 flex items-center gap-2 font-['Plus_Jakarta_Sans']">
+                                                      <Award className="h-4 w-4 text-green-600" />
+                                                      Top Strengths
+                                                    </h5>
+                                                    <ul className="space-y-1.5">
+                                                      {typeInfo.strengths.map((strength, idx) => (
+                                                        <motion.li
+                                                          key={idx}
+                                                          initial={{ opacity: 0, x: -10 }}
+                                                          animate={{ opacity: 1, x: 0 }}
+                                                          transition={{ delay: 0.2 + idx * 0.05 }}
+                                                          className="text-sm text-gray-700 flex items-start gap-2 font-['Inter']"
+                                                        >
+                                                          <span className="text-green-600 mt-0.5 text-base">•</span>
+                                                          {strength}
+                                                        </motion.li>
+                                                      ))}
+                                                    </ul>
+                                                  </motion.div>
 
                                             {/* Motivators */}
                                             <div>
@@ -1315,12 +1474,15 @@ export const ProfilePageTabbed: React.FC = () => {
                                                 ))}
                                               </ul>
                                             </div>
-                                          </>
+                                                                                          </>
                                         );
                                       })()}
-                                    </div>
-                                  </CollapsibleContent>
-                                </Collapsible>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </CollapsibleContent>
+                                  </Collapsible>
+                                </motion.div>
                               )}
 
                               {/* Career Matches Section */}
@@ -1345,18 +1507,27 @@ export const ProfilePageTabbed: React.FC = () => {
                                 </div>
                               )}
 
-                              {/* Action Buttons */}
-                              <div className="flex gap-3">
-                                <Button variant="outline" size="sm">
-                                  <Download className="mr-2 h-3 w-3" />
-                                  Download PDF
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <Share2 className="mr-2 h-3 w-3" />
-                                  Share
-                                </Button>
-                              </div>
-                            </div>
+                              {/* Action Buttons with Animation */}
+                              <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 2 }}
+                                className="flex gap-3"
+                              >
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button variant="outline" size="sm" className="font-['Inter']">
+                                    <Download className="mr-2 h-3 w-3" />
+                                    Download PDF
+                                  </Button>
+                                </motion.div>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Button variant="outline" size="sm" className="font-['Inter']">
+                                    <Share2 className="mr-2 h-3 w-3" />
+                                    Share
+                                  </Button>
+                                </motion.div>
+                              </motion.div>
+                            </motion.div>
                           )}
                         </CardContent>
                       </Card>
