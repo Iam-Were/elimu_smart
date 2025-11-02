@@ -68,6 +68,13 @@ interface RiasecTypeInfo {
   code: string;
   name: string;
   description: string;
+  workStyle: string;
+  strengths: string[];
+  motivators: string[];
+  teamRole: string;
+  famousKenyans: string[];
+  learningStyle: string;
+  decisionMaking: string;
 }
 
 const riasecTypes: Record<string, RiasecType> = {
