@@ -191,13 +191,21 @@ const CommunityQA: React.FC = () => {
       return;
     }
 
+    // Validate category selection (mandatory)
+    if (!selectedCategory || selectedCategory === 'all') {
+      toast.error('Please select a category', {
+        description: 'Category is required to help counselors find your question'
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const Parse = await getParse();
       await Parse.Cloud.run('submitQuestion', {
         title: questionTitle,
         question: questionDetails,
-        category: selectedCategory === 'all' ? 'general' : selectedCategory
+        category: selectedCategory
       });
 
       toast.success('Question posted successfully!', {
@@ -205,6 +213,7 @@ const CommunityQA: React.FC = () => {
       });
       setQuestionTitle('');
       setQuestionDetails('');
+      setSelectedCategory('all');
       setShowAskForm(false);
       await reloadQuestions();
     } catch (error) {
@@ -475,6 +484,28 @@ const CommunityQA: React.FC = () => {
                 onChange={(e) => setQuestionTitle(e.target.value)}
                 disabled={isSubmitting}
               />
+
+              {/* Category Selection - MANDATORY */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedCategory === 'all' ? '' : selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                >
+                  <option value="">Select a category...</option>
+                  {categories.filter(c => c.value !== 'all').map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <Textarea
                 placeholder="Provide details: your grade level, subjects, concerns..."
                 rows={5}
@@ -485,7 +516,7 @@ const CommunityQA: React.FC = () => {
               <div className="flex gap-2">
                 <Button
                   onClick={handlePostQuestion}
-                  disabled={isSubmitting || !questionTitle.trim() || !questionDetails.trim()}
+                  disabled={isSubmitting || !questionTitle.trim() || !questionDetails.trim() || !selectedCategory || selectedCategory === 'all'}
                 >
                   {isSubmitting ? 'Posting...' : 'Post Question'}
                 </Button>
@@ -495,6 +526,7 @@ const CommunityQA: React.FC = () => {
                     setShowAskForm(false);
                     setQuestionTitle('');
                     setQuestionDetails('');
+                    setSelectedCategory('all');
                   }}
                   disabled={isSubmitting}
                 >

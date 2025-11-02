@@ -73,6 +73,7 @@ export function BookingModal({ open, onClose, onSuccess }: BookingModalProps) {
     if (step === 'datetime') {
       updateWeekDates();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, weekOffset]);
 
   // Load time slots when date or duration changes
@@ -80,6 +81,7 @@ export function BookingModal({ open, onClose, onSuccess }: BookingModalProps) {
     if (selectedDate && selectedCounselor) {
       loadTimeSlots();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, duration, selectedCounselor]);
 
   const loadCounselors = async () => {

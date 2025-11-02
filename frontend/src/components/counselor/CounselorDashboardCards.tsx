@@ -228,12 +228,12 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
   const getCardSizeClasses = () => {
     switch (size) {
       case 'compact':
-        return 'min-h-[100px]'; // Essential metrics only
+        return 'min-h-[140px]'; // Essential metrics only
       case 'large':
-        return 'min-h-[140px]'; // Key information with breathing room
+        return 'min-h-[180px]'; // Key information with breathing room
       case 'medium':
       default:
-        return 'min-h-[120px]'; // Balanced content display
+        return 'min-h-[160px]'; // Balanced content display
     }
   };
   
@@ -245,7 +245,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         return 'grid grid-cols-1 lg:grid-cols-2 gap-5';
       case 'medium':
       default:
-        return 'grid grid-cols-1 md:grid-cols-2 gap-5';
+        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
     }
   };
 
