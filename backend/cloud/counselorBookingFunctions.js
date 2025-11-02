@@ -47,12 +47,30 @@ Parse.Cloud.define('initializeCounselorBookingSchema', async () => {
   try {
     console.log('🚀 Starting Counselor Booking schema initialization...');
 
+    // Get a real counselor user to use as pointer reference
+    const counselorQuery = new Parse.Query(Parse.User);
+    counselorQuery.equalTo('role', 'counselor');
+    const counselor = await counselorQuery.first({ useMasterKey: true });
+
+    if (!counselor) {
+      throw new Error('No counselor found. Please create a counselor user first.');
+    }
+
+    // Get a real student user to use as pointer reference
+    const studentQuery = new Parse.Query(Parse.User);
+    studentQuery.equalTo('role', 'student');
+    const student = await studentQuery.first({ useMasterKey: true });
+
+    if (!student) {
+      throw new Error('No student found. Please create a student user first.');
+    }
+
     // 1. Create CounselorAvailability table
     console.log('1️⃣ Creating CounselorAvailability table...');
     const AvailabilityClass = Parse.Object.extend('CounselorAvailability');
     const dummyAvailability = new AvailabilityClass();
 
-    dummyAvailability.set('counselor', new Parse.User()); // Pointer to _User
+    dummyAvailability.set('counselor', counselor); // Pointer to real counselor
     dummyAvailability.set('dayOfWeek', 1); // 0=Sunday, 6=Saturday
     dummyAvailability.set('startTime', '09:00'); // HH:MM format
     dummyAvailability.set('endTime', '18:00');
@@ -70,8 +88,8 @@ Parse.Cloud.define('initializeCounselorBookingSchema', async () => {
     const BookingClass = Parse.Object.extend('SessionBooking');
     const dummyBooking = new BookingClass();
 
-    dummyBooking.set('counselor', new Parse.User()); // Pointer to counselor
-    dummyBooking.set('student', new Parse.User()); // Pointer to student
+    dummyBooking.set('counselor', counselor); // Pointer to real counselor
+    dummyBooking.set('student', student); // Pointer to real student
     dummyBooking.set('sessionDate', new Date());
     dummyBooking.set('startTime', '10:00');
     dummyBooking.set('endTime', '11:00');
