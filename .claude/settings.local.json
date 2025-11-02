@@ -35,7 +35,10 @@
       "Bash(cat:*)",
       "Bash(scp:*)",
       "Bash(python3:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(git reset:*)",
+      "WebFetch(domain:personalityjunkie.com)"
     ],
     "deny": [],
     "ask": [],

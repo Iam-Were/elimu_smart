@@ -49,6 +49,7 @@ import { useThemeContext } from '../../hooks/useThemeContext';
 import type { ThemeRole, User as UserType } from '../../types';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { getRoleColor } from '../../constants/theme';
+import { useChat } from '../../hooks/useChat';
 
 interface Sprint18NavigationProps {
   className?: string;
@@ -61,6 +62,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { currentTheme } = useThemeContext();
+  const { unreadCount: unreadMessageCount } = useChat();
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -447,6 +449,27 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
         {/* LinkedIn-Style Profile Section - Sprint 18 Requirement - Scroll-based animations */}
         <div className={cn("flex items-center space-x-2 transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
+          {/* Messages - Desktop */}
+          <div className="hidden md:block">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/inbox')}
+              className="relative p-2"
+              aria-label="Messages"
+            >
+              <MessageSquare className="h-5 w-5" />
+              {unreadMessageCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.18)]"
+                >
+                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+
           {/* Notifications - Desktop */}
           <div className="hidden md:block">
             <NotificationCenter />

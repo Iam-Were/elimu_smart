@@ -289,4 +289,84 @@ function generateNextSteps(primaryType) {
   ];
 }
 
+/**
+ * Get RIASEC Personality Type Information (16-Personality Style)
+ * Returns detailed personality characteristics, top 3 career matches, strengths, etc.
+ *
+ * @param {string} typeCode - RIASEC type code (R, I, A, S, E, C)
+ * @returns {object} Comprehensive personality type information
+ */
+Parse.Cloud.define('getRiasecPersonalityType', async (request) => {
+  const { typeCode } = request.params;
+
+  if (!typeCode || !/^[RIASEC]$/.test(typeCode)) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Invalid RIASEC type code. Must be R, I, A, S, E, or C.');
+  }
+
+  try {
+    const RiasecTypeInfo = Parse.Object.extend('RiasecTypeInfo');
+    const query = new Parse.Query(RiasecTypeInfo);
+    query.equalTo('code', typeCode);
+    query.equalTo('isActive', true);
+
+    const typeInfo = await query.first({ useMasterKey: true });
+
+    if (!typeInfo) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, `No personality type information found for code: ${typeCode}`);
+    }
+
+    // Return comprehensive type information
+    return {
+      code: typeInfo.get('code'),
+      name: typeInfo.get('name'),
+      personalityTypeName: typeInfo.get('personalityTypeName'), // "The Craftsman", "The Analyst", etc.
+      tagline: typeInfo.get('tagline'),
+      description: typeInfo.get('description'),
+      coreTraits: typeInfo.get('coreTraits') || [],
+      strengths: typeInfo.get('strengths') || [],
+      challenges: typeInfo.get('challenges') || [],
+      workStyle: typeInfo.get('workStyle'),
+      idealEnvironment: typeInfo.get('idealEnvironment'),
+      motivators: typeInfo.get('motivators') || [],
+      learningStyle: typeInfo.get('learningStyle'),
+      decisionMaking: typeInfo.get('decisionMaking'),
+      teamRole: typeInfo.get('teamRole'),
+      top3CareerMatches: typeInfo.get('top3CareerMatches') || [],
+      famousKenyans: typeInfo.get('famousKenyans') || [],
+      developmentTips: typeInfo.get('developmentTips') || [],
+      avatarSuggestions: typeInfo.get('avatarSuggestions') || {}
+    };
+
+  } catch (error) {
+    console.error('Error fetching RIASEC personality type:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch personality type information');
+  }
+});
+
+/**
+ * Get All RIASEC Personality Types (for comparison/selection)
+ */
+Parse.Cloud.define('getAllRiasecPersonalityTypes', async () => {
+  try {
+    const RiasecTypeInfo = Parse.Object.extend('RiasecTypeInfo');
+    const query = new Parse.Query(RiasecTypeInfo);
+    query.equalTo('isActive', true);
+    query.ascending('code'); // R, I, A, S, E, C order
+
+    const types = await query.find({ useMasterKey: true });
+
+    return types.map(type => ({
+      code: type.get('code'),
+      name: type.get('name'),
+      personalityTypeName: type.get('personalityTypeName'),
+      tagline: type.get('tagline'),
+      description: type.get('description')
+    }));
+
+  } catch (error) {
+    console.error('Error fetching all RIASEC personality types:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch personality types');
+  }
+});
+
 console.log('✅ RIASEC Scoring Cloud Functions loaded');

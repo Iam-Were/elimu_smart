@@ -48,6 +48,7 @@ import { BookingModal } from '../components/student/BookingModal';
 import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
 import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
 import { AddSkillsDialog } from '@/components/profile/AddSkillsDialog';
+import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from 'recharts';
 import { createAvatar } from '@dicebear/core';
@@ -142,6 +143,12 @@ export const ProfilePageTabbed: React.FC = () => {
   const [showAddProjectDialog, setShowAddProjectDialog] = useState(false);
   const [showAddExperienceDialog, setShowAddExperienceDialog] = useState(false);
   const [showAddSkillsDialog, setShowAddSkillsDialog] = useState(false);
+  const [personalityModalOpen, setPersonalityModalOpen] = useState(false);
+  const [selectedPersonalityType, setSelectedPersonalityType] = useState<{
+    type: string;
+    hollandCode?: string;
+    scores?: Record<string, number>;
+  } | null>(null);
 
   const [editFormData, setEditFormData] = useState({
     firstName: '',
@@ -1232,10 +1239,27 @@ export const ProfilePageTabbed: React.FC = () => {
                                   transition={{ delay: 0.3, duration: 0.5 }}
                                   className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-100 shadow-sm"
                                 >
-                                  <h4 className="text-base font-bold mb-4 flex items-center gap-2 font-['Plus_Jakarta_Sans']">
-                                    <Trophy className="h-5 w-5 text-orange-600" />
-                                    Your Personality Profile
-                                  </h4>
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-base font-bold flex items-center gap-2 font-['Plus_Jakarta_Sans']">
+                                      <Trophy className="h-5 w-5 text-orange-600" />
+                                      Your Personality Profile
+                                    </h4>
+                                    <Button
+                                      onClick={() => {
+                                        setSelectedPersonalityType({
+                                          type: assessment.results.primaryType || '',
+                                          hollandCode: assessment.results.hollandCode || '',
+                                          scores: assessment.results.scores || {},
+                                        });
+                                        setPersonalityModalOpen(true);
+                                      }}
+                                      size="sm"
+                                      className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-md"
+                                    >
+                                      <Brain className="h-4 w-4 mr-2" />
+                                      Learn More
+                                    </Button>
+                                  </div>
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Radar Chart with entrance animation */}
                                     <motion.div
@@ -1709,6 +1733,17 @@ export const ProfilePageTabbed: React.FC = () => {
           existingSkills={skills}
           userRiasecType={(user as { riasecType?: string })?.riasecType}
           userProjects={projects}
+        />
+      )}
+
+      {/* Personality Report Modal */}
+      {selectedPersonalityType && (
+        <PersonalityReportModal
+          open={personalityModalOpen}
+          onOpenChange={setPersonalityModalOpen}
+          riasecType={selectedPersonalityType.type}
+          hollandCode={selectedPersonalityType.hollandCode}
+          scores={selectedPersonalityType.scores}
         />
       )}
     </div>

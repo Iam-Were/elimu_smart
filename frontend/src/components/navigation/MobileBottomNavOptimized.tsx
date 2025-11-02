@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useChat } from '@/hooks/useChat';
 
 interface NavItem {
   id: string;
@@ -25,39 +26,40 @@ interface NavItem {
  * - Clean, simple design following mobile best practices
  */
 
-// Primary 4 navigation items only
-const navItems: NavItem[] = [
-  {
-    id: 'home',
-    label: 'Home',
-    icon: Home,
-    path: '/dashboard',
-  },
-  {
-    id: 'assessment',
-    label: 'Assessment',
-    icon: ClipboardCheck,
-    path: '/assessment',
-  },
-  {
-    id: 'messages',
-    label: 'Messages',
-    icon: MessageCircle,
-    path: '/inbox',
-    showBadge: true,
-    badgeCount: 3,
-  },
-  {
-    id: 'guidance',
-    label: 'Guidance',
-    icon: Heart,
-    path: '/guidance',
-  },
-];
-
 export const MobileBottomNavOptimized: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { unreadCount: unreadMessageCount } = useChat();
+
+  // Primary 4 navigation items with dynamic unread count
+  const navItems: NavItem[] = [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: Home,
+      path: '/dashboard',
+    },
+    {
+      id: 'assessment',
+      label: 'Assessment',
+      icon: ClipboardCheck,
+      path: '/assessment',
+    },
+    {
+      id: 'messages',
+      label: 'Messages',
+      icon: MessageCircle,
+      path: '/inbox',
+      showBadge: true,
+      badgeCount: unreadMessageCount,
+    },
+    {
+      id: 'guidance',
+      label: 'Guidance',
+      icon: Heart,
+      path: '/guidance',
+    },
+  ];
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
