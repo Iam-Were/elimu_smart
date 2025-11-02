@@ -200,7 +200,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border border-gray-200"
+                  className="bg-white p-6 rounded-xl border border-gray-300"
                 >
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -223,12 +223,12 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                         return (
                           <div key={type}>
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-bold">
+                              <span className="text-sm font-bold text-gray-900">
                                 {type} - {typeNames[type]}
                               </span>
                               <div className="flex items-center gap-2">
-                                <span className="text-lg font-extrabold text-gray-900">{score}</span>
-                                <span className="text-xs text-gray-500">({percentage.toFixed(1)}%)</span>
+                                <span className="text-lg font-extrabold text-gray-950">{score}</span>
+                                <span className="text-sm text-gray-700">({percentage.toFixed(1)}%)</span>
                               </div>
                             </div>
                             <div className="h-4 bg-gray-200 rounded-full overflow-hidden shadow-inner">
@@ -253,7 +253,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                 transition={{ delay: 0.1 }}
                 className={`p-6 rounded-xl ${typeBgColors[riasecType]} border-l-4 border-${riasecType === 'R' ? 'red' : riasecType === 'I' ? 'blue' : riasecType === 'A' ? 'purple' : riasecType === 'S' ? 'green' : riasecType === 'E' ? 'yellow' : 'gray'}-500`}
               >
-                <p className="text-lg leading-relaxed">{personalityData.description}</p>
+                <p className="text-lg leading-relaxed text-gray-900">{personalityData.description}</p>
               </motion.div>
 
               {/* Core Traits */}
@@ -273,10 +273,10 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 + index * 0.05 }}
-                      className="flex items-start gap-2 p-3 bg-white rounded-lg border border-gray-200"
+                      className="flex items-start gap-2 p-3 bg-white rounded-lg border border-gray-300"
                     >
                       <CheckCircle2 className={`h-5 w-5 ${typeTextColors[riasecType]} flex-shrink-0 mt-0.5`} />
-                      <span className="text-sm">{trait}</span>
+                      <span className="text-sm text-gray-900">{trait}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -292,7 +292,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   <Briefcase className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
                   <h3 className="text-lg font-bold">How You Work Best</h3>
                 </div>
-                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-200 leading-relaxed">
+                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-300 leading-relaxed">
                   {personalityData.workStyle}
                 </p>
               </motion.div>
@@ -307,7 +307,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   <Target className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
                   <h3 className="text-lg font-bold">Ideal Work Environment</h3>
                 </div>
-                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-200 leading-relaxed">
+                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-300 leading-relaxed">
                   {personalityData.idealEnvironment}
                 </p>
               </motion.div>
@@ -337,7 +337,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="p-4 bg-white rounded-lg border border-gray-200"
+                  className="p-4 bg-white rounded-lg border border-gray-300"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <BookOpen className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
@@ -350,7 +350,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.75 }}
-                  className="p-4 bg-white rounded-lg border border-gray-200"
+                  className="p-4 bg-white rounded-lg border border-gray-300"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Lightbulb className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
@@ -370,7 +370,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   <Users className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
                   <h3 className="text-lg font-bold">Your Role in Teams</h3>
                 </div>
-                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-200 leading-relaxed">
+                <p className="text-sm text-gray-700 bg-white p-4 rounded-lg border border-gray-300 leading-relaxed">
                   {personalityData.teamRole}
                 </p>
               </motion.div>

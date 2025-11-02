@@ -16,7 +16,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { getParse } from '@/config/parse';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, ResponsiveContainer } from 'recharts';
 // TODO: Uncomment when custom Lottie animations are ready
 // import Lottie from 'lottie-react';
 
@@ -116,7 +116,6 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
   };
 
   // TODO: Re-enable when implementing 16Personalities avatars
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fetchLottieAnimation = async () => {
     try {
       const url = getLottieAvatar(primaryType);
@@ -213,13 +212,37 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                 <h2 className="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-lg">
                   {personalityData.personalityTypeName}
                 </h2>
-                <div className="flex items-center gap-2 justify-center mb-3">
+                <div className="flex items-center gap-2 justify-center mb-2">
                   <Star className="h-5 w-5 fill-white" />
                   <span className="text-lg font-semibold">{primaryType} - {personalityData.name}</span>
                 </div>
+                {/* Normalized Percentage Display */}
+                <div className="text-sm text-white/90 font-medium">
+                  {(() => {
+                    const total = Object.values(scores).reduce((sum, s) => sum + s, 0);
+                    const percentage = ((scores[primaryType] / total) * 100).toFixed(1);
+                    return `${percentage}% ${primaryType} match (${scores[primaryType]}/20 raw score)`;
+                  })()}
+                </div>
               </motion.div>
 
-              {/* Holland Code Badge - Below personality type */}
+              {/* Top Career Match */}
+              {personalityData.top3CareerMatches?.[0] && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="flex items-center gap-2 justify-center"
+                >
+                  <Target className="h-5 w-5 fill-white text-white" />
+                  <span className="text-lg font-semibold">Top Match: {personalityData.top3CareerMatches[0].career}</span>
+                  <Badge className="bg-white/30 text-white border-white/50 text-sm px-3 py-1">
+                    {personalityData.top3CareerMatches[0].compatibility.toFixed(0)}% Compatible
+                  </Badge>
+                </motion.div>
+              )}
+
+              {/* Holland Code Badge - Below top career match */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -332,45 +355,58 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
               </ResponsiveContainer>
             </div>
 
-            {/* Right: Bar Chart */}
+            {/* Right: Horizontal Progress Bars (16personalities style) */}
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Score Breakdown</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={(() => {
-                  const typeColors: Record<string, string> = {
-                    R: '#ef4444', I: '#3b82f6', A: '#a855f7',
-                    S: '#10b981', E: '#f59e0b', C: '#6b7280'
+              <h3 className="text-lg font-bold text-gray-900 mb-6 text-center">Score Breakdown</h3>
+              <div className="space-y-4">
+                {(() => {
+                  const typeInfo: Record<string, { name: string; gradient: string }> = {
+                    R: { name: 'Realistic', gradient: 'from-red-500 to-red-600' },
+                    I: { name: 'Investigative', gradient: 'from-blue-500 to-blue-600' },
+                    A: { name: 'Artistic', gradient: 'from-purple-500 to-purple-600' },
+                    S: { name: 'Social', gradient: 'from-green-500 to-green-600' },
+                    E: { name: 'Enterprising', gradient: 'from-yellow-500 to-yellow-600' },
+                    C: { name: 'Conventional', gradient: 'from-gray-500 to-gray-600' }
                   };
-                  return Object.entries(scores)
-                    .sort(([, a], [, b]) => (b as number) - (a as number))
-                    .map(([type, score]) => ({
-                      type,
-                      name: { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' }[type],
-                      score: score as number,
-                      fill: typeColors[type],
-                      percentage: (((score as number) / Object.values(scores).reduce((sum, s) => sum + s, 0)) * 100).toFixed(1)
-                    }));
-                })()}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="type" tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} />
-                  <YAxis domain={[0, 20]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
-                    formatter={(value, _name, props) => [`${value}/20 (${props.payload.percentage}%)`, props.payload.name]}
-                  />
-                  <Bar dataKey="score" radius={[8, 8, 0, 0]}>
-                    {Object.entries(scores)
-                      .sort(([, a], [, b]) => (b as number) - (a as number))
-                      .map(([type], index) => {
-                        const colors: Record<string, string> = {
-                          R: '#ef4444', I: '#3b82f6', A: '#a855f7',
-                          S: '#10b981', E: '#f59e0b', C: '#6b7280'
-                        };
-                        return <Cell key={`cell-${index}`} fill={colors[type]} />;
-                      })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+
+                  const total = Object.values(scores).reduce((sum, s) => sum + s, 0);
+                  const sortedEntries = Object.entries(scores).sort(([, a], [, b]) => (b as number) - (a as number));
+                  const highestScore = sortedEntries[0][1] as number;
+
+                  return sortedEntries.map(([type, score], index) => {
+                    const percentage = ((score as number / total) * 100).toFixed(1);
+                    const isTopScore = score === highestScore;
+
+                    return (
+                      <motion.div
+                        key={type}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + index * 0.1 }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-gray-900 w-16">{type} - {typeInfo[type].name}</span>
+                            {isTopScore && <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-extrabold text-gray-900">{percentage}%</span>
+                            <span className="text-xs text-gray-600">({score}/20)</span>
+                          </div>
+                        </div>
+                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percentage}%` }}
+                            transition={{ delay: 0.3 + index * 0.1, duration: 0.8, ease: "easeOut" }}
+                            className={`h-full bg-gradient-to-r ${typeInfo[type].gradient} rounded-full`}
+                          />
+                        </div>
+                      </motion.div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
           </div>
         </Card>
