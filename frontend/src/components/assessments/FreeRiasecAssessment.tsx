@@ -25,8 +25,11 @@ import {
   Trophy,
   Sparkles,
   Loader2,
-  BookOpen
-  // Download, MessageCircle, ExternalLink - will be used for PDF and action buttons
+  BookOpen,
+  Download,
+  MessageCircle,
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -754,6 +757,181 @@ export const FreeRiasecAssessment: React.FC = () => {
     ];
   };
 
+  const downloadPDF = async () => {
+    if (!results) return;
+
+    try {
+      toast.info('Preparing your PDF report...', { duration: 2000 });
+
+      // Dynamically import jsPDF and html2canvas
+      const { default: jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
+      const { default: autoTable } = await import('jspdf-autotable');
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      let yPosition = 20;
+
+      // Cover Page
+      pdf.setFontSize(28);
+      pdf.setTextColor(249, 115, 22); // Orange
+      pdf.text('RIASEC Career Assessment', pageWidth / 2, yPosition, { align: 'center' });
+
+      yPosition += 10;
+      pdf.setFontSize(18);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Results Report', pageWidth / 2, yPosition, { align: 'center' });
+
+      yPosition += 15;
+      pdf.setFontSize(14);
+      pdf.text(`Holland Code: ${results.hollandCode}`, pageWidth / 2, yPosition, { align: 'center' });
+
+      yPosition += 10;
+      pdf.setFontSize(12);
+      pdf.text(`Primary Type: ${riasecTypes[results.primaryType].name}`, pageWidth / 2, yPosition, { align: 'center' });
+
+      yPosition += 8;
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: 'center' });
+
+      // Capture Radar Chart
+      const radarElement = document.getElementById('radar-chart');
+      if (radarElement) {
+        yPosition += 15;
+        const canvas = await html2canvas(radarElement, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = pageWidth - 2 * margin;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        if (yPosition + imgHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        pdf.addImage(imgData, 'PNG', margin, yPosition, imgWidth, imgHeight);
+        yPosition += imgHeight + 10;
+      }
+
+      // RIASEC Scores Table
+      pdf.addPage();
+      yPosition = margin;
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Your RIASEC Scores', margin, yPosition);
+      yPosition += 10;
+
+      const scoresData = Object.entries(results.scores).map(([code, score]) => [
+        code,
+        riasecTypes[code as keyof typeof riasecTypes].name,
+        `${score}%`
+      ]);
+
+      autoTable(pdf, {
+        startY: yPosition,
+        head: [['Code', 'Type', 'Score']],
+        body: scoresData,
+        theme: 'striped',
+        headStyles: { fillColor: [249, 115, 22] }
+      });
+
+      // Personality Insights
+      // @ts-expect-error - lastAutoTable is added by jspdf-autotable plugin
+      yPosition = pdf.lastAutoTable.finalY + 15;
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      pdf.setFontSize(16);
+      pdf.text('Personality Insights', margin, yPosition);
+      yPosition += 10;
+
+      const insights = [
+        ['Work Style', riasecTypes[results.primaryType].workStyle],
+        ['Learning Style', riasecTypes[results.primaryType].learningStyle],
+        ['Decision Making', riasecTypes[results.primaryType].decisionMaking],
+        ['Team Role', riasecTypes[results.primaryType].teamRole]
+      ];
+
+      autoTable(pdf, {
+        startY: yPosition,
+        body: insights,
+        theme: 'plain',
+        styles: { fontSize: 10 },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } }
+      });
+
+      // Career Matches
+      // @ts-expect-error - lastAutoTable is added by jspdf-autotable plugin
+      yPosition = pdf.lastAutoTable.finalY + 15;
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      pdf.setFontSize(16);
+      pdf.text('Top Career Matches', margin, yPosition);
+      yPosition += 10;
+
+      const careersData = results.careerMatches.slice(0, 10).map(match => [
+        match.career,
+        `${Math.round(match.compatibility)}%`,
+        match.kuccpsPathway
+      ]);
+
+      autoTable(pdf, {
+        startY: yPosition,
+        head: [['Career', 'Match', 'KUCCPS Pathway']],
+        body: careersData,
+        theme: 'striped',
+        headStyles: { fillColor: [249, 115, 22] }
+      });
+
+      // Next Steps
+      // @ts-expect-error - lastAutoTable is added by jspdf-autotable plugin
+      yPosition = pdf.lastAutoTable.finalY + 15;
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      pdf.setFontSize(16);
+      pdf.text('Your Next Steps', margin, yPosition);
+      yPosition += 10;
+
+      results.nextSteps.forEach((step, idx) => {
+        if (yPosition > pageHeight - 20) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+        pdf.setFontSize(10);
+        pdf.text(`${idx + 1}. ${step}`, margin, yPosition);
+        yPosition += 7;
+      });
+
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(
+        'Generated by Elimu Smart - Kenya Career Guidance Platform',
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: 'center' }
+      );
+
+      // Save PDF
+      pdf.save(`RIASEC_Results_${results.hollandCode}_${new Date().toISOString().split('T')[0]}.pdf`);
+
+      toast.success('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Failed to generate PDF. Please try again.');
+    }
+  };
+
   const goToPrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
@@ -1115,7 +1293,7 @@ export const FreeRiasecAssessment: React.FC = () => {
           <CardContent>
             <div className="grid gap-4">
               {results.careerMatches.slice(0, 6).map((match, idx) => (
-                <div key={idx} className="p-4 border rounded-lg">
+                <div key={idx} className="p-4 border rounded-lg hover:border-orange-300 transition-colors">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-semibold text-lg">{match.career}</h4>
                     <Badge className="bg-green-100 text-green-800">
@@ -1125,7 +1303,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     KUCCPS Pathway: {match.kuccpsPathway}
                   </p>
-                  <ul className="text-sm space-y-1">
+                  <ul className="text-sm space-y-1 mb-4">
                     {match.reasonsForMatch.map((reason, ridx) => (
                       <li key={ridx} className="flex items-center gap-2">
                         <Star className="h-3 w-3 text-yellow-500" />
@@ -1133,6 +1311,36 @@ export const FreeRiasecAssessment: React.FC = () => {
                       </li>
                     ))}
                   </ul>
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate('/career-explorer')}
+                      className="text-xs"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Explore Career
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate('/university-finder')}
+                      className="text-xs"
+                    >
+                      <BookOpen className="h-3 w-3 mr-1" />
+                      Find Courses
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate('/guidance/community-qa')}
+                      className="text-xs"
+                    >
+                      <MessageCircle className="h-3 w-3 mr-1" />
+                      Ask Counselor
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1161,8 +1369,39 @@ export const FreeRiasecAssessment: React.FC = () => {
           </CardContent>
         </Card>
 
-        <div className="flex gap-4">
-          <Button 
+        {/* Important Disclaimer */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex gap-3">
+              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2 text-sm text-blue-900">
+                <h4 className="font-semibold">Remember: Use Your Code as a Guide, Not a Cage</h4>
+                <p>
+                  Your RIASEC results are a <strong>starting point for conversation</strong>, not a final answer.
+                  You resemble all 6 personality types to varying degrees - there are 720 possible combinations!
+                </p>
+                <p>
+                  This assessment does not account for your unique skills, experiences, financial circumstances,
+                  or life goals. Use these results alongside other tools like:
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Skills assessments and real-world internships</li>
+                  <li>Conversations with counselors and professionals</li>
+                  <li>Subject-to-career mapping for KCSE requirements</li>
+                  <li>University course exploration and KUCCPS planning</li>
+                </ul>
+                <p className="text-xs mt-3 text-blue-700">
+                  <strong>Note:</strong> Your interests may evolve over time. Consider retaking this assessment
+                  periodically as you gain new experiences.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4">
+          <Button
             onClick={() => {
               setShowResults(false);
               setCurrentQuestion(0);
@@ -1170,14 +1409,32 @@ export const FreeRiasecAssessment: React.FC = () => {
               setResults(null);
             }}
             variant="outline"
+            size="lg"
           >
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Retake Assessment
+          </Button>
+          <Button
+            onClick={downloadPDF}
+            variant="outline"
+            size="lg"
+            className="bg-purple-50 hover:bg-purple-100 border-purple-300"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF Report
+          </Button>
+          <Button
+            onClick={() => navigate('/guidance/community-qa')}
+            variant="outline"
+            size="lg"
+          >
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Talk to Counselor
           </Button>
           <Button
             onClick={async () => {
               if (assessmentId) {
                 try {
-                  // Update assessment as completed with 100% progress
                   await callCloudFunction(
                     'updateAssessmentProgress',
                     {
@@ -1196,6 +1453,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 navigate('/dashboard');
               }
             }}
+            size="lg"
           >
             View Dashboard
           </Button>
