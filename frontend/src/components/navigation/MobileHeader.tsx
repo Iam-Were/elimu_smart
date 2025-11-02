@@ -22,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useThemeContext } from '@/hooks/useThemeContext';
+import { getRoleColor } from '@/constants/theme';
 
 /**
  * LinkedIn-style Mobile Header
@@ -33,8 +35,11 @@ import { useAuth } from '@/hooks/useAuth';
 export const MobileHeader: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { currentTheme } = useThemeContext();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const themeColor = getRoleColor(currentTheme);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +62,10 @@ export const MobileHeader: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: `linear-gradient(to bottom right, ${themeColor}, ${themeColor}dd)` }}
+          >
             <span className="text-white font-bold text-sm">ES</span>
           </div>
           {!isSearchExpanded && (

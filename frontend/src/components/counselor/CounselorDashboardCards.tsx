@@ -224,16 +224,16 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
     
   const displayCards = showAll ? filteredCards : filteredCards.slice(cardOffset, cardOffset + maxCards);
   
-  // LinkedIn-style card sizing - reduced heights for cleaner look
+  // Compact card sizing - reduced heights for cleaner look
   const getCardSizeClasses = () => {
     switch (size) {
       case 'compact':
-        return 'min-h-[120px]'; // Essential metrics only
+        return 'min-h-[100px]'; // Essential metrics only
       case 'large':
-        return 'min-h-[160px]'; // Key information with breathing room
+        return 'min-h-[140px]'; // Key information with breathing room
       case 'medium':
       default:
-        return 'min-h-[140px]'; // Balanced content display
+        return 'min-h-[120px]'; // Balanced content display
     }
   };
   
@@ -343,45 +343,45 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
             key={card.id} 
             className={`hover:shadow-lg transition-all duration-200 ${getCardSizeClasses()} ${getPriorityStyles(card.priority)}`}
           >
-            <CardHeader className="pb-3">
-              {/* LinkedIn-style simplified header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+            <CardHeader className="pb-2">
+              {/* Centered header with icon and title */}
+              <div className="flex flex-col items-center justify-center gap-2 text-center">
+                <div className="flex items-center gap-2">
                   <IconContainer
                     icon={card.icon}
                     emphasis={card.iconEmphasis}
                     theme="counselor"
                     size="md"
                   />
-                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                    {card.title}
-                  </CardTitle>
+                  {/* Show urgent badge next to icon */}
+                  {card.metadata.urgent && (
+                    <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                      <Bell className="h-3 w-3" />
+                    </Badge>
+                  )}
                 </div>
-                {/* Only show urgent badge - hide status badge to reduce clutter */}
-                {card.metadata.urgent && (
-                  <Badge variant="destructive" className="text-xs px-2 py-1">
-                    <Bell className="h-3 w-3" />
-                  </Badge>
-                )}
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                  {card.title}
+                </CardTitle>
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-3">
-              {/* LinkedIn-style primary metric emphasis */}
-              <div className="text-center py-2">
-                <div className="text-2xl font-bold text-slate-800 mb-1">
+            <CardContent className="space-y-2">
+              {/* Centered primary metric emphasis */}
+              <div className="text-center py-1">
+                <div className="text-2xl font-bold text-slate-800 mb-0.5">
                   {card.stats.primary}
                 </div>
                 {card.stats.secondary && (
-                  <p className="text-sm text-slate-600 leading-tight">{card.stats.secondary}</p>
+                  <p className="text-xs text-slate-600 leading-tight">{card.stats.secondary}</p>
                 )}
               </div>
 
-              {/* Show only critical next action - hide completion bars for simplicity */}
+              {/* Show only critical next action - reduced padding */}
               {card.metadata.nextAction && card.metadata.urgent && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                  <div className="text-sm font-medium text-red-700 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
+                <div className="bg-red-50 border border-red-200 rounded-md p-2">
+                  <div className="text-xs font-medium text-red-700 flex items-center justify-center gap-1.5">
+                    <AlertTriangle className="h-3 w-3" />
                     {card.metadata.nextAction}
                   </div>
                 </div>
@@ -395,9 +395,9 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               )}
             </CardContent>
 
-            <CardFooter className="pt-3">
+            <CardFooter className="pt-2">
               <Button
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm py-2"
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5"
                 asChild
               >
                 <a
