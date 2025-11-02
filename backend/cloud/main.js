@@ -3313,6 +3313,84 @@ Parse.Cloud.define('resumeRiasecAssessment', async (request) => {
   }
 });
 
+// Get RIASEC Type Personality Insights
+Parse.Cloud.define('getRiasecTypeInfo', async (request) => {
+  const { typeCode } = request.params;
+
+  // Cache key for type info (cache for 24 hours - static data)
+  const cacheKey = typeCode ? `riasec:type:${typeCode}` : 'riasec:types:all';
+
+  try {
+    // Check cache first (24 hour TTL - 86400 seconds)
+    const cachedResult = await cache.get(cacheKey);
+    if (cachedResult) {
+      console.log('✅ Cache HIT - Returning cached RIASEC type info');
+      return { ...cachedResult, fromCache: true };
+    }
+
+    console.log('❌ Cache MISS - Fetching RIASEC type info from database');
+
+    const RiasecTypeInfo = Parse.Object.extend('RiasecTypeInfo');
+    const query = new Parse.Query(RiasecTypeInfo);
+    query.equalTo('isActive', true);
+
+    let result;
+
+    if (typeCode) {
+      // Get specific type
+      query.equalTo('code', typeCode);
+      const typeInfo = await query.first({ useMasterKey: true });
+
+      if (!typeInfo) {
+        throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, `RIASEC type ${typeCode} not found`);
+      }
+
+      result = {
+        type: {
+          code: typeInfo.get('code'),
+          name: typeInfo.get('name'),
+          description: typeInfo.get('description'),
+          workStyle: typeInfo.get('workStyle'),
+          strengths: typeInfo.get('strengths'),
+          motivators: typeInfo.get('motivators'),
+          teamRole: typeInfo.get('teamRole'),
+          famousKenyans: typeInfo.get('famousKenyans'),
+          learningStyle: typeInfo.get('learningStyle'),
+          decisionMaking: typeInfo.get('decisionMaking')
+        }
+      };
+    } else {
+      // Get all types
+      query.ascending('code');
+      const types = await query.find({ useMasterKey: true });
+
+      result = {
+        types: types.map(typeInfo => ({
+          code: typeInfo.get('code'),
+          name: typeInfo.get('name'),
+          description: typeInfo.get('description'),
+          workStyle: typeInfo.get('workStyle'),
+          strengths: typeInfo.get('strengths'),
+          motivators: typeInfo.get('motivators'),
+          teamRole: typeInfo.get('teamRole'),
+          famousKenyans: typeInfo.get('famousKenyans'),
+          learningStyle: typeInfo.get('learningStyle'),
+          decisionMaking: typeInfo.get('decisionMaking')
+        }))
+      };
+    }
+
+    // Cache for 24 hours (86400 seconds) - This is static reference data
+    await cache.set(cacheKey, result, 86400);
+    console.log('💾 Cached RIASEC type info');
+
+    return result;
+  } catch (error) {
+    console.error('Get RIASEC type info error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to get RIASEC type info');
+  }
+});
+
 // Helper Functions for RIASEC API
 function generateCareerMatches(scores, primaryType) {
   const matches = [];

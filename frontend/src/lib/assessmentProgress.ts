@@ -208,3 +208,21 @@ export async function getRiasecHistory() {
     throw error;
   }
 }
+
+/**
+ * Get RIASEC type personality insights
+ * @param typeCode - Optional specific type code (R, I, A, S, E, C). If not provided, returns all types.
+ */
+export async function getRiasecTypeInfo(typeCode?: string) {
+  const Parse = getParse();
+
+  try {
+    const result = await Parse.Cloud.run('getRiasecTypeInfo', {
+      typeCode
+    });
+    return result;
+  } catch (error) {
+    console.error('Failed to get RIASEC type info:', error);
+    throw error;
+  }
+}

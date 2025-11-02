@@ -38,7 +38,8 @@ import {
   startRiasecAssessment,
   saveRiasecResponse,
   completeRiasecAssessment,
-  resumeRiasecAssessment
+  resumeRiasecAssessment,
+  getRiasecTypeInfo
 } from '@/lib/assessmentProgress';
 import { callCloudFunction } from '@/lib/parseConfig';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
@@ -59,6 +60,20 @@ interface RiasecType {
   workEnvironments: string[];
   kuccpsPathways: string[];
   // Enhanced personality insights
+  workStyle: string;
+  strengths: string[];
+  motivators: string[];
+  teamRole: string;
+  famousKenyans: string[];
+  learningStyle: string;
+  decisionMaking: string;
+}
+
+// Backend API type info (without UI-specific fields)
+interface RiasecTypeInfo {
+  code: string;
+  name: string;
+  description: string;
   workStyle: string;
   strengths: string[];
   motivators: string[];
@@ -417,6 +432,7 @@ export const FreeRiasecAssessment: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showMilestone, setShowMilestone] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
+  const [personalityInsights, setPersonalityInsights] = useState<Record<string, RiasecTypeInfo>>({});
 
   // Combined loading state for UI
   const isLoading = questionsLoading || assessmentLoading;
@@ -454,8 +470,47 @@ export const FreeRiasecAssessment: React.FC = () => {
     loadQuestions();
   }, []); // No dependencies - run once on mount
 
+  // Load personality insights from backend when results are ready
+  useEffect(() => {
+    const loadPersonalityInsights = async () => {
+      if (!results || !showResults) return;
+
+      try {
+        console.log('🔍 Fetching personality insights from backend...');
+
+        const response = await getRiasecTypeInfo();
+
+        if (response.types) {
+          // Convert array to Record for easy lookup
+          const insightsMap: Record<string, RiasecTypeInfo> = {};
+          response.types.forEach((type: RiasecTypeInfo) => {
+            insightsMap[type.code] = type;
+          });
+          setPersonalityInsights(insightsMap);
+          console.log('✅ Loaded personality insights for all 6 types from backend');
+        }
+      } catch (err) {
+        console.error('Failed to load personality insights:', err);
+        // Keep using hardcoded fallback if backend fails
+        console.warn('⚠️ Using hardcoded fallback personality insights');
+      }
+    };
+
+    loadPersonalityInsights();
+  }, [results, showResults]);
+
   const totalQuestions = questions.length;
   const progressPercentage = totalQuestions > 0 ? (currentQuestion / totalQuestions) * 100 : 0;
+
+  // Helper function to get type info with fallback to hardcoded data
+  const getTypeInfo = (typeCode: string) => {
+    // Try backend data first
+    if (personalityInsights[typeCode]) {
+      return personalityInsights[typeCode];
+    }
+    // Fallback to hardcoded data
+    return riasecTypes[typeCode];
+  };
 
   // Milestone checkpoints: every 16 questions (at 16, 32, 48, 64, 80)
   const getMilestone = (questionNum: number) => {
@@ -790,7 +845,7 @@ export const FreeRiasecAssessment: React.FC = () => {
 
       yPosition += 10;
       pdf.setFontSize(12);
-      pdf.text(`Primary Type: ${riasecTypes[results.primaryType].name}`, pageWidth / 2, yPosition, { align: 'center' });
+      pdf.text(`Primary Type: ${getTypeInfo(results.primaryType).name}`, pageWidth / 2, yPosition, { align: 'center' });
 
       yPosition += 8;
       pdf.setFontSize(10);
@@ -849,11 +904,12 @@ export const FreeRiasecAssessment: React.FC = () => {
       pdf.text('Personality Insights', margin, yPosition);
       yPosition += 10;
 
+      const typeInfo = getTypeInfo(results.primaryType);
       const insights = [
-        ['Work Style', riasecTypes[results.primaryType].workStyle],
-        ['Learning Style', riasecTypes[results.primaryType].learningStyle],
-        ['Decision Making', riasecTypes[results.primaryType].decisionMaking],
-        ['Team Role', riasecTypes[results.primaryType].teamRole]
+        ['Work Style', typeInfo.workStyle],
+        ['Learning Style', typeInfo.learningStyle],
+        ['Decision Making', typeInfo.decisionMaking],
+        ['Team Role', typeInfo.teamRole]
       ];
 
       autoTable(pdf, {
@@ -1113,10 +1169,10 @@ export const FreeRiasecAssessment: React.FC = () => {
               <div className={cn("p-3 rounded-lg text-white", riasecTypes[results.primaryType].color)}>
                 {riasecTypes[results.primaryType].icon}
               </div>
-              Your Primary Type: {riasecTypes[results.primaryType].name}
+              Your Primary Type: {getTypeInfo(results.primaryType).name}
             </CardTitle>
             <CardDescription className="text-lg">
-              {riasecTypes[results.primaryType].description}
+              {getTypeInfo(results.primaryType).description || riasecTypes[results.primaryType].description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1166,7 +1222,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Work Style
               </h4>
               <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
-                {riasecTypes[results.primaryType].workStyle}
+                {getTypeInfo(results.primaryType).workStyle}
               </p>
             </div>
 
@@ -1177,7 +1233,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Your Strengths
               </h4>
               <div className="grid md:grid-cols-2 gap-2">
-                {riasecTypes[results.primaryType].strengths.map((strength, idx) => (
+                {getTypeInfo(results.primaryType).strengths?.map((strength: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 bg-white/70 p-2 rounded-lg">
                     <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                     <span className="text-sm">{strength}</span>
@@ -1193,7 +1249,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Learning Style
               </h4>
               <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
-                {riasecTypes[results.primaryType].learningStyle}
+                {getTypeInfo(results.primaryType).learningStyle}
               </p>
             </div>
 
@@ -1204,7 +1260,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Decision-Making Style
               </h4>
               <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
-                {riasecTypes[results.primaryType].decisionMaking}
+                {getTypeInfo(results.primaryType).decisionMaking}
               </p>
             </div>
 
@@ -1215,7 +1271,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 What Motivates You
               </h4>
               <div className="grid md:grid-cols-2 gap-2">
-                {riasecTypes[results.primaryType].motivators.map((motivator, idx) => (
+                {getTypeInfo(results.primaryType).motivators?.map((motivator: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 bg-white/70 p-2 rounded-lg">
                     <Star className="h-4 w-4 text-yellow-600 flex-shrink-0" />
                     <span className="text-sm">{motivator}</span>
@@ -1231,7 +1287,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Your Team Role
               </h4>
               <p className="text-sm text-gray-700 bg-white/70 p-3 rounded-lg">
-                {riasecTypes[results.primaryType].teamRole}
+                {getTypeInfo(results.primaryType).teamRole}
               </p>
             </div>
 
@@ -1242,7 +1298,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                 Famous Kenyans with Similar Profile
               </h4>
               <div className="flex flex-wrap gap-2">
-                {riasecTypes[results.primaryType].famousKenyans.map((person, idx) => (
+                {getTypeInfo(results.primaryType).famousKenyans?.map((person: string, idx: number) => (
                   <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-800">
                     {person}
                   </Badge>
