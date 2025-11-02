@@ -49,6 +49,7 @@ import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
 import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
 import { AddSkillsDialog } from '@/components/profile/AddSkillsDialog';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
+import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from 'recharts';
 import { createAvatar } from '@dicebear/core';
@@ -1147,8 +1148,25 @@ export const ProfilePageTabbed: React.FC = () => {
                         </CardHeader>
 
                         <CardContent>
-                          {/* Enhanced RIASEC Results with Animations */}
+                          {/* Rich RIASEC Results Card (16 Personalities Style) */}
                           {assessment.type === 'riasec' && assessment.results && (
+                            <RiasecResultsCard
+                              primaryType={assessment.results.primaryType || ''}
+                              hollandCode={assessment.results.hollandCode || ''}
+                              scores={assessment.results.scores || {}}
+                              onLearnMore={() => {
+                                setSelectedPersonalityType({
+                                  type: assessment.results.primaryType || '',
+                                  hollandCode: assessment.results.hollandCode || '',
+                                  scores: assessment.results.scores || {},
+                                });
+                                setPersonalityModalOpen(true);
+                              }}
+                            />
+                          )}
+
+                          {/* Other assessment types (skills, career, university) */}
+                          {assessment.type !== 'riasec' && assessment.results && (
                             <motion.div
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}

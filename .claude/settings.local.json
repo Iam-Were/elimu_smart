@@ -38,7 +38,9 @@
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(git reset:*)",
-      "WebFetch(domain:personalityjunkie.com)"
+      "WebFetch(domain:personalityjunkie.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:openpsychometrics.org)"
     ],
     "deny": [],
     "ask": [],
