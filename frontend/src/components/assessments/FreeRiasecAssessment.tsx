@@ -454,14 +454,25 @@ export const FreeRiasecAssessment: React.FC = () => {
   const totalQuestions = questions.length;
   const progressPercentage = totalQuestions > 0 ? (currentQuestion / totalQuestions) * 100 : 0;
 
-  // Helper function to get type info with fallback to hardcoded data
-  const getTypeInfo = (typeCode: string) => {
-    // Try backend data first
+  // Helper function to get type info from backend (no hardcoded fallback)
+  const getTypeInfo = (typeCode: string): RiasecTypeInfo => {
+    // Return backend data - no hardcoded fallback
     if (personalityInsights[typeCode]) {
       return personalityInsights[typeCode];
     }
-    // Fallback to hardcoded data
-    return riasecTypes[typeCode];
+    // If backend data not loaded yet, return empty placeholder
+    return {
+      code: typeCode,
+      name: '',
+      description: '',
+      workStyle: '',
+      strengths: [],
+      motivators: [],
+      teamRole: '',
+      famousKenyans: [],
+      learningStyle: '',
+      decisionMaking: ''
+    };
   };
 
   // Milestone checkpoints: every 16 questions (at 16, 32, 48, 64, 80)
