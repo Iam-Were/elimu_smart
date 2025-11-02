@@ -31,8 +31,9 @@ const getUserRoleTheme = (): ThemeRole | null => {
     const body = document.body;
     if (body.classList.contains('theme-admin')) return 'admin';
     if (body.classList.contains('theme-counselor')) return 'counselor';
-    // Student is default (no class)
-    if (body.classList.contains('theme-student')) return 'student';
+    // Student is default (no class needed per useAuth line 190)
+    // If user is logged in but no theme-admin/counselor class, they're a student
+    return 'student';
   } catch (error) {
     console.warn('Failed to get user role for theme:', error);
   }
