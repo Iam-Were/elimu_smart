@@ -127,9 +127,12 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
     }
   };
 
+  // Normalize percentages relative to total scores (shows distribution)
   const getScorePercentage = (type: string): number => {
     if (!scores || !scores[type]) return 0;
-    return ((scores[type] / 20) * 100);
+    const total = Object.values(scores).reduce((sum, score) => sum + (score as number), 0);
+    if (total === 0) return 0;
+    return ((scores[type] / total) * 100);
   };
 
   return (
@@ -188,6 +191,58 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   <Badge variant="outline" className="text-lg px-4 py-2">
                     Holland Code: <span className="font-bold ml-1">{hollandCode}</span>
                   </Badge>
+                </motion.div>
+              )}
+
+              {/* Scores Visualization (if available) - MOVED TO TOP FOR VISIBILITY */}
+              {scores && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border border-gray-200"
+                >
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                    Your RIASEC Score Breakdown
+                  </h3>
+                  <div className="space-y-4">
+                    {Object.entries(scores)
+                      .sort(([, a], [, b]) => (b as number) - (a as number))
+                      .map(([type, score], index) => {
+                        const percentage = getScorePercentage(type);
+                        const typeNames: Record<string, string> = {
+                          R: 'Realistic',
+                          I: 'Investigative',
+                          A: 'Artistic',
+                          S: 'Social',
+                          E: 'Enterprising',
+                          C: 'Conventional',
+                        };
+
+                        return (
+                          <div key={type}>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-bold">
+                                {type} - {typeNames[type]}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-extrabold text-gray-900">{score}</span>
+                                <span className="text-xs text-gray-500">({percentage.toFixed(1)}%)</span>
+                              </div>
+                            </div>
+                            <div className="h-4 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${percentage}%` }}
+                                transition={{ delay: 0.2 + index * 0.1, duration: 0.8 }}
+                                className={`h-full bg-gradient-to-r ${typeColors[type]} rounded-full shadow-sm`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </motion.div>
               )}
 
@@ -374,52 +429,6 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   </div>
                 </motion.div>
               </div>
-
-              {/* Scores Visualization (if available) */}
-              {scores && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-8"
-                >
-                  <h3 className="text-lg font-bold mb-4">Your RIASEC Score Breakdown</h3>
-                  <div className="space-y-3">
-                    {Object.entries(scores)
-                      .sort(([, a], [, b]) => (b as number) - (a as number))
-                      .map(([type, score], index) => {
-                        const percentage = getScorePercentage(type);
-                        const typeNames: Record<string, string> = {
-                          R: 'Realistic',
-                          I: 'Investigative',
-                          A: 'Artistic',
-                          S: 'Social',
-                          E: 'Enterprising',
-                          C: 'Conventional',
-                        };
-
-                        return (
-                          <div key={type}>
-                            <div className="flex justify-between mb-1.5">
-                              <span className="text-sm font-semibold">
-                                {type} - {typeNames[type]}
-                              </span>
-                              <span className="text-sm font-bold">{score}/20 ({percentage.toFixed(1)}%)</span>
-                            </div>
-                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${percentage}%` }}
-                                transition={{ delay: 0.4 + index * 0.1, duration: 0.8 }}
-                                className={`h-full bg-gradient-to-r ${typeColors[type]} rounded-full`}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </motion.div>
-              )}
             </TabsContent>
 
             {/* Careers Tab */}

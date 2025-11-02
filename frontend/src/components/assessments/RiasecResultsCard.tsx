@@ -16,6 +16,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { getParse } from '@/config/parse';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 // TODO: Uncomment when custom Lottie animations are ready
 // import Lottie from 'lottie-react';
 
@@ -89,16 +90,14 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
 }) => {
   const [personalityData, setPersonalityData] = useState<PersonalityTypeData | null>(null);
   const [loading, setLoading] = useState(true);
-  // TODO: Uncomment when custom Lottie animations are ready
-  // const [lottieData, setLottieData] = useState<unknown>(null);
+  // const [lottieData, setLottieData] = useState<unknown>(null); // TODO: Re-enable when implementing 16Personalities avatars
 
   const colors = typeColors[primaryType] || typeColors.R;
   const topScore = (scores[primaryType] / 20) * 100;
 
   useEffect(() => {
     fetchPersonalityData();
-    // TODO: Enable Lottie animations when custom animations are ready
-    // fetchLottieAnimation();
+    fetchLottieAnimation();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryType]);
 
@@ -116,40 +115,44 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
     }
   };
 
-  // TODO: Uncomment when custom Lottie animations are ready
-  // const fetchLottieAnimation = async () => {
-  //   try {
-  //     const url = getLottieAvatar(primaryType);
-  //     const response = await fetch(url);
-  //     const data = await response.json();
-  //     setLottieData(data);
-  //   } catch (error) {
-  //     console.error('Failed to fetch Lottie animation:', error);
-  //     setLottieData(null);
-  //   }
-  // };
+  // TODO: Re-enable when implementing 16Personalities avatars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const fetchLottieAnimation = async () => {
+    try {
+      const url = getLottieAvatar(primaryType);
+      const response = await fetch(url);
+      await response.json(); // Fetch animation data (disabled for now)
+      // setLottieData(data);
+    } catch (error) {
+      console.error('Failed to fetch Lottie animation:', error);
+      // setLottieData(null);
+    }
+  };
 
-  // // TEMPORARY: Free Lottie animations from LottieFiles (for testing only)
-  // // TODO: Replace with custom commissioned animations before production
-  // const getLottieAvatar = (personalityType: string) => {
-  //   // Using working CDN Lottie animations (LottieFiles public CDN)
-  //   const lottieAvatars: Record<string, string> = {
-  //     // Realistic (R) - The Craftsman: Engineer/builder animation
-  //     R: 'https://lottie.host/d7495d48-6fd7-4006-a29f-85d23be8ea4b/NYnC8oWyvM.json',
-  //     // Investigative (I) - The Analyst: Scientist/thinker animation
-  //     I: 'https://lottie.host/f3e7c4d1-1aeb-4a02-8f5d-1d1c7e0a4b5c/qrKvD2eZbM.json',
-  //     // Artistic (A) - The Innovator: Creative/artist animation
-  //     A: 'https://lottie.host/a6b8c9d2-2bcd-4e03-9f6e-2e2d8f1b5d6d/rwLxE3fAcN.json',
-  //     // Social (S) - The Advocate: People/helping animation
-  //     S: 'https://lottie.host/b7c9d0e3-3cde-4f04-af7f-3f3e9g2c6e7e/sxMyF4gBdO.json',
-  //     // Enterprising (E) - The Commander: Leader/business animation
-  //     E: 'https://lottie.host/c8d0e1f4-4def-5g05-bg8g-4g4fahg3d7f8f/tyNzG5hCeP.json',
-  //     // Conventional (C) - The Coordinator: Organized/systematic animation
-  //     C: 'https://lottie.host/d9e1f2g5-5efg-6h06-ch9h-5h5gbi4e8g9g/uzO0H6iDfQ.json',
-  //   };
+  // TEMPORARY: Using 16Personalities CDN avatars for testing only
+  // TODO: Replace with custom commissioned animations before production
+  // WARNING: These are copyrighted assets - TESTING ONLY, not for commercial use
+  const getLottieAvatar = (personalityType: string) => {
+    // Map RIASEC types to 16Personalities avatar names (closest personality match)
+    const riasecTo16P: Record<string, string> = {
+      // Realistic (R) → Virtuoso (ISTP) - hands-on, technical, practical
+      R: 'virtuoso',
+      // Investigative (I) → Logician (INTP) - analytical, curious, theoretical
+      I: 'logician',
+      // Artistic (A) → Mediator (INFP) - creative, idealistic, expressive
+      A: 'mediator',
+      // Social (S) → Protagonist (ENFJ) - empathetic, inspiring, supportive
+      S: 'protagonist',
+      // Enterprising (E) → Commander (ENTJ) - ambitious, strategic, leadership
+      E: 'commander',
+      // Conventional (C) → Logistician (ISTJ) - organized, reliable, detail-oriented
+      C: 'logistician',
+    };
 
-  //   return lottieAvatars[personalityType] || lottieAvatars.R;
-  // };
+    const avatarName = riasecTo16P[personalityType] || 'virtuoso';
+    // Use male avatars for consistency (can randomize or add gender selection later)
+    return `https://www.16personalities.com/static/animations/avatars/all/${avatarName}-male.json`;
+  };
 
   if (loading) {
     return (
@@ -184,24 +187,12 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
           </div>
 
           <div className="relative z-10">
-            {/* Holland Code Badge */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="inline-block mb-4"
-            >
-              <Badge className="bg-white/20 text-white border-white/30 text-sm px-4 py-1 backdrop-blur-sm">
-                Holland Code: {hollandCode}
-              </Badge>
-            </motion.div>
-
-            <div className="flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-6">
               {/* Avatar - Lottie Animation */}
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 className="flex-shrink-0"
               >
                 <div className="w-40 h-40 rounded-full bg-white p-4 shadow-2xl flex items-center justify-center overflow-hidden">
@@ -212,25 +203,45 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                 </div>
               </motion.div>
 
-              {/* Title & Tagline */}
-              <div className="flex-1 text-center">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <h1 className="text-5xl md:text-6xl font-bold mb-2 drop-shadow-lg">
-                    {personalityData.personalityTypeName}
-                  </h1>
-                  <p className="text-xl md:text-2xl text-white/90 font-medium italic mb-4">
-                    "{personalityData.tagline}"
-                  </p>
-                  <div className="flex items-center gap-2 justify-center">
-                    <Star className="h-5 w-5 fill-white" />
-                    <span className="text-lg font-semibold">{primaryType} - {personalityData.name}</span>
-                  </div>
-                </motion.div>
-              </div>
+              {/* Personality Type - PROMINENT under icon */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-center"
+              >
+                <h2 className="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-lg">
+                  {personalityData.personalityTypeName}
+                </h2>
+                <div className="flex items-center gap-2 justify-center mb-3">
+                  <Star className="h-5 w-5 fill-white" />
+                  <span className="text-lg font-semibold">{primaryType} - {personalityData.name}</span>
+                </div>
+              </motion.div>
+
+              {/* Holland Code Badge - Below personality type */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: "spring" }}
+                className="inline-block"
+              >
+                <Badge className="bg-white/20 text-white border-white/30 text-sm px-4 py-1.5 backdrop-blur-sm">
+                  Holland Code: {hollandCode}
+                </Badge>
+              </motion.div>
+
+              {/* Tagline */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-center max-w-2xl"
+              >
+                <p className="text-xl md:text-2xl text-white/90 font-medium italic">
+                  "{personalityData.tagline}"
+                </p>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -274,11 +285,102 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
         </div>
       </Card>
 
-      {/* Description Card */}
+      {/* RIASEC Score Visualization - Two Charts Side by Side */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
+      >
+        <Card className="p-8 border-2 border-gray-200 shadow-lg bg-gradient-to-br from-white to-gray-50">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <TrendingUp className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Your RIASEC Profile</h2>
+              <p className="text-sm text-gray-600">Personality distribution across six dimensions</p>
+            </div>
+          </div>
+
+          {/* Two Charts: Radar (Spider/Hexagon) + Bar Chart */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left: Radar Chart (Spider/Hexagon) */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Personality Radar</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={(() => {
+                  const typeColors: Record<string, string> = {
+                    R: '#ef4444', I: '#3b82f6', A: '#a855f7',
+                    S: '#10b981', E: '#f59e0b', C: '#6b7280'
+                  };
+                  return Object.entries(scores).map(([type, score]) => ({
+                    type,
+                    name: { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' }[type],
+                    value: score as number,
+                    fill: typeColors[type]
+                  }));
+                })()}>
+                  <PolarGrid stroke="#e5e7eb" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} />
+                  <PolarRadiusAxis angle={90} domain={[0, 20]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                  <Radar name="Score" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
+                    formatter={(value) => [`${value}/20`, 'Score']}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Right: Bar Chart */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Score Breakdown</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={(() => {
+                  const typeColors: Record<string, string> = {
+                    R: '#ef4444', I: '#3b82f6', A: '#a855f7',
+                    S: '#10b981', E: '#f59e0b', C: '#6b7280'
+                  };
+                  return Object.entries(scores)
+                    .sort(([, a], [, b]) => (b as number) - (a as number))
+                    .map(([type, score]) => ({
+                      type,
+                      name: { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' }[type],
+                      score: score as number,
+                      fill: typeColors[type],
+                      percentage: (((score as number) / Object.values(scores).reduce((sum, s) => sum + s, 0)) * 100).toFixed(1)
+                    }));
+                })()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="type" tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} />
+                  <YAxis domain={[0, 20]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
+                    formatter={(value, _name, props) => [`${value}/20 (${props.payload.percentage}%)`, props.payload.name]}
+                  />
+                  <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                    {Object.entries(scores)
+                      .sort(([, a], [, b]) => (b as number) - (a as number))
+                      .map(([type], index) => {
+                        const colors: Record<string, string> = {
+                          R: '#ef4444', I: '#3b82f6', A: '#a855f7',
+                          S: '#10b981', E: '#f59e0b', C: '#6b7280'
+                        };
+                        return <Cell key={`cell-${index}`} fill={colors[type]} />;
+                      })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Description Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.6 }}
       >
         <Card className="p-8 border-2 border-gray-200 shadow-lg">
           <div className="flex items-start gap-4 mb-6">
