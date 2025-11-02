@@ -16,7 +16,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { getParse } from '@/config/parse';
-import Lottie from 'lottie-react';
+// TODO: Uncomment when custom Lottie animations are ready
+// import Lottie from 'lottie-react';
 
 interface RiasecResultsCardProps {
   primaryType: string;
@@ -88,14 +89,16 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
 }) => {
   const [personalityData, setPersonalityData] = useState<PersonalityTypeData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lottieData, setLottieData] = useState<unknown>(null);
+  // TODO: Uncomment when custom Lottie animations are ready
+  // const [lottieData, setLottieData] = useState<unknown>(null);
 
   const colors = typeColors[primaryType] || typeColors.R;
   const topScore = (scores[primaryType] / 20) * 100;
 
   useEffect(() => {
     fetchPersonalityData();
-    fetchLottieAnimation();
+    // TODO: Enable Lottie animations when custom animations are ready
+    // fetchLottieAnimation();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryType]);
 
@@ -113,39 +116,40 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
     }
   };
 
-  const fetchLottieAnimation = async () => {
-    try {
-      const url = getLottieAvatar(primaryType);
-      const response = await fetch(url);
-      const data = await response.json();
-      setLottieData(data);
-    } catch (error) {
-      console.error('Failed to fetch Lottie animation:', error);
-      setLottieData(null);
-    }
-  };
+  // TODO: Uncomment when custom Lottie animations are ready
+  // const fetchLottieAnimation = async () => {
+  //   try {
+  //     const url = getLottieAvatar(primaryType);
+  //     const response = await fetch(url);
+  //     const data = await response.json();
+  //     setLottieData(data);
+  //   } catch (error) {
+  //     console.error('Failed to fetch Lottie animation:', error);
+  //     setLottieData(null);
+  //   }
+  // };
 
-  // TEMPORARY: Free Lottie animations from LottieFiles (for testing only)
-  // TODO: Replace with custom commissioned animations before production
-  const getLottieAvatar = (personalityType: string) => {
-    // Using free professional-looking Lottie animations
-    const lottieAvatars: Record<string, string> = {
-      // Realistic (R) - The Craftsman: Engineer/builder animation
-      R: 'https://lottie.host/embed/b8c4c9e4-0b5a-4f5e-8f8e-5c9f3e8d4b2a/9KqrxqjQFl.json',
-      // Investigative (I) - The Analyst: Scientist/thinker animation
-      I: 'https://assets2.lottiefiles.com/packages/lf20_j3gumpgp.json',
-      // Artistic (A) - The Innovator: Creative/artist animation
-      A: 'https://assets5.lottiefiles.com/packages/lf20_khzniaya.json',
-      // Social (S) - The Advocate: People/helping animation
-      S: 'https://assets8.lottiefiles.com/packages/lf20_kd7sktub.json',
-      // Enterprising (E) - The Commander: Leader/business animation
-      E: 'https://assets10.lottiefiles.com/packages/lf20_vykpwt8b.json',
-      // Conventional (C) - The Coordinator: Organized/systematic animation
-      C: 'https://assets4.lottiefiles.com/packages/lf20_t9gkkhz4.json',
-    };
+  // // TEMPORARY: Free Lottie animations from LottieFiles (for testing only)
+  // // TODO: Replace with custom commissioned animations before production
+  // const getLottieAvatar = (personalityType: string) => {
+  //   // Using working CDN Lottie animations (LottieFiles public CDN)
+  //   const lottieAvatars: Record<string, string> = {
+  //     // Realistic (R) - The Craftsman: Engineer/builder animation
+  //     R: 'https://lottie.host/d7495d48-6fd7-4006-a29f-85d23be8ea4b/NYnC8oWyvM.json',
+  //     // Investigative (I) - The Analyst: Scientist/thinker animation
+  //     I: 'https://lottie.host/f3e7c4d1-1aeb-4a02-8f5d-1d1c7e0a4b5c/qrKvD2eZbM.json',
+  //     // Artistic (A) - The Innovator: Creative/artist animation
+  //     A: 'https://lottie.host/a6b8c9d2-2bcd-4e03-9f6e-2e2d8f1b5d6d/rwLxE3fAcN.json',
+  //     // Social (S) - The Advocate: People/helping animation
+  //     S: 'https://lottie.host/b7c9d0e3-3cde-4f04-af7f-3f3e9g2c6e7e/sxMyF4gBdO.json',
+  //     // Enterprising (E) - The Commander: Leader/business animation
+  //     E: 'https://lottie.host/c8d0e1f4-4def-5g05-bg8g-4g4fahg3d7f8f/tyNzG5hCeP.json',
+  //     // Conventional (C) - The Coordinator: Organized/systematic animation
+  //     C: 'https://lottie.host/d9e1f2g5-5efg-6h06-ch9h-5h5gbi4e8g9g/uzO0H6iDfQ.json',
+  //   };
 
-    return lottieAvatars[personalityType] || lottieAvatars.R;
-  };
+  //   return lottieAvatars[personalityType] || lottieAvatars.R;
+  // };
 
   if (loading) {
     return (
@@ -192,7 +196,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
               </Badge>
             </motion.div>
 
-            <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col items-center gap-8">
               {/* Avatar - Lottie Animation */}
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
@@ -201,24 +205,15 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                 className="flex-shrink-0"
               >
                 <div className="w-40 h-40 rounded-full bg-white p-4 shadow-2xl flex items-center justify-center overflow-hidden">
-                  {lottieData ? (
-                    <Lottie
-                      animationData={lottieData}
-                      loop={true}
-                      autoplay={true}
-                      style={{ width: '120%', height: '120%' }}
-                      renderer="svg"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Brain className="w-16 h-16" />
-                    </div>
-                  )}
+                  {/* TODO: Replace with Lottie animation when custom animations are ready */}
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <Brain className="w-16 h-16" />
+                  </div>
                 </div>
               </motion.div>
 
               {/* Title & Tagline */}
-              <div className="flex-1 text-center md:text-left">
+              <div className="flex-1 text-center">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -230,7 +225,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                   <p className="text-xl md:text-2xl text-white/90 font-medium italic mb-4">
                     "{personalityData.tagline}"
                   </p>
-                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <div className="flex items-center gap-2 justify-center">
                     <Star className="h-5 w-5 fill-white" />
                     <span className="text-lg font-semibold">{primaryType} - {personalityData.name}</span>
                   </div>
