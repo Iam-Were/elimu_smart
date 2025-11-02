@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import UrgentActions from './UrgentActions';
 import ProgressMetrics from './ProgressMetrics';
 import ActivityTimeline from './ActivityTimeline';
-import UpcomingSessions from './UpcomingSessions';
 
 interface ParseUserData {
   firstName: string;
@@ -457,9 +456,6 @@ const StudentDashboard: React.FC = () => {
                 Track progress, explore careers, and get personalized guidance
               </p>
             </div>
-
-            {/* Upcoming Sessions */}
-            <UpcomingSessions maxSessions={3} />
 
             {/* Urgent Actions */}
             <UrgentActions maxItems={5} />
