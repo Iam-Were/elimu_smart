@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionPaywall } from '@/components/subscription/SubscriptionPaywall';
+import { BookingModal } from '@/components/guidance/BookingModal';
 
 interface StudentGuidanceCard {
   id: string;
@@ -121,6 +122,7 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
   const { userSubscription, isLoading: subscriptionLoading } = useSubscription();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState<'messaging' | 'sessions' | 'premium'>('messaging');
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   // Update cards with backend data
   const getUpdatedCards = () => {
@@ -181,7 +183,13 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
       return;
     }
 
-    // Navigate normally if not premium or has subscription
+    // Open booking modal for book-session card (if user has subscription)
+    if (card.id === 'book-session' && hasActiveSubscription()) {
+      setBookingModalOpen(true);
+      return;
+    }
+
+    // Navigate normally for other cards
     navigate(card.actionLink);
   };
 
@@ -192,6 +200,16 @@ export const StudentGuidanceCards: React.FC<StudentGuidanceCardsProps> = ({
         isOpen={paywallOpen}
         onClose={() => setPaywallOpen(false)}
         feature={paywallFeature}
+      />
+
+      {/* Booking Modal (Calendly-style) */}
+      <BookingModal
+        open={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        onSuccess={() => {
+          setBookingModalOpen(false);
+          // Optionally refresh bookings or show success toast
+        }}
       />
 
       {/* Clean card grid */}

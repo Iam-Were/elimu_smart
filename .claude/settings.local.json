@@ -33,7 +33,8 @@
       "Bash(export PGPASSWORD=password)",
       "Bash(curl:*)",
       "Bash(cat:*)",
-      "Bash(scp:*)"
+      "Bash(scp:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": [],
