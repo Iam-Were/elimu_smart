@@ -93,7 +93,8 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
   // const [lottieData, setLottieData] = useState<unknown>(null); // TODO: Re-enable when implementing 16Personalities avatars
 
   const colors = typeColors[primaryType] || typeColors.R;
-  const topScore = (scores[primaryType] / 20) * 100;
+  const total = Object.values(scores).reduce((sum, s) => sum + s, 0);
+  const topScore = (scores[primaryType] / total) * 100;
 
   useEffect(() => {
     fetchPersonalityData();
@@ -218,11 +219,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                 </div>
                 {/* Normalized Percentage Display */}
                 <div className="text-sm text-white/90 font-medium">
-                  {(() => {
-                    const total = Object.values(scores).reduce((sum, s) => sum + s, 0);
-                    const percentage = ((scores[primaryType] / total) * 100).toFixed(1);
-                    return `${percentage}% ${primaryType} match (${scores[primaryType]}/20 raw score)`;
-                  })()}
+                  {topScore.toFixed(1)}% {primaryType} match
                 </div>
               </motion.div>
 
@@ -290,8 +287,10 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
               className="p-6 text-center"
             >
               <Briefcase className={`h-8 w-8 mx-auto mb-2 ${colors.text}`} />
-              <div className="text-3xl font-bold text-gray-900">{personalityData.top3CareerMatches.length}</div>
-              <div className="text-sm text-gray-600 font-medium">Top Career Matches</div>
+              <div className="text-lg font-bold text-gray-900 leading-tight">
+                {personalityData.top3CareerMatches.slice(0, 3).map((c) => c.career).join(', ')}
+              </div>
+              <div className="text-sm text-gray-600 font-medium mt-1">Top Career Matches</div>
             </motion.div>
 
             <motion.div
@@ -336,20 +335,23 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                     R: '#ef4444', I: '#3b82f6', A: '#a855f7',
                     S: '#10b981', E: '#f59e0b', C: '#6b7280'
                   };
-                  return Object.entries(scores).map(([type, score]) => ({
-                    type,
-                    name: { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' }[type],
-                    value: score as number,
-                    fill: typeColors[type]
-                  }));
+                  return Object.entries(scores).map(([type, score]) => {
+                    const percentage = ((score as number / total) * 100);
+                    return {
+                      type,
+                      name: { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' }[type],
+                      value: percentage,
+                      fill: typeColors[type]
+                    };
+                  });
                 })()}>
                   <PolarGrid stroke="#e5e7eb" />
                   <PolarAngleAxis dataKey="name" tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 20]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
                   <Radar name="Score" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
-                    formatter={(value) => [`${value}/20`, 'Score']}
+                    formatter={(value) => [`${(value as number).toFixed(1)}%`, 'Percentage']}
                   />
                 </RadarChart>
               </ResponsiveContainer>
@@ -389,10 +391,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                             <span className="text-sm font-bold text-gray-900 w-16">{type} - {typeInfo[type].name}</span>
                             {isTopScore && <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-extrabold text-gray-900">{percentage}%</span>
-                            <span className="text-xs text-gray-600">({score}/20)</span>
-                          </div>
+                          <span className="text-sm font-extrabold text-gray-900">{percentage}%</span>
                         </div>
                         <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                           <motion.div
