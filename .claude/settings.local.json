@@ -32,7 +32,8 @@
       "Bash(PGPASSWORD=password psql:*)",
       "Bash(export PGPASSWORD=password)",
       "Bash(curl:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(scp:*)"
     ],
     "deny": [],
     "ask": [],

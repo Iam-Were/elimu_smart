@@ -36,6 +36,9 @@ require('./careerSchemaMigration');
 // Import community forum functions (auto-registers cloud functions)
 require('./communityForumFunctions');
 
+// Import counselor booking functions (auto-registers cloud functions)
+require('./counselorBookingFunctions');
+
 // =============================================================================
 // SECURITY: CHAT MESSAGE ACCESS CONTROL (Defense-in-Depth)
 // =============================================================================
