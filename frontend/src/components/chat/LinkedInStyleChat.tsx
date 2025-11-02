@@ -927,10 +927,9 @@ export const LinkedInStyleChat: React.FC = () => {
                                   </div>
                                 )}
 
-                                <div
-                                  className="break-words whitespace-pre-wrap"
-                                  dangerouslySetInnerHTML={{ __html: highlightMessageContent(message.message) }}
-                                />
+                                <div className="break-words whitespace-pre-wrap">
+                                  {highlightMessageContent(message.message)}
+                                </div>
 
                                 <div className={`flex items-center gap-1.5 mt-1 text-xs ${
                                   isOwnMessage ? 'text-orange-100 justify-end' : 'text-gray-500'
