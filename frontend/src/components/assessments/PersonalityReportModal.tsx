@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -159,6 +160,11 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
               )}
             </div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {loading ? 'Loading your complete RIASEC personality profile' :
+             personalityData ? `Complete personality profile for ${personalityData.personalityTypeName}` :
+             'Your complete RIASEC personality profile'}
+          </DialogDescription>
         </DialogHeader>
 
         {loading ? (
