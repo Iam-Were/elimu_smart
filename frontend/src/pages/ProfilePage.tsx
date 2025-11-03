@@ -296,7 +296,7 @@ export const ProfilePage: React.FC = () => {
         {/* LinkedIn-Style Header Card */}
         <Card className="mb-8 overflow-hidden">
           {/* Cover Photo - LinkedIn aspect ratio (1584 x 396) */}
-          <div className={`h-32 md:h-52 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
+          <div className={`h-48 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
             <div className="absolute inset-0 bg-black/10"></div>
             
             {/* LinkedIn-style banner upload button - appears on hover */}

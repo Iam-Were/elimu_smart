@@ -77,21 +77,21 @@ const LandingPage: React.FC = () => {
             </nav>
             
             {/* Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3">
               <DarkModeToggle />
-              <Button 
+              <Button
                 variant="ghost"
                 onClick={() => navigate('/login')}
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium text-sm md:text-base whitespace-nowrap px-3 md:px-4"
               >
                 Sign In
               </Button>
-              <Button 
+              <Button
                 onClick={() => navigate('/register')}
-                className="inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 transform animate-pulse group"
+                className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg hover:-translate-y-1 transition-all duration-300 transform animate-pulse group text-sm md:text-base whitespace-nowrap"
               >
                 Get Started
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-1 md:ml-2 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
             
@@ -582,10 +582,10 @@ const LandingPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Footer Content Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                
-                {/* Company Info */}
-                <div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 mb-8">
+
+                {/* Company Info - Card on mobile */}
+                <div className="bg-white md:bg-transparent p-6 md:p-0 rounded-lg md:rounded-none shadow-md md:shadow-none border md:border-0 border-gray-200">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
                       <GraduationCap className="h-5 w-5 text-white" />
@@ -600,9 +600,9 @@ const LandingPage: React.FC = () => {
                     <span className="text-sm text-gray-600">Secure & Private</span>
                   </div>
                 </div>
-                
-                {/* Quick Links */}
-                <div>
+
+                {/* Quick Links - Card on mobile */}
+                <div className="bg-white md:bg-transparent p-6 md:p-0 rounded-lg md:rounded-none shadow-md md:shadow-none border md:border-0 border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
                   <ul className="space-y-3 text-gray-600">
                     <li><a href="#features" className="hover:text-orange-600 transition-colors duration-200 flex items-center">
@@ -623,9 +623,9 @@ const LandingPage: React.FC = () => {
                     </a></li>
                   </ul>
                 </div>
-                
-                {/* Support */}
-                <div>
+
+                {/* Support - Card on mobile */}
+                <div className="bg-white md:bg-transparent p-6 md:p-0 rounded-lg md:rounded-none shadow-md md:shadow-none border md:border-0 border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
                   <ul className="space-y-3 text-gray-600">
                     <li><a href="#" className="hover:text-orange-600 transition-colors duration-200 flex items-center">

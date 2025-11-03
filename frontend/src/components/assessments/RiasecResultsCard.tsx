@@ -156,7 +156,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
 
   if (loading) {
     return (
-      <Card className="p-4 md:p-8">
+      <Card className="p-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500" />
         </div>
@@ -173,11 +173,11 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="space-y-4 md:space-y-6"
+      className="space-y-6"
     >
       {/* Hero Section - 16 Personalities Style */}
       <Card className="overflow-hidden border-2 border-gray-200 shadow-2xl">
-        <div className={`relative bg-gradient-to-br ${colors.gradient} p-4 md:p-8 text-white`}>
+        <div className={`relative bg-gradient-to-br ${colors.gradient} p-8 text-white`}>
           {/* Decorative Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0" style={{
@@ -187,7 +187,7 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
           </div>
 
           <div className="relative z-10">
-            <div className="flex flex-col items-center gap-4 md:gap-6">
+            <div className="flex flex-col items-center gap-6">
               {/* Avatar - Lottie Animation */}
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
@@ -195,10 +195,10 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 className="flex-shrink-0"
               >
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white p-3 md:p-4 shadow-2xl flex items-center justify-center overflow-hidden">
+                <div className="w-40 h-40 rounded-full bg-white p-4 shadow-2xl flex items-center justify-center overflow-hidden">
                   {/* TODO: Replace with Lottie animation when custom animations are ready */}
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <Brain className="w-12 h-12 md:w-16 md:h-16" />
+                    <Brain className="w-16 h-16" />
                   </div>
                 </div>
               </motion.div>
@@ -555,16 +555,16 @@ export const RiasecResultsCard: React.FC<RiasecResultsCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6 }}
       >
-        <Card className={`p-4 md:p-8 bg-gradient-to-br ${colors.gradient} text-white border-none shadow-2xl`}>
+        <Card className={`p-8 bg-gradient-to-br ${colors.gradient} text-white border-none shadow-2xl`}>
           <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-3">Ready to Explore Your Full Potential?</h2>
-            <p className="text-base md:text-lg text-white/90 mb-4 md:mb-6 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-3">Ready to Explore Your Full Potential?</h2>
+            <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
               Discover in-depth insights about your personality, detailed career pathways, and personalized growth recommendations.
             </p>
             <Button
               onClick={onLearnMore}
               size="lg"
-              className="bg-white text-gray-900 hover:bg-gray-100 shadow-xl font-bold text-base md:text-lg px-6 py-3 md:px-8 md:py-6 h-auto"
+              className="bg-white text-gray-900 hover:bg-gray-100 shadow-xl font-bold text-lg px-8 py-6 h-auto"
             >
               <Brain className="h-6 w-6 mr-2" />
               View Complete Personality Report

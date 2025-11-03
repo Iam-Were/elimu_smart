@@ -1694,7 +1694,7 @@ export const FreeRiasecAssessment: React.FC = () => {
           <RadioGroup
             value={currentResponse !== undefined ? currentResponse.toString() : ""}
             onValueChange={(value) => handleResponse(question.id, parseInt(value))}
-            className="space-y-3"
+            className="grid grid-cols-2 md:flex md:flex-col gap-3"
           >
             {[
               { value: 4, label: 'Love it! Extremely interested', color: 'bg-green-500', emoji: '😍' },
@@ -1706,19 +1706,19 @@ export const FreeRiasecAssessment: React.FC = () => {
               <div
                 key={option.value}
                 className={cn(
-                  "flex items-center gap-4 p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-md",
+                  "flex flex-col md:flex-row items-center gap-2 md:gap-4 p-3 md:p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-md",
                   currentResponse === option.value
                     ? "border-orange-500 bg-orange-50 shadow-lg"
                     : "border-gray-200 hover:border-orange-300 hover:bg-gray-50"
                 )}
                 onClick={() => handleResponse(question.id, option.value)}
               >
-                <RadioGroupItem value={option.value.toString()} id={`option-${option.value}`} className="mt-1" />
-                <Label htmlFor={`option-${option.value}`} className="flex-1 flex items-center gap-3 cursor-pointer">
-                  <span className="text-2xl">{option.emoji}</span>
-                  <div className="flex items-center gap-3 flex-1">
+                <RadioGroupItem value={option.value.toString()} id={`option-${option.value}`} className="hidden md:block md:mt-1" />
+                <Label htmlFor={`option-${option.value}`} className="flex-1 flex flex-col md:flex-row items-center gap-2 md:gap-3 cursor-pointer text-center md:text-left w-full">
+                  <span className="text-2xl md:text-2xl">{option.emoji}</span>
+                  <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 flex-1">
                     <div className={cn("w-3 h-3 rounded-full", option.color)}></div>
-                    <span className="font-medium text-base">{option.label}</span>
+                    <span className="font-medium text-xs md:text-base">{option.label}</span>
                   </div>
                 </Label>
               </div>

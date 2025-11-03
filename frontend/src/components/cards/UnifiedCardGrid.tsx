@@ -68,14 +68,14 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          <CardHeader className="space-y-3 sm:space-y-4">
-            <div className="flex items-start justify-between gap-3 sm:gap-4">
-              {/* Gradient Icon Container (2025 Best Practice) */}
+          <CardHeader className="space-y-2 sm:space-y-4">
+            <div className="flex flex-col items-center sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+              {/* Gradient Icon Container (2025 Best Practice) - Centered on mobile */}
               <div
                 className={cn(
-                  'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
+                  'w-12 h-12 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
                   `bg-gradient-to-br ${card.iconGradient}`,
-                  '[&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6 [&>svg]:text-white'
+                  '[&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-6 sm:[&>svg]:h-6 [&>svg]:text-white'
                 )}
               >
                 {card.icon}
@@ -94,8 +94,8 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
               )}
             </div>
 
-            {/* Card Title & Description */}
-            <div>
+            {/* Card Title & Description - Centered on mobile */}
+            <div className="text-center sm:text-left">
               <CardTitle className="text-base sm:text-lg font-bold line-clamp-2">
                 {card.title}
               </CardTitle>
@@ -191,7 +191,7 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
               className={cn(
-                'w-full text-xs sm:text-sm min-h-[48px]', // WCAG AAA touch target
+                'w-full text-xs sm:text-sm min-h-[32px] sm:min-h-[44px]', // Compact on mobile, WCAG AAA on desktop
                 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
               )}
               variant="default"
