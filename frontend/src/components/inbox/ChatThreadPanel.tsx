@@ -333,55 +333,55 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
         <div ref={messagesEndRef} />
       </ScrollArea>
 
-      {/* MESSAGE INPUT */}
+      {/* MESSAGE INPUT - Mobile Optimized */}
       <div className="flex-shrink-0 px-4 py-4 border-t border-gray-200 bg-white">
         <div className="flex items-center gap-2">
-          {/* Attachment button */}
+          {/* Attachment button - 44x44px touch target */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-10 w-10 p-0"
+            className="flex-shrink-0 h-11 w-11 p-0 touch-manipulation"
             disabled={isSending}
           >
-            <Paperclip className="h-4 w-4" />
+            <Paperclip className="h-5 w-5" />
             <span className="sr-only">Attach file</span>
           </Button>
 
-          {/* Emoji button */}
+          {/* Emoji button - 44x44px touch target */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-10 w-10 p-0"
+            className="flex-shrink-0 h-11 w-11 p-0 touch-manipulation"
             disabled={isSending}
           >
-            <Smile className="h-4 w-4" />
+            <Smile className="h-5 w-5" />
             <span className="sr-only">Add emoji</span>
           </Button>
 
-          {/* Message input */}
+          {/* Message input - Mobile optimized */}
           <div className="flex-1 min-w-0">
             <Textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message... (Shift + Enter for new line)"
-              className="resize-none min-h-[40px] max-h-[120px] w-full"
+              placeholder="Type your message..."
+              className="resize-none min-h-[44px] max-h-[120px] w-full touch-manipulation"
               rows={1}
               disabled={isSending}
             />
           </div>
 
-          {/* Send button */}
+          {/* Send button - 44px min height, enhanced feedback */}
           <Button
             onClick={handleSend}
             disabled={!newMessage.trim() || isSending}
-            className="bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 flex-shrink-0 h-10 px-4"
+            className="bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 flex-shrink-0 h-11 px-4 touch-manipulation transition-all active:scale-95"
           >
             {isSending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
                 <span className="ml-2 hidden sm:inline">Send</span>
               </>
             )}
