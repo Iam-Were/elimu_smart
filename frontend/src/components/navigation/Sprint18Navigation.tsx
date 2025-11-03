@@ -33,6 +33,7 @@ import {
   Calendar,
   MessageSquare,
   Search,
+  X,
   Compass,
   BarChart,
   UserCog,
