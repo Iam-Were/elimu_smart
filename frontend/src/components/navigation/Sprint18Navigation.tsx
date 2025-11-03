@@ -461,8 +461,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               <MessageSquare className="h-5 w-5" />
               {unreadMessageCount > 0 && (
                 <Badge
-                  variant="destructive"
-                  className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.18)]"
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold bg-slate-900 text-white border-2 border-white shadow-md hover:bg-slate-800"
                 >
                   {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
                 </Badge>
