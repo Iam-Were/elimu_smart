@@ -42,7 +42,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:openpsychometrics.org)",
       "WebFetch(domain:www.lapa.ninja)",
-      "WebFetch(domain:www.16personalities.com)"
+      "WebFetch(domain:www.16personalities.com)",
+      "mcp__chrome-devtools__resize_page"
     ],
     "deny": [],
     "ask": [],
