@@ -68,49 +68,53 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          <CardHeader className="space-y-2 sm:space-y-4">
-            <div className="flex flex-col items-center sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
-              {/* Gradient Icon Container (2025 Best Practice) - Centered on mobile */}
-              <div
-                className={cn(
-                  'w-12 h-12 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
-                  `bg-gradient-to-br ${card.iconGradient}`,
-                  '[&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-6 sm:[&>svg]:h-6 [&>svg]:text-white'
-                )}
-              >
-                {card.icon}
-              </div>
-
+          {/* Material Design Standard: 24-32px padding, centered layout */}
+          <CardHeader className="space-y-6 px-6 pt-8 pb-4 sm:px-8 sm:pt-10">
+            {/* Badge & Lock Row - Top right positioning */}
+            <div className="absolute top-4 right-4 flex items-center gap-2">
               {/* Badge (uses CORRECTED shadcn variants) */}
               {'badge' in card && card.badge && (
-                <Badge variant={card.badge.variant || 'default'} className="text-[10px] sm:text-xs">
+                <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-1">
                   {card.badge.text}
                 </Badge>
               )}
 
               {/* Premium Lock Icon */}
               {'isPremium' in card && card.isPremium && (
-                <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+                <Lock className="w-5 h-5 text-amber-500" />
               )}
             </div>
 
-            {/* Card Title & Description - Centered on mobile */}
-            <div className="text-center sm:text-left">
-              <CardTitle className="text-base sm:text-lg font-bold line-clamp-2">
+            {/* Gradient Icon Container - Prominent focal point */}
+            <div className="flex justify-center">
+              <div
+                className={cn(
+                  'w-16 h-16 sm:w-18 sm:h-18 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
+                  `bg-gradient-to-br ${card.iconGradient}`,
+                  '[&>svg]:w-8 [&>svg]:h-8 sm:[&>svg]:w-9 sm:[&>svg]:h-9 [&>svg]:text-white'
+                )}
+              >
+                {card.icon}
+              </div>
+            </div>
+
+            {/* Card Title & Description - Centered with proper spacing */}
+            <div className="text-center space-y-3">
+              <CardTitle className="text-lg sm:text-xl font-bold leading-tight">
                 {card.title}
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-1 sm:mt-2 line-clamp-2">
+              <CardDescription className="text-sm sm:text-base leading-relaxed">
                 {card.description}
               </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-3 sm:space-y-4">
+          <CardContent className="space-y-4 px-6 sm:px-8">
             {/* Assessment-Specific Content */}
             {'assessmentType' in card && (
               <>
-                {/* Duration & Questions */}
-                <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                {/* Duration & Questions - Centered */}
+                <div className="flex items-center justify-center gap-3 text-xs sm:text-sm text-muted-foreground">
                   <span>{(card as AssessmentCard).duration}</span>
                   {(card as AssessmentCard).questions > 0 && (
                     <>
@@ -122,17 +126,17 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
 
                 {/* Progress Bar (CORRECTED: Custom div instead of shadcn Progress) */}
                 {(card as AssessmentCard).completionStatus && (
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">
+                      <span className="font-semibold">
                         {(card as AssessmentCard).completionStatus?.progress || 0}%
                       </span>
                     </div>
                     {/* Custom progress bar with orange gradient (student theme) */}
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                       <div
-                        className="h-full transition-all bg-gradient-to-r from-orange-500 to-orange-600"
+                        className="h-full transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600"
                         style={{
                           width: `${(card as AssessmentCard).completionStatus?.progress || 0}%`
                         }}
@@ -141,8 +145,8 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                   </div>
                 )}
 
-                {/* Benefit Statement */}
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                {/* Benefit Statement - Centered */}
+                <p className="text-xs sm:text-sm text-center sm:text-left text-muted-foreground leading-relaxed">
                   {(card as AssessmentCard).benefit}
                 </p>
               </>
@@ -151,14 +155,14 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             {/* Guidance-Specific Content */}
             {'serviceType' in card && (card as GuidanceCard).features && (
               <>
-                {/* Features List (Max 3) */}
-                <ul className="space-y-1 sm:space-y-2">
+                {/* Features List (Max 3) - Centered with checkmarks */}
+                <ul className="space-y-2 text-center sm:text-left">
                   {(card as GuidanceCard).features.slice(0, 3).map((feature, index) => (
                     <li
                       key={index}
-                      className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground"
+                      className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm text-muted-foreground"
                     >
-                      <span className="text-orange-600 mt-0.5">"</span>
+                      <span className="text-green-600 font-bold">✓</span>
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -166,7 +170,7 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
 
                 {/* Response Time */}
                 {(card as GuidanceCard).responseTime && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-center sm:text-left text-muted-foreground">
                     Response time: {(card as GuidanceCard).responseTime}
                   </p>
                 )}
@@ -186,18 +190,19 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             )}
           </CardContent>
 
-          {/* Card Footer with CTA Button */}
-          <CardFooter>
+          {/* Card Footer with CTA Button - Material Design: 32px top spacing */}
+          <CardFooter className="px-6 pb-6 pt-8 sm:px-8 sm:pb-8">
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
               className={cn(
-                'w-full text-xs sm:text-sm min-h-[32px] sm:min-h-[44px]', // Compact on mobile, WCAG AAA on desktop
-                'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white'
+                'w-full text-sm sm:text-base font-semibold min-h-[44px] sm:min-h-[48px] rounded-lg', // Apple/Material standard
+                'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white',
+                'transition-all duration-200 hover:shadow-lg active:scale-[0.98]'
               )}
               variant="default"
             >
               {card.actionText}
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
           </CardFooter>
         </Card>
