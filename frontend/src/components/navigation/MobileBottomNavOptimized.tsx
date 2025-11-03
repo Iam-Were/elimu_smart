@@ -87,7 +87,7 @@ export const MobileBottomNavOptimized: React.FC = () => {
               key={item.id}
               onClick={() => handleNavigation(item.path)}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[72px] min-h-[52px] relative',
+                'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[72px] min-h-[52px]',
                 active
                   ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md scale-105'
                   : 'text-gray-600 hover:bg-gray-50 active:scale-95 active:bg-gray-100'
@@ -95,17 +95,21 @@ export const MobileBottomNavOptimized: React.FC = () => {
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon className={cn('h-6 w-6', active ? 'drop-shadow-sm' : '')} />
+              {/* Icon with Badge Container - LinkedIn Style */}
+              <div className="relative">
+                <Icon className={cn('h-6 w-6', active ? 'drop-shadow-sm' : '')} />
+
+                {/* Badge for messages - LinkedIn positioning (top-right of icon) */}
+                {item.showBadge && item.badgeCount !== undefined && item.badgeCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 w-4 h-4 p-0 text-[9px] bg-red-500 hover:bg-red-500 flex items-center justify-center font-bold border border-white rounded-full">
+                    {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                  </Badge>
+                )}
+              </div>
+
               <span className={cn('text-xs font-medium', active ? 'font-semibold' : '')}>
                 {item.label}
               </span>
-
-              {/* Badge for messages */}
-              {item.showBadge && item.badgeCount && item.badgeCount > 0 && (
-                <Badge className="absolute top-1 right-2 w-5 h-5 p-0 text-[10px] bg-red-500 hover:bg-red-500 flex items-center justify-center font-semibold border-2 border-white">
-                  {item.badgeCount > 9 ? '9+' : item.badgeCount}
-                </Badge>
-              )}
 
               {/* Active indicator dot */}
               {active && (
