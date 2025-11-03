@@ -33,12 +33,6 @@ import {
   Calendar,
   MessageSquare,
   Search,
-  Menu,
-  X,
-  Library,
-  Network,
-  UserCircle,
-  CalendarDays,
   Compass,
   BarChart,
   UserCog,
@@ -66,7 +60,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -336,10 +329,19 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     isActive("/inbox") && "text-primary"
                   )}
                 >
-                  <MessageSquare className="h-5 w-5 mb-1" />
+                  <div className="relative">
+                    <MessageSquare className="h-5 w-5 mb-1" />
+                    {unreadMessageCount > 0 && (
+                      <Badge
+                        className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-bold bg-slate-900 text-white border-2 border-white shadow-md"
+                      >
+                        {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                      </Badge>
+                    )}
+                  </div>
                   <span className="text-xs font-light">Messages</span>
                   {isActive("/inbox") && (
-                    <div 
+                    <div
                       className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
                       style={{ backgroundColor: getThemeColor(currentTheme) }}
                     />
@@ -474,11 +476,11 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             <NotificationCenter />
           </div>
 
-          {/* Mobile Search and Menu - LinkedIn Style */}
+          {/* Mobile Search - LinkedIn Style */}
           <div className="flex md:hidden items-center gap-1">
             {/* Search Icon - Opens overlay - 44x44px touch target */}
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setIsSearchOpen(true)}
               aria-label="Open search"
@@ -486,49 +488,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
             >
               <Search className="h-5 w-5" />
             </Button>
-            
-            {/* Hamburger Menu with Secondary Navigation - 44x44px touch target */}
-            <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  aria-label="Open menu"
-                  className="h-11 w-11 p-0 touch-manipulation"
-                >
-                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" align="end" forceMount>
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  <UserCircle className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/guidance/book-session')}>
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  Book Session
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/guidance/resources')}>
-                  <Library className="mr-2 h-4 w-4" />
-                  Career Resources
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/guidance/professional-networking')}>
-                  <Network className="mr-2 h-4 w-4" />
-                  Professional Network
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
 
           <DropdownMenu>
