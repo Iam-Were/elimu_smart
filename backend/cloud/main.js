@@ -39,6 +39,9 @@ require('./communityForumFunctions');
 // Import counselor booking functions (auto-registers cloud functions)
 require('./counselorBookingFunctions');
 
+// Import RIASEC email report functions (auto-registers cloud functions)
+require('./riasecEmailReport');
+
 // =============================================================================
 // SECURITY: CHAT MESSAGE ACCESS CONTROL (Defense-in-Depth)
 // =============================================================================

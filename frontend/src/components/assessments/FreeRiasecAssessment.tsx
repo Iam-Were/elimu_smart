@@ -42,6 +42,7 @@ import {
   getRiasecTypeInfo
 } from '@/lib/assessmentProgress';
 import { callCloudFunction } from '@/lib/parseConfig';
+import { getParse } from '@/config/parse';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 
 // IIP RIASEC Markers - Free for non-commercial use
@@ -642,6 +643,40 @@ export const FreeRiasecAssessment: React.FC = () => {
         source: 'Parse_Server_Backend',
         timestamp: new Date().toISOString()
       });
+
+      // Send email report (non-blocking - don't block user flow if this fails)
+      try {
+        const Parse = await getParse();
+        const currentUser = Parse.User.current();
+
+        if (currentUser) {
+          console.log('📧 Attempting to send RIASEC report email...');
+          const emailResponse = await callCloudFunction('sendRiasecReportEmail', {
+            userId: currentUser.id,
+            assessmentId: result.assessmentId
+          });
+
+          if (emailResponse.success) {
+            console.log('✅ Email report sent successfully');
+            toast.success('Assessment complete! Check your email for detailed results.', {
+              duration: 5000
+            });
+          } else if (emailResponse.premiumFeature) {
+            console.log('⚠️ Email reports are premium-only');
+            toast.info('Assessment complete! Upgrade to Premium to receive detailed email reports.', {
+              duration: 6000,
+              action: {
+                label: 'Upgrade',
+                onClick: () => navigate('/pricing')
+              }
+            });
+          }
+        }
+      } catch (emailError) {
+        console.warn('Email report failed (non-critical):', emailError);
+        // Don't block user - email is enhancement, not requirement
+        toast.success('Assessment complete! View your results below.');
+      }
     } catch (error) {
       console.error('Failed to complete assessment on backend:', error);
       // Fallback to local calculation
