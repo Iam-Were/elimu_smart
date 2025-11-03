@@ -56,7 +56,7 @@ export const useChat = () => {
     rooms: [],
     messages: [],
     isLoading: false,
-    connectionStatus: 'disconnected',
+    connectionStatus: user ? 'connected' : 'disconnected',
     error: undefined,
     unreadCount: 0
   });
