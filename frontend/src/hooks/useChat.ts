@@ -61,6 +61,15 @@ export const useChat = () => {
     unreadCount: 0
   });
 
+  // Update connection status when user auth changes
+  useEffect(() => {
+    if (user) {
+      setChatState(prev => ({ ...prev, connectionStatus: 'connected' }));
+    } else {
+      setChatState(prev => ({ ...prev, connectionStatus: 'disconnected' }));
+    }
+  }, [user]);
+
   // Get session token for authenticated requests
   const getSessionToken = useCallback(() => {
     return Parse.User.current()?.getSessionToken() || undefined;
