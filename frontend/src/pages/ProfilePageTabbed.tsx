@@ -408,32 +408,31 @@ export const ProfilePageTabbed: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        {/* LinkedIn-Style Header Card */}
-        <Card className="mb-8 overflow-hidden">
-          {/* Cover Photo - LinkedIn aspect ratio (1584 x 396) */}
-          <div className={`h-48 md:h-52 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
-            <div className="absolute inset-0 bg-black/10"></div>
-            
-            {/* LinkedIn-style banner upload button - appears on hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
-              <Button
-                size="sm"
-                onClick={() => {/* Add banner upload logic */}}
-                className="gap-2 bg-white hover:bg-gray-100 text-gray-900 shadow-lg rounded-full px-4 py-2 font-semibold"
-              >
-                <Camera className="h-4 w-4" />
-                <span className="hidden sm:inline">Edit cover photo</span>
-                <span className="sm:hidden">Edit cover</span>
-              </Button>
-            </div>
-          </div>
+      {/* Edge-to-edge cover photo on mobile - LinkedIn style */}
+      <div className="mb-8">
+        {/* Cover Photo - Full width edge-to-edge */}
+        <div className={`h-32 md:h-52 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
+          <div className="absolute inset-0 bg-black/10"></div>
 
-          {/* Profile Section */}
-          <CardContent className="relative -mt-20 md:-mt-24 pb-6">
+          {/* Edit cover button - desktop only */}
+          <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
+            <Button
+              size="sm"
+              onClick={() => {/* Add banner upload logic */}}
+              className="gap-2 bg-white hover:bg-gray-100 text-gray-900 shadow-lg rounded-full px-4 py-2 font-semibold"
+            >
+              <Camera className="h-4 w-4" />
+              Edit
+            </Button>
+          </div>
+        </div>
+
+        {/* Profile Card - No border on mobile */}
+        <Card className="border-0 md:border shadow-none md:shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 md:-mt-24 relative">
+          <CardContent className="pt-20 md:pt-6 pb-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Profile Picture with Completion Ring - LinkedIn-style */}
-              <div className="relative group">
+              {/* Profile Picture with Completion Ring - Centered on mobile */}
+              <div className="relative group mx-auto md:mx-0">
                 <svg className="absolute inset-0 w-36 h-36 md:w-40 md:h-40 -left-2 -top-2" viewBox="0 0 144 144">
                   <circle cx="72" cy="72" r="68" fill="none" stroke="#e5e7eb" strokeWidth="4" />
                   <circle
@@ -483,25 +482,25 @@ export const ProfilePageTabbed: React.FC = () => {
                 </div>
               </div>
 
-              {/* Profile Info */}
-              <div className="flex-1 mt-4 md:mt-16">
+              {/* Profile Info - Centered on mobile */}
+              <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                       {user?.firstName} {user?.lastName}
                     </h1>
-                    <p className="text-xl text-gray-600 mt-1">
+                    <p className="text-lg md:text-xl text-gray-600 mt-1">
                       {user?.role === 'counselor'
                         ? 'Licensed Career Counselor | M.Ed Psychology | 8+ Years Experience'
                         : (editFormData.tagline || 'Student')}
                     </p>
-                    <p className="text-gray-500 mt-2 flex items-center gap-1">
+                    <p className="text-gray-500 mt-2 flex items-center justify-center md:justify-start gap-1 text-sm md:text-base">
                       <Globe className="h-4 w-4" />
                       {editFormData.location || 'Kenya'} • {user?.email}
                     </p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-center md:justify-start">
                     {user?.role === 'counselor' && (
                       <Button
                         onClick={() => setShowBookingModal(true)}
@@ -515,7 +514,7 @@ export const ProfilePageTabbed: React.FC = () => {
                       <DialogTrigger asChild>
                         <Button variant="outline" className="gap-2">
                           <Edit className="h-4 w-4" />
-                          Edit profile
+                          Edit
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
@@ -714,8 +713,10 @@ export const ProfilePageTabbed: React.FC = () => {
             </CardContent>
           </Card>
         )}
+      </div>
 
-        {/* Tabbed Content */}
+      {/* Tabbed Content - Contained with padding */}
+      <div className="container max-w-4xl mx-auto px-4">
         <Tabs
           value={activeTab}
           onValueChange={(value) => setSearchParams({ tab: value })}
@@ -800,8 +801,8 @@ export const ProfilePageTabbed: React.FC = () => {
                     Projects
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddProjectDialog(true)}>
-                    <Plus className="h-4 w-4" />
-                    Add project
+                    <Edit className="h-4 w-4" />
+                    Edit
                   </Button>
                 </div>
               </CardHeader>
@@ -896,8 +897,8 @@ export const ProfilePageTabbed: React.FC = () => {
                     )}
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddExperienceDialog(true)}>
-                    <Plus className="h-4 w-4" />
-                    Add experience
+                    <Edit className="h-4 w-4" />
+                    Edit
                   </Button>
                 </div>
               </CardHeader>
@@ -991,8 +992,8 @@ export const ProfilePageTabbed: React.FC = () => {
                     )}
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddSkillsDialog(true)}>
-                    <Plus className="h-4 w-4" />
-                    Add skills
+                    <Edit className="h-4 w-4" />
+                    Edit
                   </Button>
                 </div>
               </CardHeader>
@@ -1652,18 +1653,19 @@ export const ProfilePageTabbed: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
 
-        {/* Booking Modal */}
-        {user?.role === 'counselor' && user.id && (
-          <BookingModal
-            counselorId={user.id}
-            counselorName={`${user.firstName} ${user.lastName}`}
-            isOpen={showBookingModal}
-            onClose={() => setShowBookingModal(false)}
-          />
-        )}
+      {/* Booking Modal */}
+      {user?.role === 'counselor' && user.id && (
+        <BookingModal
+          counselorId={user.id}
+          counselorName={`${user.firstName} ${user.lastName}`}
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+        />
+      )}
 
-        {/* Sticky FAB - Mobile Only */}
+      {/* Sticky FAB - Mobile Only */}
         <div className="fixed bottom-20 right-4 z-40 md:hidden">
           {showFABMenu && (
             <div className="absolute bottom-16 right-0 flex flex-col gap-3 mb-2 animate-in fade-in slide-in-from-bottom-2">
@@ -1715,7 +1717,6 @@ export const ProfilePageTabbed: React.FC = () => {
             <Plus className="h-6 w-6" />
           </Button>
         </div>
-      </div>
 
       {/* Dialogs */}
       {showAddProjectDialog && (
