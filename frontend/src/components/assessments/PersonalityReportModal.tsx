@@ -328,12 +328,21 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                   <TrendingUp className={`h-5 w-5 ${typeTextColors[riasecType]}`} />
                   <h3 className="text-lg font-bold">What Motivates You</h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {personalityData.motivators.map((motivator, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
-                      {motivator}
-                    </Badge>
-                  ))}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {personalityData.motivators.slice(0, 3).map((motivator, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
+                        {motivator}
+                      </Badge>
+                    ))}
+                  </div>
+                  {personalityData.motivators.length > 3 && (
+                    <div className="p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-2 border-dashed border-orange-300">
+                      <p className="text-xs font-semibold text-orange-800">
+                        +{personalityData.motivators.length - 3} more motivators in your full email report
+                      </p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
@@ -395,7 +404,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                     <h3 className="text-lg font-bold">Your Strengths</h3>
                   </div>
                   <div className="space-y-3">
-                    {personalityData.strengths.map((strength, index) => (
+                    {personalityData.strengths.slice(0, 3).map((strength, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -10 }}
@@ -407,6 +416,16 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                         <span className="text-sm font-medium text-green-900">{strength}</span>
                       </motion.div>
                     ))}
+                    {personalityData.strengths.length > 3 && (
+                      <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-2 border-dashed border-orange-300">
+                        <p className="text-sm font-semibold text-orange-800">
+                          +{personalityData.strengths.length - 3} more strengths in your full email report
+                        </p>
+                        <p className="text-xs text-orange-600 mt-1">
+                          Subscribe to receive your complete personality analysis
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
 
@@ -420,7 +439,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                     <h3 className="text-lg font-bold">Growth Areas</h3>
                   </div>
                   <div className="space-y-3">
-                    {personalityData.challenges.map((challenge, index) => (
+                    {personalityData.challenges.slice(0, 2).map((challenge, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: 10 }}
@@ -432,6 +451,16 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                         <span className="text-sm font-medium text-orange-900">{challenge}</span>
                       </motion.div>
                     ))}
+                    {personalityData.challenges.length > 2 && (
+                      <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-2 border-dashed border-orange-300">
+                        <p className="text-sm font-semibold text-orange-800">
+                          +{personalityData.challenges.length - 2} more growth areas in your full email report
+                        </p>
+                        <p className="text-xs text-orange-600 mt-1">
+                          Get personalized development strategies via email
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </div>
@@ -517,7 +546,7 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
               </div>
 
               <div className="space-y-4">
-                {personalityData.developmentTips.map((tip, index) => (
+                {personalityData.developmentTips.slice(0, 2).map((tip, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
@@ -531,6 +560,16 @@ export const PersonalityReportModal: React.FC<PersonalityReportModalProps> = ({
                     <p className="text-sm font-medium text-gray-800 leading-relaxed">{tip}</p>
                   </motion.div>
                 ))}
+                {personalityData.developmentTips.length > 2 && (
+                  <div className="p-5 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-2 border-dashed border-orange-300">
+                    <p className="text-sm font-semibold text-orange-800">
+                      +{personalityData.developmentTips.length - 2} more personalized development tips in your full email report
+                    </p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      Get actionable strategies tailored to your personality type
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Next Steps */}
