@@ -148,7 +148,11 @@ const InboxPage: React.FC = () => {
                 name: (convData.lastSenderName || 'System') as string,
                 role: 'system'
               },
-              timestamp: convData.lastActivity ? new Date(convData.lastActivity as string | number | Date) : new Date(),
+              timestamp: convData.lastActivity
+                ? (typeof convData.lastActivity === 'object' && 'iso' in convData.lastActivity
+                    ? new Date(convData.lastActivity.iso as string)
+                    : new Date(convData.lastActivity as string | number | Date))
+                : new Date(),
               isRead: (convData.isRead !== false)
             },
             unreadCount: (convData.unreadCount || 0) as number,
