@@ -140,7 +140,6 @@ export const ProfilePageTabbed: React.FC = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [showFABMenu, setShowFABMenu] = useState(false);
-  const [profileCompletion, setProfileCompletion] = useState(0);
   const [showAddProjectDialog, setShowAddProjectDialog] = useState(false);
   const [showAddExperienceDialog, setShowAddExperienceDialog] = useState(false);
   const [showAddSkillsDialog, setShowAddSkillsDialog] = useState(false);
@@ -254,26 +253,6 @@ export const ProfilePageTabbed: React.FC = () => {
     };
     fetchAssessmentResults();
   }, []);
-
-  // Calculate profile completion
-  useEffect(() => {
-    if (!user) return;
-
-    let completionScore = 0;
-    if (user.profileImage) completionScore += 15;
-    if (user.firstName && user.lastName) completionScore += 10;
-    if (user.email) completionScore += 10;
-    if (editFormData.location) completionScore += 5;
-    if (editFormData.bio && editFormData.bio.length > 50) completionScore += 15;
-    if (projects.length > 0) completionScore += 10;
-    if (projects.length >= 2) completionScore += 10;
-    if (experience.length > 0) completionScore += 10;
-    if (experience.length >= 2) completionScore += 5;
-    if (skills.length > 0) completionScore += 5;
-    if (skills.length >= 5) completionScore += 5;
-
-    setProfileCompletion(Math.min(completionScore, 100));
-  }, [user, projects, experience, skills, editFormData]);
 
   // Fetch personality insights from backend
   useEffect(() => {
@@ -431,44 +410,14 @@ export const ProfilePageTabbed: React.FC = () => {
         <Card className="border-0 md:border shadow-none md:shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 md:-mt-24 relative">
           <CardContent className="pt-20 md:pt-6 pb-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Profile Picture with Completion Ring - Centered on mobile */}
+              {/* Profile Picture - Centered on mobile */}
               <div className="relative group mx-auto md:mx-0">
-                <svg className="absolute inset-0 w-36 h-36 md:w-40 md:h-40 -left-2 -top-2" viewBox="0 0 144 144">
-                  <circle cx="72" cy="72" r="68" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                  <circle
-                    cx="72"
-                    cy="72"
-                    r="68"
-                    fill="none"
-                    stroke={profileCompletion >= 80 ? '#10b981' : profileCompletion >= 50 ? '#f59e0b' : '#f97316'}
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(profileCompletion / 100) * 427} 427`}
-                    transform="rotate(-90 72 72)"
-                    className="transition-all duration-500"
-                  />
-                </svg>
-
                 <Avatar className="h-32 w-32 md:h-36 md:w-36 border-4 border-white bg-white relative z-10 shadow-lg">
                   <AvatarImage src={user?.profileImage} />
                   <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-2xl`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
                   </AvatarFallback>
                 </Avatar>
-
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20">
-                  <Badge
-                    className={`text-xs font-semibold px-2 py-0.5 shadow-sm ${
-                      profileCompletion >= 80
-                        ? 'bg-green-100 text-green-700 border-green-300'
-                        : profileCompletion >= 50
-                        ? 'bg-amber-100 text-amber-700 border-amber-300'
-                        : 'bg-orange-100 text-orange-700 border-orange-300'
-                    }`}
-                  >
-                    {profileCompletion}%
-                  </Badge>
-                </div>
 
                 {/* LinkedIn-style profile picture upload button - circular overlay on hover */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 rounded-full bg-black/40">
@@ -512,9 +461,10 @@ export const ProfilePageTabbed: React.FC = () => {
                     )}
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="gap-2">
-                          <Edit className="h-4 w-4" />
-                          Edit
+                        <Button variant="ghost" className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-muted-foreground/20 hover:border-muted-foreground/40">
+                          <Edit className="h-3.5 w-3.5" />
+                          <span className="hidden md:inline">Edit profile</span>
+                          <span className="md:hidden">Edit</span>
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
@@ -621,16 +571,6 @@ export const ProfilePageTabbed: React.FC = () => {
                         <div className="text-lg font-semibold">{skills.length}</div>
                         <div className="text-xs text-gray-500">Skills</div>
                       </div>
-                      <div className="text-center">
-                        <div
-                          className={`text-lg font-semibold ${
-                            profileCompletion >= 80 ? 'text-green-600' : profileCompletion >= 50 ? 'text-amber-600' : 'text-orange-600'
-                          }`}
-                        >
-                          {profileCompletion}%
-                        </div>
-                        <div className="text-xs text-gray-500">Profile strength</div>
-                      </div>
                     </>
                   )}
                 </div>
@@ -659,57 +599,6 @@ export const ProfilePageTabbed: React.FC = () => {
                 userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
                 onUploadSuccess={handleImageUpload}
               />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Profile Completion Suggestions */}
-        {profileCompletion < 100 && user?.role !== 'counselor' && (
-          <Card className="mb-6 border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Target className="h-5 w-5 text-blue-600" />
-                Strengthen Your Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                {!user?.profileImage && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <button onClick={() => setShowImageUploader(true)} className="hover:underline text-left">
-                      Add a profile picture (+15%)
-                    </button>
-                  </div>
-                )}
-                {(!editFormData.bio || editFormData.bio.length < 50) && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <span>Write an About section (+15%)</span>
-                  </div>
-                )}
-                {projects.length === 0 && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <span>Add your first project (+10%)</span>
-                  </div>
-                )}
-                {experience.length === 0 && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <span>Add work experience or internship (+10%)</span>
-                  </div>
-                )}
-                {skills.length === 0 && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <span>List your skills (+5%)</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Complete profiles get 3x more views from counselors and opportunities
-              </p>
             </CardContent>
           </Card>
         )}
@@ -751,9 +640,9 @@ export const ProfilePageTabbed: React.FC = () => {
                     <User className="h-5 w-5 text-orange-600" />
                     About
                   </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditDialogOpen(true)}>
-                    <Edit className="h-4 w-4" />
-                    Edit
+                  <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50" onClick={() => setIsEditDialogOpen(true)}>
+                    <Edit className="h-3.5 w-3.5" />
+                    <span className="hidden md:inline">Edit</span>
                   </Button>
                 </div>
               </CardHeader>
