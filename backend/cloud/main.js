@@ -27,6 +27,10 @@ require('./careerFunctions');
 // Import chat preferences functions (auto-registers cloud functions)
 // Fixed: removed 'const Parse = require('parse/node')' - uses global Parse
 require('./chatPreferencesFunctions');
+
+// Import personalized insights functions (auto-registers cloud functions)
+require('./personalizedInsightsFunctions');
+
 // Import dashboard functions (auto-registers cloud functions)
 require('./dashboardFunctions');
 
