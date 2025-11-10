@@ -132,7 +132,7 @@ Parse.Cloud.define('getUserSkills', async (request) => {
     query.descending('completedAt');
     query.limit(1);
 
-    const results = await query.find();
+    const results = await query.find({ useMasterKey: true });
 
     if (results.length === 0) {
       return {
@@ -143,7 +143,7 @@ Parse.Cloud.define('getUserSkills', async (request) => {
 
     const assessment = results[0];
     const scores = assessment.get('scores') || {};
-    
+
     // Convert scores object to array format expected by frontend
     const skillsArray = Object.entries(scores).map(([category, score]) => ({
       category,
@@ -158,7 +158,13 @@ Parse.Cloud.define('getUserSkills', async (request) => {
     };
   } catch (error) {
     console.error('Error fetching user skills:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch user skills');
+    console.error('Stack:', error.stack);
+    // Return empty result instead of throwing to prevent UI breakage
+    return {
+      hasCompleted: false,
+      skills: [],
+      error: error.message
+    };
   }
 });
 
