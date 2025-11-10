@@ -3,8 +3,16 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Target, Users, Sparkles, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export const PreFooterCTA: React.FC = () => {
+  const { user } = useAuth();
+
+  // Hide CTA for premium users
+  if (user?.isPremium) {
+    return null;
+  }
+
   return (
     <section className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 py-16 mt-20">
       <div className="container max-w-7xl mx-auto px-4">
