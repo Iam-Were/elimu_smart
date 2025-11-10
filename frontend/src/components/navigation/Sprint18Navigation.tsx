@@ -351,8 +351,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-
-
             {/* Counselor-specific navigation - Icon Above Label */}
             {user?.role === 'counselor' && (
               <>
@@ -452,26 +450,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
         {/* LinkedIn-Style Profile Section - Sprint 18 Requirement - Scroll-based animations */}
         <div className={cn("flex items-center space-x-2 transition-opacity duration-300", isScrolling ? "opacity-0" : "opacity-100")}>
-          {/* Messages - Desktop */}
-          <div className="hidden md:block">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/inbox')}
-              className="relative p-2"
-              aria-label="Messages"
-            >
-              <MessageSquare className="h-5 w-5" />
-              {unreadMessageCount > 0 && (
-                <Badge
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold bg-slate-900 text-white border-2 border-white shadow-md hover:bg-slate-800"
-                >
-                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
-                </Badge>
-              )}
-            </Button>
-          </div>
-
           {/* Notifications - Desktop */}
           <div className="hidden md:block">
             <NotificationCenter />
