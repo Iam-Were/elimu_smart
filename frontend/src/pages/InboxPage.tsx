@@ -19,6 +19,9 @@ import {
   Lock,
   Pin,
   ChevronLeft,
+  Smile,
+  Paperclip,
+  Info,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -461,6 +464,9 @@ const InboxPage: React.FC = () => {
                               </Badge>
                             )}
                           </div>
+                          {conversation.participant.isOnline && (
+                            <p className="text-xs text-green-600 font-medium mb-1">Online</p>
+                          )}
                           <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
                             {conversation.lastMessage.sender.id === user?.id ? 'You: ' : ''}
                             {conversation.lastMessage.content}
@@ -541,21 +547,32 @@ const InboxPage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-1.5">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
                         title="Call"
+                        onClick={() => toast.info('Voice calling coming soon!')}
                       >
                         <Phone className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
                         title="Video call"
+                        onClick={() => toast.info('Video calling coming soon!')}
                       >
                         <Video className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                        title="Conversation info"
+                        onClick={() => toast.info('Conversation details coming soon!')}
+                      >
+                        <Info className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -649,6 +666,24 @@ const InboxPage: React.FC = () => {
                 <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
                   <div className="flex items-end gap-3">
                     <div className="flex-1 flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 transition-all duration-200 focus-within:bg-white focus-within:shadow-md focus-within:border-2 focus-within:border-orange-500">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 hover:bg-orange-100 hover:text-orange-600 flex-shrink-0"
+                        onClick={() => toast.info('Emoji picker coming soon!')}
+                        title="Add emoji"
+                      >
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 hover:bg-orange-100 hover:text-orange-600 flex-shrink-0"
+                        onClick={() => toast.info('File attachments coming soon!')}
+                        title="Attach file"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
                       <Textarea
                         placeholder="Write a message..."
                         value={newMessage}
