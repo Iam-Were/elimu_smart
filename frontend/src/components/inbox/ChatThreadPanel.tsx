@@ -165,8 +165,8 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* HEADER */}
-      <div className="flex-shrink-0 px-4 py-4 border-b border-gray-200 flex items-center justify-between bg-white sticky top-0 z-10">
+      {/* HEADER - LinkedIn Style */}
+      <div className="flex-shrink-0 px-6 py-4 border-b-2 border-gray-200 flex items-center justify-between bg-white sticky top-0 z-10 shadow-sm">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Mobile back button */}
           {onBack && (
@@ -210,18 +210,33 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <Button variant="ghost" size="sm" className="hidden md:flex">
-            <Phone className="h-4 w-4" />
+        {/* Action buttons - LinkedIn Style */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:flex h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
+            title="Voice call"
+          >
+            <Phone className="h-5 w-5" />
             <span className="sr-only">Start voice call</span>
           </Button>
-          <Button variant="ghost" size="sm" className="hidden md:flex">
-            <Video className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:flex h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
+            title="Video call"
+          >
+            <Video className="h-5 w-5" />
             <span className="sr-only">Start video call</span>
           </Button>
-          <Button variant="ghost" size="sm">
-            <Info className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
+            title="Conversation info"
+          >
+            <Info className="h-5 w-5" />
             <span className="sr-only">View details</span>
           </Button>
           <DropdownMenu>
@@ -333,49 +348,51 @@ export const ChatThreadPanel: React.FC<ChatThreadPanelProps> = ({
         <div ref={messagesEndRef} />
       </ScrollArea>
 
-      {/* MESSAGE INPUT - Mobile Optimized */}
-      <div className="flex-shrink-0 px-4 py-4 border-t border-gray-200 bg-white">
-        <div className="flex items-center gap-2">
-          {/* Attachment button - 44x44px touch target */}
+      {/* MESSAGE INPUT - LinkedIn Style */}
+      <div className="flex-shrink-0 px-6 py-4 border-t-2 border-gray-200 bg-white">
+        <div className="flex items-center gap-3 w-full">
+          {/* Attachment button - LinkedIn Style */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-11 w-11 p-0 touch-manipulation"
+            className="flex-shrink-0 h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
             disabled={isSending}
+            title="Attach file"
           >
             <Paperclip className="h-5 w-5" />
             <span className="sr-only">Attach file</span>
           </Button>
 
-          {/* Emoji button - 44x44px touch target */}
+          {/* Emoji button - LinkedIn Style */}
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-11 w-11 p-0 touch-manipulation"
+            className="flex-shrink-0 h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
             disabled={isSending}
+            title="Add emoji"
           >
             <Smile className="h-5 w-5" />
             <span className="sr-only">Add emoji</span>
           </Button>
 
-          {/* Message input - Mobile optimized */}
-          <div className="flex-1 min-w-0">
+          {/* Message input - LinkedIn Style with enhanced focus */}
+          <div className="flex-1 min-w-0 relative">
             <Textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Type your message..."
-              className="resize-none min-h-[44px] max-h-[120px] w-full touch-manipulation"
+              className="resize-none min-h-[44px] max-h-[120px] w-full touch-manipulation bg-gray-50 border-gray-200 rounded-3xl px-5 py-3 transition-all duration-200 focus-within:bg-white focus-within:shadow-lg focus-within:ring-2 focus-within:ring-orange-500"
               rows={1}
               disabled={isSending}
             />
           </div>
 
-          {/* Send button - 44px min height, enhanced feedback */}
+          {/* Send button - LinkedIn Style with gradient */}
           <Button
             onClick={handleSend}
             disabled={!newMessage.trim() || isSending}
-            className="bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 flex-shrink-0 h-11 px-4 touch-manipulation transition-all active:scale-95"
+            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 h-11 px-6 rounded-full transition-all hover:scale-105 active:scale-95 shadow-md"
           >
             {isSending ? (
               <Loader2 className="h-5 w-5 animate-spin" />

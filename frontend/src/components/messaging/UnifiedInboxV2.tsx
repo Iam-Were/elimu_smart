@@ -38,7 +38,6 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
     currentRoom,
     messages,
     isLoading,
-    connectionStatus,
     sendMessage,
     setCurrentRoom,
     archiveConversation,
@@ -584,14 +583,6 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
           )}
         </div>
       </div>
-
-      {/* Connection status indicator */}
-      {connectionStatus !== 'connected' && (
-        <div className="absolute bottom-4 right-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>{connectionStatus === 'connecting' ? 'Connecting...' : 'Reconnecting...'}</span>
-        </div>
-      )}
     </div>
   );
 };
