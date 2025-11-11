@@ -22,6 +22,9 @@ import {
   Smile,
   Paperclip,
   Info,
+  Bell,
+  Check,
+  Trash2,
 } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +56,16 @@ interface LinkedInConversation {
   archivedAt?: Date;
 }
 
+interface Notification {
+  id: string;
+  type: 'message' | 'session' | 'assessment' | 'system';
+  title: string;
+  message: string;
+  timestamp: Date;
+  isRead: boolean;
+  actionUrl?: string;
+}
+
 const InboxPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedConversation, setSelectedConversation] = useState<LinkedInConversation | null>(null);
@@ -62,6 +75,8 @@ const InboxPage: React.FC = () => {
   const [showComposeDialog, setShowComposeDialog] = useState(false);
   const [conversations, setConversations] = useState<LinkedInConversation[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { user } = useAuth();
   const { userSubscription } = useSubscription();
@@ -73,24 +88,32 @@ const InboxPage: React.FC = () => {
 
   const isFreeStudent = user?.role === 'student' && !isPremium;
 
-  // Format date safely, handling invalid dates
-  const formatMessageDate = (timestamp: Date | string | number | undefined) => {
+  // Format date safely, handling invalid dates and Parse Date objects
+  const formatMessageDate = (timestamp: Date | string | number | undefined | any) => {
     if (!timestamp) return 'recently';
     try {
-      const date = new Date(timestamp);
+      let date: Date;
+
+      // Handle Parse Date format: {__type: "Date", iso: "2025-11-11T..."}
+      if (typeof timestamp === 'object' && timestamp.__type === 'Date' && timestamp.iso) {
+        date = new Date(timestamp.iso);
+      } else {
+        date = new Date(timestamp);
+      }
+
       if (isNaN(date.getTime())) return 'recently';
-      
+
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffMins = Math.floor(diffMs / 60000);
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
-      
+
       if (diffMins < 1) return 'now';
       if (diffMins < 60) return `${diffMins}m ago`;
       if (diffHours < 24) return `${diffHours}h ago`;
       if (diffDays < 7) return `${diffDays}d ago`;
-      
+
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } catch {
       return 'recently';
@@ -151,11 +174,8 @@ const InboxPage: React.FC = () => {
                 name: (convData.lastSenderName || 'System') as string,
                 role: 'system'
               },
-              timestamp: convData.lastActivity
-                ? (typeof convData.lastActivity === 'object' && 'iso' in convData.lastActivity
-                    ? new Date(convData.lastActivity.iso as string)
-                    : new Date(convData.lastActivity as string | number | Date))
-                : new Date(),
+              // Pass raw lastActivity to formatMessageDate which handles Parse Date format
+              timestamp: convData.lastActivity || new Date(),
               isRead: (convData.isRead !== false)
             },
             unreadCount: (convData.unreadCount || 0) as number,
@@ -203,6 +223,49 @@ const InboxPage: React.FC = () => {
     loadConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, rooms]);
+
+  // Generate sample notifications for testing
+  useEffect(() => {
+    const sampleNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'message',
+        title: 'New message from Counselor',
+        message: 'Responded to your university course question',
+        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+        isRead: false,
+        actionUrl: '/inbox'
+      },
+      {
+        id: '2',
+        type: 'session',
+        title: 'Session reminder',
+        message: 'Your career counseling session starts in 1 hour',
+        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+        isRead: false,
+        actionUrl: '/guidance/book-session'
+      },
+      {
+        id: '3',
+        type: 'assessment',
+        title: 'Assessment complete',
+        message: 'Your RIASEC results are ready to view',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        isRead: true,
+        actionUrl: '/assessment'
+      },
+      {
+        id: '4',
+        type: 'system',
+        title: 'KUCCPS deadline approaching',
+        message: 'Only 14 days left to submit your choices',
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+        isRead: true,
+        actionUrl: '/dashboard'
+      }
+    ];
+    setNotifications(sampleNotifications);
+  }, []);
 
   const filteredConversations = conversations.filter(conv =>
     conv.participant.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -377,10 +440,28 @@ const InboxPage: React.FC = () => {
             "w-full md:w-96 flex flex-col border-r border-gray-200 bg-white",
             selectedConversation && "hidden md:flex"
           )}>
-            {/* Header with Compose Button */}
+            {/* Header with Notification Bell and Compose Button */}
             <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Inbox</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-gray-900">Inbox</h2>
+                  {/* Notification Bell */}
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-9 p-0 rounded-lg hover:bg-orange-100 relative"
+                      onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                      <Bell className="h-5 w-5 text-gray-600" />
+                      {notifications.filter(n => !n.isRead).length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                          {notifications.filter(n => !n.isRead).length}
+                        </span>
+                      )}
+                    </Button>
+                  </div>
+                </div>
                 <Button
                   size="sm"
                   className={cn(
@@ -415,6 +496,104 @@ const InboxPage: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <div className="absolute top-24 left-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-xl max-h-96 overflow-hidden">
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs hover:bg-orange-100 hover:text-orange-600"
+                      onClick={() => {
+                        setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+                        toast.success('All notifications marked as read');
+                      }}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Mark all read
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 hover:bg-gray-100"
+                      onClick={() => setShowNotifications(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <ScrollArea className="max-h-80">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      <Bell className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No notifications</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={cn(
+                            "p-3 cursor-pointer hover:bg-gray-50 transition-colors",
+                            !notification.isRead && "bg-orange-50/50"
+                          )}
+                          onClick={() => {
+                            if (notification.actionUrl) {
+                              navigate(notification.actionUrl);
+                              setShowNotifications(false);
+                            }
+                            // Mark as read
+                            setNotifications(notifications.map(n =>
+                              n.id === notification.id ? { ...n, isRead: true } : n
+                            ));
+                          }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={cn(
+                              "flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center",
+                              notification.type === 'message' && "bg-orange-100",
+                              notification.type === 'session' && "bg-blue-100",
+                              notification.type === 'assessment' && "bg-green-100",
+                              notification.type === 'system' && "bg-purple-100"
+                            )}>
+                              {notification.type === 'message' && <MessageCircle className="h-5 w-5 text-orange-600" />}
+                              {notification.type === 'session' && <Phone className="h-5 w-5 text-blue-600" />}
+                              {notification.type === 'assessment' && <Check className="h-5 w-5 text-green-600" />}
+                              {notification.type === 'system' && <Bell className="h-5 w-5 text-purple-600" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <p className="font-semibold text-sm text-gray-900 truncate">{notification.title}</p>
+                                {!notification.isRead && (
+                                  <div className="flex-shrink-0 h-2 w-2 bg-orange-500 rounded-full" />
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-600 line-clamp-2 mb-1">{notification.message}</p>
+                              <p className="text-xs text-gray-500">{formatMessageDate(notification.timestamp)}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-shrink-0 h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNotifications(notifications.filter(n => n.id !== notification.id));
+                                toast.success('Notification removed');
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            )}
 
             {/* Conversations List */}
             <ScrollArea className="flex-1">
