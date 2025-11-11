@@ -144,10 +144,19 @@ const InboxPage: React.FC = () => {
 
           // Parse Date handling: Check multiple possible date field formats
           let timestamp: any = new Date(); // fallback
-          if (convData.lastActivity) {
-            // Try updatedAt as fallback if lastActivity is invalid
-            const dateField = convData.lastActivity || convData.updatedAt || convData.createdAt;
 
+          // Debug: Log the raw data to understand format
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Conversation data:', {
+              lastActivity: convData.lastActivity,
+              updatedAt: convData.updatedAt,
+              lastActivityType: typeof convData.lastActivity
+            });
+          }
+
+          const dateField = convData.lastActivity || convData.updatedAt || convData.createdAt;
+
+          if (dateField) {
             // Handle Parse Date object format {__type: "Date", iso: "..."}
             if (typeof dateField === 'object' && dateField !== null && '__type' in dateField) {
               const parseDateObj = dateField as { __type: string; iso?: string };
@@ -163,11 +172,6 @@ const InboxPage: React.FC = () => {
             else if (dateField instanceof Date) {
               timestamp = dateField;
             }
-          } else if (convData.updatedAt) {
-            // Fallback to updatedAt
-            timestamp = typeof convData.updatedAt === 'string'
-              ? new Date(convData.updatedAt)
-              : convData.updatedAt;
           }
 
           return {
@@ -539,8 +543,8 @@ const InboxPage: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Chat Header */}
-                <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                {/* Chat Header - LinkedIn Style */}
+                <div className="flex-shrink-0 px-6 py-4 border-b-2 border-gray-200 bg-white shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {/* Mobile Back Button */}
@@ -577,34 +581,34 @@ const InboxPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-1.5">
+                    {/* Action Buttons - LinkedIn Style */}
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
-                        title="Call"
+                        className="h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
+                        title="Voice call"
                         onClick={() => toast.info('Voice calling coming soon!')}
                       >
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-5 w-5 text-gray-700 hover:text-orange-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                        className="h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
                         title="Video call"
                         onClick={() => toast.info('Video calling coming soon!')}
                       >
-                        <Video className="h-4 w-4" />
+                        <Video className="h-5 w-5 text-gray-700 hover:text-orange-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors"
+                        className="h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-full transition-all hover:scale-110 active:scale-95"
                         title="Conversation info"
                         onClick={() => toast.info('Conversation details coming soon!')}
                       >
-                        <Info className="h-4 w-4" />
+                        <Info className="h-5 w-5 text-gray-700 hover:text-orange-600" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -694,10 +698,10 @@ const InboxPage: React.FC = () => {
                   </ScrollArea>
                 </div>
 
-                {/* Message Input */}
-                <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1 flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 transition-all duration-200 focus-within:bg-white focus-within:shadow-md focus-within:border-2 focus-within:border-orange-500">
+                {/* Message Input - LinkedIn Style */}
+                <div className="flex-shrink-0 px-6 py-4 border-t-2 border-gray-200 bg-white">
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-3xl px-5 py-3 transition-all duration-200 focus-within:bg-white focus-within:shadow-lg focus-within:ring-2 focus-within:ring-orange-500">
                       <Button
                         variant="ghost"
                         size="sm"
