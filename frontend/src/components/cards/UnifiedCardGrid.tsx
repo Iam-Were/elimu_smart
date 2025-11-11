@@ -45,11 +45,12 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
   const { handleCardClick } = useCardNavigation({ activityPrefix });
 
   // Bento grid classes based on variant
+  // Mobile-first: 1 column on mobile (< 640px), 2 cols on tablet (640px+), 3 cols on desktop (1024px+)
   const gridClasses = cn(
-    'grid gap-4 sm:gap-6',
-    variant === 'dashboard' && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(280px,auto)]',
-    variant === 'assessment' && 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(300px,auto)]',
-    variant === 'guidance' && 'grid-cols-2 md:grid-cols-2 auto-rows-[minmax(250px,auto)]',
+    'grid gap-3 sm:gap-4 md:gap-6',
+    variant === 'dashboard' && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(200px,auto)]',
+    variant === 'assessment' && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(220px,auto)]',
+    variant === 'guidance' && 'grid-cols-1 sm:grid-cols-2 auto-rows-[minmax(180px,auto)]',
     className
   );
 
@@ -68,48 +69,48 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          {/* Material Design Standard: Optimized padding for mobile */}
-          <CardHeader className="space-y-3 sm:space-y-6 px-3 pt-4 pb-2 sm:px-8 sm:pt-10 sm:pb-4">
-            {/* Badge & Lock Row - Top right positioning */}
-            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2">
-              {/* Badge (uses CORRECTED shadcn variants) */}
+          {/* Ultra-compact mobile design for Samsung Galaxy S20 Ultra */}
+          <CardHeader className="space-y-2 sm:space-y-4 md:space-y-6 px-3 pt-3 pb-1 sm:px-6 sm:pt-8 sm:pb-3 md:px-8 md:pt-10 md:pb-4">
+            {/* Badge & Lock Row - Smaller on mobile */}
+            <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 md:top-4 md:right-4 flex items-center gap-1 sm:gap-2">
+              {/* Badge */}
               {'badge' in card && card.badge && (
-                <Badge variant={card.badge.variant || 'default'} className="text-[10px] sm:text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1">
+                <Badge variant={card.badge.variant || 'default'} className="text-[9px] sm:text-[10px] md:text-xs font-medium px-1 py-0.5 sm:px-1.5 md:px-2">
                   {card.badge.text}
                 </Badge>
               )}
 
               {/* Premium Lock Icon */}
               {'isPremium' in card && card.isPremium && (
-                <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+                <Lock className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-amber-500" />
               )}
             </div>
 
-            {/* Gradient Icon Container - Compact on mobile */}
+            {/* Gradient Icon Container - Much smaller on mobile */}
             <div className="flex justify-center">
               <div
                 className={cn(
-                  'w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
+                  'w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center shadow-md sm:shadow-lg transition-transform group-hover:scale-110',
                   `bg-gradient-to-br ${card.iconGradient}`,
-                  '[&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8 [&>svg]:text-white'
+                  '[&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-7 sm:[&>svg]:h-7 md:[&>svg]:w-8 md:[&>svg]:h-8 [&>svg]:text-white'
                 )}
               >
                 {card.icon}
               </div>
             </div>
 
-            {/* Card Title & Description - Compact on mobile */}
-            <div className="text-center space-y-1 sm:space-y-3">
-              <CardTitle className="text-sm sm:text-lg md:text-xl font-bold leading-tight">
+            {/* Card Title & Description - Very compact on mobile */}
+            <div className="text-center space-y-0.5 sm:space-y-1 md:space-y-3">
+              <CardTitle className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold leading-tight line-clamp-2">
                 {card.title}
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm md:text-base leading-relaxed line-clamp-2">
+              <CardDescription className="text-[10px] sm:text-xs md:text-sm lg:text-base leading-snug line-clamp-2">
                 {card.description}
               </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-2 sm:space-y-4 px-3 sm:px-6 md:px-8">
+          <CardContent className="space-y-1 sm:space-y-2 md:space-y-4 px-3 py-1 sm:px-6 sm:py-2 md:px-8">
             {/* Assessment-Specific Content */}
             {'assessmentType' in card && (
               <>
@@ -190,19 +191,19 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             )}
           </CardContent>
 
-          {/* Card Footer with CTA Button - Compact on mobile */}
-          <CardFooter className="px-3 pb-3 pt-2 sm:px-6 sm:pb-6 sm:pt-8 md:px-8 md:pb-8">
+          {/* Card Footer with CTA Button - Ultra-compact on mobile */}
+          <CardFooter className="px-3 pb-2 pt-1 sm:px-6 sm:pb-4 sm:pt-4 md:px-8 md:pb-6 md:pt-8">
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
               className={cn(
-                'w-full text-xs sm:text-sm md:text-base font-semibold min-h-[44px] sm:min-h-[48px] rounded-lg', // Apple/Material standard
+                'w-full text-[10px] sm:text-xs md:text-sm lg:text-base font-semibold min-h-[44px] sm:min-h-[46px] md:min-h-[48px] rounded-lg', // Apple/Material standard
                 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white',
                 'transition-all duration-200 hover:shadow-lg active:scale-[0.98]'
               )}
               variant="default"
             >
               <span className="truncate">{card.actionText}</span>
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-1 sm:ml-2 transition-transform group-hover:translate-x-1 flex-shrink-0" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 ml-1 sm:ml-1.5 md:ml-2 transition-transform group-hover:translate-x-1 flex-shrink-0" />
             </Button>
           </CardFooter>
         </Card>
