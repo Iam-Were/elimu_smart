@@ -410,13 +410,13 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
     switch (theme) {
       case 'student':
         return {
-          title: 'Student Messaging',
+          title: 'Messages',
           placeholder: 'Search counselors and mentors...',
           inputPlaceholder: 'Type a message...',
         };
       case 'counselor':
         return {
-          title: 'Counselor Messaging',
+          title: 'Messages',
           placeholder: 'Search students...',
           inputPlaceholder: 'Type your response...',
         };

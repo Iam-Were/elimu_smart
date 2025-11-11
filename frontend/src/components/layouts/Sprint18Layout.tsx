@@ -43,8 +43,9 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
        !location.pathname.startsWith('/inbox') &&
        !location.pathname.startsWith('/messages') && <PreFooterCTA />}
 
-      {/* Modern Minimalist Footer */}
-      <ModernFooter />
+      {/* Modern Minimalist Footer - Hide on messaging/inbox pages */}
+      {!location.pathname.startsWith('/inbox') &&
+       !location.pathname.startsWith('/messages') && <ModernFooter />}
 
       {/* Mobile Bottom Navigation */}
       <MobileHeader />
