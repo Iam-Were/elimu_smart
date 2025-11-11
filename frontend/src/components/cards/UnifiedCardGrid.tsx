@@ -48,8 +48,8 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
   const gridClasses = cn(
     'grid gap-4 sm:gap-6',
     variant === 'dashboard' && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(280px,auto)]',
-    variant === 'assessment' && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(300px,auto)]',
-    variant === 'guidance' && 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(250px,auto)]',
+    variant === 'assessment' && 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(300px,auto)]',
+    variant === 'guidance' && 'grid-cols-2 md:grid-cols-2 auto-rows-[minmax(250px,auto)]',
     className
   );
 
@@ -68,48 +68,48 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          {/* Material Design Standard: 24-32px padding, centered layout */}
-          <CardHeader className="space-y-6 px-6 pt-8 pb-4 sm:px-8 sm:pt-10">
+          {/* Material Design Standard: Optimized padding for mobile */}
+          <CardHeader className="space-y-3 sm:space-y-6 px-3 pt-4 pb-2 sm:px-8 sm:pt-10 sm:pb-4">
             {/* Badge & Lock Row - Top right positioning */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
+            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2">
               {/* Badge (uses CORRECTED shadcn variants) */}
               {'badge' in card && card.badge && (
-                <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-1">
+                <Badge variant={card.badge.variant || 'default'} className="text-[10px] sm:text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1">
                   {card.badge.text}
                 </Badge>
               )}
 
               {/* Premium Lock Icon */}
               {'isPremium' in card && card.isPremium && (
-                <Lock className="w-5 h-5 text-amber-500" />
+                <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               )}
             </div>
 
-            {/* Gradient Icon Container - Prominent focal point */}
+            {/* Gradient Icon Container - Compact on mobile */}
             <div className="flex justify-center">
               <div
                 className={cn(
-                  'w-16 h-16 sm:w-18 sm:h-18 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
+                  'w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
                   `bg-gradient-to-br ${card.iconGradient}`,
-                  '[&>svg]:w-8 [&>svg]:h-8 sm:[&>svg]:w-9 sm:[&>svg]:h-9 [&>svg]:text-white'
+                  '[&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8 [&>svg]:text-white'
                 )}
               >
                 {card.icon}
               </div>
             </div>
 
-            {/* Card Title & Description - Centered with proper spacing */}
-            <div className="text-center space-y-3">
-              <CardTitle className="text-lg sm:text-xl font-bold leading-tight">
+            {/* Card Title & Description - Compact on mobile */}
+            <div className="text-center space-y-1 sm:space-y-3">
+              <CardTitle className="text-sm sm:text-lg md:text-xl font-bold leading-tight">
                 {card.title}
               </CardTitle>
-              <CardDescription className="text-sm sm:text-base leading-relaxed">
+              <CardDescription className="text-xs sm:text-sm md:text-base leading-relaxed line-clamp-2">
                 {card.description}
               </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 px-6 sm:px-8">
+          <CardContent className="space-y-2 sm:space-y-4 px-3 sm:px-6 md:px-8">
             {/* Assessment-Specific Content */}
             {'assessmentType' in card && (
               <>
@@ -190,19 +190,19 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             )}
           </CardContent>
 
-          {/* Card Footer with CTA Button - Material Design: 32px top spacing */}
-          <CardFooter className="px-6 pb-6 pt-8 sm:px-8 sm:pb-8">
+          {/* Card Footer with CTA Button - Compact on mobile */}
+          <CardFooter className="px-3 pb-3 pt-2 sm:px-6 sm:pb-6 sm:pt-8 md:px-8 md:pb-8">
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
               className={cn(
-                'w-full text-sm sm:text-base font-semibold min-h-[44px] sm:min-h-[48px] rounded-lg', // Apple/Material standard
+                'w-full text-xs sm:text-sm md:text-base font-semibold min-h-[44px] sm:min-h-[48px] rounded-lg', // Apple/Material standard
                 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white',
                 'transition-all duration-200 hover:shadow-lg active:scale-[0.98]'
               )}
               variant="default"
             >
-              {card.actionText}
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform group-hover:translate-x-1" />
+              <span className="truncate">{card.actionText}</span>
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-1 sm:ml-2 transition-transform group-hover:translate-x-1 flex-shrink-0" />
             </Button>
           </CardFooter>
         </Card>

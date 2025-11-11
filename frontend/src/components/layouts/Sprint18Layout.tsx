@@ -19,6 +19,9 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
 }) => {
   const location = useLocation();
 
+  // Check if current page is landing page
+  const isLandingPage = location.pathname === '/';
+
   return (
     <div className={cn("min-h-screen bg-background", className)}>
       {/* Sprint 18 Navigation */}
@@ -37,16 +40,11 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       </main>
 
 
-      {/* Pre-Footer CTA Section - Only on student pages (exclude dashboard, counselor, admin, messaging) */}
-      {location.pathname !== '/dashboard' &&
-       !location.pathname.startsWith('/counselor') &&
-       !location.pathname.startsWith('/admin') &&
-       !location.pathname.startsWith('/inbox') &&
-       !location.pathname.startsWith('/messages') && <PreFooterCTA />}
+      {/* Pre-Footer CTA Section - Only on landing page */}
+      {isLandingPage && <PreFooterCTA />}
 
-      {/* Modern Minimalist Footer - Hide on messaging/inbox pages */}
-      {!location.pathname.startsWith('/inbox') &&
-       !location.pathname.startsWith('/messages') && <ModernFooter />}
+      {/* Modern Minimalist Footer - Only on landing page */}
+      {isLandingPage && <ModernFooter />}
 
       {/* Mobile Bottom Navigation */}
       <MobileHeader />
