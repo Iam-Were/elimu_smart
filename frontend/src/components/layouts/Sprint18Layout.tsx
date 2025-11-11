@@ -23,10 +23,11 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
     <div className={cn("min-h-screen bg-background", className)}>
       {/* Sprint 18 Navigation */}
       <Sprint18Navigation />
-      
-      
-      {/* Persistent Search Header */}
-      <PersistentSearchHeader />
+
+      {/* Persistent Search Header - Hide on messaging/inbox pages */}
+      {!location.pathname.startsWith('/inbox') &&
+       !location.pathname.startsWith('/messages') && <PersistentSearchHeader />}
+
       {/* Main Content Area */}
       <main id="main-content" className="relative pt-16 md:pt-0" role="main" aria-label="Main content">
         {/* Content Container */}

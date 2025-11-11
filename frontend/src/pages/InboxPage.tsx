@@ -136,12 +136,40 @@ const InboxPage: React.FC = () => {
       if (Array.isArray(result) && result.length > 0) {
         const formattedConversations: LinkedInConversation[] = result.map((conv: unknown) => {
           const convData = conv as Record<string, unknown>;
-          
+
           // Handle both getInboxConversations and getChatRooms response formats
           const participantIds = (convData.participants as string[]) || [];
           const currentUserId = user.id;
           const otherParticipantId = participantIds.find(id => id !== currentUserId) || participantIds[0] || 'unknown';
-          
+
+          // Parse Date handling: Check multiple possible date field formats
+          let timestamp: any = new Date(); // fallback
+          if (convData.lastActivity) {
+            // Try updatedAt as fallback if lastActivity is invalid
+            const dateField = convData.lastActivity || convData.updatedAt || convData.createdAt;
+
+            // Handle Parse Date object format {__type: "Date", iso: "..."}
+            if (typeof dateField === 'object' && dateField !== null && '__type' in dateField) {
+              const parseDateObj = dateField as { __type: string; iso?: string };
+              if (parseDateObj.__type === 'Date' && parseDateObj.iso) {
+                timestamp = new Date(parseDateObj.iso);
+              }
+            }
+            // Handle ISO string directly
+            else if (typeof dateField === 'string') {
+              timestamp = new Date(dateField);
+            }
+            // Handle Date object
+            else if (dateField instanceof Date) {
+              timestamp = dateField;
+            }
+          } else if (convData.updatedAt) {
+            // Fallback to updatedAt
+            timestamp = typeof convData.updatedAt === 'string'
+              ? new Date(convData.updatedAt)
+              : convData.updatedAt;
+          }
+
           return {
             id: (convData.objectId || convData.id || '') as string,
             participant: {
@@ -159,8 +187,7 @@ const InboxPage: React.FC = () => {
                 name: (convData.lastSenderName || 'System') as string,
                 role: 'system'
               },
-              // Pass raw lastActivity to formatMessageDate which handles Parse Date format
-              timestamp: convData.lastActivity || new Date(),
+              timestamp,
               isRead: (convData.isRead !== false)
             },
             unreadCount: (convData.unreadCount || 0) as number,
