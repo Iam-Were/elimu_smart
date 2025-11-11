@@ -458,19 +458,37 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
     { id: 'archived', label: 'Archived', count: 0 },
   ];
 
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
+  const formatRelativeTime = (date: Date | string | any) => {
+    try {
+      // Handle Parse Date objects {__type: "Date", iso: "..."}
+      let parsedDate: Date;
+      if (date && typeof date === 'object' && date.__type === 'Date' && date.iso) {
+        parsedDate = new Date(date.iso);
+      } else {
+        parsedDate = new Date(date);
+      }
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+      // Check if date is valid
+      if (isNaN(parsedDate.getTime())) {
+        return 'recently';
+      }
 
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const now = new Date();
+      const diffMs = now.getTime() - parsedDate.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch (error) {
+      console.warn('Failed to format date:', date, error);
+      return 'recently';
+    }
   };
 
   return (
