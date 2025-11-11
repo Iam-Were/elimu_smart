@@ -45,7 +45,7 @@ interface LinkedInConversation {
     id: string;
     content: string;
     sender: { id: string; name: string; role: string; };
-    timestamp: Date;
+    timestamp: Date | string | number | any; // Allow Parse Date format
     isRead: boolean;
   };
   unreadCount: number;
