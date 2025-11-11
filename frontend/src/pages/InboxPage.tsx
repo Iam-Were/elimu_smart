@@ -403,10 +403,10 @@ const InboxPage: React.FC = () => {
         </div>
       )}
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto h-[calc(100vh-57px)] md:h-screen p-4 md:p-6">
-        {/* LinkedIn-style Unified Card */}
-        <div className="h-full flex bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* Main Container - LinkedIn Style */}
+      <div className="max-w-7xl mx-auto min-h-[calc(100vh-120px)] pt-6 pb-6 px-4 md:px-6">
+        {/* LinkedIn-style Unified Messaging Card */}
+        <div className="h-[calc(100vh-140px)] flex bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           
           {/* LEFT SIDEBAR: Conversations List */}
           <div className={cn(
