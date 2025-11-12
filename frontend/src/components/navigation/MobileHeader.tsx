@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
-  Bell,
-
   User,
   Settings,
   LogOut,
   HelpCircle,
   CreditCard,
-
+  Shield,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -24,6 +21,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useThemeContext } from '@/hooks/useThemeContext';
 import { getRoleColor } from '@/constants/theme';
+import { NotificationCenter } from '@/components/common/NotificationCenter';
 
 /**
  * LinkedIn-style Mobile Header
@@ -103,16 +101,7 @@ export const MobileHeader: React.FC = () => {
           )}
 
           {/* Notifications */}
-          <button
-            onClick={() => navigate('/notifications')}
-            className="p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors relative"
-            aria-label="Notifications"
-          >
-            <Bell className="h-5 w-5 text-gray-600" />
-            <Badge className="absolute -top-0.5 -right-0.5 w-4 h-4 p-0 text-[10px] bg-red-500 hover:bg-red-500 flex items-center justify-center font-semibold border border-white">
-              5
-            </Badge>
-          </button>
+          <NotificationCenter />
 
           {/* Avatar Menu */}
           <DropdownMenu>
@@ -139,36 +128,61 @@ export const MobileHeader: React.FC = () => {
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
 
-              {/* Menu Items */}
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                <User className="h-4 w-4 mr-3" />
-                Profile
+              {/* Menu Items - Matching Desktop */}
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>View Profile</span>
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
-                <Settings className="h-4 w-4 mr-3" />
-                Settings
+              <DropdownMenuItem onClick={() => navigate('/profile/edit')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Edit Profile</span>
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate('/subscription')}>
-                <CreditCard className="h-4 w-4 mr-3" />
-                Subscription
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Account Settings</span>
               </DropdownMenuItem>
 
+              <DropdownMenuItem onClick={() => navigate('/settings/privacy')} className="cursor-pointer">
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Privacy Settings</span>
+              </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate('/help')}>
-                <HelpCircle className="h-4 w-4 mr-3" />
-                Help Center
+              <DropdownMenuSeparator />
+
+              {user?.role === 'student' && (
+                <>
+                  <DropdownMenuItem onClick={() => navigate('/subscription')} className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Subscription Status</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => navigate('/billing')} className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Billing & Invoices</span>
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Help & Support</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onClick={logout}
-                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                className="cursor-pointer text-red-600 focus:text-red-600"
+                onClick={async () => {
+                  await logout();
+                  navigate('/');
+                }}
               >
-                <LogOut className="h-4 w-4 mr-3" />
-                Logout
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
