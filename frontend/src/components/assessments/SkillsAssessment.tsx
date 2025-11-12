@@ -617,55 +617,58 @@ export const SkillsAssessment: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Navigation */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="flex gap-2">
-            {currentQuestion > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={goToPrevious}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </Button>
-            )}
-            
+        {/* Navigation - 2x2 Grid on Mobile */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between sm:items-center">
+          {currentQuestion > 0 ? (
             <Button
-              variant="ghost"
-              className="gap-2"
-              onClick={handleSaveAndExit}
-            >
-              <Save className="h-4 w-4" />
-              Save & Continue Later
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="gap-2"
-              onClick={handleExitAssessment}
+              variant="outline"
+              onClick={goToPrevious}
+              className="gap-2 w-full sm:w-auto"
             >
               <ArrowLeft className="h-4 w-4" />
-              Exit Assessment
+              Previous
             </Button>
-          </div>
-          
+          ) : (
+            <div className="hidden sm:block" />
+          )}
+
+          <Button
+            variant="outline"
+            className="gap-2 w-full sm:w-auto order-2 sm:order-none"
+            onClick={handleSaveAndExit}
+          >
+            <Save className="h-4 w-4" />
+            <span className="hidden sm:inline">Save & Continue Later</span>
+            <span className="sm:hidden">Save</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="gap-2 w-full sm:w-auto order-3 sm:order-none col-span-2 sm:col-span-1"
+            onClick={handleExitAssessment}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Exit Assessment
+          </Button>
+
           {currentQuestion < totalQuestions - 1 ? (
             <Button
               onClick={handleNext}
               disabled={currentResponse === undefined}
-              className="gap-2 bg-orange-600 hover:bg-orange-700"
+              className="gap-2 bg-orange-600 hover:bg-orange-700 w-full sm:w-auto order-1 sm:order-none"
             >
-              Next Question
+              <span className="hidden sm:inline">Next Question</span>
+              <span className="sm:hidden">Next</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button
               onClick={handleNext}
               disabled={currentResponse === undefined}
-              className="gap-2 bg-green-600 hover:bg-green-700"
+              className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto order-1 sm:order-none"
             >
-              Complete Assessment
+              <span className="hidden sm:inline">Complete Assessment</span>
+              <span className="sm:hidden">Complete</span>
               <CheckCircle className="h-4 w-4" />
             </Button>
           )}

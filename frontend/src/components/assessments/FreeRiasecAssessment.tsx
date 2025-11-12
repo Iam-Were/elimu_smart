@@ -1727,101 +1727,104 @@ export const FreeRiasecAssessment: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Navigation */}
-      <div className="flex justify-between items-center">
-        {currentQuestion > 0 && (
-          <Button 
-            variant="outline" 
+      {/* Navigation - 2x2 Grid on Mobile */}
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between sm:items-center">
+        {currentQuestion > 0 ? (
+          <Button
+            variant="outline"
             onClick={goToPrevious}
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <ArrowLeft className="h-4 w-4" />
             Previous
           </Button>
+        ) : (
+          <div className="hidden sm:block" />
         )}
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={async () => {
-              // Always save to localStorage first (instant UX)
+        <Button
+          variant="outline"
+          className="gap-2 w-full sm:w-auto order-2 sm:order-none"
+          onClick={async () => {
+            // Always save to localStorage first (instant UX)
+            localStorage.setItem('riasec_progress', JSON.stringify({
+              currentQuestion,
+              responses,
+              timestamp: Date.now()
+            }));
+
+            if (assessmentId) {
+              try {
+                const sessionToken = localStorage.getItem('parse-session-token') || '';
+
+                // Update assessment progress (only update metadata, not individual responses)
+                await callCloudFunction('updateAssessmentProgress', {
+                  assessmentType: 'riasec-discovery',
+                  progress: Math.round((currentQuestion / totalQuestions) * 100),
+                  status: 'in-progress'
+                }, sessionToken);
+
+                toast.success('Progress saved!', {
+                  description: 'You can continue later from this point.'
+                });
+              } catch (error) {
+                console.error('Failed to save progress to server:', error);
+                toast.info('Progress saved locally', {
+                  description: 'Continue anytime from this device.'
+                });
+              }
+            } else {
+              toast.info('Progress saved locally', {
+                description: 'Continue anytime from this device.'
+              });
+            }
+          }}
+        >
+          <Save className="h-4 w-4" />
+          <span className="hidden sm:inline">Save & Continue Later</span>
+          <span className="sm:hidden">Save</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="gap-2 w-full sm:w-auto order-3 sm:order-none col-span-2 sm:col-span-1"
+          onClick={() => {
+            if (window.confirm('Exit assessment? Your progress will be saved and you can continue later.')) {
+              // Save current progress before exiting
               localStorage.setItem('riasec_progress', JSON.stringify({
                 currentQuestion,
                 responses,
                 timestamp: Date.now()
               }));
+              navigate('/assessment');
+            }
+          }}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Exit Assessment
+        </Button>
 
-              if (assessmentId) {
-                try {
-                  const sessionToken = localStorage.getItem('parse-session-token') || '';
-
-                  // Update assessment progress (only update metadata, not individual responses)
-                  await callCloudFunction('updateAssessmentProgress', {
-                    assessmentType: 'riasec-discovery',
-                    progress: Math.round((currentQuestion / totalQuestions) * 100),
-                    status: 'in-progress'
-                  }, sessionToken);
-
-                  toast.success('Progress saved!', {
-                    description: 'You can continue later from this point.'
-                  });
-                } catch (error) {
-                  console.error('Failed to save progress to server:', error);
-                  toast.info('Progress saved locally', {
-                    description: 'Continue anytime from this device.'
-                  });
-                }
-              } else {
-                toast.info('Progress saved locally', {
-                  description: 'Continue anytime from this device.'
-                });
-              }
-            }}
-          >
-            <Save className="h-4 w-4" />
-            Save & Continue Later
-          </Button>
-
+        {currentQuestion < totalQuestions - 1 ? (
           <Button
-            variant="ghost"
-            className="gap-2"
-            onClick={() => {
-              if (window.confirm('Exit assessment? Your progress will be saved and you can continue later.')) {
-                // Save current progress before exiting
-                localStorage.setItem('riasec_progress', JSON.stringify({
-                  currentQuestion,
-                  responses,
-                  timestamp: Date.now()
-                }));
-                navigate('/assessment');
-              }
-            }}
+            onClick={handleNext}
+            disabled={currentResponse === undefined}
+            className="gap-2 bg-orange-600 hover:bg-orange-700 w-full sm:w-auto order-1 sm:order-none"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Exit Assessment
+            <span className="hidden sm:inline">Next Question</span>
+            <span className="sm:hidden">Next</span>
+            <ArrowLeft className="h-4 w-4 rotate-180" />
           </Button>
-
-          {currentQuestion < totalQuestions - 1 ? (
-            <Button
-              onClick={handleNext}
-              disabled={currentResponse === undefined}
-              className="gap-2 bg-orange-600 hover:bg-orange-700"
-            >
-              Next Question
-              <ArrowLeft className="h-4 w-4 rotate-180" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNext}
-              disabled={currentResponse === undefined}
-              className="gap-2 bg-green-600 hover:bg-green-700"
-            >
-              Complete Assessment
-              <CheckCircle className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        ) : (
+          <Button
+            onClick={handleNext}
+            disabled={currentResponse === undefined}
+            className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto order-1 sm:order-none"
+          >
+            <span className="hidden sm:inline">Complete Assessment</span>
+            <span className="sm:hidden">Complete</span>
+            <CheckCircle className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
