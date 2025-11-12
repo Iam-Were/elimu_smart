@@ -902,34 +902,34 @@ export const ProfilePageTabbed: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
                     {skills.map((skill) => (
-                      <div key={skill.name} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+                      <div key={skill.name} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-2 sm:p-4 hover:shadow-md transition-shadow">
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-1.5 sm:mb-3">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50 truncate">
+                            <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-50 truncate">
                               {skill.name}
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{skill.category}</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">{skill.category}</p>
                           </div>
-                          <span className="text-xs font-medium text-orange-600 dark:text-orange-400 ml-2">
+                          <span className="text-[10px] sm:text-xs font-medium text-orange-600 dark:text-orange-400 ml-2">
                             {skill.level}%
                           </span>
                         </div>
-                        
+
                         {/* LinkedIn-style Progress Bar */}
                         <div className="relative">
-                          <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-1.5 sm:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
                               style={{ width: `${skill.level}%` }}
                             />
                           </div>
-                          
+
                           {/* Level label */}
-                          <div className="flex justify-between mt-1.5">
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex justify-between mt-0.5 sm:mt-1.5">
+                            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                               {skill.level >= 75 ? 'Expert' : skill.level >= 50 ? 'Advanced' : skill.level >= 25 ? 'Intermediate' : 'Beginner'}
                             </span>
                           </div>
@@ -961,23 +961,23 @@ export const ProfilePageTabbed: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-                          <div className="text-3xl font-bold text-orange-600 mb-1">{assessmentSummary.hollandCode}</div>
-                          <p className="text-sm text-muted-foreground">Holland Code</p>
-                          <p className="text-xs text-muted-foreground mt-1">Primary: {assessmentSummary.primaryType}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
+                        <div className="text-center p-2 sm:p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-xl sm:text-3xl font-bold text-orange-600 mb-0.5 sm:mb-1">{assessmentSummary.hollandCode}</div>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Holland Code</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Primary: {assessmentSummary.primaryType}</p>
                         </div>
 
-                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-                          <div className="text-3xl font-bold text-green-600 mb-1">{assessmentSummary.assessmentsCompleted}</div>
-                          <p className="text-sm text-muted-foreground">Assessments Completed</p>
+                        <div className="text-center p-2 sm:p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-xl sm:text-3xl font-bold text-green-600 mb-0.5 sm:mb-1">{assessmentSummary.assessmentsCompleted}</div>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Assessments Completed</p>
                         </div>
 
-                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-                          <div className="text-lg font-semibold text-blue-600 mb-1">
+                        <div className="text-center p-2 sm:p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-sm sm:text-lg font-semibold text-blue-600 mb-0.5 sm:mb-1 line-clamp-1">
                             {assessmentSummary.topCareers.length > 0 ? assessmentSummary.topCareers[0].name : 'N/A'}
                           </div>
-                          <p className="text-sm text-muted-foreground">Top Career Match</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Top Career Match</p>
                         </div>
                       </div>
                     </CardContent>
@@ -1009,25 +1009,25 @@ export const ProfilePageTabbed: React.FC = () => {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-2 sm:gap-4">
                     {assessments.map((assessment) => (
                       <Card key={assessment.id} className="hover:shadow-lg transition-all duration-200">
-                        <CardHeader>
+                        <CardHeader className="p-3 sm:p-6">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
-                                  <ClipboardCheck className="h-5 w-5 text-white" />
+                              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                                  <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                 </div>
                                 <div>
-                                  <CardTitle className="text-lg">{assessment.title}</CardTitle>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge className="bg-green-500">
-                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  <CardTitle className="text-sm sm:text-lg">{assessment.title}</CardTitle>
+                                  <div className="flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
+                                    <Badge className="bg-green-500 text-[10px] sm:text-xs px-1 sm:px-2">
+                                      <CheckCircle2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                                       Completed
                                     </Badge>
-                                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
+                                    <span className="text-[10px] sm:text-sm text-muted-foreground flex items-center gap-0.5 sm:gap-1">
+                                      <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                       {formatDate(assessment.completedAt)}
                                     </span>
                                   </div>
@@ -1065,7 +1065,7 @@ export const ProfilePageTabbed: React.FC = () => {
                             >
                               {/* Quick Summary with Avatar - Stagger Animation */}
                               <motion.div
-                                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4"
                                 initial="hidden"
                                 animate="visible"
                                 variants={{
@@ -1168,7 +1168,7 @@ export const ProfilePageTabbed: React.FC = () => {
                                       Learn More
                                     </Button>
                                   </div>
-                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
                                     {/* Radar Chart with entrance animation */}
                                     <motion.div
                                       initial={{ opacity: 0, rotate: -10 }}

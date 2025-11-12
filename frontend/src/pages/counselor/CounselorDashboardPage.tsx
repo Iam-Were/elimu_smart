@@ -75,30 +75,30 @@ const CounselorDashboardPage: React.FC = () => {
                   This Month's Performance Summary
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center space-y-2">
-                    <div className="text-3xl font-bold text-white">
+              <CardContent className="p-3 sm:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
+                  <div className="text-center space-y-0.5 sm:space-y-2">
+                    <div className="text-xl sm:text-3xl font-bold text-white">
                       {performance.completionRate}%
                     </div>
-                    <div className="text-sm text-white/90">Session Completion</div>
-                    <div className="text-xs text-white/80">Last 30 days</div>
+                    <div className="text-[10px] sm:text-sm text-white/90">Session Completion</div>
+                    <div className="text-[8px] sm:text-xs text-white/80">Last 30 days</div>
                   </div>
-                  <div className="text-center space-y-2">
-                    <div className="text-3xl font-bold text-white">
+                  <div className="text-center space-y-0.5 sm:space-y-2">
+                    <div className="text-xl sm:text-3xl font-bold text-white">
                       {performance.avgResponseTime}h
                     </div>
-                    <div className="text-sm text-white/90">Avg Response Time</div>
-                    <div className="text-xs text-white/80">
+                    <div className="text-[10px] sm:text-sm text-white/90">Avg Response Time</div>
+                    <div className="text-[8px] sm:text-xs text-white/80">
                       {performance.avgResponseTime < 24 ? 'Excellent' : 'Good'}
                     </div>
                   </div>
-                  <div className="text-center space-y-2">
-                    <div className="text-3xl font-bold text-white">
+                  <div className="text-center space-y-0.5 sm:space-y-2">
+                    <div className="text-xl sm:text-3xl font-bold text-white">
                       {performance.avgSatisfaction.toFixed(1)}
                     </div>
-                    <div className="text-sm text-white/90">Student Satisfaction</div>
-                    <div className="text-xs text-white/80">Out of 5.0</div>
+                    <div className="text-[10px] sm:text-sm text-white/90">Student Satisfaction</div>
+                    <div className="text-[8px] sm:text-xs text-white/80">Out of 5.0</div>
                   </div>
                 </div>
               </CardContent>
@@ -108,8 +108,8 @@ const CounselorDashboardPage: React.FC = () => {
           {/* Footer Insights */}
           {!isLoading && !error && performance && (
             <Card className="bg-white dark:bg-slate-900 border-slate-200/30 dark:border-slate-700/30">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <CardContent className="p-3 sm:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-8">
                   <div className="space-y-3">
                     <h4 className="font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-2">
                       <IconContainer

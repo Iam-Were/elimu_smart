@@ -39,7 +39,7 @@ const AdminPortal: React.FC = () => {
               </p>
               
               {/* Stats Row */}
-              <div className="grid grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-6">
                 <div>
                   <div className="text-3xl font-bold">25K+</div>
                   <div className="text-purple-200 text-sm">Active Users</div>
@@ -111,7 +111,7 @@ const AdminPortal: React.FC = () => {
         </div>
         
         {/* Primary Admin Tools Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-8 mb-16">
           {/* User Management */}
           <div className="bg-white rounded-xl p-8 border border-gray-200 hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group text-center">
             <div className="flex flex-col items-center">
@@ -243,7 +243,7 @@ const AdminPortal: React.FC = () => {
         </div>
 
         {/* Secondary Admin Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-12">
 
           {/* Content Management - NEW */}
           <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all duration-300">
@@ -345,7 +345,7 @@ const AdminPortal: React.FC = () => {
           </div>
           
           {/* Metrics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-6">
             <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                 <TrendingUp className="h-6 w-6 text-purple-600" />

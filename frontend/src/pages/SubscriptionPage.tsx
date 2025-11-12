@@ -100,44 +100,44 @@ export const SubscriptionPage = () => {
 
       {/* Trust Badges Section */}
       <div className="mb-12 max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4">
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-background">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600 shadow-lg">
-                  <Shield className="h-6 w-6 text-white" />
+            <CardContent className="pt-2 pb-2 sm:pt-6 sm:pb-6">
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600 shadow-lg">
+                  <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">30-Day Money-Back Guarantee</h3>
-                  <p className="text-xs text-muted-foreground">Risk-free trial period</p>
+                  <h3 className="font-semibold text-[9px] sm:text-sm">30-Day Money-Back Guarantee</h3>
+                  <p className="text-[7px] sm:text-xs text-muted-foreground">Risk-free trial period</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-background">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
-                  <Users className="h-6 w-6 text-white" />
+            <CardContent className="pt-2 pb-2 sm:pt-6 sm:pb-6">
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
+                  <Users className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">Trusted by 2,000+ Students</h3>
-                  <p className="text-xs text-muted-foreground">Across Kenya</p>
+                  <h3 className="font-semibold text-[9px] sm:text-sm">Trusted by 2,000+ Students</h3>
+                  <p className="text-[7px] sm:text-xs text-muted-foreground">Across Kenya</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-background">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
-                  <Award className="h-6 w-6 text-white" />
+            <CardContent className="pt-2 pb-2 sm:pt-6 sm:pb-6">
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+                  <Award className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">Safaricom M-Pesa Verified</h3>
-                  <p className="text-xs text-muted-foreground">Secure payments</p>
+                  <h3 className="font-semibold text-[9px] sm:text-sm">Safaricom M-Pesa Verified</h3>
+                  <p className="text-[7px] sm:text-xs text-muted-foreground">Secure payments</p>
                 </div>
               </div>
             </CardContent>
@@ -200,49 +200,49 @@ export const SubscriptionPage = () => {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-12">
         {plans.map((plan) => (
           <Card key={plan.id} className={`relative ${plan.popular ? 'border-orange-500 border-2 shadow-lg' : ''}`}>
             {plan.popular && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1">
+              <div className="absolute -top-2 sm:-top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-2 py-0 sm:px-4 sm:py-1 text-[8px] sm:text-xs">
                   Most Popular
                 </Badge>
               </div>
             )}
 
-            <CardHeader>
-              <CardTitle className="text-2xl">{plan.name}</CardTitle>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-2xl">{plan.name}</CardTitle>
               <CardDescription>
-                <span className="text-3xl font-bold text-orange-600">
+                <span className="text-lg sm:text-3xl font-bold text-orange-600">
                   {plan.price === 0 ? 'Free' : `KES ${plan.price.toLocaleString()}`}
                 </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-[9px] sm:text-sm text-muted-foreground">
                   {plan.duration === 'forever' ? '' : `/${plan.duration === 'monthly' ? 'month' : 'year'}`}
                 </span>
               </CardDescription>
               {plan.savings && (
-                <Badge variant="secondary" className="w-fit mt-2">
+                <Badge variant="secondary" className="w-fit mt-1 sm:mt-2 text-[7px] sm:text-xs px-1 py-0 sm:px-2">
                   Save KES {plan.savings.toLocaleString()}
                 </Badge>
               )}
             </CardHeader>
 
-            <CardContent>
-              <ul className="space-y-3">
+            <CardContent className="p-3 sm:p-6">
+              <ul className="space-y-1 sm:space-y-3">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
+                  <li key={index} className="flex items-start gap-1 sm:gap-2">
+                    <Check className="h-3 w-3 sm:h-5 sm:w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-[8px] sm:text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
             </CardContent>
 
-            <CardFooter>
+            <CardFooter className="p-3 sm:p-6">
               {plan.price === 0 ? (
                 <Button
-                  className="w-full"
+                  className="w-full text-[9px] sm:text-sm min-h-[28px] sm:min-h-[40px]"
                   variant="outline"
                   disabled
                 >
@@ -250,7 +250,7 @@ export const SubscriptionPage = () => {
                 </Button>
               ) : userSubscription?.plan === plan.id && userSubscription?.status === 'active' ? (
                 <Button
-                  className="w-full"
+                  className="w-full text-[9px] sm:text-sm min-h-[28px] sm:min-h-[40px]"
                   variant="default"
                   disabled
                 >
@@ -258,7 +258,7 @@ export const SubscriptionPage = () => {
                 </Button>
               ) : (
                 <Button
-                  className="w-full"
+                  className="w-full text-[9px] sm:text-sm min-h-[28px] sm:min-h-[40px]"
                   variant={plan.popular ? 'default' : 'outline'}
                   onClick={() => navigate(`/checkout/${plan.id}`)}
                 >

@@ -45,7 +45,7 @@ interface LinkedInConversation {
     id: string;
     content: string;
     sender: { id: string; name: string; role: string; };
-    timestamp: Date | string | number | any; // Allow Parse Date format
+    timestamp: Date | string | number | unknown; // Allow Parse Date format
     isRead: boolean;
   };
   unreadCount: number;
@@ -73,17 +73,30 @@ const InboxPage: React.FC = () => {
 
   const isFreeStudent = user?.role === 'student' && !isPremium;
 
+  // Helper to convert unknown timestamp to Date
+  const toDate = (timestamp: unknown): Date => {
+    if (typeof timestamp === 'object' && timestamp && '__type' in timestamp && timestamp.__type === 'Date' && 'iso' in timestamp && typeof timestamp.iso === 'string') {
+      return new Date(timestamp.iso);
+    }
+    if (typeof timestamp === 'string' || typeof timestamp === 'number' || timestamp instanceof Date) {
+      return new Date(timestamp);
+    }
+    return new Date();
+  };
+
   // Format date safely, handling invalid dates and Parse Date objects
-  const formatMessageDate = (timestamp: Date | string | number | undefined | any) => {
+  const formatMessageDate = (timestamp: Date | string | number | undefined | unknown) => {
     if (!timestamp) return 'recently';
     try {
       let date: Date;
 
       // Handle Parse Date format: {__type: "Date", iso: "2025-11-11T..."}
-      if (typeof timestamp === 'object' && timestamp.__type === 'Date' && timestamp.iso) {
+      if (typeof timestamp === 'object' && '__type' in timestamp && timestamp.__type === 'Date' && 'iso' in timestamp && typeof timestamp.iso === 'string') {
         date = new Date(timestamp.iso);
-      } else {
+      } else if (typeof timestamp === 'string' || typeof timestamp === 'number' || timestamp instanceof Date) {
         date = new Date(timestamp);
+      } else {
+        return 'recently';
       }
 
       if (isNaN(date.getTime())) return 'recently';
@@ -143,7 +156,7 @@ const InboxPage: React.FC = () => {
           const otherParticipantId = participantIds.find(id => id !== currentUserId) || participantIds[0] || 'unknown';
 
           // Parse Date handling: Check multiple possible date field formats
-          let timestamp: any = new Date(); // fallback
+          let timestamp: Date | string | number = new Date(); // fallback
 
           // Debug: Log the raw data to understand format
           if (process.env.NODE_ENV === 'development') {
@@ -249,7 +262,7 @@ const InboxPage: React.FC = () => {
   const sortedConversations = [...filteredConversations].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
-    return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
+    return toDate(b.lastMessage.timestamp).getTime() - toDate(a.lastMessage.timestamp).getTime();
   });
 
   const handleSendMessage = async () => {
@@ -279,7 +292,7 @@ const InboxPage: React.FC = () => {
       type: conversation.participant.role === 'counselor' ? 'counseling' as const : 'mentoring' as const,
       participants: [user?.id || '', conversation.participant.id],
       lastMessage: conversation.lastMessage.content,
-      lastActivity: conversation.lastMessage.timestamp,
+      lastActivity: toDate(conversation.lastMessage.timestamp),
       messageCount: 0,
       isActive: conversation.participant.isOnline,
       createdBy: conversation.lastMessage.sender.id

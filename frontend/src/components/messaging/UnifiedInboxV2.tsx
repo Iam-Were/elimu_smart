@@ -458,14 +458,16 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
     { id: 'archived', label: 'Archived', count: 0 },
   ];
 
-  const formatRelativeTime = (date: Date | string | any) => {
+  const formatRelativeTime = (date: Date | string | unknown) => {
     try {
       // Handle Parse Date objects {__type: "Date", iso: "..."}
       let parsedDate: Date;
-      if (date && typeof date === 'object' && date.__type === 'Date' && date.iso) {
+      if (date && typeof date === 'object' && '__type' in date && date.__type === 'Date' && 'iso' in date && typeof date.iso === 'string') {
         parsedDate = new Date(date.iso);
-      } else {
+      } else if (typeof date === 'string' || typeof date === 'number' || date instanceof Date) {
         parsedDate = new Date(date);
+      } else {
+        return 'recently';
       }
 
       // Check if date is valid

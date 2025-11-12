@@ -240,12 +240,12 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
   const getGridClasses = () => {
     switch (size) {
       case 'compact':
-        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4';
       case 'large':
-        return 'grid grid-cols-1 lg:grid-cols-2 gap-5';
+        return 'grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-5';
       case 'medium':
       default:
-        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4';
     }
   };
 
