@@ -14,6 +14,7 @@ import { Sprint18Layout } from './components/layouts/Sprint18Layout';
 import { useAuth } from './hooks/useAuth';
 import SkipNavigation from './components/common/SkipNavigation';
 import { useKeyboardNavigation } from './hooks/useAccessibility';
+import { PwaInstallPrompt } from './components/common/PwaInstallPrompt';
 import './styles/accessibility.css';
 
 // Critical auth pages (synchronous - loaded immediately)
@@ -192,6 +193,7 @@ const App: React.FC = () => {
           <SkipNavigation />
           <AppContent />
           <Toaster />
+          <PwaInstallPrompt />
         </Router>
       </ThemeProvider>
     </ErrorBoundary>
