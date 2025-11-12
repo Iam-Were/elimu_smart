@@ -66,9 +66,6 @@ export const MobileHeader: React.FC = () => {
           >
             <span className="text-white font-bold text-sm">ES</span>
           </div>
-          {!isSearchExpanded && (
-            <span className="font-bold text-lg text-gray-900">Elimu Smart</span>
-          )}
         </div>
 
         {/* Right Side: Search, Notifications, Avatar */}
