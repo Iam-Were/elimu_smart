@@ -15,6 +15,8 @@ import { useAuth } from './hooks/useAuth';
 import SkipNavigation from './components/common/SkipNavigation';
 import { useKeyboardNavigation } from './hooks/useAccessibility';
 import { PwaInstallPrompt } from './components/common/PwaInstallPrompt';
+import { TrialBanner } from './components/common/TrialBanner';
+import { TrialExpiryModal } from './components/common/TrialExpiryModal';
 import './styles/accessibility.css';
 
 // Critical auth pages (synchronous - loaded immediately)
@@ -24,6 +26,7 @@ import RegisterPage from './pages/RegisterPage';
 
 // Lazy-loaded pages (code-split by route)
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const OnboardingWizard = lazy(() => import('./components/onboarding/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
 
 // Student pages
 const Sprint18DashboardPage = lazy(() => import('./pages/Sprint18DashboardPage'));
@@ -85,18 +88,70 @@ const MaintenanceToolsPage = lazy(() => import('./pages/admin/MaintenanceToolsPa
 
 import './styles/globals.css';
 
-// Protected Routes - checks localStorage on every route access
+// Protected Routes - checks localStorage and onboarding status
 const ProtectedRoutes: React.FC = () => {
   const sessionToken = localStorage.getItem('parse-session-token');
   const storedUser = localStorage.getItem('elimu-user');
   const isAuthenticated = !!(sessionToken || storedUser);
+  const [needsOnboarding, setNeedsOnboarding] = React.useState<boolean | null>(null);
+  const [userRole, setUserRole] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const { getParse } = await import('./config/parse');
+      const Parse = await getParse();
+      const user = Parse.User.current();
+
+      if (!user) {
+        setNeedsOnboarding(false);
+        return;
+      }
+
+      const role = user.get('role');
+      setUserRole(role);
+
+      // Only students need onboarding
+      if (role !== 'student') {
+        setNeedsOnboarding(false);
+        return;
+      }
+
+      // Check onboarding status
+      const preferences = await Parse.Cloud.run('getUserPreferences', {
+        userId: user.id
+      });
+
+      setNeedsOnboarding(!preferences.onboardingCompleted);
+    } catch (error) {
+      console.error('Error checking onboarding:', error);
+      setNeedsOnboarding(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
+  // Show loading while checking onboarding
+  if (needsOnboarding === null) {
+    return <LoadingOverlay visible={true} message="Loading..." />;
+  }
+
+  // Redirect to onboarding if needed (students only)
+  if (needsOnboarding && window.location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return (
     <Sprint18Layout>
+      {/* Trial banner for students with active trials */}
+      {userRole === 'student' && <TrialBanner />}
+      {/* Trial expiry modal */}
+      {userRole === 'student' && <TrialExpiryModal />}
       <Suspense fallback={<LoadingOverlay visible={true} message="Loading..." />}>
         <Outlet />
       </Suspense>
@@ -120,7 +175,10 @@ const AppContent: React.FC = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Protected routes - checks localStorage on every access */}
+        {/* Onboarding route (authenticated but before main app) */}
+        <Route path="/onboarding" element={<OnboardingWizard />} />
+
+        {/* Protected routes - checks localStorage and onboarding status */}
         <Route element={<ProtectedRoutes />}>
           <Route path="/dashboard" element={<Sprint18DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />

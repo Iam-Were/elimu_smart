@@ -46,6 +46,15 @@ require('./counselorBookingFunctions');
 // Import RIASEC email report functions (auto-registers cloud functions)
 require('./riasecEmailReport');
 
+// Import subscription trial functions (auto-registers cloud functions)
+require('./subscriptionTrialFunctions');
+
+// Import counselor assignment functions (auto-registers cloud functions)
+require('./counselorAssignmentFunctions');
+
+// Import onboarding workflow functions (auto-registers cloud functions)
+require('./onboardingFunctions');
+
 // =============================================================================
 // SECURITY: CHAT MESSAGE ACCESS CONTROL (Defense-in-Depth)
 // =============================================================================
@@ -6958,14 +6967,51 @@ Parse.Cloud.define('getUserSubscription', async (request) => {
   if (!request.user) throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
   try {
     const Subscription = Parse.Object.extend('Subscription');
+
+    // First, check for active trial
+    const trialQuery = new Parse.Query(Subscription);
+    trialQuery.equalTo('user', request.user);
+    trialQuery.equalTo('isTrial', true);
+    trialQuery.equalTo('isActive', true);
+    const trial = await trialQuery.first({ useMasterKey: true });
+
+    if (trial) {
+      const now = new Date();
+      const endDate = trial.get('trialEndDate');
+      const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+
+      // If trial is still valid, return trial status
+      if (daysRemaining > 0) {
+        return {
+          status: 'trial',
+          plan: 'premium',
+          planName: 'Premium Trial',
+          isTrial: true,
+          trialEndDate: endDate.toISOString(),
+          daysRemaining: Math.max(0, daysRemaining),
+          features: trial.get('features') || [],
+          expiresAt: endDate.toISOString()
+        };
+      }
+    }
+
+    // Check for regular paid subscription
     const query = new Parse.Query(Subscription);
     query.equalTo('user', request.user);
     query.equalTo('status', 'active');
+    query.equalTo('isTrial', false);
     const subscription = await query.first({ useMasterKey: true });
-    if (!subscription) return { status: 'free', plan: 'free', expiresAt: null };
-    return { status: subscription.get('status'), plan: subscription.get('planId'), planName: subscription.get('planName'), expiresAt: subscription.get('expiresAt') };
+
+    if (!subscription) return { status: 'free', plan: 'free', expiresAt: null, isTrial: false };
+    return {
+      status: subscription.get('status'),
+      plan: subscription.get('planId'),
+      planName: subscription.get('planName'),
+      expiresAt: subscription.get('expiresAt'),
+      isTrial: false
+    };
   } catch (error) {
-    return { status: 'free', plan: 'free', expiresAt: null };
+    return { status: 'free', plan: 'free', expiresAt: null, isTrial: false };
   }
 });
 
