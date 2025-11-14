@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StepWelcome } from './StepWelcome';
 import { StepAcademics } from './StepAcademics';
@@ -31,6 +31,26 @@ export function OnboardingWizard() {
 
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
+
+  // Restore Parse session on mount
+  useEffect(() => {
+    const restoreSession = async () => {
+      const sessionToken = localStorage.getItem('parse-session-token');
+      if (sessionToken) {
+        try {
+          const Parse = await getParse();
+          const currentUser = Parse.User.current();
+          if (!currentUser || currentUser.getSessionToken() !== sessionToken) {
+            await Parse.User.become(sessionToken);
+            console.log('✅ Parse User session restored for onboarding');
+          }
+        } catch (error) {
+          console.error('Failed to restore Parse session:', error);
+        }
+      }
+    };
+    restoreSession();
+  }, []);
 
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     // Merge step data

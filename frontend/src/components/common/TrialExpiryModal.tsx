@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -23,11 +23,7 @@ export function TrialExpiryModal() {
   const [hasShownModal, setHasShownModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    checkTrialExpiry();
-  }, []);
-
-  const checkTrialExpiry = async () => {
+  const checkTrialExpiry = useCallback(async () => {
     if (hasShownModal) return;
 
     try {
@@ -48,7 +44,11 @@ export function TrialExpiryModal() {
     } catch (error) {
       console.error('Error checking trial expiry:', error);
     }
-  };
+  }, [hasShownModal]);
+
+  useEffect(() => {
+    checkTrialExpiry();
+  }, [checkTrialExpiry]);
 
   const handleUpgrade = () => {
     setIsOpen(false);
