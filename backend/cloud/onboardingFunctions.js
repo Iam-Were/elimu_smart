@@ -91,18 +91,23 @@ Parse.Cloud.define('completeOnboarding', async (request) => {
       throw new Parse.Error(Parse.Error.VALIDATION_ERROR, 'Only students can complete onboarding');
     }
 
-    // Check if onboarding already completed
-    const preferences = await Parse.Cloud.run('getUserPreferences', { userId }, { useMasterKey: true });
-    if (preferences.onboardingCompleted) {
+    // Check if onboarding already completed (query directly to avoid session issues)
+    const UserPreferences = Parse.Object.extend('UserPreferences');
+    const prefsQuery = new Parse.Query(UserPreferences);
+    prefsQuery.equalTo('user', user);
+    let userPrefs = await prefsQuery.first({ useMasterKey: true });
+
+    if (userPrefs && userPrefs.get('onboardingCompleted')) {
       throw new Parse.Error(Parse.Error.DUPLICATE_VALUE, 'Onboarding already completed');
     }
 
-    // Mark onboarding as completed in UserPreferences
-    await Parse.Cloud.run('updateUserPreference', {
-      userId,
-      key: 'onboardingCompleted',
-      value: true
-    }, { useMasterKey: true });
+    // Mark onboarding as completed in UserPreferences (create if doesn't exist)
+    if (!userPrefs) {
+      userPrefs = new UserPreferences();
+      userPrefs.set('user', user);
+    }
+    userPrefs.set('onboardingCompleted', true);
+    await userPrefs.save(null, { useMasterKey: true });
 
     // Update OnboardingData record
     const OnboardingData = Parse.Object.extend('OnboardingData');
