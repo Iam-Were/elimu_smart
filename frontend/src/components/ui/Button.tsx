@@ -10,10 +10,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
   asChild?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   variant = 'primary',
   size = 'md',
   loading = false,
@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   disabled,
   ...props
-}) => {
+}, ref) => {
   // Base classes - NEVER CHANGE THESE
   const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:pointer-events-none';
   
@@ -77,6 +77,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      ref={ref}
       className={combinedClassName}
       disabled={disabled || loading}
       {...props}
@@ -84,7 +85,9 @@ const Button: React.FC<ButtonProps> = ({
       {content}
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 export { Button };
 export default Button;
