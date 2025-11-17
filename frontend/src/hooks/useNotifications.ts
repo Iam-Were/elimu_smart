@@ -3,7 +3,7 @@ import { getParse } from '@/config/parse';
 
 export interface Notification {
   id: string;
-  type: 'assessment_complete' | 'counselor_response' | 'deadline_reminder' | 'system';
+  type: 'assessment_complete' | 'counselor_response' | 'deadline_reminder' | 'system' | 'question_tagged' | 'question_response_needed';
   title: string;
   message: string;
   read: boolean;
@@ -92,7 +92,7 @@ export const useNotifications = () => {
     recipientId: string;
     title: string;
     message: string;
-    type?: 'assessment_complete' | 'counselor_response' | 'deadline_reminder' | 'system';
+    type?: 'assessment_complete' | 'counselor_response' | 'deadline_reminder' | 'system' | 'question_tagged' | 'question_response_needed';
     actionUrl?: string;
   }): Promise<boolean> => {
     try {

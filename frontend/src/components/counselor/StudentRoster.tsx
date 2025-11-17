@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,16 +13,14 @@ import { useAssignedStudents } from '@/hooks/useAssignedStudents';
 import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
 import type { Student } from '@/hooks/useAssignedStudents';
 import {
-  MagnifyingGlassIcon,
   PersonIcon,
   ChatBubbleIcon,
   CalendarIcon,
-  Pencil1Icon,
   EyeOpenIcon,
   ExclamationTriangleIcon,
   ReloadIcon,
 } from '@radix-ui/react-icons';
-import { Loader2, AlertTriangle, FileText, Target } from 'lucide-react';
+import { Loader2, FileText, Target } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
   const { students: allStudents, isLoading, error, refetch } = useAssignedStudents();
@@ -36,7 +33,6 @@ export const StudentRoster: React.FC = () => {
   } = useStudentManagement();
   
   const [students, setStudents] = React.useState<Student[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterAssignment, setFilterAssignment] = useState<string>('all');
@@ -66,11 +62,6 @@ export const StudentRoster: React.FC = () => {
   }, [allStudents]);
 
   const filteredStudents = students.filter(student => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.school.toLowerCase().includes(searchQuery.toLowerCase());
-
     const matchesPriority = filterPriority === 'all' || student.priority === filterPriority;
     const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
 
@@ -81,7 +72,7 @@ export const StudentRoster: React.FC = () => {
       (filterAssignment === 'unassigned' && !student.assignedCounselor) ||
       (filterAssignment === 'others' && student.assignedCounselor && !student.isAssignedToMe);
 
-    return matchesSearch && matchesPriority && matchesStatus && matchesAssignment;
+    return matchesPriority && matchesStatus && matchesAssignment;
   });
 
   const handleViewStudent = async (student: Student) => {
@@ -118,6 +109,21 @@ export const StudentRoster: React.FC = () => {
       } catch (error) {
         console.error('Failed to add note:', error);
       }
+    }
+  };
+
+  const handleAddStudentNote = async (studentId: string, noteText: string) => {
+    try {
+      await addStudentNote({
+        studentId,
+        note: noteText,
+        isPrivate: true,
+        tags: ['quick-note']
+      });
+      // Silently save - no UI update needed
+    } catch (error) {
+      console.warn('Failed to save quick note:', error);
+      // Gracefully fail - don't block user
     }
   };
 
@@ -170,16 +176,7 @@ export const StudentRoster: React.FC = () => {
         {/* Filters */}
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search students..."
-                  className="pl-9"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <Select value={filterAssignment} onValueChange={setFilterAssignment}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by assignment" />
@@ -263,147 +260,138 @@ export const StudentRoster: React.FC = () => {
           </Card>
         )}
 
-        {/* Students Grid */}
+        {/* Students Grid - Contact Card Style */}
         {!isLoading && !error && filteredStudents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map(student => (
-            <Card key={student.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {/* Student Header */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex gap-3">
-                      <Avatar>
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {student.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-sm">
+            <Card key={student.id} className="hover:shadow-lg transition-all group relative overflow-hidden">
+              <CardContent className="p-0">
+                {/* Priority Banner */}
+                {(student.priority === 'urgent' || student.priority === 'high') && (
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${
+                    student.priority === 'urgent' ? 'bg-red-600' : 'bg-orange-500'
+                  }`} />
+                )}
+
+                <div className="p-6 space-y-4">
+                  {/* Contact Card Header - Profile Photo Prominent */}
+                  <div className="flex items-start gap-4">
+                    {/* Large Profile Photo */}
+                    <Avatar className="h-20 w-20 ring-2 ring-yellow-400">
+                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-2xl font-bold">
+                        {student.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Student Info */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-base truncate">
                           {student.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {student.grade} • {student.school}
-                        </p>
-                        {student.assignedCounselor && (
-                          <p className="text-xs text-muted-foreground">
-                            {student.isAssignedToMe ? (
-                              <span className="text-green-600 font-medium">Assigned to you</span>
-                            ) : (
-                              <span>Assigned to {student.assignedCounselor.name}</span>
-                            )}
-                          </p>
-                        )}
-                        {!student.assignedCounselor && (
-                          <p className="text-xs text-orange-600 font-medium">Unassigned</p>
-                        )}
+                        <Badge
+                          variant={
+                            student.priority === 'urgent' ? 'destructive' :
+                            student.priority === 'high' ? 'destructive' :
+                            'secondary'
+                          }
+                          className={`text-xs ${
+                            student.priority === 'urgent' ? 'bg-red-600' :
+                            student.priority === 'high' ? 'bg-orange-500' : ''
+                          }`}
+                        >
+                          {student.priority}
+                        </Badge>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Badge
-                        variant={
-                          student.priority === 'urgent' ? 'destructive' :
-                          student.priority === 'high' ? 'destructive' :
-                          student.priority === 'medium' ? 'default' : 'secondary'
-                        }
-                        className={`text-xs ${
-                          student.priority === 'urgent' ? 'bg-red-600 hover:bg-red-700' :
-                          student.priority === 'high' ? 'bg-orange-500 hover:bg-orange-600' : ''
-                        }`}
-                      >
-                        {student.priority === 'urgent' && <AlertTriangle className="w-3 h-3 mr-1" />}
-                        {student.priority}
-                      </Badge>
-                      <Badge
-                        variant={student.status === 'active' ? 'default' : 
-                                student.status === 'pending' ? 'outline' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {student.status}
-                      </Badge>
+                      <p className="text-sm text-muted-foreground">
+                        {student.grade} • {student.school}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className={`h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                        {student.status === 'active' ? 'Active' : student.status}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Progress */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">Profile Completion</span>
-                      <span className="text-xs font-medium text-primary">
-                        {student.profileCompletion}%
-                      </span>
-                    </div>
-                    <Progress value={student.profileCompletion} className="h-2" />
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center space-y-1">
-                      <p className="text-xs text-muted-foreground">Assessments</p>
-                      <p className="font-medium text-sm text-primary">
-                        {student.assessments}
-                      </p>
-                    </div>
-                    <div className="text-center space-y-1">
-                      <p className="text-xs text-muted-foreground">Career Matches</p>
-                      <p className="font-medium text-sm text-primary">
-                        {student.careerMatches}
-                      </p>
-                    </div>
-                    <div className="text-center space-y-1">
-                      <p className="text-xs text-muted-foreground">Last Contact</p>
-                      <p className="font-medium text-xs text-primary">
+                  {/* Session & Contact Info */}
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="text-muted-foreground mb-1">Last Contact</p>
+                      <p className="font-medium">
                         {student.lastContact ? formatDate(student.lastContact) : 'Never'}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Next Session</p>
+                      <p className="font-medium text-blue-600">
+                        {/* Placeholder for next session - to be added */}
+                        Not scheduled
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Quick Stats with Progress Bar */}
+                  <div className="space-y-2 bg-muted/30 rounded-lg p-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Profile</span>
+                      <span className="text-xs font-semibold text-yellow-700">
+                        {student.profileCompletion}%
+                      </span>
+                    </div>
+                    <Progress value={student.profileCompletion} className="h-1.5" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        <FileText className="h-3 w-3 inline mr-1" />
+                        {student.assessments} assessments
+                      </span>
+                      <span className="text-muted-foreground">
+                        <Target className="h-3 w-3 inline mr-1" />
+                        {student.careerMatches} matches
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Inline Quick Note (Primary Action) */}
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Add quick note... (auto-saves on blur)"
+                      className="min-h-[60px] text-sm resize-none"
+                      onBlur={(e) => {
+                        if (e.target.value.trim()) {
+                          handleAddStudentNote(student.id, e.target.value);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Quick Action Buttons */}
                   <div className="flex gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewStudent(student)}
-                          >
-                            <EyeOpenIcon className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View Details</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <ChatBubbleIcon className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Send Message</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <CalendarIcon className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Schedule Session</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Pencil1Icon className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Add Note</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {student.priority === 'high' && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      onClick={() => {/* Navigate to chat */}}
+                    >
+                      <ChatBubbleIcon className="h-3 w-3 mr-1.5" />
+                      Message
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {/* Open session booking */}}
+                    >
+                      <CalendarIcon className="h-3 w-3 mr-1.5" />
+                      Book
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewStudent(student)}
+                    >
+                      <EyeOpenIcon className="h-3 w-3" />
+                    </Button>
+                    {(student.priority === 'urgent' || student.priority === 'high') && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>

@@ -18,6 +18,8 @@ import {
   Calendar,
   AlertCircle,
   Loader2,
+  AtSign,
+  HelpCircle,
 } from 'lucide-react';
 
 const NotificationIcon: React.FC<{ type: Notification['type'] }> = ({ type }) => {
@@ -30,6 +32,10 @@ const NotificationIcon: React.FC<{ type: Notification['type'] }> = ({ type }) =>
       return <Calendar className="h-4 w-4 text-orange-600" />;
     case 'system':
       return <AlertCircle className="h-4 w-4 text-purple-600" />;
+    case 'question_tagged':
+      return <AtSign className="h-4 w-4 text-yellow-600" />;
+    case 'question_response_needed':
+      return <HelpCircle className="h-4 w-4 text-orange-600" />;
     default:
       return <Bell className="h-4 w-4 text-gray-600" />;
   }

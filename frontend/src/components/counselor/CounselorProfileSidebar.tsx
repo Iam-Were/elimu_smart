@@ -192,23 +192,6 @@ const CounselorProfileSidebar: React.FC = () => {
           </Button>
         </CardContent>
       </Card>
-
-      {/* Quick Tip Card */}
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-        <CardContent className="p-4 space-y-2">
-          <div className="flex items-start gap-2">
-            <div className="bg-blue-100 p-1.5 rounded">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-blue-900">Pro Tip</h4>
-              <p className="text-xs text-blue-700 mt-1">
-                Respond to messages within 2 hours to maintain your high rating!
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import Button from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getParse } from '@/config/parse';
+import { highlightMentions, isUserMentioned } from '@/utils/mentionDetection';
+import { useAuth } from '@/hooks/useAuth';
 import {
-  MagnifyingGlassIcon,
   ChatBubbleIcon,
   ClockIcon,
   CheckCircledIcon,
@@ -21,6 +21,7 @@ import {
   ExclamationTriangleIcon,
   BookmarkIcon,
 } from '@radix-ui/react-icons';
+import { AtSign } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -156,8 +157,8 @@ const responseTemplates = [
 ];
 
 export const QuestionQueue: React.FC = () => {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
@@ -227,17 +228,11 @@ export const QuestionQueue: React.FC = () => {
   }, []);
 
   const filteredQuestions = questions.filter(question => {
-    const matchesSearch = 
-      question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      question.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      question.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      question.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
     const matchesCategory = !filterCategory || question.category === filterCategory;
     const matchesStatus = !filterStatus || question.status === filterStatus;
     const matchesTab = !activeTab || question.status === activeTab;
-    
-    return matchesSearch && matchesCategory && matchesStatus && matchesTab;
+
+    return matchesCategory && matchesStatus && matchesTab;
   });
 
   const handleViewQuestion = (question: Question) => {
@@ -349,16 +344,7 @@ export const QuestionQueue: React.FC = () => {
 
         {/* Filters */}
         <Card className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search questions..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={event => setSearchQuery(event.target.value)}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               value={filterCategory}
               onValueChange={setFilterCategory}
@@ -418,62 +404,80 @@ export const QuestionQueue: React.FC = () => {
                   </AlertDescription>
                 </Alert>
               ) : (
-                filteredQuestions.map(question => (
-                  <Card
-                    key={question.id}
-                    className="hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => handleViewQuestion(question)}
-                  >
-                    <div className="p-6 space-y-4">
-                      {/* Question Header */}
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-start gap-3 flex-1">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              {question.studentName.split(' ').map(n => n[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate">
-                              {question.title}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>{question.studentName} • {question.studentGrade}</span>
-                              <span>•</span>
-                              <span>{formatDate(question.createdAt)}</span>
+                filteredQuestions.map(question => {
+                  const isMentioned = user?.username ? isUserMentioned(question.content, user.username) : false;
+
+                  return (
+                    <Card
+                      key={question.id}
+                      className={`hover:shadow-md transition-shadow cursor-pointer ${
+                        isMentioned ? 'border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10' : ''
+                      }`}
+                      onClick={() => handleViewQuestion(question)}
+                    >
+                      <div className="p-6 space-y-4">
+                        {/* Question Header */}
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-start gap-3 flex-1">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary text-primary-foreground">
+                                {question.studentName.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-medium text-sm truncate">
+                                  {question.title}
+                                </h3>
+                                {isMentioned && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <AtSign className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      You are mentioned in this question
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{question.studentName} • {question.studentGrade}</span>
+                                <span>•</span>
+                                <span>{formatDate(question.createdAt)}</span>
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={question.priority === 'high' ? 'destructive' : 'secondary'}
+                            >
+                              {question.priority}
+                            </Badge>
+                            <Badge
+                              variant={question.status === 'pending' ? 'default' : 'secondary'}
+                            >
+                              {question.status}
+                            </Badge>
+                            {question.priority === 'high' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                                    <ExclamationTriangleIcon className="h-3 w-3 text-destructive" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  High Priority
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={question.priority === 'high' ? 'destructive' : 'secondary'}
-                          >
-                            {question.priority}
-                          </Badge>
-                          <Badge
-                            variant={question.status === 'pending' ? 'default' : 'secondary'}
-                          >
-                            {question.status}
-                          </Badge>
-                          {question.priority === 'high' && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                                  <ExclamationTriangleIcon className="h-3 w-3 text-destructive" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                High Priority
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Question Content Preview */}
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {question.content}
-                      </p>
+                        {/* Question Content Preview with highlighted mentions */}
+                        <div
+                          className="text-sm text-muted-foreground line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: highlightMentions(question.content) }}
+                        />
 
                       {/* Question Meta */}
                       <div className="flex justify-between items-center">
@@ -511,7 +515,8 @@ export const QuestionQueue: React.FC = () => {
                       </div>
                     </div>
                   </Card>
-                ))
+                  );
+                })
               )}
             </div>
           </TabsContent>
@@ -556,7 +561,10 @@ export const QuestionQueue: React.FC = () => {
                         </Badge>
                       </div>
                     </div>
-                    <p className="text-sm">{selectedQuestion.content}</p>
+                    <div
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{ __html: highlightMentions(selectedQuestion.content) }}
+                    />
                     <div className="flex gap-2">
                       {selectedQuestion.tags.map(tag => (
                         <Badge key={tag} variant="secondary" className="text-xs">
