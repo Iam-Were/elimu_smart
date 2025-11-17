@@ -5771,8 +5771,13 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
       unassigned: students.filter(s => !s.assignedCounselor).length
     };
   } catch (error) {
-    console.error('Error getting students:', error);
-    throw new Parse.Error(Parse.Error.INTERNAL, 'Failed to load students');
+    console.error('Error getting students - Full details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      counselorId: counselor.id
+    });
+    throw error; // Throw original error for better debugging
   }
 });
 
