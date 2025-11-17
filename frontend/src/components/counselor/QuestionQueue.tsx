@@ -405,7 +405,9 @@ export const QuestionQueue: React.FC = () => {
                 </Alert>
               ) : (
                 filteredQuestions.map(question => {
-                  const isMentioned = user?.username ? isUserMentioned(question.content, user.username) : false;
+                  // Use email prefix as username (e.g., "sarah.counselor" from "sarah.counselor@elimu.com")
+                  const userIdentifier = user?.email?.split('@')[0] || '';
+                  const isMentioned = userIdentifier ? isUserMentioned(question.content, userIdentifier) : false;
 
                   return (
                     <Card
