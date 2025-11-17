@@ -58,7 +58,8 @@
       "Bash(%USERPROFILE%.sshconfig_snippet.txt)",
       "WebFetch(domain:www.uxpin.com)",
       "Bash(timeout:*)",
-      "Bash(git clean:*)"
+      "Bash(git clean:*)",
+      "mcp__chrome-devtools__press_key"
     ],
     "deny": [],
     "ask": [],

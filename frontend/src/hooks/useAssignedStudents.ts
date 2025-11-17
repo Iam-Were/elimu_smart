@@ -7,6 +7,7 @@ export interface Student {
   email: string;
   grade: string;
   school: string;
+  profileImage?: string;
   profileCompletion: number;
   priority: 'high' | 'medium' | 'low' | 'urgent';
   status: 'active' | 'pending' | 'inactive' | 'unassigned';

@@ -262,7 +262,7 @@ export const StudentRoster: React.FC = () => {
 
         {/* Students Grid - Contact Card Style */}
         {!isLoading && !error && filteredStudents.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredStudents.map(student => (
             <Card key={student.id} className="hover:shadow-lg transition-all group relative overflow-hidden">
               <CardContent className="p-0">
@@ -275,10 +275,17 @@ export const StudentRoster: React.FC = () => {
 
                 <div className="p-6 space-y-4">
                   {/* Contact Card Header - Profile Photo Prominent */}
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     {/* Large Profile Photo */}
-                    <Avatar className="h-20 w-20 ring-2 ring-yellow-400">
-                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-2xl font-bold">
+                    <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-2 ring-yellow-400 flex-shrink-0">
+                      {student.profileImage && (
+                        <img
+                          src={student.profileImage}
+                          alt={student.name}
+                          className="object-cover w-full h-full"
+                        />
+                      )}
+                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-xl sm:text-2xl font-bold">
                         {student.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
@@ -354,8 +361,8 @@ export const StudentRoster: React.FC = () => {
                   {/* Inline Quick Note (Primary Action) */}
                   <div className="space-y-2">
                     <Textarea
-                      placeholder="Add quick note... (auto-saves on blur)"
-                      className="min-h-[60px] text-sm resize-none"
+                      placeholder="Add quick note..."
+                      className="min-h-[50px] text-xs resize-none"
                       onBlur={(e) => {
                         if (e.target.value.trim()) {
                           handleAddStudentNote(student.id, e.target.value);
