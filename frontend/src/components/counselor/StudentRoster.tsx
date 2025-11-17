@@ -39,6 +39,7 @@ export const StudentRoster: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterAssignment, setFilterAssignment] = useState<string>('all');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
   const [newNote, setNewNote] = useState('');
@@ -65,15 +66,22 @@ export const StudentRoster: React.FC = () => {
   }, [allStudents]);
 
   const filteredStudents = students.filter(student => {
-    const matchesSearch = 
+    const matchesSearch =
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.school.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesPriority = filterPriority === 'all' || student.priority === filterPriority;
     const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
-    
-    return matchesSearch && matchesPriority && matchesStatus;
+
+    // Filter by assignment status
+    const matchesAssignment =
+      filterAssignment === 'all' ||
+      (filterAssignment === 'assigned' && student.isAssignedToMe) ||
+      (filterAssignment === 'unassigned' && !student.assignedCounselor) ||
+      (filterAssignment === 'others' && student.assignedCounselor && !student.isAssignedToMe);
+
+    return matchesSearch && matchesPriority && matchesStatus && matchesAssignment;
   });
 
   const handleViewStudent = async (student: Student) => {
@@ -162,7 +170,7 @@ export const StudentRoster: React.FC = () => {
         {/* Filters */}
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
               <div className="relative">
                 <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -172,6 +180,17 @@ export const StudentRoster: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
+              <Select value={filterAssignment} onValueChange={setFilterAssignment}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by assignment" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Students</SelectItem>
+                  <SelectItem value="assigned">Assigned to Me</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="others">Assigned to Others</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={filterPriority} onValueChange={setFilterPriority}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by priority" />
@@ -266,6 +285,18 @@ export const StudentRoster: React.FC = () => {
                         <p className="text-xs text-muted-foreground">
                           {student.grade} • {student.school}
                         </p>
+                        {student.assignedCounselor && (
+                          <p className="text-xs text-muted-foreground">
+                            {student.isAssignedToMe ? (
+                              <span className="text-green-600 font-medium">Assigned to you</span>
+                            ) : (
+                              <span>Assigned to {student.assignedCounselor.name}</span>
+                            )}
+                          </p>
+                        )}
+                        {!student.assignedCounselor && (
+                          <p className="text-xs text-orange-600 font-medium">Unassigned</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -321,7 +352,7 @@ export const StudentRoster: React.FC = () => {
                     <div className="text-center space-y-1">
                       <p className="text-xs text-muted-foreground">Last Contact</p>
                       <p className="font-medium text-xs text-primary">
-                        {formatDate(student.lastContact)}
+                        {student.lastContact ? formatDate(student.lastContact) : 'Never'}
                       </p>
                     </div>
                   </div>

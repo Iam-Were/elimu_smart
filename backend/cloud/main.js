@@ -5695,55 +5695,84 @@ Parse.Cloud.define('logCounselorActivity', async (request) => {
 // Get counselor's assigned students
 Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
   const counselor = requireCounselor(request);
+  const { showAll = true } = request.params || {};
 
   try {
-    // Query StudentAssignment class
+    // Get all students
+    const User = Parse.Object.extend('_User');
+    const studentQuery = new Parse.Query(User);
+    studentQuery.equalTo('role', 'student');
+    studentQuery.select(['id', 'firstName', 'lastName', 'email', 'gradeLevel', 'createdAt']);
+    studentQuery.limit(100);
+    studentQuery.descending('createdAt');
+
+    const allStudents = await studentQuery.find({ useMasterKey: true });
+
+    // Get all student assignments to map assignment status
     const StudentAssignment = Parse.Object.extend('StudentAssignment');
-    const query = new Parse.Query(StudentAssignment);
-    query.equalTo('counselorId', counselor.id);
-    query.include('student');
-    query.limit(100);
+    const assignmentQuery = new Parse.Query(StudentAssignment);
+    assignmentQuery.limit(1000);
+    const allAssignments = await assignmentQuery.find({ useMasterKey: true });
 
-    const assignments = await query.find({ useMasterKey: true });
-
-    const students = await Promise.all(assignments.map(async (assignment) => {
+    // Create assignment map: studentId -> { counselorId, counselorName, status, lastContact }
+    const assignmentMap = {};
+    allAssignments.forEach(assignment => {
       const studentId = assignment.get('studentId');
+      assignmentMap[studentId] = {
+        counselorId: assignment.get('counselorId'),
+        counselorName: assignment.get('counselorName') || 'Unknown Counselor',
+        status: assignment.get('status') || 'active',
+        lastContact: assignment.get('lastContact') || null,
+        urgentFlags: assignment.get('urgentFlags') || []
+      };
+    });
+
+    // Build student list with assignment info
+    const students = await Promise.all(allStudents.map(async (student) => {
+      const studentId = student.id;
+      const assignment = assignmentMap[studentId];
 
       // Get student progress
       const ProgressQuery = new Parse.Query('StudentProgress');
       ProgressQuery.equalTo('userId', studentId);
       const progress = await ProgressQuery.first({ useMasterKey: true });
 
+      const isAssignedToMe = assignment && assignment.counselorId === counselor.id;
+
       return {
         id: studentId,
-        name: assignment.get('studentName') || 'Student',
-        gradeLevel: assignment.get('gradeLevel') || 'Form 4',
-        status: assignment.get('status') || 'active',
-        lastContact: assignment.get('lastContact') || new Date(),
+        name: `${student.get('firstName') || ''} ${student.get('lastName') || ''}`.trim() || 'Student',
+        email: student.get('email'),
+        gradeLevel: student.get('gradeLevel') || 'Form 4',
+        status: assignment ? assignment.status : 'unassigned',
+        lastContact: assignment ? assignment.lastContact : null,
         careerReadiness: progress?.get('careerReadinessScore') || 0,
         assessmentsCompleted: progress?.get('assessmentsCompleted') || 0,
-        urgentFlags: assignment.get('urgentFlags') || []
+        urgentFlags: assignment ? assignment.urgentFlags : [],
+        // Assignment metadata
+        isAssignedToMe,
+        assignedCounselor: assignment ? {
+          id: assignment.counselorId,
+          name: assignment.counselorName
+        } : null,
+        registeredAt: student.get('createdAt')
       };
     }));
 
-    return { students };
-  } catch (error) {
-    console.error('Error getting assigned students:', error);
-    // Return mock data if no assignments exist yet
+    // Filter if needed (default showAll=true means no filter)
+    const filteredStudents = showAll
+      ? students
+      : students.filter(s => s.isAssignedToMe);
+
     return {
-      students: [
-        {
-          id: '1',
-          name: 'Alex Mwangi',
-          gradeLevel: 'Form 4',
-          status: 'active',
-          lastContact: new Date(),
-          careerReadiness: 65,
-          assessmentsCompleted: 2,
-          urgentFlags: []
-        }
-      ]
+      students: filteredStudents,
+      total: filteredStudents.length,
+      assignedToMe: students.filter(s => s.isAssignedToMe).length,
+      unassigned: students.filter(s => !s.assignedCounselor).length
     };
+  } catch (error) {
+    console.error('Error getting students:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL, 'Failed to load students');
   }
 });
 

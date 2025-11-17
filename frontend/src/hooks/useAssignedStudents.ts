@@ -9,10 +9,15 @@ export interface Student {
   school: string;
   profileCompletion: number;
   priority: 'high' | 'medium' | 'low' | 'urgent';
-  status: 'active' | 'pending' | 'inactive';
+  status: 'active' | 'pending' | 'inactive' | 'unassigned';
   assessments: number;
   careerMatches: number;
-  lastContact: Date;
+  lastContact: Date | null;
+  isAssignedToMe?: boolean;
+  assignedCounselor?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface UseAssignedStudentsReturn {
@@ -47,12 +52,37 @@ export const useAssignedStudents = (
         params.status = filters.status;
       }
 
-      const result = await Parse.Cloud.run('getAssignedStudents', params);
+      const result = await Parse.Cloud.run('getCounselorAssignedStudents', {
+        ...params,
+        showAll: true // Show all students by default
+      });
 
-      // Convert date strings to Date objects
-      const studentsWithDates = result.map((student: Student) => ({
-        ...student,
-        lastContact: new Date(student.lastContact),
+      // Convert date strings to Date objects and map backend fields
+      const studentsWithDates = result.students.map((student: {
+        id: string;
+        name: string;
+        email: string;
+        gradeLevel: string;
+        status: string;
+        lastContact: string | null;
+        careerReadiness: number;
+        assessmentsCompleted: number;
+        isAssignedToMe: boolean;
+        assignedCounselor: { id: string; name: string } | null;
+      }) => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        grade: student.gradeLevel,
+        school: 'Unknown School', // TODO: Add schoolName to backend response
+        profileCompletion: student.careerReadiness || 0,
+        priority: 'medium' as const,
+        status: student.status as 'active' | 'pending' | 'inactive' | 'unassigned',
+        assessments: student.assessmentsCompleted || 0,
+        careerMatches: 0, // TODO: Add to backend response
+        lastContact: student.lastContact ? new Date(student.lastContact) : null,
+        isAssignedToMe: student.isAssignedToMe,
+        assignedCounselor: student.assignedCounselor,
       }));
 
       setStudents(studentsWithDates);
