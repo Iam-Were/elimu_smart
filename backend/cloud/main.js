@@ -69,6 +69,11 @@ Parse.Cloud.beforeFind('ChatMessage', async (request) => {
   const user = request.user;
   const query = request.query;
 
+  // Allow master key access (for cloud functions and admin operations)
+  if (request.master) {
+    return query;
+  }
+
   // Deny unauthenticated access
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING,
