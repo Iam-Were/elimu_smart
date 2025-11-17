@@ -5900,6 +5900,13 @@ Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
     const monthSessions = await monthSessionQuery.count({ useMasterKey: true });
     const estimatedEarnings = monthSessions * 1500; // KES 1,500 per session
 
+    // Get pending questions count
+    const Question = Parse.Object.extend('Question');
+    const questionQuery = new Parse.Query(Question);
+    questionQuery.equalTo('status', 'pending');
+    questionQuery.doesNotExist('answeredBy'); // Not yet answered
+    const pendingQuestions = await questionQuery.count({ useMasterKey: true });
+
     return {
       assignedStudents,
       premiumStudents,
@@ -5908,7 +5915,8 @@ Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
       unreadMessages,
       urgentCount: Math.floor(assignedStudents * 0.15), // ~15% of students may need urgent attention
       monthlyEarnings: estimatedEarnings,
-      todayEarnings: todaySessions * 1500
+      todayEarnings: todaySessions * 1500,
+      pendingQuestions
     };
   } catch (error) {
     console.error('Error getting counselor dashboard stats:', error);
