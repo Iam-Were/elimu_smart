@@ -5734,7 +5734,7 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
 
       // Get student progress
       const ProgressQuery = new Parse.Query('StudentProgress');
-      ProgressQuery.equalTo('userId', studentId);
+      ProgressQuery.equalTo('user', student);
       const progress = await ProgressQuery.first({ useMasterKey: true });
 
       const isAssignedToMe = assignment && assignment.counselorId === counselor.id;
