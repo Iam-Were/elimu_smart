@@ -5,6 +5,7 @@ import { CounselorActivityFeed } from '../../components/counselor/CounselorActiv
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useCounselorPerformance } from '../../hooks/useCounselorPerformance';
+import { useCounselorStats } from '../../hooks/useCounselorStats';
 import { IconContainer } from '../../components/ui/icon-container';
 import {
   TrendingUp,
@@ -17,6 +18,7 @@ import Button from '../../components/ui/button';
 
 const CounselorDashboardPage: React.FC = () => {
   const { performance, isLoading, error, refetch } = useCounselorPerformance('30days');
+  const { stats } = useCounselorStats();
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50/50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="container max-w-7xl mx-auto py-8">
@@ -31,7 +33,7 @@ const CounselorDashboardPage: React.FC = () => {
 
           {/* Main Content Area */}
           <div className="space-y-8">
-          <CounselorDashboardCards showAll={true} className="mt-6" />
+          <CounselorDashboardCards showAll={true} useCarousel={true} className="mt-6" />
           
           {/* Performance Summary */}
           {isLoading && (
@@ -146,18 +148,30 @@ const CounselorDashboardPage: React.FC = () => {
                     Upcoming Focus Areas
                   </h4>
                   <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-2">
-                    <li className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-orange-500 dark:bg-orange-400 rounded-full"></div>
-                      Follow up with 7 at-risk students requiring immediate attention
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-red-500 dark:bg-red-400 rounded-full"></div>
-                      Complete pending responses for 15 student questions
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
-                      Prepare materials for tomorrow's group workshop
-                    </li>
+                    {stats && stats.urgentCount > 0 && (
+                      <li className="flex items-center gap-2">
+                        <div className="h-2 w-2 bg-orange-500 dark:bg-orange-400 rounded-full"></div>
+                        Follow up with {stats.urgentCount} at-risk students requiring immediate attention
+                      </li>
+                    )}
+                    {stats && stats.unreadMessages > 0 && (
+                      <li className="flex items-center gap-2">
+                        <div className="h-2 w-2 bg-red-500 dark:bg-red-400 rounded-full"></div>
+                        Respond to {stats.unreadMessages} unread messages from students
+                      </li>
+                    )}
+                    {performance && performance.completionRate < 90 && (
+                      <li className="flex items-center gap-2">
+                        <div className="h-2 w-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
+                        Improve session completion rate (currently {performance.completionRate}%)
+                      </li>
+                    )}
+                    {(!stats || (stats.urgentCount === 0 && stats.unreadMessages === 0)) && performance && performance.completionRate >= 90 && (
+                      <li className="flex items-center gap-2">
+                        <div className="h-2 w-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
+                        Great work! No urgent tasks at the moment
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

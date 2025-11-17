@@ -331,7 +331,10 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   )}
                 >
                   <div className="relative">
-                    <MessageSquare className="h-5 w-5 mb-1" />
+                    <MessageSquare
+                      className="h-5 w-5 mb-1"
+                      style={isActive("/inbox") && user?.role === 'counselor' ? { color: getThemeColor(currentTheme) } : undefined}
+                    />
                     {unreadMessageCount > 0 && (
                       <Badge
                         className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-bold bg-slate-900 text-white border-2 border-white shadow-md"

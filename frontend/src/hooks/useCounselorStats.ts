@@ -10,6 +10,7 @@ interface CounselorStats {
   urgentCount: number;
   monthlyEarnings: number;
   todayEarnings: number;
+  pendingQuestions: number;
 }
 
 interface UseCounselorStatsReturn {

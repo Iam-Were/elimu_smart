@@ -4,6 +4,15 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { IconContainer } from '@/components/ui/icon-container';
 import { useCounselorStats } from '@/hooks/useCounselorStats';
+import { cn } from '@/lib/utils';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  CarouselDots,
+} from '@/components/ui/carousel';
 import { Loader2 } from 'lucide-react';
 import {
   Users,
@@ -38,7 +47,45 @@ interface CounselorDashboardCard {
     urgent?: boolean;
     lastUpdated?: string;
   };
+  priorityScore?: number;
+  urgencyLevel?: 'critical' | 'high' | 'medium' | 'low';
 }
+
+// Calculate priority score for intelligent sorting (0-100)
+const calculateCardPriority = (cardId: string, stats: {
+  unreadMessages: number;
+  todaySessions: number;
+  urgentCount: number;
+  pendingQuestions: number;
+}): number => {
+  switch (cardId) {
+    case 'premium-inbox':
+      // Highest priority if there are unread messages
+      return stats.unreadMessages > 0 ? 100 + stats.unreadMessages : 30;
+    case 'paid-sessions':
+      // High priority if there are sessions today
+      return stats.todaySessions > 0 ? 80 + stats.todaySessions : 25;
+    case 'premium-students':
+      // Medium-high priority if there are urgent students
+      return stats.urgentCount > 0 ? 60 + stats.urgentCount : 20;
+    case 'community-qa':
+      // Medium priority if there are many pending questions
+      return stats.pendingQuestions > 10 ? 40 + stats.pendingQuestions : 15;
+    case 'counseling-analytics':
+      // Lowest priority (always informational)
+      return 10;
+    default:
+      return 0;
+  }
+};
+
+// Determine urgency level based on priority score
+const getUrgencyLevel = (priorityScore: number): 'critical' | 'high' | 'medium' | 'low' => {
+  if (priorityScore >= 90) return 'critical';
+  if (priorityScore >= 60) return 'high';
+  if (priorityScore >= 40) return 'medium';
+  return 'low';
+};
 
 const getPriorityStyles = (priority: string) => {
   switch (priority) {
@@ -51,6 +98,19 @@ const getPriorityStyles = (priority: string) => {
   }
 };
 
+const getUrgencyStyles = (urgencyLevel: 'critical' | 'high' | 'medium' | 'low') => {
+  switch (urgencyLevel) {
+    case 'critical':
+      return 'ring-2 ring-red-500 animate-pulse shadow-red-200';
+    case 'high':
+      return 'ring-2 ring-orange-400 shadow-orange-100';
+    case 'medium':
+      return 'ring-1 ring-yellow-300';
+    default:
+      return '';
+  }
+};
+
 interface CounselorDashboardCardsProps {
   showAll?: boolean;
   maxCards?: number;
@@ -58,15 +118,17 @@ interface CounselorDashboardCardsProps {
   filter?: 'high' | 'medium' | 'low' | 'all';
   size?: 'compact' | 'medium' | 'large';
   cardOffset?: number;
+  useCarousel?: boolean; // New prop to enable carousel mode
 }
 
-export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = ({ 
-  showAll = false, 
-  maxCards = 6, 
+export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = ({
+  showAll = false,
+  maxCards = 6,
   className,
   filter = 'all',
   size = 'medium',
-  cardOffset = 0
+  cardOffset = 0,
+  useCarousel = false
 }) => {
   const { stats, isLoading, error } = useCounselorStats();
 
@@ -100,7 +162,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
 
   // Transform static cards with dynamic API data
   const getDynamicCounselorCards = (): CounselorDashboardCard[] => {
-    return [
+    const cards: CounselorDashboardCard[] = [
       {
         id: 'premium-students',
         title: 'Premium Students',
@@ -177,12 +239,12 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         actionText: 'Browse Questions',
         actionLink: '/counselor/questions',
         stats: {
-          primary: '15 Pending',
+          primary: `${stats.pendingQuestions || 0} Pending`,
           secondary: 'Build reputation',
           trend: 'stable'
         },
         metadata: {
-          count: 15,
+          count: stats.pendingQuestions || 0,
           nextAction: 'Answer when available',
           urgent: false,
           lastUpdated: 'Live data'
@@ -210,6 +272,23 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         }
       },
     ];
+
+    // Calculate priority scores and urgency levels for each card
+    return cards.map(card => {
+      const priorityScore = calculateCardPriority(card.id, {
+        unreadMessages: stats.unreadMessages,
+        todaySessions: stats.todaySessions,
+        urgentCount: stats.urgentCount,
+        pendingQuestions: stats.pendingQuestions || 0,
+      });
+      const urgencyLevel = getUrgencyLevel(priorityScore);
+
+      return {
+        ...card,
+        priorityScore,
+        urgencyLevel,
+      };
+    }).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0)); // Sort by priority (highest first)
   };
 
   const getDerivedMetrics = {
@@ -337,12 +416,44 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
       )}
 
       {/* Main Dashboard Cards */}
-      <div className={getGridClasses()}>
-        {displayCards.map((card) => (
-          <Card 
-            key={card.id} 
-            className={`hover:shadow-lg transition-all duration-200 ${getCardSizeClasses()} ${getPriorityStyles(card.priority)}`}
+      {useCarousel ? (
+        /* Carousel Mode: Auto-rotating smart priority carousel */
+        <div className="relative px-12 mt-4">
+          <Carousel
+            opts={{ loop: true }}
+            autoplay={true}
+            autoplayDelay={6000}
+            className="w-full max-w-2xl mx-auto"
           >
+            <CarouselContent>
+              {displayCards.map((card) => (
+                <CarouselItem key={card.id}>
+                  {/* Single card in carousel */}
+          <Card
+            key={card.id}
+            className={cn(
+              "hover:shadow-lg transition-all duration-200",
+              getCardSizeClasses(),
+              getPriorityStyles(card.priority),
+              card.urgencyLevel && getUrgencyStyles(card.urgencyLevel)
+            )}
+          >
+            {/* Urgency Badge - Absolutely positioned at top */}
+            {card.urgencyLevel && (card.urgencyLevel === 'critical' || card.urgencyLevel === 'high') && (
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+                <Badge
+                  className={cn(
+                    "text-xs px-3 py-1 font-bold shadow-md",
+                    card.urgencyLevel === 'critical'
+                      ? "bg-red-600 text-white animate-pulse"
+                      : "bg-orange-500 text-white"
+                  )}
+                >
+                  {card.urgencyLevel === 'critical' ? '🔴🔴 URGENT' : '🔴 ATTENTION'}
+                </Badge>
+              </div>
+            )}
+
             <CardHeader className="pb-2">
               {/* Centered header with icon and title */}
               <div className="flex flex-col items-center justify-center gap-2 text-center">
@@ -409,8 +520,102 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               </Button>
             </CardFooter>
           </Card>
-        ))}
-      </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2" />
+            <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2" />
+            <CarouselDots urgencyLevels={displayCards.map(c => c.urgencyLevel || 'low')} />
+          </Carousel>
+        </div>
+      ) : (
+        /* Grid Mode: Traditional card grid */
+        <div className={getGridClasses()}>
+          {displayCards.map((card) => (
+            <Card
+              key={card.id}
+              className={cn(
+                "hover:shadow-lg transition-all duration-200 relative",
+                getCardSizeClasses(),
+                getPriorityStyles(card.priority),
+                card.urgencyLevel && getUrgencyStyles(card.urgencyLevel)
+              )}
+            >
+              {/* Grid mode cards - simplified without carousel duplication */}
+              {card.urgencyLevel && (card.urgencyLevel === 'critical' || card.urgencyLevel === 'high') && (
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+                  <Badge
+                    className={cn(
+                      "text-xs px-3 py-1 font-bold shadow-md",
+                      card.urgencyLevel === 'critical'
+                        ? "bg-red-600 text-white animate-pulse"
+                        : "bg-orange-500 text-white"
+                    )}
+                  >
+                    {card.urgencyLevel === 'critical' ? '🔴🔴 URGENT' : '🔴 ATTENTION'}
+                  </Badge>
+                </div>
+              )}
+              <CardHeader className="pb-2">
+                <div className="flex flex-col items-center justify-center gap-2 text-center">
+                  <div className="flex items-center gap-2">
+                    <IconContainer
+                      icon={card.icon}
+                      emphasis={card.iconEmphasis}
+                      theme="counselor"
+                      size="md"
+                    />
+                    {card.metadata.urgent && (
+                      <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                        <Bell className="h-3 w-3" />
+                      </Badge>
+                    )}
+                  </div>
+                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                    {card.title}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-center py-1">
+                  <div className="text-2xl font-bold text-slate-800 mb-0.5">
+                    {card.stats.primary}
+                  </div>
+                  {card.stats.secondary && (
+                    <p className="text-xs text-slate-600 leading-tight">{card.stats.secondary}</p>
+                  )}
+                </div>
+                {card.metadata.nextAction && card.metadata.urgent && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-2">
+                    <div className="text-xs font-medium text-red-700 flex items-center justify-center gap-1.5">
+                      <AlertTriangle className="h-3 w-3" />
+                      {card.metadata.nextAction}
+                    </div>
+                  </div>
+                )}
+                {card.metadata.nextAction && !card.metadata.urgent && (
+                  <div className="text-xs text-slate-500 text-center">
+                    {card.metadata.nextAction}
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="pt-2">
+                <Button
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5"
+                  asChild
+                >
+                  <a
+                    href={card.actionLink}
+                    className="flex items-center justify-center"
+                  >
+                    {card.actionText}
+                  </a>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
