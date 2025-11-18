@@ -148,10 +148,10 @@ export function OnboardingWizard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Progress Bar */}
         {currentStep < 5 && (
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-gray-700">
                 Step {currentStep} of {totalSteps - 1}
@@ -165,7 +165,17 @@ export function OnboardingWizard() {
         )}
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-9 relative">
+          {/* Skip Button - Top Right */}
+          {currentStep < 5 && (
+            <button
+              onClick={handleSkip}
+              className="absolute top-4 right-4 px-4 py-2 text-sm font-semibold text-orange-600 bg-orange-50 border-2 border-orange-200 rounded-lg hover:bg-orange-100 hover:border-orange-400 transition-all shadow-sm"
+            >
+              Skip for Now
+            </button>
+          )}
+
           {currentStep === 1 && (
             <StepWelcome onNext={() => handleNext({})} />
           )}
@@ -216,19 +226,8 @@ export function OnboardingWizard() {
 
         {/* Footer */}
         {currentStep < 5 && (
-          <div className="mt-6 space-y-3">
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleSkip}
-                className="px-6 py-2.5 text-base font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-orange-400 transition-all"
-              >
-                Skip for Now
-              </button>
-              <p className="text-sm text-gray-500 max-w-md self-center">
-                You can complete your profile anytime from your dashboard
-              </p>
-            </div>
-            <p className="text-center text-sm text-gray-500">
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-500">
               Your information is secure and will only be used to personalize your experience
             </p>
           </div>
