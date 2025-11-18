@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAssignedStudents } from '@/hooks/useAssignedStudents';
 import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
@@ -41,6 +42,7 @@ export const StudentRoster: React.FC = () => {
   const [opened, setOpened] = useState(false);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [studentToBook, setStudentToBook] = useState<Student | null>(null);
+  const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [studentNotes, setStudentNotes] = useState<Array<{
     id: string;
@@ -251,7 +253,7 @@ export const StudentRoster: React.FC = () => {
                   <SelectItem value="on-hold">On Hold</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="secondary" className="w-full">
+              <Button variant="secondary" className="w-full" onClick={() => setAddStudentModalOpen(true)}>
                 <PersonIcon className="mr-2 h-4 w-4" />
                 Add Student
               </Button>
@@ -750,6 +752,48 @@ export const StudentRoster: React.FC = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Student Modal */}
+        <Dialog open={addStudentModalOpen} onOpenChange={setAddStudentModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Student</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Student Email *</label>
+                <Input
+                  type="email"
+                  placeholder="student@example.com"
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Student must have an existing account on the platform
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Notes (Optional)</label>
+                <Textarea
+                  placeholder="Add any notes about this student assignment..."
+                  className="min-h-[80px]"
+                />
+              </div>
+              <Alert>
+                <AlertDescription>
+                  The student will be notified via email once added to your roster.
+                </AlertDescription>
+              </Alert>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setAddStudentModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button>
+                  Add Student
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
