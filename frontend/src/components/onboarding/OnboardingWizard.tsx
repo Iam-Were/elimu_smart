@@ -124,6 +124,28 @@ export function OnboardingWizard() {
     navigate('/dashboard');
   };
 
+  const handleSkip = async () => {
+    try {
+      const Parse = await getParse();
+      const user = Parse.User.current();
+
+      if (user) {
+        // Save current progress
+        await Parse.Cloud.run('saveOnboardingProgress', {
+          userId: user.id,
+          currentStep,
+          onboardingData,
+          isCompleted: false
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to save onboarding progress:', error);
+    }
+
+    // Navigate to dashboard
+    navigate('/dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -194,9 +216,17 @@ export function OnboardingWizard() {
 
         {/* Footer */}
         {currentStep < 5 && (
-          <p className="text-center mt-6 text-sm text-gray-500">
-            Your information is secure and will only be used to personalize your experience
-          </p>
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={handleSkip}
+              className="block mx-auto text-sm text-gray-600 hover:text-orange-600 underline transition-colors"
+            >
+              Skip for Now
+            </button>
+            <p className="text-center text-sm text-gray-500">
+              Your information is secure and will only be used to personalize your experience
+            </p>
+          </div>
         )}
       </div>
     </div>

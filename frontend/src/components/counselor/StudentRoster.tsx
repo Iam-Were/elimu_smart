@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,23 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAssignedStudents } from '@/hooks/useAssignedStudents';
 import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
+import { useSessionBooking } from '@/hooks/useSessionBooking';
 import type { Student } from '@/hooks/useAssignedStudents';
 import {
   PersonIcon,
   ChatBubbleIcon,
   CalendarIcon,
   EyeOpenIcon,
-  ExclamationTriangleIcon,
   ReloadIcon,
 } from '@radix-ui/react-icons';
 import { Loader2, FileText, Target } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
+  const navigate = useNavigate();
   const { students: allStudents, isLoading, error, refetch } = useAssignedStudents();
   const {
     updateStudentPriority,
@@ -31,6 +31,7 @@ export const StudentRoster: React.FC = () => {
     getStudentNotes,
     isLoading: managementLoading
   } = useStudentManagement();
+  const { isBooking } = useSessionBooking();
   
   const [students, setStudents] = React.useState<Student[]>([]);
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -38,6 +39,8 @@ export const StudentRoster: React.FC = () => {
   const [filterAssignment, setFilterAssignment] = useState<string>('all');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [opened, setOpened] = useState(false);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [studentToBook, setStudentToBook] = useState<Student | null>(null);
   const [newNote, setNewNote] = useState('');
   const [studentNotes, setStudentNotes] = useState<Array<{
     id: string;
@@ -45,14 +48,11 @@ export const StudentRoster: React.FC = () => {
     createdAt: string | Date;
     tags?: string[];
   }>>([]);
-  const [assessmentResults, setAssessmentResults] = useState<{
-    summary: {
-      hollandCode?: string;
-      primaryType?: string;
-      assessmentsCompleted: number;
-      profileCompletion: number;
-    };
-  } | null>(null);
+  const [recentNotes, setRecentNotes] = useState<Record<string, string>>({});
+  const [assessmentResults, setAssessmentResults] = useState<Array<{
+    type: string;
+    completedAt: Date;
+  }>>([]);
 
   // Update local students when hook data changes
   React.useEffect(() => {
@@ -79,7 +79,7 @@ export const StudentRoster: React.FC = () => {
     setSelectedStudent(student);
     setNewNote('');
     setOpened(true);
-    
+
     // Load student notes and assessments
     try {
       const [notes, assessments] = await Promise.all([
@@ -87,9 +87,18 @@ export const StudentRoster: React.FC = () => {
         getStudentAssessmentResults(student.id)
       ]);
       setStudentNotes(notes.notes || []);
-      setAssessmentResults(assessments);
+
+      // Handle assessments - could be an array or an object with results
+      if (Array.isArray(assessments)) {
+        setAssessmentResults(assessments);
+      } else if (assessments?.results && Array.isArray(assessments.results)) {
+        setAssessmentResults(assessments.results);
+      } else {
+        setAssessmentResults([]);
+      }
     } catch (error) {
       console.error('Failed to load student data:', error);
+      setAssessmentResults([]);
     }
   };
 
@@ -120,12 +129,43 @@ export const StudentRoster: React.FC = () => {
         isPrivate: true,
         tags: ['quick-note']
       });
-      // Silently save - no UI update needed
+
+      // Update recent notes display
+      setRecentNotes(prev => ({
+        ...prev,
+        [studentId]: noteText
+      }));
     } catch (error) {
       console.warn('Failed to save quick note:', error);
       // Gracefully fail - don't block user
     }
   };
+
+  // Load recent notes for all students
+  React.useEffect(() => {
+    const loadRecentNotes = async () => {
+      const notes: Record<string, string> = {};
+
+      for (const student of students.slice(0, 10)) { // Load for first 10 students
+        try {
+          const studentNotesData = await getStudentNotes(student.id);
+          const recentNote = studentNotesData.notes?.[0];
+          if (recentNote) {
+            notes[student.id] = recentNote.content;
+          }
+        } catch {
+          // Silently skip
+        }
+      }
+
+      setRecentNotes(notes);
+    };
+
+    if (students.length > 0) {
+      loadRecentNotes();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [students.length]); // Only reload when student count changes
 
   const handlePriorityChange = async (student: Student, priority: 'low' | 'medium' | 'high' | 'urgent') => {
     try {
@@ -147,8 +187,9 @@ export const StudentRoster: React.FC = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -260,9 +301,9 @@ export const StudentRoster: React.FC = () => {
           </Card>
         )}
 
-        {/* Students Grid - Contact Card Style */}
+        {/* Students List - Contact Card Style */}
         {!isLoading && !error && filteredStudents.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {filteredStudents.map(student => (
             <Card key={student.id} className="hover:shadow-lg transition-all group relative overflow-hidden">
               <CardContent className="p-0">
@@ -273,143 +314,131 @@ export const StudentRoster: React.FC = () => {
                   }`} />
                 )}
 
-                <div className="p-6 space-y-4">
-                  {/* Contact Card Header - Profile Photo Prominent */}
-                  <div className="flex items-start gap-3">
-                    {/* Large Profile Photo */}
-                    <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-2 ring-yellow-400 flex-shrink-0">
-                      {student.profileImage && (
-                        <img
-                          src={student.profileImage}
-                          alt={student.name}
-                          className="object-cover w-full h-full"
-                        />
-                      )}
-                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-xl sm:text-2xl font-bold">
-                        {student.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
+                <div className="p-4 sm:p-6">
+                  {/* Horizontal Layout for List View */}
+                  <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
-                    {/* Student Info */}
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-base truncate">
-                          {student.name}
-                        </h3>
-                        <Badge
-                          variant={
-                            student.priority === 'urgent' ? 'destructive' :
-                            student.priority === 'high' ? 'destructive' :
-                            'secondary'
-                          }
-                          className={`text-xs ${
-                            student.priority === 'urgent' ? 'bg-red-600' :
-                            student.priority === 'high' ? 'bg-orange-500' : ''
-                          }`}
-                        >
-                          {student.priority}
-                        </Badge>
+                    {/* Left Section: Student Info */}
+                    <div className="flex items-start gap-4 lg:min-w-[300px]">
+                      {/* Large Profile Photo */}
+                      <Avatar className="h-16 w-16 ring-2 ring-yellow-400 flex-shrink-0">
+                        {student.profileImage && (
+                          <img
+                            src={student.profileImage}
+                            alt={student.name}
+                            className="object-cover w-full h-full"
+                          />
+                        )}
+                        <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-xl font-bold">
+                          {student.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      {/* Student Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2 mb-1">
+                          <h3 className="font-semibold text-base">
+                            {student.name}
+                          </h3>
+                          <Badge
+                            variant={
+                              student.priority === 'urgent' ? 'destructive' :
+                              student.priority === 'high' ? 'destructive' :
+                              'secondary'
+                            }
+                            className={`text-xs ${
+                              student.priority === 'urgent' ? 'bg-red-600' :
+                              student.priority === 'high' ? 'bg-orange-500' : ''
+                            }`}
+                          >
+                            {student.priority}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {student.grade} • {student.school}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <span className={`h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                            {student.status === 'active' ? 'Active' : student.status}
+                          </span>
+                          <span>Last: {student.lastContact ? formatDate(student.lastContact) : 'Never'}</span>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="flex items-center gap-3 mt-2 text-xs">
+                          <span className="text-muted-foreground">
+                            <FileText className="h-3 w-3 inline mr-1" />
+                            {student.assessments}
+                          </span>
+                          <span className="text-muted-foreground">
+                            <Target className="h-3 w-3 inline mr-1" />
+                            {student.careerMatches}
+                          </span>
+                          <span className="text-yellow-700 font-medium">
+                            {student.profileCompletion}% complete
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {student.grade} • {student.school}
-                      </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <span className={`h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                        {student.status === 'active' ? 'Active' : student.status}
-                      </p>
                     </div>
-                  </div>
 
-                  {/* Session & Contact Info */}
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <p className="text-muted-foreground mb-1">Last Contact</p>
-                      <p className="font-medium">
-                        {student.lastContact ? formatDate(student.lastContact) : 'Never'}
-                      </p>
+                    {/* Middle Section: Quick Note */}
+                    <div className="flex-1 min-w-0">
+                      <Textarea
+                        placeholder="Add quick note (auto-saves on blur)..."
+                        className="min-h-[80px] text-sm resize-none w-full"
+                        onBlur={(e) => {
+                          if (e.target.value.trim()) {
+                            handleAddStudentNote(student.id, e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      {recentNotes[student.id] ? (
+                        <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+                          <p className="text-muted-foreground font-medium mb-1">Recent note:</p>
+                          <p className="line-clamp-2">{recentNotes[student.id]}</p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          No recent notes
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Next Session</p>
-                      <p className="font-medium text-blue-600">
-                        {/* Placeholder for next session - to be added */}
-                        Not scheduled
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Quick Stats with Progress Bar */}
-                  <div className="space-y-2 bg-muted/30 rounded-lg p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">Profile</span>
-                      <span className="text-xs font-semibold text-yellow-700">
-                        {student.profileCompletion}%
-                      </span>
+                    {/* Right Section: Actions */}
+                    <div className="flex lg:flex-col gap-2 lg:min-w-[120px]">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        onClick={() => navigate(`/inbox?studentId=${student.id}`)}
+                      >
+                        <ChatBubbleIcon className="h-3 w-3 mr-1.5" />
+                        Message
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          setStudentToBook(student);
+                          setBookingModalOpen(true);
+                        }}
+                      >
+                        <CalendarIcon className="h-3 w-3 mr-1.5" />
+                        Book
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleViewStudent(student)}
+                      >
+                        <EyeOpenIcon className="h-3 w-3 mr-1.5" />
+                        View
+                      </Button>
                     </div>
-                    <Progress value={student.profileCompletion} className="h-1.5" />
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        <FileText className="h-3 w-3 inline mr-1" />
-                        {student.assessments} assessments
-                      </span>
-                      <span className="text-muted-foreground">
-                        <Target className="h-3 w-3 inline mr-1" />
-                        {student.careerMatches} matches
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Inline Quick Note (Primary Action) */}
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Add quick note..."
-                      className="min-h-[50px] text-xs resize-none"
-                      onBlur={(e) => {
-                        if (e.target.value.trim()) {
-                          handleAddStudentNote(student.id, e.target.value);
-                        }
-                      }}
-                    />
-                  </div>
-
-                  {/* Quick Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      onClick={() => {/* Navigate to chat */}}
-                    >
-                      <ChatBubbleIcon className="h-3 w-3 mr-1.5" />
-                      Message
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => {/* Open session booking */}}
-                    >
-                      <CalendarIcon className="h-3 w-3 mr-1.5" />
-                      Book
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewStudent(student)}
-                    >
-                      <EyeOpenIcon className="h-3 w-3" />
-                    </Button>
-                    {(student.priority === 'urgent' || student.priority === 'high') && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <ExclamationTriangleIcon className="h-3 w-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>High Priority Student</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -417,6 +446,88 @@ export const StudentRoster: React.FC = () => {
           ))}
           </div>
         )}
+
+        {/* Student Detail Modal */}
+        <Dialog open={opened} onOpenChange={setOpened}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            {selectedStudent && (
+              <div className="space-y-6">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      {selectedStudent.profileImage && (
+                        <img
+                          src={selectedStudent.profileImage}
+                          alt={selectedStudent.name}
+                          className="object-cover w-full h-full"
+                        />
+                      )}
+                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
+                        {selectedStudent.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    {selectedStudent.name}
+                  </DialogTitle>
+                </DialogHeader>
+
+                {/* Student Notes History */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Counseling Notes
+                  </h4>
+                  {studentNotes.length > 0 ? (
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                      {studentNotes.map((note) => (
+                        <Card key={note.id} className="p-3 bg-muted/30">
+                          <p className="text-sm">{note.content}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatDate(note.createdAt)}
+                          </p>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No notes yet</p>
+                  )}
+
+                  {/* Add New Note */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <Textarea
+                      placeholder="Add new note..."
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                    <Button onClick={handleAddNote} disabled={!newNote.trim()}>
+                      Add Note
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Assessment Results */}
+                {assessmentResults.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      Assessment Results
+                    </h4>
+                    <div className="space-y-2">
+                      {assessmentResults.map((result, idx) => (
+                        <Card key={idx} className="p-3">
+                          <p className="text-sm font-medium">{result.type}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Completed: {formatDate(result.completedAt)}
+                          </p>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Student Detail Modal */}
         <Dialog open={opened} onOpenChange={setOpened}>
@@ -478,35 +589,6 @@ export const StudentRoster: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Assessment Results */}
-                {assessmentResults && assessmentResults.summary && (
-                  <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Target className="w-5 h-5 text-blue-600" />
-                        <h4 className="font-semibold">Assessment Summary</h4>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Holland Code:</span>
-                          <span className="font-medium">{assessmentResults.summary.hollandCode || 'Not completed'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Primary Type:</span>
-                          <span className="font-medium">{assessmentResults.summary.primaryType || 'N/A'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Assessments Completed:</span>
-                          <span className="font-medium">{assessmentResults.summary.assessmentsCompleted}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Profile Completion:</span>
-                          <span className="font-medium">{assessmentResults.summary.profileCompletion}%</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
 
                 {/* Progress Overview */}
                 <Card>
@@ -604,6 +686,66 @@ export const StudentRoster: React.FC = () => {
                   <Button variant="outline" className="gap-2">
                     <CalendarIcon className="w-4 h-4" />
                     Schedule Session
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Session Booking Modal */}
+        <Dialog open={bookingModalOpen} onOpenChange={setBookingModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Book Session with {studentToBook?.name}</DialogTitle>
+            </DialogHeader>
+            {studentToBook && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Session Type</label>
+                  <Select defaultValue="video">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select session type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="video">Video Call</SelectItem>
+                      <SelectItem value="phone">Phone Call</SelectItem>
+                      <SelectItem value="in-person">In Person</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded-md"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Time</label>
+                  <input
+                    type="time"
+                    className="w-full px-3 py-2 border rounded-md"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Notes (Optional)</label>
+                  <Textarea placeholder="Add any notes about this session..." className="min-h-[80px]" />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setBookingModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button disabled={isBooking}>
+                    {isBooking ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Booking...
+                      </>
+                    ) : (
+                      'Book Session'
+                    )}
                   </Button>
                 </div>
               </div>
