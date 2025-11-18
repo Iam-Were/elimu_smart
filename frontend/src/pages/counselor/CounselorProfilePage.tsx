@@ -64,7 +64,10 @@ export const CounselorProfilePage = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const handleImageUpload = async (file: File, type: 'profile' | 'banner') => {
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
@@ -81,31 +84,17 @@ export const CounselorProfilePage = () => {
       await parseFile.save();
 
       if (user) {
-        const fieldName = type === 'profile' ? 'profileImage' : 'bannerImage';
         const imageUrl = parseFile.url() || '';
-        user.set(fieldName, imageUrl);
+        user.set('profileImage', imageUrl);
         await user.save();
-
-        if (type === 'profile') {
-          setProfileImage(imageUrl);
-          toast.success('Profile picture updated!');
-        } else {
-          setBannerImage(imageUrl);
-          toast.success('Banner image updated!');
-        }
+        setProfileImage(imageUrl);
+        toast.success('Profile picture updated!');
       }
     } catch (error) {
       console.error('Failed to upload image:', error);
       toast.error('Failed to upload image');
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file, 'profile');
     }
   };
 
