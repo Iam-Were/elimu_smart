@@ -64,7 +64,10 @@ export const useTheme = (): UseThemeReturn => {
     if (savedDarkMode !== null) {
       return savedDarkMode === 'true';
     }
-    // Default to light mode (don't use system preference to avoid mobile issues)
+    // Respect system preference (both mobile and desktop)
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return true;
+    }
     return false;
   });
 
@@ -107,16 +110,38 @@ export const useTheme = (): UseThemeReturn => {
     localStorage.setItem('elimu-dark-mode', String(isDark));
   }, [isDark]);
 
-  // Remove system dark mode listener to prevent mobile conflicts
-  // Users must explicitly toggle dark mode instead of following system preference
+  // Listen for system dark mode changes (mobile and desktop)
   useEffect(() => {
-    // Force light mode on initial load if no preference is saved (mobile fix)
+    // Only respond to system preference if user hasn't manually set a preference
     const savedDarkMode = localStorage.getItem('elimu-dark-mode');
-    if (savedDarkMode === null) {
-      const root = document.documentElement;
-      document.body.classList.remove('dark');
-      root.classList.remove('dark');
+    if (savedDarkMode !== null) {
+      // User has explicitly set a preference, don't override
+      return;
     }
+
+    // Listen for system dark mode changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      console.log('🌓 System dark mode changed:', e.matches);
+      setIsDark(e.matches);
+    };
+
+    // Add listener (use addEventListener for better browser support)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
   }, []);
 
   const setTheme = useCallback((theme: ThemeRole) => {
