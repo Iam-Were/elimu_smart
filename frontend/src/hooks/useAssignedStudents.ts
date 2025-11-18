@@ -13,6 +13,7 @@ export interface Student {
   status: 'active' | 'pending' | 'inactive' | 'unassigned';
   assessments: number;
   careerMatches: number;
+  completedAssessments?: string[]; // NEW: Array of completed assessment types
   lastContact: Date | null;
   isAssignedToMe?: boolean;
   assignedCounselor?: {
@@ -68,6 +69,7 @@ export const useAssignedStudents = (
         lastContact: string | null;
         careerReadiness: number;
         assessmentsCompleted: number;
+        completedAssessments?: string[];
         isAssignedToMe: boolean;
         assignedCounselor: { id: string; name: string } | null;
       }) => ({
@@ -81,6 +83,7 @@ export const useAssignedStudents = (
         status: student.status as 'active' | 'pending' | 'inactive' | 'unassigned',
         assessments: student.assessmentsCompleted || 0,
         careerMatches: 0, // TODO: Add to backend response
+        completedAssessments: student.completedAssessments || [],
         lastContact: student.lastContact ? new Date(student.lastContact) : null,
         isAssignedToMe: student.isAssignedToMe,
         assignedCounselor: student.assignedCounselor,

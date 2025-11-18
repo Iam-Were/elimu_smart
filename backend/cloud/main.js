@@ -5742,6 +5742,28 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
       ProgressQuery.equalTo('user', student);
       const progress = await ProgressQuery.first({ useMasterKey: true });
 
+      // Check which specific assessments are completed
+      const completedAssessments = [];
+
+      // Check RIASEC
+      const riasecQuery = new Parse.Query('RiasecAssessment');
+      riasecQuery.equalTo('userId', studentId);
+      riasecQuery.equalTo('status', 'completed');
+      const riasecResult = await riasecQuery.first({ useMasterKey: true });
+      if (riasecResult) completedAssessments.push('riasec');
+
+      // Check other assessment types
+      const assessmentQuery = new Parse.Query('AssessmentResult');
+      assessmentQuery.equalTo('userId', studentId);
+      const assessmentResults = await assessmentQuery.find({ useMasterKey: true });
+
+      assessmentResults.forEach(result => {
+        const type = result.get('assessmentType');
+        if (type && !completedAssessments.includes(type)) {
+          completedAssessments.push(type);
+        }
+      });
+
       const isAssignedToMe = assignment && assignment.counselorId === counselor.id;
 
       return {
@@ -5753,6 +5775,7 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
         lastContact: assignment ? assignment.lastContact : null,
         careerReadiness: progress?.get('careerReadinessScore') || 0,
         assessmentsCompleted: progress?.get('assessmentsCompleted') || 0,
+        completedAssessments: completedAssessments, // NEW: Array of completed assessment types
         urgentFlags: assignment ? assignment.urgentFlags : [],
         // Assignment metadata
         isAssignedToMe,

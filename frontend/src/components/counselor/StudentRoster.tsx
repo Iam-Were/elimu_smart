@@ -21,7 +21,7 @@ import {
   EyeOpenIcon,
   ReloadIcon,
 } from '@radix-ui/react-icons';
-import { Loader2, FileText, Target } from 'lucide-react';
+import { Loader2, FileText, Target, CheckCircle2, Circle } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
   const navigate = useNavigate();
@@ -387,6 +387,34 @@ export const StudentRoster: React.FC = () => {
                             <span className="text-yellow-700 font-medium">{student.profileCompletion}%</span>
                           </div>
                           <Progress value={student.profileCompletion} className="h-2" />
+                        </div>
+
+                        {/* Assessment Completion Badges */}
+                        <div className="mt-3 space-y-1">
+                          <p className="text-xs text-muted-foreground mb-1.5">Assessments</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {['riasec', 'skills', 'university', 'career', 'subjects'].map((assessmentType) => {
+                              const isCompleted = student.completedAssessments?.includes(assessmentType);
+                              return (
+                                <div
+                                  key={assessmentType}
+                                  className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium transition-colors ${
+                                    isCompleted
+                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                      : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
+                                  }`}
+                                  title={`${assessmentType.charAt(0).toUpperCase() + assessmentType.slice(1)} Assessment ${isCompleted ? 'Completed' : 'Not Started'}`}
+                                >
+                                  {isCompleted ? (
+                                    <CheckCircle2 className="h-3 w-3" />
+                                  ) : (
+                                    <Circle className="h-3 w-3" />
+                                  )}
+                                  <span className="capitalize">{assessmentType}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     </div>
