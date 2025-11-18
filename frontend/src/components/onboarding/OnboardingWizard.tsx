@@ -124,26 +124,28 @@ export function OnboardingWizard() {
     navigate('/dashboard');
   };
 
-  const handleSkip = async () => {
-    try {
-      const Parse = await getParse();
-      const user = Parse.User.current();
-
-      if (user) {
-        // Save current progress
-        await Parse.Cloud.run('saveOnboardingProgress', {
-          userId: user.id,
-          currentStep,
-          onboardingData,
-          isCompleted: false
-        });
-      }
-    } catch (error) {
-      console.warn('Failed to save onboarding progress:', error);
-    }
-
-    // Navigate to dashboard
+  const handleSkip = () => {
+    // Navigate immediately (non-blocking)
     navigate('/dashboard');
+
+    // Try to save progress in background
+    (async () => {
+      try {
+        const Parse = await getParse();
+        const user = Parse.User.current();
+
+        if (user) {
+          await Parse.Cloud.run('saveOnboardingProgress', {
+            userId: user.id,
+            currentStep,
+            onboardingData,
+            isCompleted: false
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to save onboarding progress:', error);
+      }
+    })();
   };
 
   return (
@@ -165,19 +167,9 @@ export function OnboardingWizard() {
         )}
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-9 relative">
-          {/* Skip Button - Top Right */}
-          {currentStep < 5 && (
-            <button
-              onClick={handleSkip}
-              className="absolute top-4 right-4 px-4 py-2 text-sm font-semibold text-orange-600 bg-orange-50 border-2 border-orange-200 rounded-lg hover:bg-orange-100 hover:border-orange-400 transition-all shadow-sm"
-            >
-              Skip for Now
-            </button>
-          )}
-
+        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-9">
           {currentStep === 1 && (
-            <StepWelcome onNext={() => handleNext({})} />
+            <StepWelcome onNext={() => handleNext({})} onSkip={handleSkip} />
           )}
 
           {currentStep === 2 && (

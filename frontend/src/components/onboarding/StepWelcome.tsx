@@ -3,9 +3,10 @@ import { Rocket, Target, TrendingUp } from 'lucide-react';
 
 interface StepWelcomeProps {
   onNext: () => void;
+  onSkip: () => void;
 }
 
-export function StepWelcome({ onNext }: StepWelcomeProps) {
+export function StepWelcome({ onNext, onSkip }: StepWelcomeProps) {
   return (
     <div className="text-center">
       <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -71,13 +72,24 @@ export function StepWelcome({ onNext }: StepWelcomeProps) {
         Let's get started by learning a bit about you. This will only take 5-7 minutes.
       </p>
 
-      <Button
-        onClick={onNext}
-        size="lg"
-        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
-      >
-        Let's Get Started
-      </Button>
+      <div className="flex flex-col items-center gap-4">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+        >
+          Let's Get Started
+        </Button>
+
+        <Button
+          onClick={onSkip}
+          variant="ghost"
+          size="lg"
+          className="text-gray-600 hover:text-orange-600 font-medium"
+        >
+          Skip for Now
+        </Button>
+      </div>
     </div>
   );
 }
