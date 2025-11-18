@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAssignedStudents } from '@/hooks/useAssignedStudents';
 import { useStudentManagement } from '@/hooks/counselor/useStudentManagement';
@@ -377,9 +378,15 @@ export const StudentRoster: React.FC = () => {
                             <Target className="h-3 w-3 inline mr-1" />
                             {student.careerMatches}
                           </span>
-                          <span className="text-yellow-700 font-medium">
-                            {student.profileCompletion}% complete
-                          </span>
+                        </div>
+
+                        {/* Profile Completion Progress Bar */}
+                        <div className="mt-3 space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Profile Completion</span>
+                            <span className="text-yellow-700 font-medium">{student.profileCompletion}%</span>
+                          </div>
+                          <Progress value={student.profileCompletion} className="h-2" />
                         </div>
                       </div>
                     </div>
