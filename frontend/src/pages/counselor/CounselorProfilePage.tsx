@@ -25,8 +25,6 @@ import {
   MessageSquare,
   Camera,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
 export const CounselorProfilePage = () => {
   const navigate = useNavigate();
   const user = Parse.User.current();
@@ -43,10 +41,8 @@ export const CounselorProfilePage = () => {
     user?.get('availableHours') || 'Mon-Fri: 9am-5pm, Sat: 10am-2pm'
   );
   const [profileImage, setProfileImage] = useState<string>(user?.get('profileImage') || '');
-  const [bannerImage, setBannerImage] = useState<string>(user?.get('bannerImage') || '');
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const firstName = user?.get('firstName') || 'Demo';
   const lastName = user?.get('lastName') || 'Counselor';
@@ -59,14 +55,6 @@ export const CounselorProfilePage = () => {
 
   // Real stats from API
   const studentsHelped = stats?.assignedStudents || 0;
-  const sessionCompletion = 92; // TODO: Add completionRate to backend stats
-  const avgResponseTime = 2; // TODO: Add avgResponseTime to backend stats
-  const totalSessions = stats?.todaySessions || 0;
-
-  // Profile completion calculation
-  const profileCompletion = Math.round(
-    ((bio ? 40 : 0) + (specializations.length > 0 ? 30 : 0) + (availableHours ? 30 : 0)) / 100 * 100
-  );
 
   const getInitials = (name: string) => {
     const names = name.split(' ');
@@ -118,13 +106,6 @@ export const CounselorProfilePage = () => {
     const file = e.target.files?.[0];
     if (file) {
       handleImageUpload(file, 'profile');
-    }
-  };
-
-  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file, 'banner');
     }
   };
 
