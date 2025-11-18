@@ -23,8 +23,11 @@ import {
   Check,
   X,
   MessageSquare,
+  Video,
   Camera,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
 export const CounselorProfilePage = () => {
   const navigate = useNavigate();
   const user = Parse.User.current();
@@ -41,8 +44,10 @@ export const CounselorProfilePage = () => {
     user?.get('availableHours') || 'Mon-Fri: 9am-5pm, Sat: 10am-2pm'
   );
   const [profileImage, setProfileImage] = useState<string>(user?.get('profileImage') || '');
+  const [bannerImage, setBannerImage] = useState<string>(user?.get('bannerImage') || '');
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const firstName = user?.get('firstName') || 'Demo';
   const lastName = user?.get('lastName') || 'Counselor';
@@ -55,6 +60,14 @@ export const CounselorProfilePage = () => {
 
   // Real stats from API
   const studentsHelped = stats?.assignedStudents || 0;
+  const sessionCompletion = 92; // TODO: Add completionRate to backend stats
+  const avgResponseTime = 2; // TODO: Add avgResponseTime to backend stats
+  const totalSessions = stats?.todaySessions || 0;
+
+  // Profile completion calculation
+  const profileCompletion = Math.round(
+    ((bio ? 40 : 0) + (specializations.length > 0 ? 30 : 0) + (availableHours ? 30 : 0)) / 100 * 100
+  );
 
   const getInitials = (name: string) => {
     const names = name.split(' ');
@@ -64,10 +77,7 @@ export const CounselorProfilePage = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUpload = async (file: File, type: 'profile' | 'banner') => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
@@ -84,17 +94,38 @@ export const CounselorProfilePage = () => {
       await parseFile.save();
 
       if (user) {
+        const fieldName = type === 'profile' ? 'profileImage' : 'bannerImage';
         const imageUrl = parseFile.url() || '';
-        user.set('profileImage', imageUrl);
+        user.set(fieldName, imageUrl);
         await user.save();
-        setProfileImage(imageUrl);
-        toast.success('Profile picture updated!');
+
+        if (type === 'profile') {
+          setProfileImage(imageUrl);
+          toast.success('Profile picture updated!');
+        } else {
+          setBannerImage(imageUrl);
+          toast.success('Banner image updated!');
+        }
       }
     } catch (error) {
       console.error('Failed to upload image:', error);
       toast.error('Failed to upload image');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file, 'profile');
+    }
+  };
+
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file, 'banner');
     }
   };
 
@@ -133,17 +164,39 @@ export const CounselorProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Simplified Header */}
+      {/* LinkedIn-style Hero Section */}
       <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex items-start gap-6">
-            {/* Avatar with camera upload */}
+        {/* Banner with camera upload */}
+        <div className="relative h-32 bg-gradient-to-r from-yellow-500 to-yellow-600 group cursor-pointer">
+          {bannerImage && (
+            <img src={bannerImage} alt="Banner" className="w-full h-full object-cover" />
+          )}
+          <button
+            onClick={() => bannerInputRef.current?.click()}
+            disabled={uploading}
+            className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg disabled:opacity-50"
+            aria-label="Upload banner image"
+          >
+            <Camera className="h-5 w-5 text-gray-700" />
+          </button>
+          <input
+            ref={bannerInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleBannerImageChange}
+            className="hidden"
+          />
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 pb-6">
+          <div className="flex items-start gap-6 -mt-16">
+            {/* Avatar with camera upload overlay */}
             <div className="relative group">
-              <Avatar className="h-24 w-24 border-4 border-white shadow-lg bg-gradient-to-br from-yellow-400 to-orange-500">
+              <Avatar className="h-32 w-32 border-4 border-white shadow-xl bg-gradient-to-br from-yellow-400 to-orange-500">
                 {profileImage ? (
                   <AvatarImage src={profileImage} alt={fullName} />
                 ) : (
-                  <AvatarFallback className="bg-transparent text-white text-3xl font-bold">
+                  <AvatarFallback className="bg-transparent text-white text-4xl font-bold">
                     {getInitials(fullName)}
                   </AvatarFallback>
                 )}
@@ -154,7 +207,7 @@ export const CounselorProfilePage = () => {
                 className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center disabled:opacity-30"
                 aria-label="Upload profile picture"
               >
-                <Camera className="h-6 w-6 text-white" />
+                <Camera className="h-8 w-8 text-white" />
               </button>
               <input
                 ref={avatarInputRef}
@@ -166,130 +219,223 @@ export const CounselorProfilePage = () => {
             </div>
 
             {/* Info */}
-            <div className="flex-1">
+            <div className="flex-1 mt-16">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{fullName}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">{fullName}</h1>
                   <p className="text-lg text-gray-600 mt-1">{title}</p>
-                  <div className="flex items-center gap-4 mt-3">
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200 px-3 py-1.5 text-sm">
-                      <Star className="h-4 w-4 mr-1.5 fill-yellow-600" />
-                      {rating.toFixed(1)} rating
-                    </Badge>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 px-3 py-1.5 text-sm">
-                      <Users className="h-4 w-4 mr-1.5" />
-                      {studentsHelped} students
-                    </Badge>
-                    <span className="text-sm text-gray-600 flex items-center gap-1.5">
+                  <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Mail className="h-4 w-4" />
+                      {email}
+                    </span>
+                    <span className="flex items-center gap-1">
                       <TrendingUp className="h-4 w-4" />
-                      {yearsExperience}+ years
+                      {yearsExperience}+ years experience
                     </span>
                   </div>
                 </div>
 
                 <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setEditDialogOpen(true)}
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2.5 text-base h-auto"
+                  className="mt-2"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  Edit profile
                 </Button>
+              </div>
+
+              {/* Badges */}
+              <div className="flex items-center gap-3 mt-4">
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200 px-3 py-1">
+                  <Star className="h-3 w-3 mr-1 fill-yellow-600" />
+                  {rating.toFixed(1)} rating
+                </Badge>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 px-3 py-1">
+                  <Users className="h-3 w-3 mr-1" />
+                  {studentsHelped} students
+                </Badge>
+                {profileCompletion < 100 && (
+                  <Badge variant="outline" className="px-3 py-1">
+                    {profileCompletion}% complete
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content - Single Column */}
-      <div className="max-w-4xl mx-auto px-6 py-6 space-y-4">
-        {/* About & Specializations Combined */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold">Professional Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {bio ? (
-              <p className="text-gray-700 leading-relaxed text-base">{bio}</p>
-            ) : (
-              <div className="text-center py-6 text-gray-500">
-                <p className="mb-3 text-base">Add your professional bio</p>
-                <Button variant="outline" onClick={() => setEditDialogOpen(true)} className="px-5 py-2 text-base h-auto">
-                  Add
-                </Button>
-              </div>
-            )}
-
-            <div className="pt-3 border-t">
-              <p className="text-sm font-medium text-gray-700 mb-2">Specializations</p>
-              <div className="flex flex-wrap gap-2">
-                {specializations.map((spec, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-yellow-50 text-yellow-700 border-yellow-200 px-3 py-1.5 text-sm"
+      {/* Main Content - LinkedIn Grid Style */}
+      <div className="max-w-5xl mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* About Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold">About</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditDialogOpen(true)}
+                    className="h-8 px-2"
                   >
-                    {spec}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Availability & Contact */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold">Availability & Contact</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                <p className="text-sm font-medium text-yellow-900 mb-2 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Working Hours
-                </p>
-                <p className="text-sm text-gray-700 whitespace-pre-line">{availableHours}</p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{location}</span>
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Mail className="h-4 w-4 text-gray-500" />
-                  <span>{email}</span>
-                </div>
-              </div>
-            </div>
+              </CardHeader>
+              <CardContent>
+                {bio ? (
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{bio}</p>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="mb-3">Share your counseling philosophy and approach</p>
+                    <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
+                      Add bio
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            <div className="flex gap-3 pt-2">
-              <Button
-                onClick={() => navigate('/counselor/students')}
-                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white p-4 h-auto"
-                title="Students"
-              >
-                <Users className="h-5 w-5" />
-              </Button>
-              <Button
-                onClick={() => navigate('/counselor/sessions')}
-                variant="outline"
-                className="flex-1 p-4 h-auto"
-                title="Sessions"
-              >
-                <Calendar className="h-5 w-5" />
-              </Button>
-              <Button
-                onClick={() => navigate('/inbox')}
-                variant="outline"
-                className="flex-1 p-4 h-auto"
-                title="Messages"
-              >
-                <MessageSquare className="h-5 w-5" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Specializations Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Specializations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {specializations.map((spec, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="bg-yellow-50 text-yellow-700 border-yellow-200 px-3 py-1"
+                    >
+                      {spec}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Performance Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className={cn(
+                    "p-4 rounded-lg text-center border",
+                    "bg-green-50 border-green-100"
+                  )}>
+                    <div className="text-2xl font-bold text-green-700">
+                      {sessionCompletion}%
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Session completion</div>
+                  </div>
+
+                  <div className={cn(
+                    "p-4 rounded-lg text-center border",
+                    "bg-blue-50 border-blue-100"
+                  )}>
+                    <div className="text-2xl font-bold text-blue-700">{avgResponseTime}h</div>
+                    <div className="text-sm text-gray-600 mt-1">Avg response time</div>
+                  </div>
+
+                  <div className={cn(
+                    "p-4 rounded-lg text-center border",
+                    "bg-purple-50 border-purple-100"
+                  )}>
+                    <div className="text-2xl font-bold text-purple-700">{totalSessions}</div>
+                    <div className="text-sm text-gray-600 mt-1">Total sessions</div>
+                  </div>
+
+                  <div className={cn(
+                    "p-4 rounded-lg text-center border",
+                    "bg-yellow-50 border-yellow-100"
+                  )}>
+                    <div className="text-2xl font-bold text-yellow-700">{rating.toFixed(1)}</div>
+                    <div className="text-sm text-gray-600 mt-1">Student rating</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div className="space-y-4">
+            {/* Availability Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-yellow-600" />
+                  Availability
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                  <p className="text-sm font-medium text-yellow-900 mb-1">Working Hours</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-line">{availableHours}</p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/counselor/sessions')}
+                  className="w-full"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Manage schedule
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions Card */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/counselor/students')}
+                  className="w-full justify-start"
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  My students
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/counselor/sessions')}
+                  className="w-full justify-start"
+                >
+                  <Video className="mr-2 h-4 w-4" />
+                  Sessions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/inbox')}
+                  className="w-full justify-start"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Messages
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Edit Profile Dialog */}
