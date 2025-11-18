@@ -192,7 +192,7 @@ export const CounselorProfilePage = () => {
                   className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2.5 text-base h-auto"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
+                  Edit
                 </Button>
               </div>
             </div>
@@ -214,7 +214,7 @@ export const CounselorProfilePage = () => {
               <div className="text-center py-6 text-gray-500">
                 <p className="mb-3 text-base">Add your professional bio</p>
                 <Button variant="outline" onClick={() => setEditDialogOpen(true)} className="px-5 py-2 text-base h-auto">
-                  Add Bio
+                  Add
                 </Button>
               </div>
             )}
@@ -266,26 +266,26 @@ export const CounselorProfilePage = () => {
             <div className="flex gap-3 pt-2">
               <Button
                 onClick={() => navigate('/counselor/students')}
-                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2.5 text-base h-auto"
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white p-4 h-auto"
+                title="Students"
               >
-                <Users className="mr-2 h-5 w-5" />
-                My Students
+                <Users className="h-5 w-5" />
               </Button>
               <Button
                 onClick={() => navigate('/counselor/sessions')}
                 variant="outline"
-                className="flex-1 px-5 py-2.5 text-base h-auto"
+                className="flex-1 p-4 h-auto"
+                title="Sessions"
               >
-                <Calendar className="mr-2 h-5 w-5" />
-                Sessions
+                <Calendar className="h-5 w-5" />
               </Button>
               <Button
                 onClick={() => navigate('/inbox')}
                 variant="outline"
-                className="flex-1 px-5 py-2.5 text-base h-auto"
+                className="flex-1 p-4 h-auto"
+                title="Messages"
               >
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Messages
+                <MessageSquare className="h-5 w-5" />
               </Button>
             </div>
           </CardContent>
