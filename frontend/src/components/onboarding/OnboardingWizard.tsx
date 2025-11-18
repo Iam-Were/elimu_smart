@@ -217,12 +217,17 @@ export function OnboardingWizard() {
         {/* Footer */}
         {currentStep < 5 && (
           <div className="mt-6 space-y-3">
-            <button
-              onClick={handleSkip}
-              className="block mx-auto text-sm text-gray-600 hover:text-orange-600 underline transition-colors"
-            >
-              Skip for Now
-            </button>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleSkip}
+                className="px-6 py-2.5 text-base font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-orange-400 transition-all"
+              >
+                Skip for Now
+              </button>
+              <p className="text-sm text-gray-500 max-w-md self-center">
+                You can complete your profile anytime from your dashboard
+              </p>
+            </div>
             <p className="text-center text-sm text-gray-500">
               Your information is secure and will only be used to personalize your experience
             </p>
