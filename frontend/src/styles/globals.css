@@ -162,14 +162,14 @@
   --secondary: #2a2a2a; /* Darker secondary */
   --secondary-foreground: #ffab91; /* Higher contrast orange */
   --muted: #262626; /* Better contrast for muted backgrounds */
-  --muted-foreground: #d4d4d4; /* Much lighter gray for better readability */
+  --muted-foreground: #e5e5e5; /* Increased contrast for better readability */
   --accent: #333333;
-  --accent-foreground: #ffab91; 
+  --accent-foreground: #ffab91;
   --destructive: #ef4444; /* Brighter red for visibility */
   --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.15); /* Light border for dark mode */
-  --input: #2a2a2a;
-  --input-background: #2a2a2a;
+  --input: #1a1a1a; /* Darker background for better contrast */
+  --input-background: #1a1a1a;
   --ring: #ff7849;
   --sidebar: #1a1a1a;
   --sidebar-foreground: #ffffff;
