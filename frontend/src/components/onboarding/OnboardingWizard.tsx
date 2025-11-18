@@ -125,27 +125,8 @@ export function OnboardingWizard() {
   };
 
   const handleSkip = () => {
-    // Navigate immediately (non-blocking)
+    // Navigate to dashboard immediately
     navigate('/dashboard');
-
-    // Try to save progress in background
-    (async () => {
-      try {
-        const Parse = await getParse();
-        const user = Parse.User.current();
-
-        if (user) {
-          await Parse.Cloud.run('saveOnboardingProgress', {
-            userId: user.id,
-            currentStep,
-            onboardingData,
-            isCompleted: false
-          });
-        }
-      } catch (error) {
-        console.warn('Failed to save onboarding progress:', error);
-      }
-    })();
   };
 
   return (
