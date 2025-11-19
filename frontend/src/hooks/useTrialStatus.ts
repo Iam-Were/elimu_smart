@@ -51,7 +51,9 @@ export function useTrialStatus() {
       });
 
     } catch (error) {
-      console.error('Error checking trial status:', error);
+      // Silently handle trial status errors (non-critical feature)
+      // Backend may not have isTrial column in Subscription table
+      console.warn('Trial status check unavailable:', error);
       setTrialStatus({
         hasTrial: false,
         isActive: false,
