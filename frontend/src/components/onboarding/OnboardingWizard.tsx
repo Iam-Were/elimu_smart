@@ -134,13 +134,15 @@ export function OnboardingWizard() {
       const user = Parse.User.current();
 
       if (user) {
-        // Save current onboarding state
-        await Parse.Cloud.run('saveOnboardingProgress', {
+        // Save current onboarding state (use saveOnboardingData function)
+        await Parse.Cloud.run('saveOnboardingData', {
           userId: user.id,
-          currentStep,
-          onboardingData,
-          isCompleted: false,
-          skippedAt: new Date().toISOString()
+          stepData: {
+            ...onboardingData,
+            currentStep,
+            isCompleted: false,
+            skippedAt: new Date().toISOString()
+          }
         });
         console.log('✅ Onboarding progress saved in background');
       }
