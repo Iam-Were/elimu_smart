@@ -103,7 +103,7 @@ export const LoginPageShadcn: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
+                <Label htmlFor="email" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -118,7 +118,7 @@ export const LoginPageShadcn: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+                <Label htmlFor="password" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -179,10 +179,10 @@ export const LoginPageShadcn: React.FC = () => {
                     size="sm"
                     onClick={() => handleDemoLogin(account.email, account.password)}
                     disabled={isLoading}
-                    className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 transition-colors"
+                    className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 dark:hover:bg-orange-900/20 transition-colors"
                   >
-                    <span className="font-semibold text-gray-900">{account.type}</span>
-                    <span className="ml-2 text-gray-600">{account.email}</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{account.type}</span>
+                    <span className="ml-2 text-gray-600 dark:text-gray-300">{account.email}</span>
                   </Button>
                 ))}
               </div>
@@ -198,10 +198,10 @@ export const LoginPageShadcn: React.FC = () => {
                       size="sm"
                       onClick={() => handleDemoLogin(account.email, account.password)}
                       disabled={isLoading}
-                      className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 transition-colors"
+                      className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 dark:hover:bg-orange-900/20 transition-colors"
                     >
-                      <span className="font-semibold text-gray-900">{account.type}</span>
-                      <span className="ml-2 text-gray-600">{account.email}</span>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">{account.type}</span>
+                      <span className="ml-2 text-gray-600 dark:text-gray-300">{account.email}</span>
                     </Button>
                   ))}
                 </div>

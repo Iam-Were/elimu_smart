@@ -72,11 +72,11 @@ export function StepWelcome({ onNext, onSkip }: StepWelcomeProps) {
         Let's get started by learning a bit about you. This will only take 5-7 minutes.
       </p>
 
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-4">
         <Button
           onClick={onNext}
           size="lg"
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
         >
           Let's Get Started
         </Button>
@@ -85,7 +85,7 @@ export function StepWelcome({ onNext, onSkip }: StepWelcomeProps) {
           onClick={onSkip}
           variant="ghost"
           size="lg"
-          className="text-gray-600 hover:text-orange-600 font-medium"
+          className="w-full md:w-auto text-gray-600 hover:text-orange-600 dark:text-gray-300 dark:hover:text-orange-400 font-medium"
         >
           Skip for Now
         </Button>
