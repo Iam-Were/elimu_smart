@@ -55,11 +55,9 @@ export const useTheme = (): UseThemeReturn => {
   });
 
   const [isDark, setIsDark] = useState(() => {
-    // Default to system preference on initial render
-    // Backend preference will be loaded in useEffect below
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
+    // Default to light mode on initial render
+    // Backend preference will be loaded in useEffect below for logged-in users
+    // System preference will be applied for anonymous users
     return false;
   });
 
@@ -76,11 +74,16 @@ export const useTheme = (): UseThemeReturn => {
           if (result && typeof result.darkMode === 'boolean') {
             setIsDark(result.darkMode);
           }
+        } else {
+          // User not logged in - apply system preference
+          const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          setIsDark(systemPrefersDark);
         }
-        // If not logged in, keep system preference (already set in useState)
       } catch (error) {
         console.warn('Failed to load dark mode preference from backend:', error);
-        // Keep current state (system preference)
+        // Fallback to system preference
+        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDark(systemPrefersDark);
       }
     };
 
