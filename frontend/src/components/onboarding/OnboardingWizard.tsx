@@ -144,11 +144,8 @@ export function OnboardingWizard() {
         // Mark onboarding as "completed" to allow dashboard access
         // User can resume onboarding later from dashboard prompt
         await Parse.Cloud.run('saveUserPreferences', {
-          userId: user.id,
-          preferences: {
-            onboardingCompleted: true,
-            onboardingSkipped: true
-          }
+          onboardingCompleted: true,
+          onboardingSkipped: true
         });
 
         console.log('✅ Onboarding progress saved, navigating to dashboard');
