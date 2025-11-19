@@ -18,12 +18,13 @@ const roleToTheme = (role: ThemeRole): 'orange' | 'yellow' | 'purple' => {
   return 'orange';
 };
 
-const themeToRole = (theme: 'orange' | 'yellow' | 'purple'): ThemeRole => {
-  if (theme === 'orange') return 'student';
-  if (theme === 'yellow') return 'counselor';
-  if (theme === 'purple') return 'admin';
-  return 'student';
-};
+// Helper function to convert theme color to role (currently unused but kept for potential future use)
+// const _themeToRole = (theme: 'orange' | 'yellow' | 'purple'): ThemeRole => {
+//   if (theme === 'orange') return 'student';
+//   if (theme === 'yellow') return 'counselor';
+//   if (theme === 'purple') return 'admin';
+//   return 'student';
+// };
 
 // Get user's role-based theme from body classes (set by useAuth)
 const getUserRoleTheme = (): ThemeRole | null => {
@@ -47,34 +48,48 @@ export const useTheme = (): UseThemeReturn => {
     if (roleTheme) {
       return roleTheme;
     }
-    
-    // PRIORITY 2: Get theme from localStorage (for manual overrides)
-    const savedTheme = localStorage.getItem('elimu-theme');
-    if (savedTheme === 'orange' || savedTheme === 'yellow' || savedTheme === 'purple') {
-      return themeToRole(savedTheme);
-    }
-    
-    // PRIORITY 3: Default to student theme
+
+    // PRIORITY 2: Default to student theme
+    // Backend preference will be loaded in useEffect
     return 'student';
   });
 
   const [isDark, setIsDark] = useState(() => {
-    // Get initial dark mode from localStorage
-    const savedDarkMode = localStorage.getItem('elimu-dark-mode');
-    if (savedDarkMode !== null) {
-      return savedDarkMode === 'true';
-    }
-    // Respect system preference (both mobile and desktop)
+    // Default to system preference on initial render
+    // Backend preference will be loaded in useEffect below
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return true;
     }
     return false;
   });
 
+  // Load dark mode preference from backend on mount
+  useEffect(() => {
+    const loadDarkModePreference = async () => {
+      try {
+        const Parse = await import('@/config/parse').then(m => m.getParse());
+        const user = Parse.User.current();
+
+        if (user) {
+          // User is logged in - fetch from backend
+          const result = await Parse.Cloud.run('getUserPreferences');
+          if (result && typeof result.darkMode === 'boolean') {
+            setIsDark(result.darkMode);
+          }
+        }
+        // If not logged in, keep system preference (already set in useState)
+      } catch (error) {
+        console.warn('Failed to load dark mode preference from backend:', error);
+        // Keep current state (system preference)
+      }
+    };
+
+    loadDarkModePreference();
+  }, []); // Run once on mount
+
   // Apply theme when component mounts or theme changes
   useEffect(() => {
     applyRoleTheme(currentTheme);
-    localStorage.setItem('elimu-theme', roleToTheme(currentTheme));
   }, [currentTheme]);
 
   // 🎨 AUTO-SYNC THEME WITH USER ROLE
@@ -107,24 +122,32 @@ export const useTheme = (): UseThemeReturn => {
       document.body.classList.remove('dark');
       root.classList.remove('dark');
     }
-    localStorage.setItem('elimu-dark-mode', String(isDark));
+    // Dark mode preference is saved to backend via toggleDarkMode() callback
   }, [isDark]);
 
   // Listen for system dark mode changes (mobile and desktop)
   useEffect(() => {
-    // Only respond to system preference if user hasn't manually set a preference
-    const savedDarkMode = localStorage.getItem('elimu-dark-mode');
-    if (savedDarkMode !== null) {
-      // User has explicitly set a preference, don't override
-      return;
-    }
-
-    // Listen for system dark mode changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const handleChange = (e: MediaQueryListEvent) => {
-      console.log('🌓 System dark mode changed:', e.matches);
-      setIsDark(e.matches);
+    const handleChange = async (e: MediaQueryListEvent) => {
+      try {
+        const Parse = await import('@/config/parse').then(m => m.getParse());
+        const user = Parse.User.current();
+
+        if (!user) {
+          // Not logged in - follow system preference
+          console.log('🌓 System dark mode changed:', e.matches);
+          setIsDark(e.matches);
+        } else {
+          // Logged in - keep backend preference, don't follow system changes
+          // User must manually toggle dark mode if they want to change it
+          console.log('🌓 System dark mode changed, but user is logged in - keeping backend preference');
+        }
+      } catch {
+        // If backend fails, follow system preference
+        console.log('🌓 System dark mode changed:', e.matches);
+        setIsDark(e.matches);
+      }
     };
 
     // Add listener (use addEventListener for better browser support)
