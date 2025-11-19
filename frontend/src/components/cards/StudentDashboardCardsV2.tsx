@@ -19,6 +19,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -49,6 +50,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   className,
   maxCards = 6
 }) => {
+  const navigate = useNavigate();
+
   // ✅ FIX #3: State for progressive disclosure
   const [expanded, setExpanded] = useState(false);
 
@@ -63,7 +66,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
 
   // Fetch dashboard data for hero section
   const { careerReadinessScore, userActivities } = useDynamicDashboard();
-  
+
   // Get auth user to ensure profile photo is synced
   const { user: authUser } = useAuth();
   
@@ -202,21 +205,22 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   return (
     <div className="space-y-4 sm:space-y-6">
 
-      {/* Hero KPI - Compact Welcome Card with Profile Photo Sync */}
-      <Card className="overflow-hidden border-l-4 border-orange-500 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-        <CardHeader className="bg-gradient-to-r from-orange-50/50 to-white pb-3 pt-4 border-b">
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Profile Picture - Same size as profile page (h-32 w-32) */}
+      {/* Hero KPI - LinkedIn-style Subtle Welcome Card */}
+      <Card className="overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="bg-gradient-to-r from-slate-50/50 to-white pb-4 pt-5 border-b">
+          <div className="flex items-center gap-4 sm:gap-5">
+            {/* Profile Picture - Prominent LinkedIn style */}
             <div className="flex-shrink-0">
               {loadingUser ? (
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-300 bg-orange-100 animate-pulse shadow-md" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-slate-200 bg-slate-100 animate-pulse shadow-sm" />
               ) : (
                 <img
-                  src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=128`}
+                  src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=0a66c2&color=fff&size=256`}
                   alt="Profile"
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 border-orange-300 object-cover shadow-md"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-slate-200 object-cover shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate('/profile')}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=f97316&color=fff&size=128`;
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=0a66c2&color=fff&size=256`;
                   }}
                 />
               )}
@@ -353,8 +357,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
           ) : (
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-4">Complete assessments to see your readiness score</p>
-              <Button onClick={() => window.location.href = '/assessment'} className="bg-orange-600 hover:bg-orange-700">
-                Start Your First Assessment
+              <Button onClick={() => navigate('/assessment')} className="bg-blue-600 hover:bg-blue-700">
+                Get Started
               </Button>
             </div>
           )}
@@ -379,13 +383,13 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
               )}
               
               {/* CTA Button */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => window.location.href = '/dashboard?tab=progress'}
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 font-semibold"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/profile')}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold"
               >
-                View Full Details →
+                View Profile →
               </Button>
             </div>
           </CardFooter>
