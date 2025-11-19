@@ -125,16 +125,12 @@ export function OnboardingWizard() {
   };
 
   const handleSkip = async () => {
-    // Navigate to dashboard immediately (don't block UI)
-    navigate('/dashboard');
-
-    // Save progress in background (non-blocking)
     try {
       const Parse = await getParse();
       const user = Parse.User.current();
 
       if (user) {
-        // Save current onboarding state (use saveOnboardingData function)
+        // Save current onboarding progress (non-blocking)
         await Parse.Cloud.run('saveOnboardingData', {
           userId: user.id,
           stepData: {
@@ -144,12 +140,25 @@ export function OnboardingWizard() {
             skippedAt: new Date().toISOString()
           }
         });
-        console.log('✅ Onboarding progress saved in background');
+
+        // Mark onboarding as "completed" to allow dashboard access
+        // User can resume onboarding later from dashboard prompt
+        await Parse.Cloud.run('saveUserPreferences', {
+          userId: user.id,
+          preferences: {
+            onboardingCompleted: true,
+            onboardingSkipped: true
+          }
+        });
+
+        console.log('✅ Onboarding progress saved, navigating to dashboard');
       }
     } catch (error) {
-      console.warn('Failed to save onboarding progress (background):', error);
-      // Don't show error to user since they already navigated away
+      console.warn('Failed to save onboarding progress:', error);
     }
+
+    // Navigate to dashboard after saving
+    navigate('/dashboard');
   };
 
   return (
