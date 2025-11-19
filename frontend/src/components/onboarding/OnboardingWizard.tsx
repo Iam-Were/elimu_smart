@@ -124,9 +124,30 @@ export function OnboardingWizard() {
     navigate('/dashboard');
   };
 
-  const handleSkip = () => {
-    // Navigate to dashboard immediately
+  const handleSkip = async () => {
+    // Navigate to dashboard immediately (don't block UI)
     navigate('/dashboard');
+
+    // Save progress in background (non-blocking)
+    try {
+      const Parse = await getParse();
+      const user = Parse.User.current();
+
+      if (user) {
+        // Save current onboarding state
+        await Parse.Cloud.run('saveOnboardingProgress', {
+          userId: user.id,
+          currentStep,
+          onboardingData,
+          isCompleted: false,
+          skippedAt: new Date().toISOString()
+        });
+        console.log('✅ Onboarding progress saved in background');
+      }
+    } catch (error) {
+      console.warn('Failed to save onboarding progress (background):', error);
+      // Don't show error to user since they already navigated away
+    }
   };
 
   return (

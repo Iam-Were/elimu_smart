@@ -1976,37 +1976,37 @@ input::placeholder, textarea::placeholder {
   .dark input,
   .dark textarea,
   .dark select {
-    background-color: hsl(var(--input-background));
-    border: 1px solid hsl(var(--input-border));
-    color: hsl(var(--input-text));
+    background-color: var(--input-background);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
   }
 
   .dark input:focus,
   .dark textarea:focus,
   .dark select:focus {
-    border-color: hsl(var(--input-border-focus));
+    border-color: var(--input-border-focus);
     outline: none;
     box-shadow: 0 0 0 3px rgba(255, 120, 73, 0.1);
   }
 
   .dark input::placeholder,
   .dark textarea::placeholder {
-    color: hsl(var(--input-placeholder));
+    color: var(--input-placeholder);
     opacity: 1;
   }
 
   .dark label {
-    color: hsl(var(--label-primary));
+    color: var(--label-primary);
     font-weight: 500;
   }
 
   .dark label.optional {
-    color: hsl(var(--label-secondary));
+    color: var(--label-secondary);
   }
 
   .dark .hint-text,
   .dark .helper-text {
-    color: hsl(var(--label-hint));
+    color: var(--label-hint);
     font-size: 0.875rem;
   }
 }
