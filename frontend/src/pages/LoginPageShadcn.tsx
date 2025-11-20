@@ -46,34 +46,6 @@ export const LoginPageShadcn: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
   };
 
-  // Demo accounts for easy testing
-  const demoAccounts = [
-    { type: 'Student', email: 'student@elimu.com', password: 'student' },
-    { type: 'Counselor', email: 'counselor@elimu.com', password: 'counselor' },
-    { type: 'Platform Admin', email: 'mike.platform@elimu.com', password: 'platform2024' },
-    { type: 'Operations Admin', email: 'linda.operations@elimu.com', password: 'operations2024' },
-    { type: 'Safety Manager', email: 'peter.safety@elimu.com', password: 'safety2024' }
-  ];
-
-  const handleDemoLogin = async (email: string, password: string) => {
-    setFormData({ email, password });
-    setError('');
-
-    try {
-      const user = await login({ email, password });
-
-      // Navigate based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user.role === 'counselor') {
-        navigate('/counselor/dashboard', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
@@ -152,76 +124,23 @@ export const LoginPageShadcn: React.FC = () => {
               </Button>
             </form>
 
-            <div className="text-center">
+            <div className="flex items-center justify-between text-sm">
               <Link
                 to="/forgot-password"
-                className="text-sm text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors"
+                className="text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors"
               >
-                Forgot your password?
+                Forgot password?
               </Link>
-            </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200" />
+              <div className="text-gray-600">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="text-orange-600 hover:text-orange-700 hover:underline font-semibold transition-colors"
+                >
+                  Sign up
+                </Link>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-gray-500 font-medium">Demo Access</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="grid gap-2">
-                {demoAccounts.slice(0, 3).map((account) => (
-                  <Button
-                    key={account.email}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDemoLogin(account.email, account.password)}
-                    disabled={isLoading}
-                    className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 dark:hover:bg-orange-900/20 transition-colors"
-                  >
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{account.type}</span>
-                    <span className="ml-2 text-gray-600 dark:text-gray-300">{account.email}</span>
-                  </Button>
-                ))}
-              </div>
-              <details className="text-center">
-                <summary className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer font-medium">
-                  More Demo Accounts →
-                </summary>
-                <div className="grid gap-2 mt-2">
-                  {demoAccounts.slice(3).map((account) => (
-                    <Button
-                      key={account.email}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDemoLogin(account.email, account.password)}
-                      disabled={isLoading}
-                      className="text-xs justify-start h-10 px-4 hover:bg-orange-50 hover:border-orange-200 dark:hover:bg-orange-900/20 transition-colors"
-                    >
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">{account.type}</span>
-                      <span className="ml-2 text-gray-600 dark:text-gray-300">{account.email}</span>
-                    </Button>
-                  ))}
-                </div>
-              </details>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200" />
-              </div>
-            </div>
-
-            <div className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="text-orange-600 hover:text-orange-700 hover:underline font-semibold transition-colors"
-              >
-                Sign up
-              </Link>
             </div>
           </CardContent>
         </Card>

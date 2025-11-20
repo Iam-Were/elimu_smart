@@ -18,14 +18,6 @@ const roleToTheme = (role: ThemeRole): 'orange' | 'yellow' | 'purple' => {
   return 'orange';
 };
 
-// Helper function to convert theme color to role (currently unused but kept for potential future use)
-// const _themeToRole = (theme: 'orange' | 'yellow' | 'purple'): ThemeRole => {
-//   if (theme === 'orange') return 'student';
-//   if (theme === 'yellow') return 'counselor';
-//   if (theme === 'purple') return 'admin';
-//   return 'student';
-// };
-
 // Get user's role-based theme from body classes (set by useAuth)
 const getUserRoleTheme = (): ThemeRole | null => {
   try {

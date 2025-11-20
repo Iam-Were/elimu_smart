@@ -1,5 +1,5 @@
 import React from 'react';
-import StudentAssessmentCards from '../components/cards/StudentAssessmentCards';
+import StudentAssessmentCardsV2 from '../components/cards/StudentAssessmentCardsV2';
 
 // Simple test component to verify assessment cards implementation
 const AssessmentCardsTest: React.FC = () => {
@@ -7,22 +7,20 @@ const AssessmentCardsTest: React.FC = () => {
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Assessment Cards Implementation Test</h1>
-        
+
         {/* Test the redesigned assessment cards */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Redesigned Assessment Cards</h2>
-          <StudentAssessmentCards
+          <h2 className="text-lg font-semibold mb-4">Redesigned Assessment Cards V2</h2>
+          <StudentAssessmentCardsV2
             maxCards={5}
-            showAll={true}
           />
         </div>
 
         {/* Test compact version */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Compact Version</h2>
-          <StudentAssessmentCards
+          <StudentAssessmentCardsV2
             maxCards={3}
-            showAll={false}
           />
         </div>
 

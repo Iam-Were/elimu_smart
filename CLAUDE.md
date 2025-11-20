@@ -45,6 +45,47 @@ node server-working.js  # Parse Server (http://localhost:1337)
 - Linda Wambui (Operations Admin): `linda.operations@elimu.com` / `operations2024`
 - Peter Otieno (Safety Manager): `peter.safety@elimu.com` / `safety2024`
 
+## Testing Credentials & Development Rules
+
+**CRITICAL RULE: Always use these credentials when testing or developing**
+
+### Quick Test Accounts (Development Only)
+```bash
+# Student (Default for testing)
+Email: student@elimu.com
+Password: student
+
+# Counselor
+Email: counselor@elimu.com
+Password: counselor
+
+# Platform Admin
+Email: mike.platform@elimu.com
+Password: platform2024
+
+# Operations Admin
+Email: linda.operations@elimu.com
+Password: operations2024
+
+# Safety Manager
+Email: peter.safety@elimu.com
+Password: safety2024
+```
+
+### Testing Protocol Rules
+1. **Default test account**: Use `student@elimu.com` / `student` unless testing specific role
+2. **Role-specific testing**: Switch to appropriate admin/counselor account as needed
+3. **Never commit real credentials**: These are demo accounts only
+4. **Login shortcuts**: When Claude tests features, always login with student account first
+5. **Production testing**: Use VPS test script: `ssh root@145.239.42.121 'cd /root/elimu_smart/backend && node scripts/test-login.js production'`
+6. **MCP Browser Testing**: When using Chrome DevTools MCP, navigate to https://elimu-smart.co.ke/login and use student credentials
+
+### Why This Rule Exists
+- **Context Efficiency**: Eliminates need to ask "what credentials should I use?"
+- **Consistency**: All testing uses same accounts, reproducible bugs
+- **Security**: Demo credentials not visible on public login page
+- **UX**: Professional login page without clutter
+
 **Login Testing:**
 ```bash
 # On VPS
