@@ -49,7 +49,7 @@ export const LoginPageShadcn: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="text-center space-y-4 pb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
@@ -125,13 +125,6 @@ export const LoginPageShadcn: React.FC = () => {
             </form>
 
             <div className="flex items-center justify-between text-sm">
-              <Link
-                to="/forgot-password"
-                className="text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors"
-              >
-                Forgot password?
-              </Link>
-
               <div className="text-gray-600">
                 Don't have an account?{' '}
                 <Link
@@ -141,6 +134,13 @@ export const LoginPageShadcn: React.FC = () => {
                   Sign up
                 </Link>
               </div>
+
+              <Link
+                to="/forgot-password"
+                className="text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors"
+              >
+                Forgot password?
+              </Link>
             </div>
           </CardContent>
         </Card>
