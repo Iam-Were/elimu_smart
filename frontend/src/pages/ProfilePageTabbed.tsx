@@ -576,6 +576,105 @@ export const ProfilePageTabbed: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Featured Assessments Section */}
+            {assessments.length > 0 && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-orange-600" />
+                    Featured Assessments
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {assessments.slice(0, 3).map((assessment) => (
+                      <div
+                        key={assessment.id}
+                        className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                        onClick={() => setSearchParams({ tab: 'assessments' })}
+                      >
+                        {/* Gradient Icon */}
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 mb-4 ${
+                          assessment.type === 'riasec'
+                            ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                            : assessment.type === 'skills'
+                            ? 'bg-gradient-to-br from-green-500 to-green-600'
+                            : assessment.type === 'career'
+                            ? 'bg-gradient-to-br from-amber-500 to-amber-600'
+                            : 'bg-gradient-to-br from-blue-500 to-blue-600'
+                        }`}>
+                          {assessment.type === 'riasec' ? (
+                            <Brain className="w-6 h-6 text-white" />
+                          ) : assessment.type === 'skills' ? (
+                            <Target className="w-6 h-6 text-white" />
+                          ) : assessment.type === 'career' ? (
+                            <Briefcase className="w-6 h-6 text-white" />
+                          ) : (
+                            <ClipboardCheck className="w-6 h-6 text-white" />
+                          )}
+                        </div>
+
+                        {/* Assessment Title */}
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-2">
+                          {assessment.title}
+                        </h3>
+
+                        {/* Completion Badge */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className="bg-green-500 text-white text-xs">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Completed
+                          </Badge>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(assessment.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+
+                        {/* Results Preview */}
+                        {assessment.type === 'riasec' && assessment.results?.hollandCode && (
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-semibold">Holland Code:</span>{' '}
+                            <span className="text-orange-600 dark:text-orange-400 font-bold">
+                              {assessment.results.hollandCode}
+                            </span>
+                          </div>
+                        )}
+                        {assessment.type === 'skills' && assessment.results?.scores && (
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-semibold">Top Skill:</span>{' '}
+                            <span className="text-green-600 dark:text-green-400">
+                              {Object.entries(assessment.results.scores)
+                                .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] || 'N/A'}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* View Details Link */}
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                          <span className="text-sm font-medium text-orange-600 dark:text-orange-400 group-hover:underline flex items-center gap-1">
+                            View Details
+                            <ChevronDown className="h-4 w-4 rotate-[-90deg]" />
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* View All Link */}
+                  {assessments.length > 3 && (
+                    <div className="mt-6 text-center">
+                      <button
+                        onClick={() => setSearchParams({ tab: 'assessments' })}
+                        className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 hover:underline"
+                      >
+                        View all {assessments.length} assessments →
+                      </button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Assessments Tab */}
