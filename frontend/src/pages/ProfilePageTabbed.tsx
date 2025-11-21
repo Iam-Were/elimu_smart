@@ -17,18 +17,12 @@ import {
   User,
   Target,
   Briefcase,
-  Code,
-  ExternalLink,
-  Github,
   Globe,
   Camera,
   Calendar,
-  Plus,
-  Upload,
   ClipboardCheck,
   TrendingUp,
   Loader2,
-
   Download,
   Share2,
   Trophy,
@@ -45,9 +39,6 @@ import {
 } from 'lucide-react';
 import { ImageUploader } from '../components/common/ImageUploader';
 import { BookingModal } from '../components/student/BookingModal';
-import { AddProjectDialog } from '@/components/profile/AddProjectDialog';
-import { AddExperienceDialog } from '@/components/profile/AddExperienceDialog';
-import { AddSkillsDialog } from '@/components/profile/AddSkillsDialog';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -56,36 +47,6 @@ import { createAvatar } from '@dicebear/core';
 import { avataaars } from '@dicebear/collection';
 import { getRiasecTypeInfo } from '@/lib/assessmentProgress';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface ProfileProject {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  description: string;
-  technologies: string[];
-  githubUrl?: string;
-  liveUrl?: string;
-}
-
-interface ProfileExperience {
-  id: string;
-  title: string;
-  company: string;
-  type: string;
-  startDate: string;
-  endDate?: string | null;
-  current?: boolean;
-  description: string;
-  achievements?: string[];
-  skills?: string[];
-}
-
-interface ProfileSkill {
-  name: string;
-  category: string;
-  level: number;
-}
 
 interface AssessmentResult {
   id: string;
@@ -124,25 +85,16 @@ export const ProfilePageTabbed: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'about';
 
-  const [projects, setProjects] = useState<ProfileProject[]>([]);
-  const [experience, setExperience] = useState<ProfileExperience[]>([]);
-  const [skills, setSkills] = useState<ProfileSkill[]>([]);
   const [assessments, setAssessments] = useState<AssessmentResult[]>([]);
   const [assessmentSummary, setAssessmentSummary] = useState<AssessmentSummary | null>(null);
   const [personalityInsights, setPersonalityInsights] = useState<Record<string, RiasecTypeInfo>>({});
   const [expandedAssessments, setExpandedAssessments] = useState<Set<string>>(new Set());
 
-  const [loadingProjects, setLoadingProjects] = useState(true);
-  const [loadingExperience, setLoadingExperience] = useState(true);
   const [loadingAssessments, setLoadingAssessments] = useState(true);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
-  const [showFABMenu, setShowFABMenu] = useState(false);
-  const [showAddProjectDialog, setShowAddProjectDialog] = useState(false);
-  const [showAddExperienceDialog, setShowAddExperienceDialog] = useState(false);
-  const [showAddSkillsDialog, setShowAddSkillsDialog] = useState(false);
   const [personalityModalOpen, setPersonalityModalOpen] = useState(false);
   const [selectedPersonalityType, setSelectedPersonalityType] = useState<{
     type: string;
@@ -175,64 +127,6 @@ export const ProfilePageTabbed: React.FC = () => {
       });
     }
   }, [user]);
-
-  // Load user projects
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const Parse = getParse();
-        const result = await Parse.Cloud.run('getUserProjects');
-        if (result.success && Array.isArray(result.projects) && result.projects.length > 0) {
-          setProjects(result.projects);
-        } else {
-          setProjects([]);
-        }
-      } catch (error) {
-        console.error('Failed to load projects:', error);
-        setProjects([]);
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-    loadProjects();
-  }, []);
-
-  // Load user experience
-  useEffect(() => {
-    const loadExperience = async () => {
-      try {
-        const Parse = getParse();
-        const result = await Parse.Cloud.run('getUserExperience');
-        if (result.success && Array.isArray(result.experience) && result.experience.length > 0) {
-          setExperience(result.experience);
-        } else {
-          setExperience([]);
-        }
-      } catch (error) {
-        console.error('Failed to load experience:', error);
-        setExperience([]);
-      } finally {
-        setLoadingExperience(false);
-      }
-    };
-    loadExperience();
-  }, []);
-
-  // Load user skills
-  useEffect(() => {
-    const loadSkills = async () => {
-      try {
-        const Parse = getParse();
-        const result = await Parse.Cloud.run('getUserSkills');
-        if (result.success && Array.isArray(result.skills) && result.skills.length > 0) {
-          setSkills(result.skills);
-        }
-      } catch (error) {
-        console.error('Failed to load skills:', error);
-      }
-    };
-    loadSkills();
-  }, []);
 
   // Load assessment results
   useEffect(() => {
@@ -453,18 +347,20 @@ export const ProfilePageTabbed: React.FC = () => {
                     {user?.role === 'counselor' && (
                       <Button
                         onClick={() => setShowBookingModal(true)}
-                        className="gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
+                        className="h-12 gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
                       >
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-5 w-5" />
                         Book Session
                       </Button>
                     )}
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="ghost" className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-muted-foreground/20 hover:border-muted-foreground/40">
-                          <Edit className="h-3.5 w-3.5" />
-                          <span className="hidden md:inline">Edit profile</span>
-                          <span className="md:hidden">Edit</span>
+                        <Button
+                          variant="ghost"
+                          className="h-12 w-12 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-muted-foreground/20 hover:border-muted-foreground/40"
+                          title="Edit profile"
+                        >
+                          <Edit className="h-5 w-5" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
@@ -560,16 +456,16 @@ export const ProfilePageTabbed: React.FC = () => {
                   ) : (
                     <>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">{loadingProjects ? '...' : projects.length}</div>
-                        <div className="text-xs text-gray-500">Projects</div>
+                        <div className="text-lg font-semibold">{assessments.length}</div>
+                        <div className="text-xs text-gray-500">Assessments</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">{loadingExperience ? '...' : experience.length}</div>
-                        <div className="text-xs text-gray-500">Experiences</div>
+                        <div className="text-lg font-semibold">{assessmentSummary?.topCareers?.length || 0}</div>
+                        <div className="text-xs text-gray-500">Career Matches</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">{skills.length}</div>
-                        <div className="text-xs text-gray-500">Skills</div>
+                        <div className="text-lg font-semibold">{assessmentSummary?.hollandCode?.length || 0}</div>
+                        <div className="text-xs text-gray-500">Personality Traits</div>
                       </div>
                     </>
                   )}
@@ -678,266 +574,6 @@ export const ProfilePageTabbed: React.FC = () => {
                     </p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Projects Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Code className="h-5 w-5 text-orange-600" />
-                    Projects
-                  </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddProjectDialog(true)}>
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loadingProjects ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading projects...</div>
-                ) : projects.length === 0 ? (
-                  <div className="text-center py-12 bg-gradient-to-br from-orange-50/30 to-white rounded-lg border-2 border-dashed border-orange-200">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                      <Code className="h-8 w-8 text-white" />
-                    </div>
-                    <p className="font-semibold text-lg mb-2">Showcase Your Work</p>
-                    <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                      Add projects to demonstrate your skills and stand out to counselors and universities
-                    </p>
-                    <Button
-                      onClick={() => setShowAddProjectDialog(true)}
-                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
-                    >
-                      <Code className="h-4 w-4 mr-2" />
-                      Add Your First Project
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {projects.map((project) => (
-                      <div key={project.id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{project.title}</h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{project.type}</p>
-                          </div>
-                          <span className={`text-xs font-medium ${project.status === 'Completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'}`}>
-                            {project.status}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">{project.description}</p>
-
-                        {/* Technologies - LinkedIn neutral pill style */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {project.technologies.map((tech) => (
-                            <span key={tech} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-full">
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Links - LinkedIn style */}
-                        <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                          {project.githubUrl && (
-                            <a
-                              href={project.githubUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1.5 transition-colors"
-                            >
-                              <Github className="h-4 w-4" />
-                              View Code
-                            </a>
-                          )}
-                          {project.liveUrl && (
-                            <a
-                              href={project.liveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1.5 transition-colors"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Live Demo
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Experience Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-orange-600" />
-                    Experience
-                    {experience.length > 0 && (
-                      <Badge variant="secondary" className="ml-2">
-                        {experience.length}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddExperienceDialog(true)}>
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loadingExperience ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading experience...</div>
-                ) : experience.length === 0 ? (
-                  <div className="text-center py-12 bg-gradient-to-br from-blue-50/30 to-white rounded-lg border-2 border-dashed border-blue-200">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                      <Briefcase className="h-8 w-8 text-white" />
-                    </div>
-                    <p className="font-semibold text-lg mb-2">Build Your Experience</p>
-                    <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                      Add internships, volunteer work, or part-time jobs to strengthen your profile
-                    </p>
-                    <Button
-                      onClick={() => setShowAddExperienceDialog(true)}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90"
-                    >
-                      <Briefcase className="h-4 w-4 mr-2" />
-                      Add Your First Experience
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    {experience.map((exp, index) => (
-                      <div key={exp.id} className="relative pl-8">
-                        {/* Timeline connector */}
-                        {index < experience.length - 1 && (
-                          <div className="absolute left-6 top-12 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
-                        )}
-                        
-                        <div className="flex gap-4">
-                          {/* Company Logo Circle - LinkedIn style */}
-                          <div className="flex-shrink-0">
-                            <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
-                              <Briefcase className="h-6 w-6 text-slate-400 dark:text-slate-500" />
-                            </div>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            {/* Header */}
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">{exp.title}</h4>
-                                <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{exp.company}</p>
-                              </div>
-                              <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-4">
-                                {new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} -{' '}
-                                {exp.current ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present'}
-                              </span>
-                            </div>
-                            
-                            {/* Description */}
-                            {exp.description && (
-                              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
-                                {exp.description}
-                              </p>
-                            )}
-                            
-                            {/* Skills - LinkedIn neutral style */}
-                            {(exp.skills ?? []).length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {(exp.skills ?? []).map((skill) => (
-                                  <span key={skill} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-full">
-                                    {skill}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Skills Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-orange-600" />
-                    Skills
-                    {skills.length > 0 && (
-                      <Badge variant="secondary" className="ml-2">
-                        {skills.length}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowAddSkillsDialog(true)}>
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {skills.length === 0 ? (
-                  <div className="text-center py-12 bg-gradient-to-br from-green-50/30 to-white rounded-lg border-2 border-dashed border-green-200">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                      <Target className="h-8 w-8 text-white" />
-                    </div>
-                    <p className="font-semibold text-lg mb-2">Highlight Your Skills</p>
-                    <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                      Add technical and soft skills to show what you're good at
-                    </p>
-                    <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90" onClick={() => setShowAddSkillsDialog(true)}>
-                      <Target className="h-4 w-4 mr-2" />
-                      Add Your Skills
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-                    {skills.map((skill) => (
-                      <div key={skill.name} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-2 sm:p-4 hover:shadow-md transition-shadow">
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-1.5 sm:mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-50 truncate">
-                              {skill.name}
-                            </h4>
-                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">{skill.category}</p>
-                          </div>
-                          <span className="text-[10px] sm:text-xs font-medium text-orange-600 dark:text-orange-400 ml-2">
-                            {skill.level}%
-                          </span>
-                        </div>
-
-                        {/* LinkedIn-style Progress Bar */}
-                        <div className="relative">
-                          <div className="h-1.5 sm:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-300"
-                              style={{ width: `${skill.level}%` }}
-                            />
-                          </div>
-
-                          {/* Level label */}
-                          <div className="flex justify-between mt-0.5 sm:mt-1.5">
-                            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
-                              {skill.level >= 75 ? 'Expert' : skill.level >= 50 ? 'Advanced' : skill.level >= 25 ? 'Intermediate' : 'Beginner'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1551,96 +1187,6 @@ export const ProfilePageTabbed: React.FC = () => {
           counselorName={`${user.firstName} ${user.lastName}`}
           isOpen={showBookingModal}
           onClose={() => setShowBookingModal(false)}
-        />
-      )}
-
-      {/* Sticky FAB - Mobile Only */}
-        <div className="fixed bottom-20 right-4 z-40 md:hidden">
-          {showFABMenu && (
-            <div className="absolute bottom-16 right-0 flex flex-col gap-3 mb-2 animate-in fade-in slide-in-from-bottom-2">
-              <Button
-                size="sm"
-                onClick={() => {
-                  setIsEditDialogOpen(true);
-                  setShowFABMenu(false);
-                }}
-                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Profile
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setShowAddProjectDialog(true);
-                  setShowFABMenu(false);
-                }}
-                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
-              >
-                <Code className="h-4 w-4" />
-                Add Project
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setShowImageUploader(true);
-                  setShowFABMenu(false);
-                }}
-                className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 gap-2 whitespace-nowrap"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Photo
-              </Button>
-            </div>
-          )}
-
-          <Button
-            size="lg"
-            onClick={() => setShowFABMenu(!showFABMenu)}
-            className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-200 ${
-              showFABMenu ? 'bg-gradient-to-br from-red-500 to-red-600 rotate-45' : 'bg-gradient-to-br from-orange-500 to-orange-600'
-            }`}
-            aria-label={showFABMenu ? 'Close quick actions menu' : 'Open quick actions menu'}
-            aria-expanded={showFABMenu}
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </div>
-
-      {/* Dialogs */}
-      {showAddProjectDialog && (
-        <AddProjectDialog
-          isOpen={showAddProjectDialog}
-          onClose={() => setShowAddProjectDialog(false)}
-          onSuccess={(project) => {
-            setProjects([...projects, project]);
-            setShowAddProjectDialog(false);
-          }}
-        />
-      )}
-
-      {showAddExperienceDialog && (
-        <AddExperienceDialog
-          isOpen={showAddExperienceDialog}
-          onClose={() => setShowAddExperienceDialog(false)}
-          onSuccess={(exp) => {
-            setExperience([...experience, exp]);
-            setShowAddExperienceDialog(false);
-          }}
-        />
-      )}
-
-      {showAddSkillsDialog && (
-        <AddSkillsDialog
-          isOpen={showAddSkillsDialog}
-          onClose={() => setShowAddSkillsDialog(false)}
-          onSuccess={(newSkills) => {
-            setSkills([...skills, ...newSkills]);
-            setShowAddSkillsDialog(false);
-          }}
-          existingSkills={skills}
-          userRiasecType={(user as { riasecType?: string })?.riasecType}
-          userProjects={projects}
         />
       )}
 
