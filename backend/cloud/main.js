@@ -931,23 +931,31 @@ Parse.Cloud.define('uploadFile', async (request) => {
 Parse.Cloud.define('uploadProfileImage', async (request) => {
   const { imageData, fileName } = request.params;
   const user = request.user;
-  
+
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
   try {
-    // Create Parse File from base64 image data
-    const parseFile = new Parse.File(fileName || 'profile-image.jpg', { base64: imageData }, 'image/jpeg');
+    // Extract base64 data (imageData format: "data:image/jpeg;base64,/9j/4AAQ...")
+    // Parse.File needs only the base64 part after the comma
+    const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+
+    // Detect file type from data URL
+    const mimeMatch = imageData.match(/data:(image\/[a-z]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+    // Create Parse File with clean base64 data
+    const parseFile = new Parse.File(fileName || 'profile-image.jpg', { base64: base64Data }, mimeType);
     const savedFile = await parseFile.save();
-    
+
     // Update user's profile image
     user.set('profileImage', savedFile.url());
     await user.save(null, { useMasterKey: true });
-    
+
     return {
       success: true,
-      profileImageUrl: savedFile.url()
+      url: savedFile.url()
     };
   } catch (error) {
     console.error('Profile image upload error:', error);

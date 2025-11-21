@@ -37,7 +37,7 @@ import {
   Target as TargetIcon,
   Award
 } from 'lucide-react';
-import { ImageUploader } from '../components/common/ImageUploader';
+import { ProfilePhotoUploadDialog } from '../components/common/ProfilePhotoUploadDialog';
 import { BookingModal } from '../components/student/BookingModal';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
@@ -281,10 +281,10 @@ export const ProfilePageTabbed: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
-      {/* Edge-to-edge cover photo on mobile - LinkedIn style */}
+      {/* LinkedIn-Style Hero Section */}
       <div className="mb-8">
-        {/* Cover Photo - Full width edge-to-edge */}
-        <div className={`h-32 md:h-52 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
+        {/* Cover Photo - LinkedIn dimensions: 192px mobile, 320px desktop */}
+        <div className={`h-48 md:h-80 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
           <div className="absolute inset-0 bg-black/10"></div>
 
           {/* Edit cover button - desktop only */}
@@ -294,27 +294,27 @@ export const ProfilePageTabbed: React.FC = () => {
               onClick={() => {/* Add banner upload logic */}}
               className="gap-2 bg-white hover:bg-gray-100 text-gray-900 shadow-lg rounded-full px-4 py-2 font-semibold"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-5 w-5" />
               Edit
             </Button>
           </div>
         </div>
 
-        {/* Profile Card - No border on mobile */}
-        <Card className="border-0 md:border shadow-none md:shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 md:-mt-24 relative">
-          <CardContent className="pt-20 md:pt-6 pb-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Profile Picture - Centered on mobile */}
-              <div className="relative group mx-auto md:mx-0">
-                <Avatar className="h-32 w-32 md:h-36 md:w-36 border-4 border-white bg-white relative z-10 shadow-lg">
+        {/* Profile Card - LinkedIn style: subtle shadow, clean borders */}
+        <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-20 md:-mt-28 relative bg-white">
+          <CardContent className="pt-24 md:pt-8 pb-6 px-4 md:px-6">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+              {/* Profile Picture - LinkedIn standard: 152px (h-38 w-38) */}
+              <div className="relative group mx-auto md:mx-0 -mt-2 md:mt-0">
+                <Avatar className="h-38 w-38 border-4 border-background bg-background relative z-10 shadow-md">
                   <AvatarImage src={user?.profileImage} />
-                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-2xl`}>
+                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-3xl font-semibold`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
                   </AvatarFallback>
                 </Avatar>
 
-                {/* LinkedIn-style profile picture upload button - circular overlay on hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 rounded-full bg-black/40">
+                {/* Camera overlay - LinkedIn pattern */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 rounded-full bg-black/50 cursor-pointer">
                   <Button
                     size="sm"
                     onClick={() => setShowImageUploader(!showImageUploader)}
@@ -432,41 +432,52 @@ export const ProfilePageTabbed: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="flex gap-6 mt-4 pt-4 border-t">
+                {/* Quick Stats - LinkedIn style: subtle border, only show non-zero values */}
+                <div className="flex gap-6 mt-4 pt-4 border-t border-border/10">
                   {user?.role === 'counselor' ? (
                     <>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">247</div>
-                        <div className="text-xs text-gray-500">Students Guided</div>
+                        <div className="text-lg font-semibold text-gray-900">247</div>
+                        <div className="text-xs text-gray-600">Students Guided</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">8</div>
-                        <div className="text-xs text-gray-500">Years Experience</div>
+                        <div className="text-lg font-semibold text-gray-900">8</div>
+                        <div className="text-xs text-gray-600">Years Experience</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">15</div>
-                        <div className="text-xs text-gray-500">Certifications</div>
+                        <div className="text-lg font-semibold text-gray-900">15</div>
+                        <div className="text-xs text-gray-600">Certifications</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-semibold">95%</div>
-                        <div className="text-xs text-gray-500">Success Rate</div>
+                        <div className="text-lg font-semibold text-gray-900">95%</div>
+                        <div className="text-xs text-gray-600">Success Rate</div>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold">{assessments.length}</div>
-                        <div className="text-xs text-gray-500">Assessments</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold">{assessmentSummary?.topCareers?.length || 0}</div>
-                        <div className="text-xs text-gray-500">Career Matches</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold">{assessmentSummary?.hollandCode?.length || 0}</div>
-                        <div className="text-xs text-gray-500">Personality Traits</div>
-                      </div>
+                      {/* Always show assessments count */}
+                      {assessments.length > 0 && (
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-gray-900">{assessments.length}</div>
+                          <div className="text-xs text-gray-600">Assessment{assessments.length !== 1 ? 's' : ''}</div>
+                        </div>
+                      )}
+
+                      {/* Show career matches if exists */}
+                      {assessmentSummary?.topCareers && assessmentSummary.topCareers.length > 0 && (
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-gray-900">{assessmentSummary.topCareers.length}</div>
+                          <div className="text-xs text-gray-600">Career Match{assessmentSummary.topCareers.length !== 1 ? 'es' : ''}</div>
+                        </div>
+                      )}
+
+                      {/* Show personality traits count from Holland Code */}
+                      {assessmentSummary?.hollandCode && (
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-gray-900">{assessmentSummary.hollandCode.split('').length}</div>
+                          <div className="text-xs text-gray-600">Personality Type{assessmentSummary.hollandCode.split('').length !== 1 ? 's' : ''}</div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -475,29 +486,14 @@ export const ProfilePageTabbed: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Image Uploader - Collapsible */}
-        {showImageUploader && user?.role !== 'counselor' && (
-          <Card className="mb-6 border-orange-200 bg-gradient-to-br from-orange-50/50 to-white">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-5 w-5 text-orange-600" />
-                  Update Profile Picture
-                </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setShowImageUploader(false)} className="h-8 w-8 p-0">
-                  ✕
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ImageUploader
-                currentImage={user?.profileImage}
-                userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
-                onUploadSuccess={handleImageUpload}
-              />
-            </CardContent>
-          </Card>
-        )}
+        {/* LinkedIn-Style Photo Upload Dialog */}
+        <ProfilePhotoUploadDialog
+          open={showImageUploader}
+          onOpenChange={setShowImageUploader}
+          currentImage={user?.profileImage}
+          userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
+          onUploadSuccess={handleImageUpload}
+        />
       </div>
 
       {/* Tabbed Content - Contained with padding */}
