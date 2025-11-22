@@ -108,6 +108,9 @@ export const ProfilePageTabbed: React.FC = () => {
     scores?: Record<string, number>;
   } | null>(null);
 
+  // Inline editing states
+  const [isEditingAbout, setIsEditingAbout] = useState(false);
+
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
@@ -255,6 +258,57 @@ export const ProfilePageTabbed: React.FC = () => {
       console.error('Failed to update profile image:', error);
       const { toast } = await import('sonner');
       toast.error('Failed to update profile picture');
+    }
+  };
+
+  const handleSaveAbout = async () => {
+    try {
+      const Parse = getParse();
+      const currentUser = Parse.User.current();
+
+      if (!currentUser) throw new Error('Not authenticated');
+
+      currentUser.set('bio', editFormData.bio);
+
+      // Retry logic for concurrent update errors
+      let retries = 0;
+      const maxRetries = 3;
+
+      while (retries < maxRetries) {
+        try {
+          await currentUser.save();
+          break; // Success - exit retry loop
+        } catch (saveError) {
+          const errorMessage = saveError instanceof Error ? saveError.message : String(saveError);
+
+          // Check if it's a concurrent update error
+          if (errorMessage.includes('tuple concurrently updated') && retries < maxRetries - 1) {
+            retries++;
+            console.warn(`Concurrent update detected, retrying (${retries}/${maxRetries})...`);
+            // Exponential backoff: wait 100ms, 200ms, 400ms...
+            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, retries - 1)));
+
+            // Fetch latest user data before retrying
+            await currentUser.fetch();
+
+            // Reapply changes
+            currentUser.set('bio', editFormData.bio);
+          } else {
+            throw saveError; // Re-throw if not concurrent update or max retries reached
+          }
+        }
+      }
+
+      setIsEditingAbout(false);
+
+      const { toast } = await import('sonner');
+      toast.success('About section updated!');
+
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      console.error('Failed to save about:', error);
+      const { toast } = await import('sonner');
+      toast.error('Failed to save changes');
     }
   };
 
@@ -561,7 +615,7 @@ export const ProfilePageTabbed: React.FC = () => {
 
           {/* About Tab */}
           <TabsContent value="about" className="space-y-6">
-            {/* About Section */}
+            {/* About Section - Inline Editing */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -569,44 +623,94 @@ export const ProfilePageTabbed: React.FC = () => {
                     <User className="h-5 w-5 text-orange-600" />
                     About
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50" onClick={() => setIsEditDialogOpen(true)}>
-                    <Edit className="h-3.5 w-3.5" />
-                    <span className="hidden md:inline">Edit</span>
-                  </Button>
+                  {!isEditingAbout && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      onClick={() => setIsEditingAbout(true)}
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      <span className="hidden md:inline">Edit</span>
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                {editFormData.bio ? (
-                  <>
-                    <p className="text-sm leading-relaxed text-gray-700 mb-4">
-                      {editFormData.bio}
-                    </p>
-                  </>
-                ) : (
-                  <div className="text-center py-8 bg-gradient-to-br from-orange-50/30 to-white rounded-lg border-2 border-dashed border-orange-200">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                      <User className="h-6 w-6 text-white" />
+                {isEditingAbout ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bio-edit">
+                        About
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({editFormData.bio.length}/200 characters)
+                        </span>
+                      </Label>
+                      <Textarea
+                        id="bio-edit"
+                        value={editFormData.bio}
+                        onChange={(e) => handleInputChange('bio', e.target.value)}
+                        className="min-h-[120px]"
+                        maxLength={200}
+                        placeholder="Tell us about yourself, your goals, and interests..."
+                        autoFocus
+                      />
                     </div>
-                    <p className="font-semibold text-base mb-2">Tell us about yourself</p>
-                    <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                      Add a bio to help counselors and universities understand your goals and interests
-                    </p>
+                    <div className="flex gap-2">
+                      <Button onClick={handleSaveAbout} size="sm">
+                        Save
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsEditingAbout(false);
+                          setEditFormData({
+                            ...editFormData,
+                            bio: user?.bio || ''
+                          });
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {editFormData.bio ? (
+                      <p className="text-sm leading-relaxed text-gray-700 mb-4">
+                        {editFormData.bio}
+                      </p>
+                    ) : (
+                      <div
+                        className="text-center py-8 bg-gradient-to-br from-orange-50/30 to-white rounded-lg border-2 border-dashed border-orange-200 cursor-pointer hover:border-orange-300 transition-colors"
+                        onClick={() => setIsEditingAbout(true)}
+                      >
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                          <User className="h-6 w-6 text-white" />
+                        </div>
+                        <p className="font-semibold text-base mb-2">Tell us about yourself</p>
+                        <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                          Add a bio to help counselors and universities understand your goals and interests
+                        </p>
+                      </div>
+                    )}
 
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {editFormData.careerInterests && editFormData.careerInterests.length > 0 ? (
-                    editFormData.careerInterests.map((interest: string) => (
-                      <Badge key={interest} variant="secondary" className="text-xs">
-                        {interest}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">
-                      No career interests added yet. Complete assessments to discover your interests.
-                    </p>
-                  )}
-                </div>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {editFormData.careerInterests && editFormData.careerInterests.length > 0 ? (
+                        editFormData.careerInterests.map((interest: string) => (
+                          <Badge key={interest} variant="secondary" className="text-xs">
+                            {interest}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          No career interests added yet. Complete assessments to discover your interests.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
