@@ -45,9 +45,11 @@ async function startServer() {
       verifyUserEmails: false,
 
       // File upload configuration - allow authenticated users to upload files
+      // https://github.com/parse-community/parse-server/issues/6995
       fileUpload: {
-        enableForPublic: false, // Disable public uploads
-        enableForAuthenticatedUser: true, // Allow authenticated users
+        enableForPublic: false, // Disable anonymous public uploads
+        enableForAnonymousUser: false, // Disable anonymous auth uploads
+        enableForAuthenticatedUser: true, // Allow logged-in users to upload
       },
 
       // Future-proof configuration options
