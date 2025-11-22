@@ -24,11 +24,11 @@ import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, AlertCircle, User, Activity } from 'lucide-react';
+import { Loader2, AlertCircle, User, Activity, Camera, MapPin, Edit } from 'lucide-react';
 import Button from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
 import UpcomingSessions from '../dashboard/UpcomingSessions';
@@ -39,6 +39,9 @@ interface ParseUserData {
   email: string;
   profileImage?: string;
   profileCompletion?: number;
+  school?: string;
+  grade?: string;
+  location?: string;
 }
 
 interface StudentDashboardCardsV2Props {
@@ -73,7 +76,6 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   // User data state
   const [userData, setUserData] = useState<ParseUserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [lastActivity, setLastActivity] = useState<string>('');
 
   // Fetch Parse User data - synced with auth user profile photo
   useEffect(() => {
@@ -90,6 +92,9 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
           const lastName = currentUser.get('lastName') || '';
           const email = currentUser.get('email') || currentUser.get('username') || '';
           const profileImage = currentUser.get('profileImage');
+          const school = currentUser.get('school') || currentUser.get('currentSchool');
+          const grade = currentUser.get('grade') || currentUser.get('formLevel');
+          const location = currentUser.get('location');
 
           // Calculate profile completion
           const fields = [
@@ -98,8 +103,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
             currentUser.get('email'),
             currentUser.get('profileImage'),
             currentUser.get('phone'),
-            currentUser.get('school'),
-            currentUser.get('grade')
+            school,
+            grade
           ];
           const completedFields = fields.filter(f => f && f !== '').length;
           const profileCompletion = Math.round((completedFields / fields.length) * 100);
@@ -109,7 +114,10 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
             lastName,
             email,
             profileImage,
-            profileCompletion
+            profileCompletion,
+            school,
+            grade,
+            location
           });
         }
       } catch (error) {
@@ -121,45 +129,6 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
 
     fetchUserData();
   }, [authUser?.profileImage]); // Re-fetch when auth user's profile image changes
-
-  // Calculate last activity
-  useEffect(() => {
-    if (userActivities && userActivities.length > 0) {
-      const mostRecent = userActivities[0];
-      const activityDate = new Date(mostRecent.timestamp);
-      const now = new Date();
-      const diffMs = now.getTime() - activityDate.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      let timeAgo = '';
-      if (diffMins < 1) {
-        timeAgo = 'just now';
-      } else if (diffMins < 60) {
-        timeAgo = `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
-      } else if (diffHours < 24) {
-        timeAgo = `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-      } else if (diffDays < 7) {
-        timeAgo = `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
-      } else {
-        timeAgo = activityDate.toLocaleDateString();
-      }
-
-      const activityTypeMap: Record<string, string> = {
-        'career_assessment_click': 'working on Career Discovery',
-        'subject_mapping_click': 'mapping subjects to careers',
-        'skills_assessment_click': 'discovering your strengths',
-        'course_finder_click': 'exploring university courses',
-        'career_exploration_click': 'researching careers',
-        'profile_update': 'updating your profile',
-        'guidance_request': 'seeking counselor guidance'
-      };
-
-      const activityText = activityTypeMap[mostRecent.activityType] || 'exploring the platform';
-      setLastActivity(`Last active ${timeAgo}: ${activityText}`);
-    }
-  }, [userActivities]);
 
   // Loading state
   if (loading) {
@@ -205,196 +174,108 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   return (
     <div className="space-y-4 sm:space-y-6">
 
-      {/* Hero KPI - LinkedIn-style Subtle Welcome Card */}
-      <Card className="overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="bg-gradient-to-r from-slate-50/50 to-white pb-4 pt-5 border-b">
-          <div className="flex items-center gap-4 sm:gap-5">
-            {/* Profile Picture - Prominent LinkedIn style */}
-            <div className="flex-shrink-0">
-              {loadingUser ? (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-slate-200 bg-slate-100 animate-pulse shadow-sm" />
-              ) : (
-                <img
-                  src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=0a66c2&color=fff&size=256`}
-                  alt="Profile"
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-slate-200 object-cover shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate('/profile')}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'Student')}&background=0a66c2&color=fff&size=256`;
-                  }}
-                />
-              )}
-            </div>
+      {/* Hero Section - Simplified LinkedIn-style Profile Card */}
+      <div className="mb-8">
+        {/* Cover Photo - Simple gray background */}
+        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group">
+          {/* Change Cover button - top right */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/profile')}
+            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white text-gray-700 shadow-sm rounded-lg px-4 py-2"
+          >
+            <Camera className="h-4 w-4" />
+            <span className="hidden md:inline">Change Cover</span>
+          </Button>
+        </div>
 
-            {/* Compact Welcome Message - Emphasized */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-                Welcome back, {userData?.firstName || 'Student'}! 👋
-              </h1>
-              {lastActivity ? (
-                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-snug">{lastActivity}</p>
-              ) : (
-                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-snug">Ready to continue your career journey?</p>
-              )}
-            </div>
+        {/* Profile Card */}
+        <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
+          {/* Edit Pen Icon - Top Right of Card */}
+          <button
+            onClick={() => navigate('/profile')}
+            className="absolute top-4 right-4 p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors z-10"
+            title="Edit profile"
+          >
+            <Edit className="h-5 w-5" />
+          </button>
 
-            {/* Status Badge - Compact */}
-            {careerReadinessScore && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs px-2.5 py-1 flex-shrink-0 font-semibold hidden sm:flex",
-                  careerReadinessScore.overall >= 70 ? "text-green-700 border-green-600 bg-green-50" :
-                  careerReadinessScore.overall >= 40 ? "text-amber-700 border-amber-600 bg-amber-50" :
-                  "text-red-700 border-red-600 bg-red-50"
+          <CardContent className="pt-6 pb-6 px-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Profile Picture - Overlapping cover */}
+              <div className="relative mx-auto md:mx-0 -mt-20 md:-mt-24">
+                {loadingUser ? (
+                  <div className="h-32 w-32 md:h-40 md:w-40 rounded-full border-4 border-white bg-gray-100 animate-pulse shadow-lg" />
+                ) : (
+                  <>
+                    <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white bg-white relative shadow-lg">
+                      <AvatarImage src={userData?.profileImage} />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-3xl md:text-4xl font-semibold">
+                        {(userData?.firstName || 'U')[0]}{(userData?.lastName || 'U')[0]}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Camera icon - bottom right of profile photo */}
+                    <button
+                      onClick={() => navigate('/profile')}
+                      className="absolute bottom-1 right-1 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                    >
+                      <Camera className="h-5 w-5 text-orange-600" />
+                    </button>
+                  </>
                 )}
-              >
-                {careerReadinessScore.overall >= 70 ? "On Track" :
-                 careerReadinessScore.overall >= 40 ? "Building Up" : "Getting Started"}
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-6 pb-4">
-          {loading ? (
-            <div className="text-center py-4 text-muted-foreground text-sm">Loading your progress...</div>
-          ) : careerReadinessScore ? (
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              {/* Enhanced Progress Ring - Larger & More Prominent */}
-              <div className="flex-shrink-0">
-                <div className="relative">
-                  <svg className="w-36 h-36 sm:w-44 sm:h-44" viewBox="0 0 36 36" aria-hidden>
-                    <defs>
-                      <linearGradient id="grad1" x1="0%" x2="100%">
-                        <stop offset="0%" stopColor="#fb923c" />
-                        <stop offset="100%" stopColor="#f97316" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      className="circle-bg"
-                      d="M18 2.0845
-                         a 15.9155 15.9155 0 0 1 0 31.831
-                         a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#f3f4f6"
-                      strokeWidth="2.8"
-                    />
-                    <path
-                      className="circle"
-                      stroke="url(#grad1)"
-                      strokeWidth="2.8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${careerReadinessScore.overall}, 100`}
-                      d="M18 2.0845
-                         a 15.9155 15.9155 0 0 1 0 31.831
-                         a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                    />
-                  </svg>
-
-                  {/* Enhanced Center Display */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <div className="text-4xl sm:text-5xl font-bold text-orange-600 tracking-tight">
-                        {careerReadinessScore.overall}%
-                      </div>
-                      <div className="text-sm sm:text-base text-slate-600 font-medium mt-1">Ready</div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              {/* Always Visible 4 Metrics - 2x2 Grid */}
-              <div className="flex-1 w-full">
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {/* Metric 1: Assessments */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Assessments</span>
-                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {careerReadinessScore.breakdown.assessmentCompletion}%
-                      </span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.assessmentCompletion} className="h-2" />
-                  </div>
-
-                  {/* Metric 2: Research */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Research</span>
-                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {careerReadinessScore.breakdown.careerResearch}%
-                      </span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.careerResearch} className="h-2" />
-                  </div>
-
-                  {/* Metric 3: Exploration */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Exploration</span>
-                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {careerReadinessScore.breakdown.courseExploration}%
-                      </span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.courseExploration} className="h-2" />
-                  </div>
-
-                  {/* Metric 4: Actions */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Actions</span>
-                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {careerReadinessScore.breakdown.actionsTaken}%
-                      </span>
-                    </div>
-                    <Progress value={careerReadinessScore.breakdown.actionsTaken} className="h-2" />
-                  </div>
+              {/* Profile Info - Cleaner layout */}
+              <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
+                <div className="space-y-1">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {userData?.firstName} {userData?.lastName}
+                  </h1>
+                  <p className="text-base text-orange-600 font-medium">
+                    {userData?.grade || 'Form 4 Student'}
+                  </p>
+                  <p className="text-base text-gray-600">
+                    {userData?.school || 'Student'}
+                  </p>
+                  <p className="text-gray-600 mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                    <MapPin className="h-4 w-4" />
+                    {userData?.location || 'Nairobi, Kenya'}
+                  </p>
                 </div>
+
+                {/* Stats row below profile info */}
+                {careerReadinessScore && (
+                  <div className="flex flex-wrap items-center gap-4 mt-4 justify-center md:justify-start">
+                    <Badge variant="outline" className="text-sm px-3 py-1.5">
+                      <User className="w-3.5 h-3.5 mr-1.5" />
+                      Profile {userData?.profileCompletion || 0}% complete
+                    </Badge>
+                    {userActivities && userActivities.length > 0 && (
+                      <Badge variant="outline" className="text-sm px-3 py-1.5">
+                        <Activity className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
+                        Active {userActivities.length} days 🔥
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-sm px-3 py-1.5 font-semibold",
+                        careerReadinessScore.overall >= 70 ? "text-green-700 border-green-600 bg-green-50" :
+                        careerReadinessScore.overall >= 40 ? "text-amber-700 border-amber-600 bg-amber-50" :
+                        "text-red-700 border-red-600 bg-red-50"
+                      )}
+                    >
+                      {careerReadinessScore.overall}% Career Ready
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">Complete assessments to see your readiness score</p>
-              <Button onClick={() => navigate('/assessment')} className="bg-blue-600 hover:bg-blue-700">
-                Get Started
-              </Button>
-            </div>
-          )}
-        </CardContent>
-
-        {/* Footer with Quick Stats */}
-        {careerReadinessScore && (
-          <CardFooter className="bg-slate-50/80 border-t border-slate-200 py-3">
-            <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3 sm:gap-0">
-              {/* Profile Completion */}
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <User className="w-4 h-4" />
-                <span>Profile: <strong className="text-slate-900">{userData?.profileCompletion || 0}%</strong> complete</span>
-              </div>
-              
-              {/* Activity Streak */}
-              {userActivities && userActivities.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Activity className="w-4 h-4 text-orange-500" />
-                  <span>Active <strong className="text-slate-900">{userActivities.length}</strong> days 🔥</span>
-                </div>
-              )}
-              
-              {/* CTA Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/profile')}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold"
-              >
-                View Profile →
-              </Button>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Upcoming Sessions */}
       <UpcomingSessions maxSessions={3} />
