@@ -947,7 +947,7 @@ Parse.Cloud.define('uploadProfileImage', async (request) => {
 
     // Create Parse File with clean base64 data
     const parseFile = new Parse.File(fileName || 'profile-image.jpg', { base64: base64Data }, mimeType);
-    const savedFile = await parseFile.save(null, { sessionToken: user.getSessionToken() });
+    const savedFile = await parseFile.save(null, { useMasterKey: true });
 
     // Update user's profile image
     user.set('profileImage', savedFile.url());
