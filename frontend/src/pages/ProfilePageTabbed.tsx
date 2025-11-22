@@ -443,14 +443,12 @@ export const ProfilePageTabbed: React.FC = () => {
                     )}
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="h-11 px-4 text-orange-600 border-orange-600 hover:bg-orange-50 hover:text-orange-700 gap-2"
+                        <button
+                          className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors"
                           title="Edit profile"
                         >
-                          <Edit className="h-4 w-4" />
-                          <span className="hidden md:inline">Edit Profile</span>
-                        </Button>
+                          <Edit className="h-5 w-5" />
+                        </button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
