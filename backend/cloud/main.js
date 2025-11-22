@@ -971,17 +971,35 @@ Parse.Cloud.define('uploadCoverPhoto', async (request) => {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
 
+  // Validate input
+  if (!imageData) {
+    throw new Parse.Error(Parse.Error.VALIDATION_ERROR, 'Image data is required');
+  }
+
   try {
     // Extract base64 data
     const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
 
-    // Detect file type from data URL
+    // Validate base64 data exists and is not empty
+    if (!base64Data || base64Data.trim() === '') {
+      throw new Parse.Error(Parse.Error.VALIDATION_ERROR, 'Invalid image data');
+    }
+
+    // Detect file type from data URL - support more MIME types
     const mimeMatch = imageData.match(/data:(image\/[a-z]+);base64,/);
-    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/webp';
+
+    // Sanitize filename
+    const cleanFileName = (fileName || 'cover-photo.webp').replace(/[^a-zA-Z0-9.-]/g, '_');
 
     // Create Parse File with clean base64 data
-    const parseFile = new Parse.File(fileName || 'cover-photo.jpg', { base64: base64Data }, mimeType);
+    const parseFile = new Parse.File(cleanFileName, { base64: base64Data }, mimeType);
     const savedFile = await parseFile.save(null, { sessionToken: user.getSessionToken() });
+
+    // Verify file was saved
+    if (!savedFile || !savedFile.url()) {
+      throw new Parse.Error(Parse.Error.FILE_SAVE_ERROR, 'Failed to save file to server');
+    }
 
     // Update user's cover photo
     user.set('coverPhoto', savedFile.url());
@@ -993,7 +1011,19 @@ Parse.Cloud.define('uploadCoverPhoto', async (request) => {
     };
   } catch (error) {
     console.error('Cover photo upload error:', error);
-    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to upload cover photo');
+
+    // Provide more specific error messages
+    if (error.code === Parse.Error.VALIDATION_ERROR ||
+        error.code === Parse.Error.FILE_SAVE_ERROR ||
+        error.code === Parse.Error.SESSION_MISSING) {
+      throw error; // Re-throw Parse errors with original message
+    }
+
+    // Generic error for unexpected failures
+    throw new Parse.Error(
+      Parse.Error.SCRIPT_FAILED,
+      `Failed to upload cover photo: ${error.message || 'Unknown error'}`
+    );
   }
 });
 
