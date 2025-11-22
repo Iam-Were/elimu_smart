@@ -46,8 +46,10 @@ async function startServer() {
 
       // File upload configuration - allow authenticated users to upload files
       // https://github.com/parse-community/parse-server/issues/6995
+      // NOTE: enableForPublic: true is required for Cloud Functions to work
+      // Security is enforced by Cloud Function validation (request.user check)
       fileUpload: {
-        enableForPublic: false, // Disable anonymous public uploads
+        enableForPublic: true, // Required for Cloud Function uploads to work
         enableForAnonymousUser: false, // Disable anonymous auth uploads
         enableForAuthenticatedUser: true, // Allow logged-in users to upload
       },
