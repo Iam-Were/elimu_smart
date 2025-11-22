@@ -646,9 +646,16 @@ export const ProfilePageTabbed: React.FC = () => {
                   )}
                 </div>
 
-                {/* Display top 2 assessments with full visual results */}
+                {/* Display one RIASEC + one Skills assessment with full visual results */}
                 <div className="space-y-6">
-                  {assessments.slice(0, 2).map((assessment) => {
+                  {(() => {
+                    // Find the latest RIASEC and Skills assessments
+                    const latestRiasec = assessments.find(a => a.type === 'riasec');
+                    const latestSkills = assessments.find(a => a.type === 'skills');
+                    const featuredAssessments = [latestRiasec, latestSkills].filter(Boolean);
+
+                    return featuredAssessments.map((assessment) => {
+                      if (!assessment) return null;
                     // Convert RIASEC assessment to PersonalityResultsDisplay format
                     if (assessment.type === 'riasec' && assessment.results?.hollandCode && assessment.results?.scores) {
                       const hollandCode = assessment.results.hollandCode;
@@ -759,7 +766,8 @@ export const ProfilePageTabbed: React.FC = () => {
                         </CardContent>
                       </Card>
                     );
-                  })}
+                    });
+                  })()}
                 </div>
               </div>
             )}
