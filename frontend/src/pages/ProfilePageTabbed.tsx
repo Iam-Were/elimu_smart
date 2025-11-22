@@ -38,6 +38,8 @@ import {
   Award
 } from 'lucide-react';
 import { ProfilePhotoUploadDialog } from '../components/common/ProfilePhotoUploadDialog';
+import { EducationCard } from '../components/profile/EducationCard';
+import { AchievementsCard } from '../components/profile/AchievementsCard';
 import { BookingModal } from '../components/student/BookingModal';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
@@ -572,6 +574,24 @@ export const ProfilePageTabbed: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Education Card */}
+            <EducationCard
+              currentSchool={(user as unknown as Record<string, string | undefined>)?.currentSchool}
+              formLevel={(user as unknown as Record<string, string | undefined>)?.formLevel}
+              expectedKCSEDate={(user as unknown as Record<string, string | undefined>)?.expectedKCSEDate}
+              expectedGrade={(user as unknown as Record<string, string | undefined>)?.expectedGrade}
+              expectedPoints={(user as unknown as Record<string, number | undefined>)?.expectedPoints}
+              targetUniversities={(user as unknown as Record<string, Array<{ name: string; program: string; requiredPoints: number }> | undefined>)?.targetUniversities || []}
+            />
+
+            {/* Achievements & Milestones Card */}
+            <AchievementsCard
+              assessments={assessments.map(a => ({
+                ...a,
+                completedAt: a.completedAt.toISOString()
+              }))}
+            />
 
             {/* Featured Assessments Section */}
             {assessments.length > 0 && (
