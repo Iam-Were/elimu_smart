@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   adminRoleType?: 'platform' | 'operations' | 'provider_safety';
   profileImage?: string;
+  coverPhoto?: string;
   bio?: string;
   location?: string;
   tagline?: string;

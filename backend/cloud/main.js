@@ -963,6 +963,40 @@ Parse.Cloud.define('uploadProfileImage', async (request) => {
   }
 });
 
+Parse.Cloud.define('uploadCoverPhoto', async (request) => {
+  const { imageData, fileName } = request.params;
+  const user = request.user;
+
+  if (!user) {
+    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
+  }
+
+  try {
+    // Extract base64 data
+    const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+
+    // Detect file type from data URL
+    const mimeMatch = imageData.match(/data:(image\/[a-z]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+    // Create Parse File with clean base64 data
+    const parseFile = new Parse.File(fileName || 'cover-photo.jpg', { base64: base64Data }, mimeType);
+    const savedFile = await parseFile.save(null, { sessionToken: user.getSessionToken() });
+
+    // Update user's cover photo
+    user.set('coverPhoto', savedFile.url());
+    await user.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      url: savedFile.url()
+    };
+  } catch (error) {
+    console.error('Cover photo upload error:', error);
+    throw new Parse.Error(Parse.Error.SCRIPT_FAILED, 'Failed to upload cover photo');
+  }
+});
+
 // ===== INBOX SYSTEM =====
 
 Parse.Cloud.define('getInboxConversations', async (request) => {

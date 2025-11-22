@@ -45,6 +45,7 @@ export interface ParseUser {
   lastName?: string;
   role?: 'student' | 'counselor' | 'admin';
   profileImage?: string;
+  coverPhoto?: string;
   bio?: string;
   location?: string;
   tagline?: string;

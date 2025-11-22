@@ -39,6 +39,7 @@ import {
   Award
 } from 'lucide-react';
 import { ProfilePhotoUploadDialog } from '../components/common/ProfilePhotoUploadDialog';
+import { CoverPhotoUploadDialog } from '../components/common/CoverPhotoUploadDialog';
 import { EducationCard } from '../components/profile/EducationCard';
 import { AchievementsCard } from '../components/profile/AchievementsCard';
 import { PersonalityResultsDisplay } from '../components/profile/PersonalityResultsDisplay';
@@ -100,6 +101,7 @@ export const ProfilePageTabbed: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
+  const [showCoverUploader, setShowCoverUploader] = useState(false);
   const [personalityModalOpen, setPersonalityModalOpen] = useState(false);
   const [assessmentHistoryOpen, setAssessmentHistoryOpen] = useState(false);
   const [selectedPersonalityType, setSelectedPersonalityType] = useState<{
@@ -261,6 +263,28 @@ export const ProfilePageTabbed: React.FC = () => {
     }
   };
 
+  const handleCoverUpload = async (imageUrl: string) => {
+    try {
+      const Parse = getParse();
+      const currentUser = Parse.User.current();
+
+      if (currentUser) {
+        currentUser.set('coverPhoto', imageUrl);
+        await currentUser.save();
+        setShowCoverUploader(false);
+
+        const { toast } = await import('sonner');
+        toast.success('Cover photo updated!');
+
+        setTimeout(() => window.location.reload(), 500);
+      }
+    } catch (error) {
+      console.error('Failed to update cover photo:', error);
+      const { toast } = await import('sonner');
+      toast.error('Failed to update cover photo');
+    }
+  };
+
   const handleSaveAbout = async () => {
     try {
       const Parse = getParse();
@@ -374,13 +398,20 @@ export const ProfilePageTabbed: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section - Simpler Pattern */}
       <div className="mb-8">
-        {/* Cover Photo - Simple gray background */}
-        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group">
+        {/* Cover Photo */}
+        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group overflow-hidden">
+          {user?.coverPhoto ? (
+            <img
+              src={user.coverPhoto}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+          ) : null}
           {/* Change Cover button - top right */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {/* Add banner upload logic */}}
+            onClick={() => setShowCoverUploader(true)}
             className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white text-gray-700 shadow-sm rounded-lg px-4 py-2"
           >
             <Camera className="h-4 w-4" />
@@ -530,6 +561,14 @@ export const ProfilePageTabbed: React.FC = () => {
           currentImage={user?.profileImage}
           userInitials={`${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`}
           onUploadSuccess={handleImageUpload}
+        />
+
+        {/* Cover Photo Upload Dialog */}
+        <CoverPhotoUploadDialog
+          open={showCoverUploader}
+          onOpenChange={setShowCoverUploader}
+          currentCover={user?.coverPhoto}
+          onUploadSuccess={handleCoverUpload}
         />
       </div>
 

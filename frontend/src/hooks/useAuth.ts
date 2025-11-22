@@ -11,6 +11,7 @@ const parseUserToUser = (parseUser: ParseUser): User => {
     lastName: parseUser.lastName || '',
     role: parseUser.role || 'student',
     profileImage: parseUser.profileImage,
+    coverPhoto: parseUser.coverPhoto,
     bio: parseUser.bio,
     location: parseUser.location,
     tagline: parseUser.tagline,
