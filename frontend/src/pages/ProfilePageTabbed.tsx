@@ -242,47 +242,31 @@ export const ProfilePageTabbed: React.FC = () => {
   };
 
   const handleImageUpload = async (imageUrl: string) => {
-    try {
-      const Parse = getParse();
-      const currentUser = Parse.User.current();
+    // Image is already uploaded and saved by Cloud Function
+    // Just update local state for instant UI update
+    setShowImageUploader(false);
 
-      if (currentUser) {
-        currentUser.set('profileImage', imageUrl);
-        await currentUser.save();
-        setShowImageUploader(false);
-
-        const { toast } = await import('sonner');
-        toast.success('Profile picture updated!');
-
-        setTimeout(() => window.location.reload(), 500);
-      }
-    } catch (error) {
-      console.error('Failed to update profile image:', error);
-      const { toast } = await import('sonner');
-      toast.error('Failed to update profile picture');
+    // Update auth context to trigger re-render
+    if (user) {
+      user.profileImage = imageUrl;
     }
+
+    const { toast } = await import('sonner');
+    toast.success('Profile picture updated!');
   };
 
   const handleCoverUpload = async (imageUrl: string) => {
-    try {
-      const Parse = getParse();
-      const currentUser = Parse.User.current();
+    // Cover photo is already uploaded and saved by Cloud Function
+    // Just update local state for instant UI update
+    setShowCoverUploader(false);
 
-      if (currentUser) {
-        currentUser.set('coverPhoto', imageUrl);
-        await currentUser.save();
-        setShowCoverUploader(false);
-
-        const { toast } = await import('sonner');
-        toast.success('Cover photo updated!');
-
-        setTimeout(() => window.location.reload(), 500);
-      }
-    } catch (error) {
-      console.error('Failed to update cover photo:', error);
-      const { toast } = await import('sonner');
-      toast.error('Failed to update cover photo');
+    // Update auth context to trigger re-render
+    if (user) {
+      user.coverPhoto = imageUrl;
     }
+
+    const { toast } = await import('sonner');
+    toast.success('Cover photo updated!');
   };
 
   const handleSaveAbout = async () => {
