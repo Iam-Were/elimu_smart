@@ -969,13 +969,24 @@ Parse.Cloud.define('uploadProfileImage', async (request) => {
       throw new Parse.Error(Parse.Error.FILE_SAVE_ERROR, 'Failed to save file to server');
     }
 
-    // Update user's profile image
-    user.set('profileImage', savedFile.url());
+    // Get file URL and convert to HTTPS public URL
+    let fileUrl = savedFile.url();
+
+    // Fix mixed content: Replace internal Parse Server URL with public HTTPS URL
+    // http://145.239.42.121:1337/parse/files/... → https://elimu-smart.co.ke/parse/files/...
+    if (fileUrl.includes('145.239.42.121:1337')) {
+      fileUrl = fileUrl.replace('http://145.239.42.121:1337', 'https://elimu-smart.co.ke');
+    } else if (fileUrl.includes('localhost:1337')) {
+      fileUrl = fileUrl.replace('http://localhost:1337', 'https://elimu-smart.co.ke');
+    }
+
+    // Update user's profile image with HTTPS URL
+    user.set('profileImage', fileUrl);
     await user.save(null, { useMasterKey: true });
 
     return {
       success: true,
-      url: savedFile.url()
+      url: fileUrl
     };
   } catch (error) {
     console.error('Profile image upload error:', error);
@@ -1033,13 +1044,24 @@ Parse.Cloud.define('uploadCoverPhoto', async (request) => {
       throw new Parse.Error(Parse.Error.FILE_SAVE_ERROR, 'Failed to save file to server');
     }
 
-    // Update user's cover photo
-    user.set('coverPhoto', savedFile.url());
+    // Get file URL and convert to HTTPS public URL
+    let fileUrl = savedFile.url();
+
+    // Fix mixed content: Replace internal Parse Server URL with public HTTPS URL
+    // http://145.239.42.121:1337/parse/files/... → https://elimu-smart.co.ke/parse/files/...
+    if (fileUrl.includes('145.239.42.121:1337')) {
+      fileUrl = fileUrl.replace('http://145.239.42.121:1337', 'https://elimu-smart.co.ke');
+    } else if (fileUrl.includes('localhost:1337')) {
+      fileUrl = fileUrl.replace('http://localhost:1337', 'https://elimu-smart.co.ke');
+    }
+
+    // Update user's cover photo with HTTPS URL
+    user.set('coverPhoto', fileUrl);
     await user.save(null, { useMasterKey: true });
 
     return {
       success: true,
-      url: savedFile.url()
+      url: fileUrl
     };
   } catch (error) {
     console.error('Cover photo upload error:', error);
