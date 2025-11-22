@@ -65,7 +65,7 @@ export const LoginPageShadcn: React.FC = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Orange Brand Section */}
+      {/* Left Side - Orange Brand Section - Hidden on mobile, shown on lg+ */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-12 flex-col justify-between relative overflow-hidden">
         {/* Decorative circles */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />

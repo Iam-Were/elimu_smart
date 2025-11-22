@@ -219,7 +219,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                     {/* Camera icon - bottom right of profile photo */}
                     <button
                       onClick={() => navigate('/profile')}
-                      className="absolute bottom-1 right-1 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                      className="absolute bottom-0 right-0 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
                     >
                       <Camera className="h-5 w-5 text-orange-600" />
                     </button>
