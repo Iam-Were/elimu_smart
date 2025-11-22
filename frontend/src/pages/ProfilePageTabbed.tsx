@@ -129,10 +129,10 @@ export const ProfilePageTabbed: React.FC = () => {
       setEditFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        bio: '',
-        location: 'Nairobi, Kenya',
-        tagline: '',
-        careerInterests: [],
+        bio: (user as unknown as Record<string, string>)?.bio || '',
+        location: (user as unknown as Record<string, string>)?.location || 'Nairobi, Kenya',
+        tagline: (user as unknown as Record<string, string>)?.tagline || '',
+        careerInterests: (user as unknown as Record<string, string[]>)?.careerInterests || [],
       });
     }
   }, [user]);
