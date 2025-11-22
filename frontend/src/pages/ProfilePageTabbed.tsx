@@ -129,9 +129,9 @@ export const ProfilePageTabbed: React.FC = () => {
       setEditFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        bio: (user as unknown as Record<string, string>)?.bio || '',
-        location: (user as unknown as Record<string, string>)?.location || 'Nairobi, Kenya',
-        tagline: (user as unknown as Record<string, string>)?.tagline || '',
+        bio: user.bio || '',
+        location: user.location || 'Nairobi, Kenya',
+        tagline: user.tagline || '',
         careerInterests: (user as unknown as Record<string, string[]>)?.careerInterests || [],
       });
     }
@@ -391,9 +391,9 @@ export const ProfilePageTabbed: React.FC = () => {
         {/* Profile Card */}
         <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
           <CardContent className="pt-6 pb-6 px-6">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row items-center gap-6">
               {/* Profile Picture - Overlapping cover */}
-              <div className="relative mx-auto md:mx-0 -mt-20 md:-mt-24">
+              <div className="relative -mt-20 md:-mt-24 shrink-0">
                 <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white bg-white relative shadow-lg">
                   <AvatarImage src={user?.profileImage} />
                   <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-3xl md:text-4xl font-semibold`}>
@@ -404,14 +404,14 @@ export const ProfilePageTabbed: React.FC = () => {
                 {/* Camera icon - bottom right of profile photo */}
                 <button
                   onClick={() => setShowImageUploader(!showImageUploader)}
-                  className="absolute bottom-1 right-1 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                  className="absolute bottom-1 right-1 h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
                 >
-                  <Camera className="h-5 w-5 text-orange-600" />
+                  <Camera className="h-4 w-4 text-orange-600" />
                 </button>
               </div>
 
               {/* Profile Info - Cleaner layout */}
-              <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
+              <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="space-y-1">
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -427,7 +427,7 @@ export const ProfilePageTabbed: React.FC = () => {
                     </p>
                     <p className="text-gray-600 mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
                       <Globe className="h-4 w-4" />
-                      {editFormData.location || 'Nairobi, Kenya'}
+                      {user?.location || 'Nairobi, Kenya'}
                     </p>
                   </div>
 
