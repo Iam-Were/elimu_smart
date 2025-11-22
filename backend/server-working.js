@@ -31,6 +31,9 @@ async function startServer() {
         })
       : null; // No cache in development for easier debugging
 
+    // File storage directory
+    const filesDir = process.env.FILES_DIR || path.join(__dirname, 'files');
+
     // Parse Server configuration - using confirmed working connection
     const parseServer = new ParseServer({
       databaseURI: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_dev',
@@ -41,6 +44,15 @@ async function startServer() {
 
       // Redis caching (production only)
       cacheAdapter: cacheAdapter,
+
+      // File storage adapter - use filesystem (NOT GridFS/MongoDB)
+      // This is critical for PostgreSQL setups - GridFS requires MongoDB
+      filesAdapter: {
+        module: '@parse/fs-files-adapter',
+        options: {
+          filesSubDirectory: filesDir,
+        }
+      },
 
       verifyUserEmails: false,
 
