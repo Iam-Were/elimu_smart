@@ -960,7 +960,9 @@ Parse.Cloud.define('uploadProfileImage', async (request) => {
 
     // Create Parse File with clean base64 data
     const parseFile = new Parse.File(cleanFileName, { base64: base64Data }, mimeType);
-    const savedFile = await parseFile.save(null, { useMasterKey: true });
+    // CRITICAL: Pass sessionToken for authenticated user file uploads
+    // fileUpload.enableForAuthenticatedUser requires user context, not masterKey
+    const savedFile = await parseFile.save(null, { sessionToken: user.getSessionToken() });
 
     // Verify file was saved
     if (!savedFile || !savedFile.url()) {
