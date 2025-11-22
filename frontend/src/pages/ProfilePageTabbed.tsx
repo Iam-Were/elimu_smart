@@ -371,66 +371,63 @@ export const ProfilePageTabbed: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
-      {/* LinkedIn-Style Hero Section */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section - Simpler Pattern */}
       <div className="mb-8">
-        {/* Cover Photo - LinkedIn dimensions: 192px mobile, 320px desktop */}
-        <div className={`h-48 md:h-80 bg-gradient-to-r ${getThemeColor(currentTheme)} relative group cursor-pointer`}>
-          <div className="absolute inset-0 bg-black/10"></div>
-
-          {/* Edit cover button - desktop only */}
-          <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
-            <Button
-              size="sm"
-              onClick={() => {/* Add banner upload logic */}}
-              className="gap-2 bg-white hover:bg-gray-100 text-gray-900 shadow-lg rounded-full px-4 py-2 font-semibold"
-            >
-              <Camera className="h-5 w-5" />
-              Edit
-            </Button>
-          </div>
+        {/* Cover Photo - Simple gray background */}
+        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group">
+          {/* Change Cover button - top right */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {/* Add banner upload logic */}}
+            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white text-gray-700 shadow-sm rounded-lg px-4 py-2"
+          >
+            <Camera className="h-4 w-4" />
+            <span className="hidden md:inline">Change Cover</span>
+          </Button>
         </div>
 
-        {/* Profile Card - LinkedIn style: subtle shadow, clean borders */}
-        <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-20 md:-mt-28 relative bg-white">
-          <CardContent className="pt-24 md:pt-8 pb-6 px-4 md:px-6">
-            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-              {/* Profile Picture - LinkedIn standard: 152px (h-38 w-38) */}
-              <div className="relative group mx-auto md:mx-0 -mt-2 md:mt-0">
-                <Avatar className="h-38 w-38 border-4 border-background bg-background relative z-10 shadow-md">
+        {/* Profile Card */}
+        <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
+          <CardContent className="pt-6 pb-6 px-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Profile Picture - Overlapping cover */}
+              <div className="relative mx-auto md:mx-0 -mt-20 md:-mt-24">
+                <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white bg-white relative shadow-lg">
                   <AvatarImage src={user?.profileImage} />
-                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-3xl font-semibold`}>
+                  <AvatarFallback className={`bg-gradient-to-br ${getThemeColor(currentTheme)} text-white text-3xl md:text-4xl font-semibold`}>
                     {(user?.firstName || 'U')[0]}{(user?.lastName || 'U')[0]}
                   </AvatarFallback>
                 </Avatar>
 
-                {/* Camera overlay - LinkedIn pattern */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 rounded-full bg-black/50 cursor-pointer">
-                  <Button
-                    size="sm"
-                    onClick={() => setShowImageUploader(!showImageUploader)}
-                    className="h-10 w-10 p-0 rounded-full bg-white hover:bg-gray-100 shadow-lg text-gray-900"
-                  >
-                    <Camera className="h-5 w-5" />
-                  </Button>
-                </div>
+                {/* Camera icon - bottom right of profile photo */}
+                <button
+                  onClick={() => setShowImageUploader(!showImageUploader)}
+                  className="absolute bottom-1 right-1 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                >
+                  <Camera className="h-5 w-5 text-orange-600" />
+                </button>
               </div>
 
-              {/* Profile Info - Centered on mobile */}
+              {/* Profile Info - Cleaner layout */}
               <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div>
+                  <div className="space-y-1">
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                       {user?.firstName} {user?.lastName}
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-600 mt-1">
+                    <p className="text-base text-orange-600 font-medium">
                       {user?.role === 'counselor'
-                        ? 'Licensed Career Counselor | M.Ed Psychology | 8+ Years Experience'
-                        : (editFormData.tagline || 'Student')}
+                        ? 'Career Counselor'
+                        : (editFormData.tagline || 'Form 4 Student')}
                     </p>
-                    <p className="text-gray-500 mt-2 flex items-center justify-center md:justify-start gap-1 text-sm md:text-base">
+                    <p className="text-base text-gray-600">
+                      {(user as unknown as Record<string, string>)?.currentSchool || 'Student'}
+                    </p>
+                    <p className="text-gray-600 mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
                       <Globe className="h-4 w-4" />
-                      {editFormData.location || 'Kenya'} • {user?.email}
+                      {editFormData.location || 'Nairobi, Kenya'}
                     </p>
                   </div>
 
@@ -438,7 +435,7 @@ export const ProfilePageTabbed: React.FC = () => {
                     {user?.role === 'counselor' && (
                       <Button
                         onClick={() => setShowBookingModal(true)}
-                        className="h-12 gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
+                        className="h-11 gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90"
                       >
                         <Calendar className="h-5 w-5" />
                         Book Session
@@ -447,11 +444,12 @@ export const ProfilePageTabbed: React.FC = () => {
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                       <DialogTrigger asChild>
                         <Button
-                          variant="ghost"
-                          className="h-12 w-12 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-muted-foreground/20 hover:border-muted-foreground/40"
+                          variant="outline"
+                          className="h-11 px-4 text-orange-600 border-orange-600 hover:bg-orange-50 hover:text-orange-700 gap-2"
                           title="Edit profile"
                         >
-                          <Edit className="h-5 w-5" />
+                          <Edit className="h-4 w-4" />
+                          <span className="hidden md:inline">Edit Profile</span>
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
@@ -521,56 +519,6 @@ export const ProfilePageTabbed: React.FC = () => {
                       </DialogContent>
                     </Dialog>
                   </div>
-                </div>
-
-                {/* Quick Stats - LinkedIn style: subtle border, only show non-zero values */}
-                <div className="flex gap-6 mt-4 pt-4 border-t border-border/10">
-                  {user?.role === 'counselor' ? (
-                    <>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-900">247</div>
-                        <div className="text-xs text-gray-600">Students Guided</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-900">8</div>
-                        <div className="text-xs text-gray-600">Years Experience</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-900">15</div>
-                        <div className="text-xs text-gray-600">Certifications</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-900">95%</div>
-                        <div className="text-xs text-gray-600">Success Rate</div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Always show assessments count */}
-                      {assessments.length > 0 && (
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-gray-900">{assessments.length}</div>
-                          <div className="text-xs text-gray-600">Assessment{assessments.length !== 1 ? 's' : ''}</div>
-                        </div>
-                      )}
-
-                      {/* Show career matches if exists */}
-                      {assessmentSummary?.topCareers && assessmentSummary.topCareers.length > 0 && (
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-gray-900">{assessmentSummary.topCareers.length}</div>
-                          <div className="text-xs text-gray-600">Career Match{assessmentSummary.topCareers.length !== 1 ? 'es' : ''}</div>
-                        </div>
-                      )}
-
-                      {/* Show personality traits count from Holland Code */}
-                      {assessmentSummary?.hollandCode && (
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-gray-900">{assessmentSummary.hollandCode.split('').length}</div>
-                          <div className="text-xs text-gray-600">Personality Type{assessmentSummary.hollandCode.split('').length !== 1 ? 's' : ''}</div>
-                        </div>
-                      )}
-                    </>
-                  )}
                 </div>
               </div>
             </div>
