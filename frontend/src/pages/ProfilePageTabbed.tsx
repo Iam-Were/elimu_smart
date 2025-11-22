@@ -190,7 +190,38 @@ export const ProfilePageTabbed: React.FC = () => {
       currentUser.set('bio', editFormData.bio);
       currentUser.set('location', editFormData.location);
 
-      await currentUser.save();
+      // Retry logic for concurrent update errors
+      let retries = 0;
+      const maxRetries = 3;
+
+      while (retries < maxRetries) {
+        try {
+          await currentUser.save();
+          break; // Success - exit retry loop
+        } catch (saveError) {
+          const errorMessage = saveError instanceof Error ? saveError.message : String(saveError);
+
+          // Check if it's a concurrent update error
+          if (errorMessage.includes('tuple concurrently updated') && retries < maxRetries - 1) {
+            retries++;
+            console.warn(`Concurrent update detected, retrying (${retries}/${maxRetries})...`);
+            // Exponential backoff: wait 100ms, 200ms, 400ms...
+            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, retries - 1)));
+
+            // Fetch latest user data before retrying
+            await currentUser.fetch();
+
+            // Reapply changes
+            currentUser.set('firstName', editFormData.firstName);
+            currentUser.set('lastName', editFormData.lastName);
+            currentUser.set('bio', editFormData.bio);
+            currentUser.set('location', editFormData.location);
+          } else {
+            throw saveError; // Re-throw if not concurrent update or max retries reached
+          }
+        }
+      }
+
       setIsEditDialogOpen(false);
 
       const { toast } = await import('sonner');
