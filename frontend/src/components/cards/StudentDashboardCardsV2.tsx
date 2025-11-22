@@ -27,7 +27,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2, AlertCircle, User, Activity, Camera, MapPin, Edit } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getParse } from '@/config/parse';
 import { cn } from '@/lib/utils';
@@ -174,7 +173,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   return (
     <div className="space-y-4 sm:space-y-6">
 
-      {/* Hero Section - Simplified LinkedIn-style Profile Card */}
+      {/* Hero Section - Welcome Back Card with Stats */}
       <div className="mb-8">
         {/* Cover Photo - Simple gray background */}
         <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group">
@@ -190,7 +189,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
           </Button>
         </div>
 
-        {/* Profile Card */}
+        {/* Welcome Back Card */}
         <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
           {/* Edit Pen Icon - Top Right of Card */}
           <button
@@ -227,12 +226,14 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                 )}
               </div>
 
-              {/* Profile Info - Cleaner layout */}
+              {/* Welcome Message & Profile Info */}
               <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
-                <div className="space-y-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {userData?.firstName} {userData?.lastName}
-                  </h1>
+                {/* Welcome Back Message */}
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  Welcome Back, {userData?.firstName}!
+                </h1>
+
+                <div className="space-y-1 mb-4">
                   <p className="text-base text-orange-600 font-medium">
                     {userData?.grade || 'Form 4 Student'}
                   </p>
@@ -245,30 +246,66 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                   </p>
                 </div>
 
-                {/* Stats row below profile info */}
+                {/* Stats Grid */}
                 {careerReadinessScore && (
-                  <div className="flex flex-wrap items-center gap-4 mt-4 justify-center md:justify-start">
-                    <Badge variant="outline" className="text-sm px-3 py-1.5">
-                      <User className="w-3.5 h-3.5 mr-1.5" />
-                      Profile {userData?.profileCompletion || 0}% complete
-                    </Badge>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                    {/* Profile Completion */}
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <User className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-medium text-blue-900">Profile</span>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-900">{userData?.profileCompletion || 0}%</p>
+                      <p className="text-xs text-blue-700">Complete</p>
+                    </div>
+
+                    {/* Activity Streak */}
                     {userActivities && userActivities.length > 0 && (
-                      <Badge variant="outline" className="text-sm px-3 py-1.5">
-                        <Activity className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
-                        Active {userActivities.length} days 🔥
-                      </Badge>
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Activity className="w-4 h-4 text-orange-600" />
+                          <span className="text-xs font-medium text-orange-900">Activity</span>
+                        </div>
+                        <p className="text-2xl font-bold text-orange-900">{userActivities.length} days</p>
+                        <p className="text-xs text-orange-700">Active Streak 🔥</p>
+                      </div>
                     )}
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-sm px-3 py-1.5 font-semibold",
-                        careerReadinessScore.overall >= 70 ? "text-green-700 border-green-600 bg-green-50" :
-                        careerReadinessScore.overall >= 40 ? "text-amber-700 border-amber-600 bg-amber-50" :
-                        "text-red-700 border-red-600 bg-red-50"
-                      )}
-                    >
-                      {careerReadinessScore.overall}% Career Ready
-                    </Badge>
+
+                    {/* Career Readiness */}
+                    <div className={cn(
+                      "rounded-xl p-4 border",
+                      careerReadinessScore.overall >= 70
+                        ? "bg-gradient-to-br from-green-50 to-green-100 border-green-200"
+                        : careerReadinessScore.overall >= 40
+                        ? "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
+                        : "bg-gradient-to-br from-red-50 to-red-100 border-red-200"
+                    )}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Activity className={cn(
+                          "w-4 h-4",
+                          careerReadinessScore.overall >= 70 ? "text-green-600" :
+                          careerReadinessScore.overall >= 40 ? "text-amber-600" : "text-red-600"
+                        )} />
+                        <span className={cn(
+                          "text-xs font-medium",
+                          careerReadinessScore.overall >= 70 ? "text-green-900" :
+                          careerReadinessScore.overall >= 40 ? "text-amber-900" : "text-red-900"
+                        )}>Career Readiness</span>
+                      </div>
+                      <p className={cn(
+                        "text-2xl font-bold",
+                        careerReadinessScore.overall >= 70 ? "text-green-900" :
+                        careerReadinessScore.overall >= 40 ? "text-amber-900" : "text-red-900"
+                      )}>{careerReadinessScore.overall}%</p>
+                      <p className={cn(
+                        "text-xs",
+                        careerReadinessScore.overall >= 70 ? "text-green-700" :
+                        careerReadinessScore.overall >= 40 ? "text-amber-700" : "text-red-700"
+                      )}>
+                        {careerReadinessScore.overall >= 70 ? "Excellent!" :
+                         careerReadinessScore.overall >= 40 ? "Good Progress" : "Getting Started"}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
