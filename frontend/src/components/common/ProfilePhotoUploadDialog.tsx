@@ -25,24 +25,62 @@ export const ProfilePhotoUploadDialog: React.FC<ProfilePhotoUploadDialogProps> =
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const MAX_DIMENSION = 1200; // Max width/height for compression
 
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       return 'Please upload a JPG, PNG, or WebP image';
     }
     if (file.size > MAX_FILE_SIZE) {
-      return 'Image size must be less than 2MB';
+      return 'Image size must be less than 5MB';
     }
     return null;
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
+  const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions (maintain aspect ratio)
+          if (width > height) {
+            if (width > MAX_DIMENSION) {
+              height = (height * MAX_DIMENSION) / width;
+              width = MAX_DIMENSION;
+            }
+          } else {
+            if (height > MAX_DIMENSION) {
+              width = (width * MAX_DIMENSION) / height;
+              height = MAX_DIMENSION;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to WebP with quality 0.8 for better compression
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.8);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
       reader.onerror = (error) => reject(error);
     });
   };
@@ -64,14 +102,14 @@ export const ProfilePhotoUploadDialog: React.FC<ProfilePhotoUploadDialogProps> =
     setUploading(true);
 
     try {
-      // Convert to base64
-      const base64Data = await fileToBase64(file);
+      // Compress image to WebP format
+      const compressedData = await compressImage(file);
 
       // Upload to backend
       const Parse = await getParse();
       const result = await Parse.Cloud.run('uploadProfileImage', {
-        imageData: base64Data,
-        fileName: file.name,
+        imageData: compressedData,
+        fileName: file.name.replace(/\.(jpg|jpeg|png)$/i, '.webp'),
       });
 
       // Success
