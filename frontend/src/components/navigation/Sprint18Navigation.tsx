@@ -495,32 +495,30 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 sm:w-72" align="end" forceMount>
-              <div className="flex items-center justify-start gap-2 p-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={(user as UserType & { avatar?: string })?.avatar} alt={getUserDisplayName()} />
+            <DropdownMenuContent className="w-72 bg-white" align="end" forceMount>
+              {/* Profile Header - Centered */}
+              <div className="flex flex-col items-center justify-center gap-3 p-6 border-b">
+                <Avatar className="h-16 w-16 ring-2 ring-orange-200">
+                  <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
                   <AvatarFallback
                     style={{
                       backgroundColor: getThemeColor(currentTheme),
                       color: 'white',
                     }}
+                    className="text-xl font-semibold"
                   >
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{getUserDisplayName()}</p>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
+                <div className="flex flex-col items-center space-y-1 text-center">
+                  <p className="font-semibold text-base">{getUserDisplayName()}</p>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                     {user?.email}
                   </p>
+                  <Badge className={cn("text-xs font-medium mt-2", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
+                    {getSubscriptionStatus()}
+                  </Badge>
                 </div>
-              </div>
-              
-              {/* Subscription Status - Sprint 18 Requirement */}
-              <div className="px-4 pb-2">
-                <Badge className={cn("text-xs font-medium", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
-                  {getSubscriptionStatus()} Plan
-                </Badge>
               </div>
               
               <DropdownMenuSeparator />
@@ -571,18 +569,20 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
-              
-              <DropdownMenuItem
-                className="cursor-pointer text-red-600 focus:text-red-600"
-                onClick={async () => {
-                  await logout();
-                  // Force navigation to landing page with cache-busting parameter
-                  window.location.href = '/?logout=' + Date.now();
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
+
+              {/* Sign Out - Prominent */}
+              <div className="p-2">
+                <button
+                  onClick={async () => {
+                    await logout();
+                    window.location.href = '/?logout=' + Date.now();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

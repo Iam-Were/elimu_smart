@@ -407,16 +407,14 @@ export const ProfilePageTabbed: React.FC = () => {
               className="w-full h-full object-cover"
             />
           ) : null}
-          {/* Change Cover button - top right */}
-          <Button
-            variant="ghost"
-            size="sm"
+          {/* Edit Cover button - top right - pen icon only */}
+          <button
             onClick={() => setShowCoverUploader(true)}
-            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white text-gray-700 shadow-sm rounded-lg px-4 py-2"
+            className="absolute top-4 right-4 p-2.5 bg-white hover:bg-gray-100 text-gray-700 shadow-md rounded-full transition-colors"
+            title="Edit cover photo"
           >
-            <Camera className="h-4 w-4" />
-            <span className="hidden md:inline">Change Cover</span>
-          </Button>
+            <Edit className="h-4 w-4" />
+          </button>
         </div>
 
         {/* Profile Card */}
@@ -432,22 +430,100 @@ export const ProfilePageTabbed: React.FC = () => {
                   </AvatarFallback>
                 </Avatar>
 
-                {/* Camera icon - bottom right of profile photo */}
+                {/* Camera icon - bottom right corner of profile photo - LinkedIn style */}
                 <button
                   onClick={() => setShowImageUploader(!showImageUploader)}
-                  className="absolute bottom-1 right-1 h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                  className="absolute bottom-0 right-0 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-white hover:bg-gray-100 transition-colors"
+                  title="Edit profile photo"
                 >
-                  <Camera className="h-4 w-4 text-orange-600" />
+                  <Camera className="h-5 w-5 text-gray-700" />
                 </button>
               </div>
 
-              {/* Profile Info - Cleaner layout */}
-              <div className="flex-1 text-center md:text-left">
+              {/* Profile Info - Inline with profile picture */}
+              <div className="flex-1 md:text-left">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="space-y-1">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                      {user?.firstName} {user?.lastName}
-                    </h1>
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                        {user?.firstName} {user?.lastName}
+                      </h1>
+                      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                        <DialogTrigger asChild>
+                          <button
+                            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                            title="Edit profile"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[500px]">
+                          <DialogHeader>
+                            <DialogTitle>Edit Profile</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="firstName">First Name</Label>
+                              <Input
+                                id="firstName"
+                                value={editFormData.firstName}
+                                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                                placeholder="Enter your first name"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="lastName">Last Name</Label>
+                              <Input
+                                id="lastName"
+                                value={editFormData.lastName}
+                                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                                placeholder="Enter your last name"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="location">Location</Label>
+                              <Input
+                                id="location"
+                                value={editFormData.location}
+                                onChange={(e) => handleInputChange('location', e.target.value)}
+                                placeholder="e.g., Nairobi, Kenya"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="bio">
+                                About
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  ({editFormData.bio.length}/200 characters)
+                                </span>
+                              </Label>
+                              <Textarea
+                                id="bio"
+                                value={editFormData.bio}
+                                onChange={(e) => handleInputChange('bio', e.target.value)}
+                                className="min-h-[100px]"
+                                maxLength={200}
+                                placeholder={
+                                  user?.role === 'counselor'
+                                    ? 'Share your experience and approach to career counseling...'
+                                    : 'Tell us about yourself and your career goals...'
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handleSaveProfile}
+                              className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <p className="text-base text-orange-600 font-medium">
                       {user?.role === 'counselor'
                         ? 'Career Counselor'
@@ -456,13 +532,13 @@ export const ProfilePageTabbed: React.FC = () => {
                     <p className="text-base text-gray-600">
                       {(user as unknown as Record<string, string>)?.currentSchool || 'Student'}
                     </p>
-                    <p className="text-gray-600 mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                    <p className="text-gray-600 mt-2 flex items-center gap-1.5 text-sm">
                       <Globe className="h-4 w-4" />
                       {user?.location || 'Nairobi, Kenya'}
                     </p>
                   </div>
 
-                  <div className="flex gap-2 justify-center md:justify-start">
+                  <div className="flex gap-2">
                     {user?.role === 'counselor' && (
                       <Button
                         onClick={() => setShowBookingModal(true)}
@@ -472,81 +548,6 @@ export const ProfilePageTabbed: React.FC = () => {
                         Book Session
                       </Button>
                     )}
-                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                      <DialogTrigger asChild>
-                        <button
-                          className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors"
-                          title="Edit profile"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                          <DialogTitle>Edit Profile</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name</Label>
-                            <Input
-                              id="firstName"
-                              value={editFormData.firstName}
-                              onChange={(e) => handleInputChange('firstName', e.target.value)}
-                              placeholder="Enter your first name"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name</Label>
-                            <Input
-                              id="lastName"
-                              value={editFormData.lastName}
-                              onChange={(e) => handleInputChange('lastName', e.target.value)}
-                              placeholder="Enter your last name"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="location">Location</Label>
-                            <Input
-                              id="location"
-                              value={editFormData.location}
-                              onChange={(e) => handleInputChange('location', e.target.value)}
-                              placeholder="e.g., Nairobi, Kenya"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="bio">
-                              About
-                              <span className="text-xs text-muted-foreground ml-2">
-                                ({editFormData.bio.length}/200 characters)
-                              </span>
-                            </Label>
-                            <Textarea
-                              id="bio"
-                              value={editFormData.bio}
-                              onChange={(e) => handleInputChange('bio', e.target.value)}
-                              className="min-h-[100px]"
-                              maxLength={200}
-                              placeholder={
-                                user?.role === 'counselor'
-                                  ? 'Share your experience and approach to career counseling...'
-                                  : 'Tell us about yourself and your career goals...'
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-3">
-                          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleSaveProfile}
-                            className={`bg-gradient-to-r ${getThemeColor(currentTheme)} hover:opacity-90`}
-                          >
-                            Save Changes
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
                   </div>
                 </div>
               </div>
@@ -609,15 +610,13 @@ export const ProfilePageTabbed: React.FC = () => {
                     About
                   </CardTitle>
                   {!isEditingAbout && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    <button
                       onClick={() => setIsEditingAbout(true)}
+                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                      title="Edit about section"
                     >
-                      <Edit className="h-3.5 w-3.5" />
-                      <span className="hidden md:inline">Edit</span>
-                    </Button>
+                      <Edit className="h-4 w-4" />
+                    </button>
                   )}
                 </div>
               </CardHeader>
