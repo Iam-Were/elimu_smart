@@ -44,6 +44,12 @@ async function startServer() {
 
       verifyUserEmails: false,
 
+      // File upload configuration - allow authenticated users to upload files
+      fileUpload: {
+        enableForPublic: false, // Disable public uploads
+        enableForAuthenticatedUser: true, // Allow authenticated users
+      },
+
       // Future-proof configuration options
       encodeParseObjectInCloudFunction: false, // Keep current behavior, suppress warning
       enableInsecureAuthAdapters: true, // Allow anonymous auth for development
