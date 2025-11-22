@@ -42,6 +42,7 @@ import { ProfilePhotoUploadDialog } from '../components/common/ProfilePhotoUploa
 import { EducationCard } from '../components/profile/EducationCard';
 import { AchievementsCard } from '../components/profile/AchievementsCard';
 import { PersonalityResultsDisplay } from '../components/profile/PersonalityResultsDisplay';
+import { SkillsResultsDisplay } from '../components/profile/SkillsResultsDisplay';
 import { BookingModal } from '../components/student/BookingModal';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
@@ -686,66 +687,41 @@ export const ProfilePageTabbed: React.FC = () => {
                       );
                     }
 
-                    // Skills assessment - use visual card with progress bars
+                    // Skills assessment - use SkillsResultsDisplay (matching PersonalityResultsDisplay pattern)
                     if (assessment.type === 'skills' && assessment.results?.scores) {
                       const scores = assessment.results.scores as Record<string, number>;
+
+                      // Define skill labels with context
+                      const skillLabels: Record<string, { leftLabel: string; rightLabel: string; color: string }> = {
+                        'Communication': { leftLabel: 'Basic', rightLabel: 'Expert', color: 'text-blue-600' },
+                        'Problem Solving': { leftLabel: 'Beginner', rightLabel: 'Advanced', color: 'text-purple-600' },
+                        'Leadership': { leftLabel: 'Emerging', rightLabel: 'Mastery', color: 'text-amber-600' },
+                        'Teamwork': { leftLabel: 'Developing', rightLabel: 'Proficient', color: 'text-green-600' },
+                        'Creativity': { leftLabel: 'Growing', rightLabel: 'Exceptional', color: 'text-pink-600' },
+                        'Technical': { leftLabel: 'Novice', rightLabel: 'Skilled', color: 'text-teal-600' }
+                      };
+
+                      // Create skills array with proper formatting
+                      const skills = Object.entries(scores).map(([key, value]) => ({
+                        label: key,
+                        percentage: value,
+                        leftLabel: skillLabels[key]?.leftLabel || 'Low',
+                        rightLabel: skillLabels[key]?.rightLabel || 'High',
+                        color: skillLabels[key]?.color || 'text-gray-600'
+                      }));
+
                       const sortedSkills = Object.entries(scores).sort(([, a], [, b]) => (b as number) - (a as number));
-                      const topSkill = sortedSkills[0];
+                      const topSkill = sortedSkills[0]?.[0] || 'Unknown';
 
                       return (
-                        <Card key={assessment.id} className="overflow-hidden">
-                          <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6">
-                            <div className="flex items-center gap-4 mb-4">
-                              <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-green-500 to-green-600">
-                                <Target className="w-8 h-8 text-white" />
-                              </div>
-                              <div>
-                                <h3 className="text-2xl font-bold text-gray-900">{assessment.title}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Badge className="bg-green-500 text-white text-xs">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    Completed
-                                  </Badge>
-                                  <span className="text-xs text-gray-600">
-                                    {new Date(assessment.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="bg-white/60 rounded-lg p-4">
-                              <p className="text-sm text-gray-700 mb-2">
-                                <span className="font-semibold">Top Strength:</span> {topSkill?.[0]} ({topSkill?.[1]}%)
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                Your skills profile shows balanced development across {Object.keys(scores).length} key competencies
-                              </p>
-                            </div>
-                          </div>
-                          <div className="p-6 space-y-4">
-                            {sortedSkills.map(([skill, score]) => (
-                              <div key={skill}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-sm font-medium text-gray-700">{skill}</span>
-                                  <span className="text-sm font-bold text-green-600">{score}%</span>
-                                </div>
-                                <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                                  <div
-                                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
-                                    style={{ width: `${score}%` }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                            <Button
-                              variant="ghost"
-                              onClick={() => setSearchParams({ tab: 'assessments' })}
-                              className="w-full mt-4 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            >
-                              View Full Analysis
-                              <ChevronDown className="h-4 w-4 ml-1 rotate-[-90deg]" />
-                            </Button>
-                          </div>
-                        </Card>
+                        <SkillsResultsDisplay
+                          key={assessment.id}
+                          skills={skills}
+                          topSkill={topSkill}
+                          testDate={new Date(assessment.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          onViewDetails={() => setSearchParams({ tab: 'assessments' })}
+                          onLearnMore={() => setSearchParams({ tab: 'assessments' })}
+                        />
                       );
                     }
 
