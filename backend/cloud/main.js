@@ -982,7 +982,7 @@ Parse.Cloud.define('uploadProfileImage', async (request) => {
 
     // Update user's profile image with HTTPS URL
     user.set('profileImage', fileUrl);
-    await user.save(null, { useMasterKey: true });
+    await user.save(null, { sessionToken: user.getSessionToken() });
 
     return {
       success: true,
@@ -1057,7 +1057,7 @@ Parse.Cloud.define('uploadCoverPhoto', async (request) => {
 
     // Update user's cover photo with HTTPS URL
     user.set('coverPhoto', fileUrl);
-    await user.save(null, { useMasterKey: true });
+    await user.save(null, { sessionToken: user.getSessionToken() });
 
     return {
       success: true,
