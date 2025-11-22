@@ -9,6 +9,7 @@ import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -99,6 +100,7 @@ export const ProfilePageTabbed: React.FC = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [personalityModalOpen, setPersonalityModalOpen] = useState(false);
+  const [assessmentHistoryOpen, setAssessmentHistoryOpen] = useState(false);
   const [selectedPersonalityType, setSelectedPersonalityType] = useState<{
     type: string;
     hollandCode?: string;
@@ -798,7 +800,7 @@ export const ProfilePageTabbed: React.FC = () => {
                   </Card>
                 )}
 
-                {/* Assessment List */}
+                {/* Latest Assessment Only */}
                 {assessments.length === 0 ? (
                   <Card>
                     <CardContent className="pt-12 pb-12 text-center">
@@ -824,7 +826,10 @@ export const ProfilePageTabbed: React.FC = () => {
                   </Card>
                 ) : (
                   <div className="grid grid-cols-1 gap-2 sm:gap-4">
-                    {assessments.map((assessment) => (
+                    {/* Show only the latest (most recent) assessment */}
+                    {(() => {
+                      const assessment = assessments[0];
+                      return (
                       <Card key={assessment.id} className="hover:shadow-lg transition-all duration-200">
                         <CardHeader className="p-3 sm:p-6">
                           <div className="flex items-start justify-between">
@@ -1276,8 +1281,24 @@ export const ProfilePageTabbed: React.FC = () => {
                             </motion.div>
                           )}
                         </CardContent>
+
+                        {/* View Past Results Button */}
+                        {assessments.length > 1 && (
+                          <div className="px-3 sm:px-6 pb-3 sm:pb-6 flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setAssessmentHistoryOpen(true)}
+                              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                            >
+                              <Activity className="h-4 w-4 mr-2" />
+                              View past results ({assessments.length - 1} more)
+                            </Button>
+                          </div>
+                        )}
                       </Card>
-                    ))}
+                    );
+                    })()}
                   </div>
                 )}
 
@@ -1378,6 +1399,62 @@ export const ProfilePageTabbed: React.FC = () => {
           scores={selectedPersonalityType.scores}
         />
       )}
+
+      {/* Assessment History Sheet */}
+      <Sheet open={assessmentHistoryOpen} onOpenChange={setAssessmentHistoryOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-orange-600" />
+              Assessment History
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            {assessments.map((assessment, index) => (
+              <Card key={assessment.id} className={index === 0 ? 'border-orange-200 bg-orange-50/30' : ''}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow ${
+                        assessment.type === 'riasec' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
+                        assessment.type === 'skills' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                        'bg-gradient-to-br from-blue-500 to-blue-600'
+                      }`}>
+                        {assessment.type === 'riasec' ? <Brain className="w-5 h-5 text-white" /> :
+                         assessment.type === 'skills' ? <Target className="w-5 h-5 text-white" /> :
+                         <ClipboardCheck className="w-5 h-5 text-white" />}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-sm">{assessment.title}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(assessment.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    {index === 0 && (
+                      <Badge className="bg-orange-500 text-white text-xs">Latest</Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {assessment.type === 'riasec' && assessment.results?.hollandCode && (
+                    <p className="text-sm text-gray-600">
+                      Holland Code: <span className="font-semibold text-orange-600">{assessment.results.hollandCode}</span>
+                    </p>
+                  )}
+                  {assessment.type === 'skills' && assessment.results?.scores && (
+                    <p className="text-sm text-gray-600">
+                      Top Skill: <span className="font-semibold text-green-600">
+                        {Object.entries(assessment.results.scores).sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0]}
+                      </span>
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
