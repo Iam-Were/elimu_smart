@@ -183,7 +183,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
             variant="ghost"
             size="sm"
             onClick={() => navigate('/profile')}
-            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white text-gray-700 shadow-sm rounded-lg px-4 py-2"
+            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white shadow-sm rounded-lg px-4 py-2"
           >
             <Camera className="h-4 w-4" />
             <span className="hidden md:inline">Change Cover</span>
