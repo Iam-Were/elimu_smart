@@ -665,7 +665,7 @@ export const ProfilePageTabbed: React.FC = () => {
                           setIsEditingAbout(false);
                           setEditFormData({
                             ...editFormData,
-                            bio: user?.bio || ''
+                            bio: (user as unknown as Record<string, string>)?.bio || ''
                           });
                         }}
                         variant="outline"
