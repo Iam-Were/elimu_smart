@@ -45,6 +45,7 @@ import type { ThemeRole, User as UserType } from '../../types';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { getRoleColor } from '../../constants/theme';
 import { useChat } from '../../hooks/useChat';
+import { useSubscription } from '../../hooks/useSubscription';
 
 interface Sprint18NavigationProps {
   className?: string;
@@ -58,6 +59,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const { user, logout } = useAuth();
   const { currentTheme } = useThemeContext();
   const { unreadCount: unreadMessageCount } = useChat();
+  const { userSubscription } = useSubscription();
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -138,8 +140,8 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
     if (user?.role === 'counselor') {
       return 'Licensed Counselor';
     }
-    // Mock subscription status for students/other roles - replace with actual logic
-    return (user as UserType & { subscription?: string })?.subscription || 'Free';
+    // Use backend subscription status
+    return userSubscription?.status || 'Free';
   };
 
   const getSubscriptionBadgeColor = (status: string) => {
@@ -515,7 +517,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                     {user?.email}
                   </p>
-                  <Badge className={cn("text-xs font-medium mt-2", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
+                  <Badge className={cn("text-xs font-medium mt-2 border-0", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
                     {getSubscriptionStatus()}
                   </Badge>
                 </div>
@@ -570,14 +572,14 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               
               <DropdownMenuSeparator />
 
-              {/* Sign Out - Prominent */}
+              {/* Sign Out - Same size as other items */}
               <div className="p-2">
                 <button
                   onClick={async () => {
                     await logout();
                     window.location.href = '/?logout=' + Date.now();
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
