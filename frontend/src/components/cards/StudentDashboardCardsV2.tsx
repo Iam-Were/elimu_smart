@@ -19,12 +19,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { UnifiedCardGrid } from './UnifiedCardGrid';
 import { useDynamicCards } from '@/hooks/useDynamicCards';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, AlertCircle, User, Activity, Camera, MapPin, Edit } from 'lucide-react';
+import { Loader2, AlertCircle, User, Activity, MapPin } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -52,8 +51,6 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
   className,
   maxCards = 6
 }) => {
-  const navigate = useNavigate();
-
   // ✅ FIX #3: State for progressive disclosure
   const [expanded, setExpanded] = useState(false);
 
@@ -175,30 +172,19 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
 
       {/* Hero Section - Welcome Back Card with Stats */}
       <div className="mb-8">
-        {/* Cover Photo - Simple gray background */}
-        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group">
-          {/* Change Cover button - top right */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/profile')}
-            className="absolute top-4 right-4 gap-2 bg-white/90 hover:bg-white shadow-sm rounded-lg px-4 py-2"
-          >
-            <Camera className="h-4 w-4" />
-            <span className="hidden md:inline">Change Cover</span>
-          </Button>
+        {/* Cover Photo - View only (edit on profile page) */}
+        <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 relative group overflow-hidden">
+          {authUser?.coverPhoto ? (
+            <img
+              src={authUser.coverPhoto}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+          ) : null}
         </div>
 
-        {/* Welcome Back Card */}
+        {/* Welcome Back Card - View Only (edit on /profile) */}
         <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
-          {/* Edit Pen Icon - Top Right of Card */}
-          <button
-            onClick={() => navigate('/profile')}
-            className="absolute top-4 right-4 p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors z-10"
-            title="Edit profile"
-          >
-            <Edit className="h-5 w-5" />
-          </button>
 
           <CardContent className="pt-6 pb-6 px-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -209,19 +195,11 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                 ) : (
                   <>
                     <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white bg-white relative shadow-lg">
-                      <AvatarImage src={userData?.profileImage} />
+                      <AvatarImage src={authUser?.profileImage || userData?.profileImage} />
                       <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-3xl md:text-4xl font-semibold">
                         {(userData?.firstName || 'U')[0]}{(userData?.lastName || 'U')[0]}
                       </AvatarFallback>
                     </Avatar>
-
-                    {/* Camera icon - bottom-right corner of circle */}
-                    <button
-                      onClick={() => navigate('/profile')}
-                      className="absolute bottom-1 right-1 h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
-                    >
-                      <Camera className="h-4 w-4 text-orange-600" />
-                    </button>
                   </>
                 )}
               </div>
