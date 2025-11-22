@@ -63,7 +63,7 @@ export const AchievementsCard: React.FC<AchievementsCardProps> = ({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-orange-600" />
-              Achievements & Milestones
+              Certifications & Milestones
             </CardTitle>
             <Button variant="ghost" size="sm" className="gap-1 text-orange-600 hover:text-orange-700 hover:bg-orange-50">
               <Plus className="h-3.5 w-3.5" />

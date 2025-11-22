@@ -201,9 +201,9 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
           </button>
 
           <CardContent className="pt-6 pb-6 px-6">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row items-center gap-6">
               {/* Profile Picture - Overlapping cover */}
-              <div className="relative mx-auto md:mx-0 -mt-20 md:-mt-24">
+              <div className="relative -mt-20 md:-mt-24 shrink-0">
                 {loadingUser ? (
                   <div className="h-32 w-32 md:h-40 md:w-40 rounded-full border-4 border-white bg-gray-100 animate-pulse shadow-lg" />
                 ) : (
@@ -215,19 +215,19 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                       </AvatarFallback>
                     </Avatar>
 
-                    {/* Camera icon - bottom right of profile photo */}
+                    {/* Camera icon - bottom-right corner of circle */}
                     <button
                       onClick={() => navigate('/profile')}
-                      className="absolute bottom-0 right-0 h-10 w-10 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
+                      className="absolute bottom-1 right-1 h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-white hover:bg-gray-50 transition-colors"
                     >
-                      <Camera className="h-5 w-5 text-orange-600" />
+                      <Camera className="h-4 w-4 text-orange-600" />
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Welcome Message & Profile Info */}
-              <div className="flex-1 mt-4 md:mt-16 text-center md:text-left">
+              {/* Welcome Message & Profile Info - Inline with profile picture */}
+              <div className="flex-1 text-center md:text-left">
                 {/* Welcome Back Message */}
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                   Welcome Back, {userData?.firstName}!
@@ -251,11 +251,18 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                     {/* Profile Completion */}
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-2">
                         <User className="w-4 h-4 text-blue-600" />
                         <span className="text-xs font-medium text-blue-900">Profile</span>
                       </div>
-                      <p className="text-2xl font-bold text-blue-900">{userData?.profileCompletion || 0}%</p>
+                      <p className="text-2xl font-bold text-blue-900 mb-2">{userData?.profileCompletion || 0}%</p>
+                      {/* Progress Bar */}
+                      <div className="w-full bg-blue-200 rounded-full h-2 mb-1">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${userData?.profileCompletion || 0}%` }}
+                        />
+                      </div>
                       <p className="text-xs text-blue-700">Complete</p>
                     </div>
 
@@ -280,7 +287,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                         ? "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
                         : "bg-gradient-to-br from-red-50 to-red-100 border-red-200"
                     )}>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-2">
                         <Activity className={cn(
                           "w-4 h-4",
                           careerReadinessScore.overall >= 70 ? "text-green-600" :
@@ -293,10 +300,25 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                         )}>Career Readiness</span>
                       </div>
                       <p className={cn(
-                        "text-2xl font-bold",
+                        "text-2xl font-bold mb-2",
                         careerReadinessScore.overall >= 70 ? "text-green-900" :
                         careerReadinessScore.overall >= 40 ? "text-amber-900" : "text-red-900"
                       )}>{careerReadinessScore.overall}%</p>
+                      {/* Progress Bar */}
+                      <div className={cn(
+                        "w-full rounded-full h-2 mb-1",
+                        careerReadinessScore.overall >= 70 ? "bg-green-200" :
+                        careerReadinessScore.overall >= 40 ? "bg-amber-200" : "bg-red-200"
+                      )}>
+                        <div
+                          className={cn(
+                            "h-2 rounded-full transition-all duration-300",
+                            careerReadinessScore.overall >= 70 ? "bg-green-600" :
+                            careerReadinessScore.overall >= 40 ? "bg-amber-600" : "bg-red-600"
+                          )}
+                          style={{ width: `${careerReadinessScore.overall}%` }}
+                        />
+                      </div>
                       <p className={cn(
                         "text-xs",
                         careerReadinessScore.overall >= 70 ? "text-green-700" :
