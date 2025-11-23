@@ -75,9 +75,11 @@ export const LoginPageShadcn: React.FC = () => {
         <div className="relative z-10">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Elimu Smart Logo"
+              className="w-12 h-12 object-contain"
+            />
             <div>
               <h2 className="text-white text-xl font-bold">Elimu Smart</h2>
               <p className="text-orange-100 text-sm">Career Guidance Platform</p>
