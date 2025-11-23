@@ -117,7 +117,7 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
 
                   {/* Full-Color Bar with Dial Marker (16 Personalities Style) */}
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-500">Low</span>
+                    <span className="text-xs text-gray-500">{trait.leftLabel}</span>
 
                     {/* Full-width colored bar */}
                     <div className="flex-1 relative h-2 rounded-full overflow-hidden">
@@ -149,7 +149,7 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
                       />
                     </div>
 
-                    <span className="text-xs text-gray-500">High</span>
+                    <span className="text-xs text-gray-500">{trait.rightLabel}</span>
                   </div>
                 </div>
               ))}
