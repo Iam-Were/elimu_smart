@@ -56,9 +56,9 @@ const LandingPage: React.FC = () => {
               <img
                 src={logoImage}
                 alt="Elimu Smart Logo"
-                className="h-10 w-10 object-contain"
+                className="h-12 w-12 object-contain"
               />
-              <span className="font-bold text-xl text-gray-900 dark:text-gray-100">
+              <span className="font-bold text-2xl text-gray-900 dark:text-gray-100">
                 Elimu Smart
               </span>
             </div>

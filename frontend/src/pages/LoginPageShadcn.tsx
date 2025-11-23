@@ -74,15 +74,15 @@ export const LoginPageShadcn: React.FC = () => {
         {/* Content */}
         <div className="relative z-10">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
+          <div className="flex items-center gap-4 mb-16">
             <img
               src={logoImage}
               alt="Elimu Smart Logo"
-              className="w-12 h-12 object-contain"
+              className="w-16 h-16 object-contain"
             />
             <div>
-              <h2 className="text-white text-xl font-bold">Elimu Smart</h2>
-              <p className="text-orange-100 text-sm">Career Guidance Platform</p>
+              <h2 className="text-white text-2xl font-bold">Elimu Smart</h2>
+              <p className="text-orange-100 text-base">Career Guidance Platform</p>
             </div>
           </div>
 
@@ -333,13 +333,13 @@ export const LoginPageShadcn: React.FC = () => {
 
           {/* Mobile Logo (shown on small screens) */}
           <div className="mt-6 lg:hidden text-center">
-            <div className="inline-flex items-center gap-2 text-gray-600">
+            <div className="inline-flex items-center gap-3 text-gray-600">
               <img
                 src={logoImage}
                 alt="Elimu Smart Logo"
-                className="w-8 h-8 object-contain"
+                className="w-12 h-12 object-contain"
               />
-              <span className="font-semibold">Elimu Smart</span>
+              <span className="font-semibold text-lg">Elimu Smart</span>
             </div>
           </div>
         </div>

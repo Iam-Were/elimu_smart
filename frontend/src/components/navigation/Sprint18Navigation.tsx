@@ -202,14 +202,14 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
         <div className="container flex h-16 max-w-5xl mx-auto items-center justify-between">
         {/* Enhanced Logo with solid background - Scroll-based animations */}
         <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
-          <Link to="/" className="flex items-center space-x-2 group">
+          <Link to="/" className="flex items-center space-x-3 group">
             <img
               src={logoImage}
               alt="Elimu Smart Logo"
-              className="h-10 w-10 object-contain group-hover:scale-110 transition-transform duration-300"
+              className="h-12 w-12 object-contain group-hover:scale-110 transition-transform duration-300"
             />
             <span
-              className="text-xl font-bold bg-clip-text text-transparent transition-all duration-300"
+              className="text-2xl font-bold bg-clip-text text-transparent transition-all duration-300"
               style={{
                 backgroundImage: `linear-gradient(to right, ${getThemeColor(currentTheme)}, ${getThemeColor(currentTheme)}cc)`
               }}
