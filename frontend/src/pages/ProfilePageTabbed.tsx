@@ -733,14 +733,14 @@ export const ProfilePageTabbed: React.FC = () => {
                       const hollandCode = assessment.results.hollandCode;
                       const scores = assessment.results.scores as Record<string, number>;
 
-                      // Create traits array from RIASEC scores
+                      // Create traits array from RIASEC scores (16 Personalities style with accurate labels)
                       const riasecLabels: Record<string, { label: string; leftLabel: string; rightLabel: string; color: string }> = {
-                        R: { label: 'Realistic', leftLabel: 'Prefer ideas', rightLabel: 'Prefer hands-on', color: 'text-blue-600' },
-                        I: { label: 'Investigative', leftLabel: 'Practical focus', rightLabel: 'Analytical focus', color: 'text-purple-600' },
-                        A: { label: 'Artistic', leftLabel: 'Conventional', rightLabel: 'Creative', color: 'text-pink-600' },
-                        S: { label: 'Social', leftLabel: 'Independent work', rightLabel: 'People-oriented', color: 'text-green-600' },
-                        E: { label: 'Enterprising', leftLabel: 'Support role', rightLabel: 'Leadership role', color: 'text-orange-600' },
-                        C: { label: 'Conventional', leftLabel: 'Flexible approach', rightLabel: 'Structured approach', color: 'text-slate-600' }
+                        R: { label: 'Realistic', leftLabel: 'Low', rightLabel: 'High', color: 'text-blue-600' },
+                        I: { label: 'Investigative', leftLabel: 'Low', rightLabel: 'High', color: 'text-teal-600' },
+                        A: { label: 'Artistic', leftLabel: 'Low', rightLabel: 'High', color: 'text-pink-600' },
+                        S: { label: 'Social', leftLabel: 'Low', rightLabel: 'High', color: 'text-green-600' },
+                        E: { label: 'Enterprising', leftLabel: 'Low', rightLabel: 'High', color: 'text-amber-600' },
+                        C: { label: 'Conventional', leftLabel: 'Low', rightLabel: 'High', color: 'text-slate-600' }
                       };
 
                       const traits = Object.entries(scores).map(([key, value]) => ({

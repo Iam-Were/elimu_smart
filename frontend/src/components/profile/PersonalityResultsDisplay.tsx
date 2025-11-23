@@ -104,32 +104,46 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
                   {/* Trait Label and Percentage */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">{trait.label}</span>
-                    <span className={`text-sm font-bold ${trait.color}`}>
+                    <span className={`text-lg font-bold ${trait.color}`}>
                       {trait.percentage}%
                     </span>
                   </div>
 
-                  {/* Slider Track */}
-                  <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`absolute left-0 top-0 h-full rounded-full transition-all duration-500 ${
-                        trait.color.includes('blue') ? 'bg-blue-500' :
-                        trait.color.includes('amber') ? 'bg-amber-500' :
-                        trait.color.includes('green') ? 'bg-green-500' :
-                        trait.color.includes('purple') ? 'bg-purple-500' :
-                        'bg-orange-500'
-                      }`}
-                      style={{ width: `${trait.percentage}%` }}
-                    >
-                      {/* Slider Thumb */}
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-md border-2 border-current" />
-                    </div>
-                  </div>
+                  {/* Full-Color Bar with Dial Marker (16 Personalities Style) */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500">Low</span>
 
-                  {/* Endpoint Labels */}
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-gray-500">{trait.leftLabel}</span>
-                    <span className="text-xs text-gray-500">{trait.rightLabel}</span>
+                    {/* Full-width colored bar */}
+                    <div className="flex-1 relative h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`absolute inset-0 rounded-full ${
+                          trait.color.includes('blue') ? 'bg-blue-500' :
+                          trait.color.includes('teal') ? 'bg-teal-500' :
+                          trait.color.includes('amber') ? 'bg-amber-500' :
+                          trait.color.includes('green') ? 'bg-green-500' :
+                          trait.color.includes('purple') ? 'bg-purple-500' :
+                          trait.color.includes('pink') ? 'bg-pink-500' :
+                          trait.color.includes('slate') ? 'bg-slate-500' :
+                          'bg-orange-500'
+                        }`}
+                      />
+                      {/* Dial marker (white circle positioned at percentage) */}
+                      <div
+                        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-500 ${
+                          trait.color.includes('blue') ? 'border-blue-500' :
+                          trait.color.includes('teal') ? 'border-teal-500' :
+                          trait.color.includes('amber') ? 'border-amber-500' :
+                          trait.color.includes('green') ? 'border-green-500' :
+                          trait.color.includes('purple') ? 'border-purple-500' :
+                          trait.color.includes('pink') ? 'border-pink-500' :
+                          trait.color.includes('slate') ? 'border-slate-500' :
+                          'border-orange-500'
+                        } border-2`}
+                        style={{ left: `${trait.percentage}%` }}
+                      />
+                    </div>
+
+                    <span className="text-xs text-gray-500">High</span>
                   </div>
                 </div>
               ))}
