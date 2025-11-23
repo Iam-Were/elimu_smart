@@ -41,42 +41,48 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
 
   return (
     <Card className="overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-        {/* LEFT PANEL: Character Card */}
-        <div className="flex flex-col items-center justify-between bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+        {/* LEFT CARD: Character + Type Info */}
+        <div className="flex flex-col items-center justify-between bg-gradient-to-br from-gray-50 to-white p-8 rounded-xl border border-gray-200">
           {/* Character Illustration */}
-          <div className="mb-4">
-            <CharacterComponent className="w-40 h-40" />
+          <div className="mb-6">
+            <CharacterComponent className="w-48 h-48" />
           </div>
 
           {/* Type Information */}
-          <div className="text-center mb-4">
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+          <div className="text-center mb-6">
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
               {metadata.title}
             </h3>
-            <p className="text-sm font-medium text-gray-600 mb-3">
+            <p className="text-base font-medium text-gray-600 mb-4">
               {metadata.name} Type
             </p>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
               {metadata.tagline}
             </p>
-          </div>
 
-          {/* View Details Button */}
-          {onViewDetails && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onViewDetails}
-              className="w-full"
-            >
-              View Details
-            </Button>
-          )}
+            {/* Nature/Insight */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Nature
+              </p>
+              <h4 className={`text-2xl font-bold bg-gradient-to-r ${metadata.color} bg-clip-text text-transparent mb-3`}>
+                {metadata.name}
+              </h4>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {insightText || `You focus on ${metadata.name.toLowerCase()} approaches, bringing unique strengths to your chosen path.`}
+              </p>
+              {topCareer && (
+                <p className="text-sm font-medium text-orange-600 mt-3">
+                  Top career match: {topCareer}
+                </p>
+              )}
+            </div>
+          </div>
 
           {/* Pagination Dots (if multiple types) */}
           {types.length > 1 && (
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex items-center gap-2">
               {types.map((_, index) => (
                 <button
                   key={index}
@@ -93,10 +99,10 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
           )}
         </div>
 
-        {/* CENTER PANEL: Trait Sliders */}
-        <div className="flex flex-col justify-between">
+        {/* RIGHT CARD: Trait Sliders */}
+        <div className="flex flex-col justify-between p-8">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Your Traits</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-8">Your Traits</h3>
 
             <div className="space-y-6">
               {traits.map((trait, index) => (
@@ -150,57 +156,39 @@ export const PersonalityResultsDisplay: React.FC<PersonalityResultsDisplayProps>
             </div>
           </div>
 
-          {/* Test Date */}
-          <p className="text-xs text-gray-500 mt-6">
-            Test taken: {new Date(testDate).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric'
-            })}
-          </p>
-        </div>
-
-        {/* RIGHT PANEL: Nature/Insights */}
-        <div className="flex flex-col items-center justify-between bg-gradient-to-br from-orange-50/30 to-white p-6 rounded-xl border border-orange-200">
-          {/* Nature Label */}
-          <div className="text-center mb-4">
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              Nature
+          {/* Test Date and Action Buttons */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500 mb-4">
+              Test taken: {new Date(testDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
             </p>
-            <h3 className={`text-3xl font-bold bg-gradient-to-r ${metadata.color} bg-clip-text text-transparent mb-4`}>
-              {metadata.name}
-            </h3>
+            <div className="flex gap-3">
+              {onViewDetails && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onViewDetails}
+                  className="flex-1"
+                >
+                  View Details
+                </Button>
+              )}
+              {onLearnMore && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onLearnMore}
+                  className="flex-1 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                >
+                  Learn More
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              )}
+            </div>
           </div>
-
-          {/* Secondary Character (smaller) */}
-          <div className="mb-4">
-            <CharacterComponent className="w-24 h-24 opacity-40" />
-          </div>
-
-          {/* Insight Text */}
-          <div className="text-center mb-4">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {insightText || `You focus on ${metadata.name.toLowerCase()} approaches, bringing unique strengths to your chosen path.`}
-            </p>
-            {topCareer && (
-              <p className="text-sm font-medium text-orange-600 mt-3">
-                Top career match: {topCareer}
-              </p>
-            )}
-          </div>
-
-          {/* Learn More Button */}
-          {onLearnMore && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onLearnMore}
-              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-            >
-              Learn More
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          )}
         </div>
       </div>
     </Card>

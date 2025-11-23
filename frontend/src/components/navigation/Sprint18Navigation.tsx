@@ -45,6 +45,7 @@ import { NotificationCenter } from '../common/NotificationCenter';
 import { getRoleColor } from '../../constants/theme';
 import { useChat } from '../../hooks/useChat';
 import { useSubscription } from '../../hooks/useSubscription';
+import logoImage from '@/assets/logo.png';
 
 interface Sprint18NavigationProps {
   className?: string;
@@ -203,7 +204,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
         <div className={cn("flex items-center space-x-4 transition-opacity duration-300", isScrolling ? "opacity-60" : "opacity-100")}>
           <Link to="/" className="flex items-center space-x-2 group">
             <img
-              src="/logo.png"
+              src={logoImage}
               alt="Elimu Smart Logo"
               className="h-10 w-10 object-contain group-hover:scale-110 transition-transform duration-300"
             />

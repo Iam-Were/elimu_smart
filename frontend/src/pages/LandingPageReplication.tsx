@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   Target,
   BookOpen,
   ArrowRight,
@@ -14,6 +14,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import DarkModeToggle from '../components/ui/DarkModeToggle';
+import logoImage from '@/assets/logo.png';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,9 +53,11 @@ const LandingPage: React.FC = () => {
             
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
+              <img
+                src={logoImage}
+                alt="Elimu Smart Logo"
+                className="h-10 w-10 object-contain"
+              />
               <span className="font-bold text-xl text-gray-900 dark:text-gray-100">
                 Elimu Smart
               </span>

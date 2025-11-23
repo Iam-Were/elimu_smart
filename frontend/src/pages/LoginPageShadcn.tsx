@@ -21,9 +21,9 @@ import {
   Globe,
   Heart,
   ArrowRight,
-  Shield,
-  BookOpen
+  Shield
 } from 'lucide-react';
+import logoImage from '@/assets/logo.png';
 
 export const LoginPageShadcn: React.FC = () => {
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ export const LoginPageShadcn: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center gap-3 mb-16">
             <img
-              src="/logo.png"
+              src={logoImage}
               alt="Elimu Smart Logo"
               className="w-12 h-12 object-contain"
             />
@@ -334,9 +334,11 @@ export const LoginPageShadcn: React.FC = () => {
           {/* Mobile Logo (shown on small screens) */}
           <div className="mt-6 lg:hidden text-center">
             <div className="inline-flex items-center gap-2 text-gray-600">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-4 h-4 text-white" />
-              </div>
+              <img
+                src={logoImage}
+                alt="Elimu Smart Logo"
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-semibold">Elimu Smart</span>
             </div>
           </div>
