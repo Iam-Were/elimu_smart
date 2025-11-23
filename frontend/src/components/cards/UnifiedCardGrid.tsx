@@ -190,13 +190,13 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             )}
           </CardContent>
 
-          {/* Card Footer with CTA Button - LinkedIn-style subtle */}
+          {/* Card Footer with CTA Button - Orange student theme */}
           <CardFooter className="px-4 pb-4 pt-2 sm:px-6 sm:pb-5 sm:pt-3">
             <Button
               onClick={() => handleCardClick(card.id, card.actionUrl, card.title)}
               className={cn(
                 'w-full text-sm font-medium min-h-[40px] rounded-md',
-                'bg-blue-600 hover:bg-blue-700 text-white',
+                'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white',
                 'transition-colors duration-200'
               )}
               variant="default"
