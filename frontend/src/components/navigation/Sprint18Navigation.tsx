@@ -40,7 +40,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeContext } from '../../hooks/useThemeContext';
-import type { ThemeRole, User as UserType } from '../../types';
+import type { ThemeRole } from '../../types';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { getRoleColor } from '../../constants/theme';
 import { useChat } from '../../hooks/useChat';
@@ -474,7 +474,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               >
                 <div className="flex items-center space-x-1 sm:space-x-2">
                   <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
-                    <AvatarImage src={(user as UserType & { avatar?: string })?.avatar} alt={getUserDisplayName()} />
+                    <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
                     <AvatarFallback
                       className="text-[10px] sm:text-xs font-medium"
                       style={{
@@ -490,26 +490,26 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-72 bg-white" align="end" forceMount>
-              {/* Profile Header - Centered */}
-              <div className="flex flex-col items-center justify-center gap-3 p-6 border-b">
-                <Avatar className="h-16 w-16 ring-2 ring-orange-200">
+              {/* Profile Header - LinkedIn Style (Left-aligned, non-clickable) */}
+              <div className="flex items-start gap-3 p-4 border-b">
+                <Avatar className="h-14 w-14 ring-2 ring-orange-200 flex-shrink-0">
                   <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
                   <AvatarFallback
                     style={{
                       backgroundColor: getThemeColor(currentTheme),
                       color: 'white',
                     }}
-                    className="text-xl font-semibold"
+                    className="text-lg font-semibold"
                   >
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col items-center space-y-1 text-center">
-                  <p className="font-semibold text-base">{getUserDisplayName()}</p>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                  <p className="font-semibold text-sm leading-tight">{getUserDisplayName()}</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {user?.email}
                   </p>
-                  <Badge className={cn("text-xs font-medium mt-2 border-0", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
+                  <Badge className={cn("text-xs font-medium mt-1 border-0 w-fit", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
                     {getSubscriptionStatus()}
                   </Badge>
                 </div>
