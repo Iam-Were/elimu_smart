@@ -29,7 +29,6 @@ import {
   HelpCircle,
   Shield,
   LogOut,
-  Brain,
   Calendar,
   MessageSquare,
   Search,
@@ -121,13 +120,6 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
   const getThemeColor = (theme: ThemeRole) => {
     return getRoleColor(theme);
-  };
-
-  const getLogoStyles = () => {
-    const baseColor = getThemeColor(currentTheme);
-    return {
-      background: `linear-gradient(to bottom right, ${baseColor}, ${baseColor}dd)`
-    };
   };
 
   const getUserDisplayName = () => {
