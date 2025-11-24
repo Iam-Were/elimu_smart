@@ -9448,3 +9448,73 @@ Parse.Cloud.define('getStudentTimeline', async (request) => {
 // =============================================================================
 require('./communityForumFunctions');
 
+// =============================================================================
+// ADMIN: GRANT PREMIUM SUBSCRIPTION (Testing/Demo)
+// =============================================================================
+Parse.Cloud.define('grantPremiumSubscription', async (request) => {
+  const { email, durationDays = 365 } = request.params;
+
+  if (!request.master) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Master key required');
+  }
+
+  try {
+    // Find user by email
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.equalTo('email', email);
+    const user = await userQuery.first({ useMasterKey: true });
+
+    if (!user) {
+      throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, `User with email ${email} not found`);
+    }
+
+    // Check for existing active subscription
+    const Subscription = Parse.Object.extend('Subscription');
+    const subQuery = new Parse.Query(Subscription);
+    subQuery.equalTo('user', user);
+    subQuery.equalTo('status', 'active');
+    subQuery.greaterThan('expiresAt', new Date());
+
+    const existing = await subQuery.first({ useMasterKey: true });
+
+    if (existing) {
+      return {
+        success: true,
+        message: 'User already has active subscription',
+        expiresAt: existing.get('expiresAt'),
+        userId: user.id
+      };
+    }
+
+    // Create new subscription
+    const subscription = new Subscription();
+    subscription.set('user', user);
+    subscription.set('userId', user.id);
+    subscription.set('planId', 'premium_annual');
+    subscription.set('status', 'active');
+    subscription.set('startDate', new Date());
+    subscription.set('expiresAt', new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000));
+    subscription.set('amount', 0);
+    subscription.set('currency', 'KES');
+    subscription.set('paymentMethod', 'admin_grant');
+    subscription.set('autoRenew', false);
+
+    await subscription.save(null, { useMasterKey: true });
+
+    // Update user isPremium flag
+    user.set('isPremium', true);
+    await user.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      message: 'Premium subscription granted successfully',
+      subscriptionId: subscription.id,
+      userId: user.id,
+      expiresAt: subscription.get('expiresAt')
+    };
+  } catch (error) {
+    console.error('Error granting premium:', error);
+    throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, `Failed to grant premium: ${error.message}`);
+  }
+});
+
