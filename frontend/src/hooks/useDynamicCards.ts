@@ -128,8 +128,8 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
             value: matches.length
           },
           badge: {
-            text: matches.length > 0 ? `${matches.length} Matches` : 'Search',
-            variant: matches.length > 0 ? 'success' : 'secondary'
+            text: 'Coming Soon',
+            variant: 'secondary'
           }
         });
       }
@@ -533,8 +533,8 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
           'Scholarship database'
         ],
         badge: {
-          text: 'Free',
-          variant: 'success'
+          text: 'Coming Soon',
+          variant: 'secondary'
         }
       }
     ];
