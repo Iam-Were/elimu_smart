@@ -441,9 +441,9 @@ const CommunityQA: React.FC = () => {
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Community Forum</h2>
+        <h2 className="text-2xl font-semibold mb-2">Peer Room</h2>
         <p className="text-muted-foreground">
-          Ask questions, share experiences, get advice from counselors and fellow students
+          Elimu Smart's Student Community - Ask, Learn, Support Each Other
         </p>
       </div>
 

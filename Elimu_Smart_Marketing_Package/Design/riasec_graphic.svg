@@ -1,0 +1,47 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- RIASEC Assessment: Hexagon personality model -->
+  <defs>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7e22ce;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6b21a8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="#faf9f5"/>
+
+  <!-- Main hexagon (Holland Codes) -->
+  <g id="holland-hexagon" transform="translate(400, 280)">
+    <!-- Hexagon outline -->
+    <polygon points="0,-120 104,-60 104,60 0,120 -104,60 -104,-60"
+             fill="none" stroke="url(#purpleGrad)" stroke-width="4"/>
+
+    <!-- Inner connection lines -->
+    <line x1="-104" y1="-60" x2="104" y2="60" stroke="#e9d5ff" stroke-width="1" opacity="0.3"/>
+    <line x1="-104" y1="60" x2="104" y2="-60" stroke="#e9d5ff" stroke-width="1" opacity="0.3"/>
+    <line x1="0" y1="-120" x2="0" y2="120" stroke="#e9d5ff" stroke-width="1" opacity="0.3"/>
+
+    <!-- Personality type labels -->
+    <text x="0" y="-135" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="middle">REALISTIC</text>
+    <text x="120" y="-50" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="start">INVESTIGATIVE</text>
+    <text x="120" y="70" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="start">ARTISTIC</text>
+    <text x="0" y="145" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="middle">SOCIAL</text>
+    <text x="-120" y="70" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="end">ENTERPRISING</text>
+    <text x="-120" y="-50" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#7e22ce" text-anchor="end">CONVENTIONAL</text>
+
+    <!-- Center icon - compass -->
+    <circle cx="0" cy="0" r="30" fill="white" stroke="url(#purpleGrad)" stroke-width="2"/>
+    <polygon points="0,-20 -6,16 0,10 6,16" fill="url(#purpleGrad)"/>
+  </g>
+
+  <!-- Title -->
+  <text x="400" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#475569" text-anchor="middle">RIASEC CAREER ASSESSMENT</text>
+  <text x="400" y="90" font-family="Arial, sans-serif" font-size="16" fill="#64748b" text-anchor="middle">Discover Your Career Personality Type</text>
+
+  <!-- Metric labels -->
+  <g id="metrics" transform="translate(60, 520)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">96 QUESTIONS</text>
+    <text x="200" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">15 MINUTES</text>
+    <text x="400" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">6 PERSONALITY TYPES</text>
+  </g>
+</svg>

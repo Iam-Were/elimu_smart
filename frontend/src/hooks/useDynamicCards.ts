@@ -455,17 +455,17 @@ export const useDynamicCards = (options: UseDynamicCardsOptions): UseDynamicCard
         id: 'community-qa',
         cardType: 'guidance',
         serviceType: 'community',
-        title: 'Community Q&A',
-        description: 'Ask questions and get answers from career counselors',
+        title: 'Peer Room',
+        description: 'Elimu Smart\'s student community - ask, learn, support each other',
         icon: React.createElement(Users),
         iconGradient: 'from-blue-500 to-blue-600',
-        actionText: 'Browse Questions',
+        actionText: 'Join Discussion',
         actionUrl: '/guidance/community-qa',
         isPremium: false,
         features: [
-          'Searchable Q&A archive',
-          'Public or anonymous questions',
-          'Counselor-verified answers'
+          'Peer support from students',
+          'Expert counselor answers',
+          'Upvote helpful responses'
         ],
         responseTime: '24-48 hours',
         badge: {

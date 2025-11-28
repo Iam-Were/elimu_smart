@@ -1,0 +1,56 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Peer Room Logo: Community network forming a shared space -->
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ea580c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c2410c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f1f5f9"/>
+
+  <!-- Peer circles forming pentagon (community network) -->
+  <g id="peer-network">
+    <!-- Top circle -->
+    <circle cx="200" cy="100" r="40" fill="white" stroke="url(#orangeGrad)" stroke-width="3"/>
+
+    <!-- Top right -->
+    <circle cx="276" cy="150" r="40" fill="white" stroke="url(#orangeGrad)" stroke-width="3"/>
+
+    <!-- Bottom right -->
+    <circle cx="252" cy="238" r="40" fill="white" stroke="url(#orangeGrad)" stroke-width="3"/>
+
+    <!-- Bottom left -->
+    <circle cx="148" cy="238" r="40" fill="white" stroke="url(#orangeGrad)" stroke-width="3"/>
+
+    <!-- Top left -->
+    <circle cx="124" cy="150" r="40" fill="white" stroke="url(#orangeGrad)" stroke-width="3"/>
+  </g>
+
+  <!-- Connection lines (knowledge flow) - subtle -->
+  <g id="connections" opacity="0.3">
+    <line x1="200" y1="180" x2="200" y2="100" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="4,4"/>
+    <line x1="200" y1="180" x2="276" y2="150" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="4,4"/>
+    <line x1="200" y1="180" x2="252" y2="238" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="4,4"/>
+    <line x1="200" y1="180" x2="148" y2="238" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="4,4"/>
+    <line x1="200" y1="180" x2="124" y2="150" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Central "room" - shared space -->
+  <circle cx="200" cy="180" r="28" fill="url(#orangeGrad)"/>
+
+  <!-- Upvote icon (Reddit reference) - small, top right -->
+  <g id="upvote-icon" transform="translate(340, 40)">
+    <polygon points="0,-12 -10,4 10,4" fill="url(#orangeGrad)"/>
+    <rect x="-4" y="4" width="8" height="14" fill="url(#orangeGrad)"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="200" y="310" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="bold" fill="#475569" text-anchor="middle">PEER ROOM</text>
+  <text x="200" y="335" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Student Community · Expert Guidance</text>
+</svg>
