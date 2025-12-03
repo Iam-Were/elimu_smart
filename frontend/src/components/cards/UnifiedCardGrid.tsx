@@ -110,6 +110,26 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
           </CardHeader>
 
           <CardContent className="space-y-3 px-4 py-2 sm:px-6 sm:py-3">
+            {/* Assessment Graphic Preview */}
+            {'assessmentType' in card && (
+              <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                <img
+                  src={`/design/${card.id.replace('riasec-assessment', 'riasec_graphic')
+                    .replace('skills-assessment', 'skills_graphic')
+                    .replace('university-finder', 'university_finder_graphic')
+                    .replace('career-explorer', 'career_explorer_graphic')
+                    .replace('subject-mapper', 'subject_mapper_graphic')}.svg`}
+                  alt={`${card.title} preview`}
+                  className="w-full h-full object-contain p-2"
+                  loading="lazy"
+                  onError={(e) => {
+                    // Fallback: hide image if not found
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+
             {/* Assessment-Specific Content */}
             {'assessmentType' in card && (
               <>
@@ -153,23 +173,36 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             )}
 
             {/* Guidance-Specific Content */}
-            {'serviceType' in card && (card as GuidanceCard).features && (
+            {'serviceType' in card && (
               <>
-                {/* Features List - Subtle */}
-                <ul className="space-y-2">
-                  {(card as GuidanceCard).features.slice(0, 2).map((feature, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center gap-2 text-sm text-slate-600"
-                    >
-                      <span className="text-green-600 font-medium">✓</span>
-                      <span className="line-clamp-1">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Peer Room Logo */}
+                {card.id === 'community-qa' && (
+                  <div className="w-full h-24 sm:h-28 rounded-lg overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-3">
+                    <img
+                      src="/design/peer_room_logo.svg"
+                      alt="Peer Room Logo"
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
 
+                {/* Features List - Subtle */}
+                {(card as GuidanceCard).features && (
+                  <ul className="space-y-2">
+                    {(card as GuidanceCard).features.slice(0, 2).map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 text-sm text-slate-600"
+                      >
+                        <span className="text-green-600 font-medium">✓</span>
+                        <span className="line-clamp-1">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {/* Response Time */}
-                {(card as GuidanceCard).responseTime && (
+                {'serviceType' in card && (card as GuidanceCard).responseTime && (
                   <p className="text-sm text-slate-500">
                     Response time: {(card as GuidanceCard).responseTime}
                   </p>

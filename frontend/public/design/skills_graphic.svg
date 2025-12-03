@@ -1,0 +1,55 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Skills Assessment: Radar chart / skill wheel -->
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#15803d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#166534;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="#faf9f5"/>
+
+  <!-- Title -->
+  <text x="400" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#475569" text-anchor="middle">SKILLS ASSESSMENT</text>
+  <text x="400" y="90" font-family="Arial, sans-serif" font-size="16" fill="#64748b" text-anchor="middle">Map Your Skill Profile Across 6 Categories</text>
+
+  <!-- Radar chart -->
+  <g id="radar" transform="translate(400, 320)">
+    <!-- Concentric circles (skill levels) -->
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="0" cy="0" r="90" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+
+    <!-- Axes for 6 skill categories -->
+    <line x1="0" y1="0" x2="0" y2="-120" stroke="url(#greenGrad)" stroke-width="2"/>
+    <line x1="0" y1="0" x2="104" y2="-60" stroke="url(#greenGrad)" stroke-width="2"/>
+    <line x1="0" y1="0" x2="104" y2="60" stroke="url(#greenGrad)" stroke-width="2"/>
+    <line x1="0" y1="0" x2="0" y2="120" stroke="url(#greenGrad)" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-104" y2="60" stroke="url(#greenGrad)" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-104" y2="-60" stroke="url(#greenGrad)" stroke-width="2"/>
+
+    <!-- Example skill plot (filled hexagon) -->
+    <polygon points="0,-90 78,-45 78,45 0,90 -78,45 -78,-45"
+             fill="url(#greenGrad)" fill-opacity="0.2" stroke="url(#greenGrad)" stroke-width="3"/>
+
+    <!-- Skill category labels -->
+    <text x="0" y="-140" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="middle">Communication</text>
+    <text x="120" y="-50" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="start">Problem Solving</text>
+    <text x="120" y="65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="start">Leadership</text>
+    <text x="0" y="145" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="middle">Teamwork</text>
+    <text x="-120" y="65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="end">Creativity</text>
+    <text x="-120" y="-50" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#15803d" text-anchor="end">Technical</text>
+
+    <!-- Center point -->
+    <circle cx="0" cy="0" r="6" fill="white" stroke="url(#greenGrad)" stroke-width="2"/>
+  </g>
+
+  <!-- Metrics -->
+  <g id="metrics" transform="translate(60, 530)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">36 QUESTIONS</text>
+    <text x="200" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">10 MINUTES</text>
+    <text x="400" y="0" font-family="Arial, sans-serif" font-size="14" fill="#64748b">6 SKILL AREAS</text>
+  </g>
+</svg>
