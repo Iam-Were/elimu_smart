@@ -68,74 +68,38 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          {/* LinkedIn-style Subtle Card Header */}
-          <CardHeader className="space-y-3 px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
-            {/* Badge & Lock Row - Top right corner only */}
-            <div className="absolute top-3 right-3 flex items-center gap-2">
-              {/* Badge */}
-              {'badge' in card && card.badge && (
-                <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-0.5">
-                  {card.badge.text}
-                </Badge>
-              )}
-
-              {/* Premium Lock Icon */}
-              {'isPremium' in card && card.isPremium && (
-                <Lock className="w-4 h-4 text-amber-600" />
-              )}
-            </div>
-
-            {/* Icon - NO label, simple circular container */}
-            <div className="flex items-start">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center transition-colors',
-                  `bg-gradient-to-br ${card.iconGradient}`,
-                  '[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-white'
-                )}
-              >
-                {card.icon}
-              </div>
-            </div>
-
-            {/* Card Title & Description - Left-aligned LinkedIn style */}
-            <div className="space-y-1.5">
-              <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 leading-tight line-clamp-2">
-                {card.title}
-              </CardTitle>
-              <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-                {card.description}
-              </CardDescription>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-3 px-4 py-2 sm:px-6 sm:py-3">
-            {/* Assessment Graphic Preview */}
-            {'assessmentType' in card && (
-              <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+          {/* Assessment Card: Large Image Hero */}
+          {'assessmentType' in card && (
+            <>
+              {/* Large Hero Image - No border, full width */}
+              <div className="w-full h-48 sm:h-56 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
                 <img
-                  src={`/design/${card.id.replace('riasec-assessment', 'riasec_graphic')
-                    .replace('skills-assessment', 'skills_graphic')
-                    .replace('university-finder', 'university_finder_graphic')
-                    .replace('career-explorer', 'career_explorer_graphic')
-                    .replace('subject-mapper', 'subject_mapper_graphic')}.svg`}
-                  alt={`${card.title} preview`}
-                  className="w-full h-full object-contain p-2"
+                  src={`/design/${card.id}.jpg`}
+                  alt={card.title}
+                  className="w-full h-full object-cover"
                   loading="lazy"
-                  onError={(e) => {
-                    // Fallback: hide image if not found
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
                 />
               </div>
-            )}
 
-            {/* Assessment-Specific Content */}
-            {'assessmentType' in card && (
-              <>
-                {/* Duration & Questions - Subtle */}
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <span>{(card as AssessmentCard).duration}</span>
+              {/* Card Content - Improved Hierarchy */}
+              <CardHeader className="space-y-3 px-4 pt-4 pb-2 sm:px-6 sm:pt-5 sm:pb-3">
+                {/* Badge - Top right corner */}
+                <div className="absolute top-2 right-2 z-10">
+                  {'badge' in card && card.badge && (
+                    <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-0.5">
+                      {card.badge.text}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Title - Prominent */}
+                <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+                  {card.title}
+                </CardTitle>
+
+                {/* Duration & Questions - Metadata */}
+                <div className="flex items-center gap-3 text-sm text-slate-500">
+                  <span className="font-medium">{(card as AssessmentCard).duration}</span>
                   {(card as AssessmentCard).questions > 0 && (
                     <>
                       <span>•</span>
@@ -144,19 +108,105 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                   )}
                 </div>
 
-                {/* Progress Bar - Minimal */}
+                {/* Description */}
+                <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                  {card.description}
+                </CardDescription>
+              </CardHeader>
+            </>
+          )}
+
+          {/* Guidance Card: Original Design with Peer Room Logo */}
+          {'serviceType' in card && !('assessmentType' in card) && (
+            <CardHeader className="space-y-3 px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
+              {/* Badge & Lock Row - Top right corner only */}
+              <div className="absolute top-3 right-3 flex items-center gap-2">
+                {'badge' in card && card.badge && (
+                  <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-0.5">
+                    {card.badge.text}
+                  </Badge>
+                )}
+                {'isPremium' in card && card.isPremium && (
+                  <Lock className="w-4 h-4 text-amber-600" />
+                )}
+              </div>
+
+              {/* Icon Container */}
+              <div className="flex items-start">
+                <div
+                  className={cn(
+                    'w-12 h-12 rounded-full flex items-center justify-center transition-colors',
+                    `bg-gradient-to-br ${card.iconGradient}`,
+                    '[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-white'
+                  )}
+                >
+                  {card.icon}
+                </div>
+              </div>
+
+              {/* Title & Description */}
+              <div className="space-y-1.5">
+                <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 leading-tight line-clamp-2">
+                  {card.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2">
+                  {card.description}
+                </CardDescription>
+              </div>
+            </CardHeader>
+          )}
+
+          {/* Dashboard Card: Original Design */}
+          {'metric' in card && !('assessmentType' in card) && !('serviceType' in card) && (
+            <CardHeader className="space-y-3 px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
+              <div className="absolute top-3 right-3 flex items-center gap-2">
+                {'badge' in card && card.badge && (
+                  <Badge variant={card.badge.variant || 'default'} className="text-xs font-medium px-2 py-0.5">
+                    {card.badge.text}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex items-start">
+                <div
+                  className={cn(
+                    'w-12 h-12 rounded-full flex items-center justify-center transition-colors',
+                    `bg-gradient-to-br ${card.iconGradient}`,
+                    '[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-white'
+                  )}
+                >
+                  {card.icon}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 leading-tight line-clamp-2">
+                  {card.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2">
+                  {card.description}
+                </CardDescription>
+              </div>
+            </CardHeader>
+          )}
+
+          <CardContent className="space-y-3 px-4 py-2 sm:px-6 sm:py-3">
+
+            {/* Assessment-Specific Content */}
+            {'assessmentType' in card && (
+              <>
+                {/* Progress Bar - Only if started */}
                 {(card as AssessmentCard).completionStatus && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">Progress</span>
-                      <span className="font-medium text-slate-900">
+                      <span className="text-slate-600 font-medium">Your Progress</span>
+                      <span className="font-bold text-orange-600">
                         {(card as AssessmentCard).completionStatus?.progress || 0}%
                       </span>
                     </div>
-                    {/* Subtle progress bar */}
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                       <div
-                        className="h-full transition-all duration-300 bg-blue-600"
+                        className="h-full transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600"
                         style={{
                           width: `${(card as AssessmentCard).completionStatus?.progress || 0}%`
                         }}
@@ -164,24 +214,19 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                     </div>
                   </div>
                 )}
-
-                {/* Benefit Statement - Subtle */}
-                <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-                  {(card as AssessmentCard).benefit}
-                </p>
               </>
             )}
 
             {/* Guidance-Specific Content */}
             {'serviceType' in card && (
               <>
-                {/* Peer Room Logo */}
+                {/* Peer Room Image */}
                 {card.id === 'community-qa' && (
-                  <div className="w-full h-24 sm:h-28 rounded-lg overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-3">
+                  <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-3">
                     <img
-                      src="/design/peer_room_logo.svg"
-                      alt="Peer Room Logo"
-                      className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                      src="/design/peer_room.jpg"
+                      alt="Peer Room"
+                      className="w-full h-full object-cover rounded-lg"
                       loading="lazy"
                     />
                   </div>
