@@ -68,19 +68,9 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
-          {/* Assessment Card: Large Image Hero */}
+          {/* Assessment Card */}
           {'assessmentType' in card && (
             <>
-              {/* Large Hero Image - No border, full width */}
-              <div className="w-full h-48 sm:h-56 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
-                <img
-                  src={`/design/${card.id}.jpg`}
-                  alt={card.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-
               {/* Card Content - Improved Hierarchy */}
               <CardHeader className="space-y-3 px-4 pt-4 pb-2 sm:px-6 sm:pt-5 sm:pb-3">
                 {/* Badge - Top right corner */}

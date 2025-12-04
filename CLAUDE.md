@@ -7,6 +7,10 @@
 > ```
 > See `.claude/TRACKING_SYSTEM.md` for full workflow guide.
 
+## Claude Code Workflow Rules
+
+**CRITICAL**: Skip plan mode and proceed directly with fixes to save time. Only use plan mode if explicitly requested by user.
+
 ## Project Overview
 
 Elimu Smart is an AI-ready career guidance platform for Kenyan students built with React 19, TypeScript, Vite, and shadcn UI.
