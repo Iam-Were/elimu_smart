@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,47 +10,62 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { GraduationCap, ChevronLeft } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { GraduationCap, ChevronLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { getParse } from '@/config/parse';
 
 interface StepAcademicsProps {
   initialData: {
     gradeLevel?: string;
     schoolName?: string;
     kcseSubjects?: string[];
+    schoolCode?: string;
   };
-  onNext: (data: { gradeLevel: string; schoolName: string; kcseSubjects: string[] }) => void;
+  onNext: (data: {
+    gradeLevel: string;
+    schoolName: string;
+    kcseSubjects: string[];
+    schoolCode?: string;
+    schoolId?: string;
+  }) => void;
   onBack: () => void;
 }
 
 const KCSE_SUBJECTS = [
-  'English',
-  'Kiswahili',
-  'Mathematics',
-  'Biology',
-  'Chemistry',
-  'Physics',
-  'Geography',
-  'History',
-  'CRE',
-  'IRE',
-  'HRE',
-  'Business Studies',
-  'Agriculture',
-  'Home Science',
-  'Computer Studies',
-  'French',
-  'German',
-  'Arabic',
-  'Music',
-  'Art & Design'
+  'English', 'Kiswahili', 'Mathematics', 'Biology', 'Chemistry', 'Physics',
+  'Geography', 'History', 'CRE', 'IRE', 'HRE', 'Business Studies',
+  'Agriculture', 'Home Science', 'Computer Studies', 'French', 'German',
+  'Arabic', 'Music', 'Art & Design'
 ];
 
 export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProps) {
   const [gradeLevel, setGradeLevel] = useState(initialData.gradeLevel || '');
   const [schoolName, setSchoolName] = useState(initialData.schoolName || '');
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(
-    initialData.kcseSubjects || []
-  );
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initialData.kcseSubjects || []);
+  const [schoolCode, setSchoolCode] = useState(initialData.schoolCode || '');
+  const [schoolLookup, setSchoolLookup] = useState<{ found: boolean; name?: string; id?: string } | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced school code lookup
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const code = schoolCode.trim().toUpperCase();
+    if (code.length < 5) { setSchoolLookup(null); return; }
+
+    debounceRef.current = setTimeout(async () => {
+      setLookingUp(true);
+      try {
+        const Parse = getParse();
+        const result = await Parse.Cloud.run('getSchoolByCode', { code });
+        setSchoolLookup(result.found ? { found: true, name: result.name, id: result.schoolId } : { found: false });
+      } catch {
+        setSchoolLookup(null);
+      } finally {
+        setLookingUp(false);
+      }
+    }, 600);
+  }, [schoolCode]);
 
   const toggleSubject = (subject: string) => {
     if (selectedSubjects.includes(subject)) {
@@ -67,16 +82,15 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
       alert('Please fill in all required fields');
       return;
     }
-
     if (selectedSubjects.length < 3) {
       alert('Please select at least 3 KCSE subjects');
       return;
     }
-
     onNext({
       gradeLevel,
       schoolName,
-      kcseSubjects: selectedSubjects
+      kcseSubjects: selectedSubjects,
+      ...(schoolCode && schoolLookup?.found ? { schoolCode: schoolCode.trim().toUpperCase(), schoolId: schoolLookup.id } : {}),
     });
   };
 
@@ -127,6 +141,49 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
             placeholder="e.g., Alliance High School"
             className="w-full h-12 text-base"
           />
+        </div>
+
+        {/* School Code (optional — for schools on the platform) */}
+        <div>
+          <Label htmlFor="schoolCode" className="text-base font-semibold mb-1 block">
+            School Code
+            <span className="text-sm font-normal text-muted-foreground ml-2">(optional)</span>
+          </Label>
+          <p className="text-xs text-muted-foreground mb-3">
+            If your school has partnered with Elimu Smart, enter the code your teacher gave you.
+          </p>
+          <div className="relative">
+            <Input
+              id="schoolCode"
+              type="text"
+              value={schoolCode}
+              onChange={(e) => setSchoolCode(e.target.value.toUpperCase())}
+              placeholder="e.g., ALLI23"
+              className="w-full h-12 text-base uppercase pr-10"
+              maxLength={10}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {lookingUp && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+              {!lookingUp && schoolLookup?.found && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+              {!lookingUp && schoolLookup?.found === false && <AlertCircle className="h-5 w-5 text-orange-500" />}
+            </div>
+          </div>
+
+          {schoolLookup?.found && schoolLookup.name && (
+            <Alert className="mt-2 bg-green-50 border-green-200 py-2">
+              <AlertDescription className="text-green-800 text-sm">
+                <CheckCircle2 className="h-4 w-4 inline mr-1" />
+                Found: <strong>{schoolLookup.name}</strong>
+              </AlertDescription>
+            </Alert>
+          )}
+          {schoolLookup?.found === false && (
+            <Alert className="mt-2 bg-orange-50 border-orange-200 py-2">
+              <AlertDescription className="text-orange-800 text-sm">
+                Code not found. You can still continue without it.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         {/* KCSE Subjects */}

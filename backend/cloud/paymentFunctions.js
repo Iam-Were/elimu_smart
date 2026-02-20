@@ -110,6 +110,29 @@ Parse.Cloud.define('mpesaCallback', async (request) => {
         // Don't fail the callback if email fails
       }
 
+      // Send invoice to parent / guardian if email is on file
+      const parentEmailAddr = subscription.get('parentEmail');
+      if (parentEmailAddr) {
+        try {
+          await emailService.sendEmail({
+            to: parentEmailAddr,
+            subject: `Payment Receipt - Elimu Smart Subscription`,
+            htmlContent: `
+              <h2>Payment Receipt</h2>
+              <p>This is to confirm payment for an Elimu Smart subscription on behalf of your child.</p>
+              <p><strong>Plan:</strong> ${subscription.get('planName')}</p>
+              <p><strong>Amount Paid:</strong> KES ${amount.toLocaleString()}</p>
+              <p><strong>M-Pesa Receipt:</strong> ${callbackResult.mpesaReceiptNumber}</p>
+              <p><strong>Valid Until:</strong> ${expiresAt.toLocaleDateString()}</p>
+              <p>Thank you for supporting your child's career guidance journey.</p>
+            `
+          });
+          console.log('✅ Parent invoice email sent to:', parentEmailAddr);
+        } catch (parentEmailError) {
+          console.error('⚠️  Parent invoice email failed:', parentEmailError.message);
+        }
+      }
+
       return {
         ResultCode: 0,
         ResultDesc: 'Success',
@@ -223,7 +246,7 @@ Parse.Cloud.define('initiateSubscriptionPayment', async (request) => {
     throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'Authentication required');
   }
 
-  const { planId, phoneNumber } = request.params;
+  const { planId, phoneNumber, parentEmail } = request.params;
 
   if (!planId || !phoneNumber) {
     throw new Parse.Error(Parse.Error.INVALID_QUERY, 'Plan ID and phone number required');
@@ -264,6 +287,7 @@ Parse.Cloud.define('initiateSubscriptionPayment', async (request) => {
     subscription.set('planName', plan.name);
     subscription.set('amount', plan.price);
     subscription.set('status', 'pending');
+    if (parentEmail) subscription.set('parentEmail', parentEmail);
     await subscription.save(null, { useMasterKey: true });
 
     // Initiate M-Pesa STK Push
@@ -330,6 +354,7 @@ Parse.Cloud.define('checkSubscriptionPaymentStatus', async (request) => {
         success: true,
         status: 'active',
         expiresAt: subscription.get('expiresAt'),
+        mpesaReceiptNumber: subscription.get('mpesaReceiptNumber') || null,
         message: 'Payment successful! Subscription activated.'
       };
     } else if (status === 'failed') {

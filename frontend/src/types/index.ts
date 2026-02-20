@@ -18,6 +18,9 @@ export interface User {
   parentRelationship?: string;
   parentConsentGiven?: boolean;
   parentConsentDate?: string;
+  schoolId?: string;
+  schoolCode?: string;
+  schoolName?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

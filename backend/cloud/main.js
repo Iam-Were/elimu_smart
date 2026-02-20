@@ -7151,10 +7151,8 @@ const mpesaService = require('../services/mpesaService');
 Parse.Cloud.define('getSubscriptionPlans', async () => {
   return {
     plans: [
-      { id: 'free', name: 'Free Plan', price: 0, duration: 'forever', features: ['Basic career assessment', 'Limited counselor access', 'Community forum'] },
-      { id: 'basic', name: 'Basic Plan', price: 500, duration: 'monthly', features: ['All Free features', 'Unlimited assessments', '3 counselor sessions/month', 'Ad-free'] },
-      { id: 'premium', name: 'Premium Plan', price: 1000, duration: 'monthly', features: ['All Basic features', 'Unlimited counselor sessions', 'Career roadmap', 'Priority support'], popular: true },
-      { id: 'annual', name: 'Annual Premium', price: 10000, duration: 'yearly', features: ['All Premium features', '2 months free', 'Exclusive webinars'], savings: 2000 }
+      { id: 'free', name: 'Free Plan', price: 0, duration: 'forever', features: ['Career assessments (RIASEC, Skills, University Finder)', 'Community Q&A', 'Career resource library'] },
+      { id: 'annual', name: 'Premium Annual', price: 1500, duration: 'yearly', features: ['Everything in Free', 'Unlimited counselor sessions', 'Direct messaging with counselors', 'Career roadmap & action plan', 'Priority support'], popular: true }
     ]
   };
 });
@@ -7658,6 +7656,10 @@ require('./paymentFunctions');
 // Parental Consent Functions (KDP Act 2019 / GDPR)
 // ============================================
 require('./consentFunctions');
+
+// School License & Tagging Functions
+// ============================================
+require('./schoolFunctions');
 
 // ============================================
 // Review & Rating System

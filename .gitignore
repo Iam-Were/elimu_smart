@@ -96,3 +96,9 @@ jspm_packages/
 # TernJS port file
 .tern-portnode_modules/
 */node_modules/
+
+# Parse Server logs
+backend/logs/
+
+# Secrets
+GITHUB_SECRETS_SETUP.md

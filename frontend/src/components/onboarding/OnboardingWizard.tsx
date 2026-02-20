@@ -13,6 +13,8 @@ interface OnboardingData {
   gradeLevel?: string;
   schoolName?: string;
   kcseSubjects?: string[];
+  schoolCode?: string;
+  schoolId?: string;
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
@@ -98,6 +100,15 @@ export function OnboardingWizard() {
 
       if (!user) {
         throw new Error('User not authenticated');
+      }
+
+      // Tag student to school if they provided a valid code
+      if (onboardingData.schoolCode && onboardingData.schoolId) {
+        try {
+          await Parse.Cloud.run('joinSchoolByCode', { code: onboardingData.schoolCode });
+        } catch (schoolErr) {
+          console.warn('Failed to join school, continuing:', schoolErr);
+        }
       }
 
       // Complete onboarding (triggers trial + counselor assignment)
@@ -196,7 +207,8 @@ export function OnboardingWizard() {
               initialData={{
                 gradeLevel: onboardingData.gradeLevel,
                 schoolName: onboardingData.schoolName,
-                kcseSubjects: onboardingData.kcseSubjects
+                kcseSubjects: onboardingData.kcseSubjects,
+                schoolCode: onboardingData.schoolCode
               }}
               onNext={handleNext}
               onBack={handleBack}
