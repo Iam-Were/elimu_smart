@@ -50,10 +50,14 @@ export const useSubscription = () => {
     }
   };
 
-  const initiatePayment = async (planId: string, phoneNumber: string) => {
+  const initiatePayment = async (planId: string, phoneNumber: string, parentEmail?: string) => {
     try {
       const Parse = getParse();
-      const result = await Parse.Cloud.run('initiateSubscriptionPayment', { planId, phoneNumber });
+      const result = await Parse.Cloud.run('initiateSubscriptionPayment', {
+        planId,
+        phoneNumber,
+        ...(parentEmail ? { parentEmail } : {})
+      });
       return result;
     } catch (err) {
       console.error('Error initiating payment:', err);
