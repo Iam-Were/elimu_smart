@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -48,7 +48,6 @@ export const CheckoutPage = () => {
   const [paymentStep, setPaymentStep] = useState<'idle' | 'initiating' | 'waiting' | 'verifying' | 'success'>('idle');
   const [checkoutRequestId, setCheckoutRequestId] = useState('');
   const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
 
   useEffect(() => {
@@ -66,15 +65,10 @@ export const CheckoutPage = () => {
   useEffect(() => {
     if (paymentStep !== 'waiting') return;
     setCountdown(60);
-    setCanResend(false);
 
     const timer = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setCanResend(true);
-          return 0;
-        }
+        if (prev <= 1) { clearInterval(timer); return 0; }
         return prev - 1;
       });
     }, 1000);
@@ -112,7 +106,7 @@ export const CheckoutPage = () => {
     setIsPhoneValid(validatePhoneNumber(formatted));
   };
 
-  const triggerPayment = useCallback(async () => {
+  const triggerPayment = async () => {
     if (!plan || !isPhoneValid) return;
 
     setIsProcessing(true);
@@ -138,7 +132,7 @@ export const CheckoutPage = () => {
       setIsProcessing(false);
       setPaymentStep('idle');
     }
-  }, [plan, isPhoneValid, phoneNumber, parentEmail, initiatePayment]);
+  };
 
   const pollPaymentStatus = (subscriptionId: string, currentPlan: typeof plans[0]) => {
     let attempts = 0;
