@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSubscription } from '@/hooks/useSubscription';
+import { getParse } from '@/config/parse';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,9 @@ import {
   RefreshCw,
   Download,
   Mail,
-  Receipt
+  Receipt,
+  Send,
+  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
@@ -35,12 +38,23 @@ interface ReceiptData {
   subscriptionId: string;
 }
 
+type ConsentState = 'loading' | 'required' | 'pending' | 'given';
+
 export const CheckoutPage = () => {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const { plans, initiatePayment, checkPaymentStatus } = useSubscription();
 
+  // Plan
   const [plan, setPlan] = useState<typeof plans[0] | null>(null);
+
+  // Consent
+  const [consentState, setConsentState] = useState<ConsentState>('loading');
+  const [consentEmail, setConsentEmail] = useState('');
+  const [consentName, setConsentName] = useState('');
+  const [consentSending, setConsentSending] = useState(false);
+
+  // Payment
   const [phoneNumber, setPhoneNumber] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(false);
@@ -50,51 +64,73 @@ export const CheckoutPage = () => {
   const [countdown, setCountdown] = useState(60);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
 
+  // Load selected plan
   useEffect(() => {
     if (plans.length === 0) return;
-    const selectedPlan = plans.find(p => p.id === planId);
-    if (!selectedPlan) {
+    const selected = plans.find(p => p.id === planId);
+    if (!selected) {
       toast.error('Invalid plan selected');
       navigate('/subscription');
       return;
     }
-    setPlan(selectedPlan);
+    setPlan(selected);
   }, [planId, plans, navigate]);
+
+  // Load consent status on mount
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const Parse = getParse();
+        const result = await Parse.Cloud.run('getConsentStatus');
+        if (result.parentEmail) {
+          setConsentEmail(result.parentEmail);
+          setParentEmail(result.parentEmail);
+        }
+        if (result.parentName) setConsentName(result.parentName);
+        if (result.parentPhone) {
+          const digits = result.parentPhone.replace(/\D/g, '');
+          let formatted = digits;
+          if (digits.startsWith('0')) formatted = '254' + digits.slice(1);
+          else if (!digits.startsWith('254')) formatted = '254' + digits;
+          const trimmed = formatted.slice(0, 12);
+          setPhoneNumber(trimmed);
+          setIsPhoneValid(/^254[17]\d{8}$/.test(trimmed));
+        }
+        setConsentState(result.consentGiven ? 'given' : 'required');
+      } catch {
+        // Don't block payment if consent check fails
+        setConsentState('given');
+      }
+    };
+    load();
+  }, []);
 
   // Countdown timer during 'waiting' — STK push expires after 60s
   useEffect(() => {
     if (paymentStep !== 'waiting') return;
     setCountdown(60);
-
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) { clearInterval(timer); return 0; }
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [paymentStep]);
 
   // Auto-navigate to dashboard after success receipt is shown
   useEffect(() => {
     if (paymentStep !== 'success') return;
-    const timer = setTimeout(() => {
-      navigate('/dashboard');
-    }, 6000);
+    const timer = setTimeout(() => navigate('/dashboard'), 6000);
     return () => clearTimeout(timer);
   }, [paymentStep, navigate]);
 
   const formatPhoneNumber = (value: string) => {
     const digits = value.replace(/\D/g, '');
     let formatted = digits;
-    if (digits.startsWith('0')) {
-      formatted = '254' + digits.slice(1);
-    } else if (digits.startsWith('254')) {
-      formatted = digits;
-    } else if (digits.startsWith('7') || digits.startsWith('1')) {
-      formatted = '254' + digits;
-    }
+    if (digits.startsWith('0')) formatted = '254' + digits.slice(1);
+    else if (digits.startsWith('254')) formatted = digits;
+    else if (digits.startsWith('7') || digits.startsWith('1')) formatted = '254' + digits;
     return formatted.slice(0, 12);
   };
 
@@ -106,16 +142,50 @@ export const CheckoutPage = () => {
     setIsPhoneValid(validatePhoneNumber(formatted));
   };
 
+  const handleSendConsent = async () => {
+    if (!consentEmail) {
+      toast.error('Please enter a parent / guardian email address');
+      return;
+    }
+    setConsentSending(true);
+    try {
+      const Parse = getParse();
+      await Parse.Cloud.run('requestParentConsent', {
+        parentEmail: consentEmail,
+        ...(consentName ? { parentName: consentName } : {}),
+      });
+      setConsentState('pending');
+      toast.success('Consent request sent', { description: `Email sent to ${consentEmail}` });
+    } catch (err) {
+      toast.error('Failed to send consent request', {
+        description: err instanceof Error ? err.message : 'Please try again',
+      });
+    } finally {
+      setConsentSending(false);
+    }
+  };
+
+  const handleCheckConsent = async () => {
+    try {
+      const Parse = getParse();
+      const result = await Parse.Cloud.run('getConsentStatus');
+      if (result.consentGiven) {
+        setConsentState('given');
+        toast.success('Consent confirmed! You can now complete payment.');
+      } else {
+        toast.info('Not yet confirmed. Ask your parent to check their email.');
+      }
+    } catch {
+      toast.error('Could not check consent status');
+    }
+  };
+
   const triggerPayment = async () => {
     if (!plan || !isPhoneValid) return;
-
     setIsProcessing(true);
     setPaymentStep('initiating');
-    setCanResend(false);
-
     try {
       const result = await initiatePayment(plan.id, phoneNumber, parentEmail || undefined);
-
       if (result.success) {
         setCheckoutRequestId(result.checkoutRequestId);
         setPaymentStep('waiting');
@@ -127,7 +197,7 @@ export const CheckoutPage = () => {
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Payment Failed', {
-        description: error instanceof Error ? error.message : 'Please try again'
+        description: error instanceof Error ? error.message : 'Please try again',
       });
       setIsProcessing(false);
       setPaymentStep('idle');
@@ -147,16 +217,14 @@ export const CheckoutPage = () => {
 
         if (status.success && status.status === 'active') {
           clearInterval(poll);
-
           setReceiptData({
             mpesaReceiptNumber: status.mpesaReceiptNumber || '—',
             amount: currentPlan.price,
             planName: currentPlan.name,
             expiresAt: new Date(status.expiresAt),
-            subscriptionId
+            subscriptionId,
           });
 
-          // Confetti burst
           const end = Date.now() + 2500;
           const burst = setInterval(() => {
             if (Date.now() > end) { clearInterval(burst); return; }
@@ -165,7 +233,7 @@ export const CheckoutPage = () => {
               startVelocity: 30,
               spread: 360,
               origin: { x: Math.random(), y: Math.random() - 0.2 },
-              colors: ['#f97316', '#22c55e', '#3b82f6', '#eab308']
+              colors: ['#f97316', '#22c55e', '#3b82f6', '#eab308'],
             });
           }, 250);
 
@@ -193,7 +261,8 @@ export const CheckoutPage = () => {
     }, 6000);
   };
 
-  if (!plan) {
+  // ── LOADING ───────────────────────────────────────────────────────────────
+  if (!plan || consentState === 'loading') {
     return (
       <div className="container mx-auto py-12 flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
@@ -201,7 +270,7 @@ export const CheckoutPage = () => {
     );
   }
 
-  // ── SUCCESS RECEIPT ──────────────────────────────────────────────────────
+  // ── SUCCESS RECEIPT ───────────────────────────────────────────────────────
   if (paymentStep === 'success' && receiptData) {
     return (
       <div className="container mx-auto py-12 px-4 flex flex-col items-center max-w-lg">
@@ -241,7 +310,7 @@ export const CheckoutPage = () => {
                 <span className="text-muted-foreground">Valid Until</span>
                 <span className="font-medium">
                   {receiptData.expiresAt.toLocaleDateString('en-KE', {
-                    year: 'numeric', month: 'short', day: 'numeric'
+                    year: 'numeric', month: 'short', day: 'numeric',
                   })}
                 </span>
               </div>
@@ -256,11 +325,7 @@ export const CheckoutPage = () => {
             <Separator />
 
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate('/billing')}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => navigate('/billing')}>
                 <Download className="mr-2 h-4 w-4" />
                 Download Invoice
               </Button>
@@ -281,7 +346,141 @@ export const CheckoutPage = () => {
     );
   }
 
-  // ── MAIN CHECKOUT ────────────────────────────────────────────────────────
+  // ── CONSENT GATE ──────────────────────────────────────────────────────────
+  if (consentState === 'required' || consentState === 'pending') {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <Button variant="ghost" onClick={() => navigate('/subscription')} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Plans
+        </Button>
+
+        <div className="max-w-lg mx-auto space-y-6">
+          {/* Brand header */}
+          <div className="text-center">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-3">
+              <ShieldCheck className="h-7 w-7 text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">Parent Consent Required</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              You're subscribing to <strong>{plan.name}</strong> · KES {plan.price.toLocaleString()}
+            </p>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6 space-y-5">
+              {consentState === 'required' && (
+                <>
+                  <Alert className="bg-blue-50 border-blue-200">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800 text-sm">
+                      Under the Kenya Data Protection Act 2019, students under 18 require a parent
+                      or guardian's consent before we can activate a paid subscription. We'll send
+                      a quick email — it only takes a minute to approve.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="consentName">Parent / Guardian Name</Label>
+                      <Input
+                        id="consentName"
+                        placeholder="e.g. Jane Wanjiru"
+                        value={consentName}
+                        onChange={e => setConsentName(e.target.value)}
+                        disabled={consentSending}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="consentEmail">
+                        Parent / Guardian Email <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="consentEmail"
+                        type="email"
+                        placeholder="parent@example.com"
+                        value={consentEmail}
+                        onChange={e => setConsentEmail(e.target.value)}
+                        disabled={consentSending}
+                        autoFocus
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        A consent link will be sent to this address
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    onClick={handleSendConsent}
+                    disabled={!consentEmail || consentSending}
+                  >
+                    {consentSending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Consent Request
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
+
+              {consentState === 'pending' && (
+                <>
+                  <div className="flex flex-col items-center py-4 gap-3 text-center">
+                    <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center">
+                      <Mail className="h-7 w-7 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Consent Request Sent</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Email sent to <strong>{consentEmail}</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="text-sm">
+                      Ask your parent to open the email from Elimu Smart and click{' '}
+                      <strong>"I Give My Consent"</strong>. The link is valid for 7 days.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={handleCheckConsent}
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      My Parent Has Consented — Check Now
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setConsentState('required');
+                        setConsentEmail('');
+                      }}
+                    >
+                      Send to a Different Email
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ── MAIN CHECKOUT (consent given) ─────────────────────────────────────────
   return (
     <div className="container mx-auto py-8 px-4">
       <Button
@@ -355,17 +554,17 @@ export const CheckoutPage = () => {
                 <Shield className="h-6 w-6 text-green-600 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-green-900">Secure M-Pesa Payment</p>
-                  <p className="text-xs text-green-700">PCI-DSS compliant • 256-bit encryption</p>
+                  <p className="text-xs text-green-700">PCI-DSS compliant · 256-bit encryption</p>
                 </div>
                 <Badge variant="outline" className="border-green-600 text-green-700 ml-auto">
                   Verified
                 </Badge>
               </div>
 
-              {/* Phone input */}
+              {/* Parent / Guardian M-Pesa number */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-base font-medium">
-                  M-Pesa Phone Number
+                  Parent / Guardian M-Pesa Number
                 </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -392,16 +591,16 @@ export const CheckoutPage = () => {
                 </div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Info className="h-3 w-3" />
-                  Enter your Safaricom number (7XX or 1XX format)
+                  Your parent's Safaricom number (7XX or 1XX format)
                 </p>
               </div>
 
-              {/* Parent / Guardian email (optional) */}
+              {/* Parent email (optional invoice CC) */}
               <div className="space-y-2">
                 <Label htmlFor="parentEmail" className="text-sm font-medium flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   Parent / Guardian Email
-                  <Badge variant="outline" className="text-xs py-0">Optional</Badge>
+                  <Badge variant="outline" className="text-xs py-0">Invoice</Badge>
                 </Label>
                 <Input
                   id="parentEmail"
@@ -413,7 +612,7 @@ export const CheckoutPage = () => {
                   className="h-10"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Invoice will be emailed to this address after payment
+                  Receipt will be emailed to this address after payment
                 </p>
               </div>
 
@@ -426,13 +625,13 @@ export const CheckoutPage = () => {
                       {paymentStep === 'initiating' && (
                         <>
                           <p className="font-semibold">Step 1/3: Sending Prompt</p>
-                          <p className="text-sm">Dispatching M-Pesa prompt to {phoneNumber}...</p>
+                          <p className="text-sm">Dispatching M-Pesa prompt to +{phoneNumber}...</p>
                         </>
                       )}
                       {paymentStep === 'waiting' && (
                         <>
                           <p className="font-semibold">Step 2/3: Waiting for PIN</p>
-                          <p className="text-sm">Enter your M-Pesa PIN on your phone</p>
+                          <p className="text-sm">Enter your M-Pesa PIN on the phone</p>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-2 text-xs text-blue-700">
                               <Smartphone className="h-3 w-3" />

@@ -7655,6 +7655,11 @@ require('./careerFunctions');
 require('./paymentFunctions');
 
 // ============================================
+// Parental Consent Functions (KDP Act 2019 / GDPR)
+// ============================================
+require('./consentFunctions');
+
+// ============================================
 // Review & Rating System
 // ============================================
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StepWelcome } from './StepWelcome';
 import { StepAcademics } from './StepAcademics';
+import { StepParentGuardian } from './StepParentGuardian';
 import { StepCareerInterests } from './StepCareerInterests';
 import { StepGoals } from './StepGoals';
 import { StepComplete } from './StepComplete';
@@ -12,6 +13,10 @@ interface OnboardingData {
   gradeLevel?: string;
   schoolName?: string;
   kcseSubjects?: string[];
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelationship?: string;
   careerInterests?: string[];
   universityPreferences?: string[];
   budgetConstraints?: string;
@@ -29,7 +34,7 @@ export function OnboardingWizard() {
   } | null>(null);
   const navigate = useNavigate();
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
   // Restore Parse session on mount
@@ -97,7 +102,11 @@ export function OnboardingWizard() {
 
       // Complete onboarding (triggers trial + counselor assignment)
       const result = await Parse.Cloud.run('completeOnboarding', {
-        userId: user.id
+        userId: user.id,
+        parentName: onboardingData.parentName,
+        parentEmail: onboardingData.parentEmail,
+        parentPhone: onboardingData.parentPhone,
+        parentRelationship: onboardingData.parentRelationship
       });
 
       // Set assigned counselor info
@@ -110,7 +119,7 @@ export function OnboardingWizard() {
       }
 
       // Show completion step
-      setCurrentStep(5);
+      setCurrentStep(6);
 
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -162,7 +171,7 @@ export function OnboardingWizard() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Progress Bar */}
-        {currentStep < 5 && (
+        {currentStep < 6 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-gray-700">
@@ -195,6 +204,20 @@ export function OnboardingWizard() {
           )}
 
           {currentStep === 3 && (
+            <StepParentGuardian
+              initialData={{
+                parentName: onboardingData.parentName,
+                parentEmail: onboardingData.parentEmail,
+                parentPhone: onboardingData.parentPhone,
+                parentRelationship: onboardingData.parentRelationship
+              }}
+              onNext={handleNext}
+              onBack={handleBack}
+              onSkip={handleSkip}
+            />
+          )}
+
+          {currentStep === 4 && (
             <StepCareerInterests
               initialData={{
                 careerInterests: onboardingData.careerInterests
@@ -204,7 +227,7 @@ export function OnboardingWizard() {
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <StepGoals
               initialData={{
                 universityPreferences: onboardingData.universityPreferences,
@@ -217,7 +240,7 @@ export function OnboardingWizard() {
             />
           )}
 
-          {currentStep === 5 && assignedCounselor && (
+          {currentStep === 6 && assignedCounselor && (
             <StepComplete
               counselorName={assignedCounselor.name}
               counselorEmail={assignedCounselor.email}
@@ -227,7 +250,7 @@ export function OnboardingWizard() {
         </div>
 
         {/* Footer */}
-        {currentStep < 5 && (
+        {currentStep < 6 && (
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Your information is secure and will only be used to personalize your experience

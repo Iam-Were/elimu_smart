@@ -12,6 +12,12 @@ export interface User {
   location?: string;
   tagline?: string;
   isPremium?: boolean;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelationship?: string;
+  parentConsentGiven?: boolean;
+  parentConsentDate?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

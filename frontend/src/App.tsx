@@ -26,6 +26,7 @@ import RegisterPage from './pages/RegisterPage';
 
 // Lazy-loaded pages (code-split by route)
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ConsentPage = lazy(() => import('./pages/ConsentPage').then(m => ({ default: m.ConsentPage })));
 const OnboardingWizard = lazy(() => import('./components/onboarding/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
 
 // Student pages
@@ -174,6 +175,7 @@ const AppContent: React.FC = () => {
         <Route path="/login" element={<LoginPageShadcn />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/consent/:token" element={<ConsentPage />} />
 
         {/* Onboarding route (authenticated but before main app) */}
         <Route path="/onboarding" element={<OnboardingWizard />} />
