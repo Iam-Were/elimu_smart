@@ -22,10 +22,7 @@ module.exports = {
 
       // Graceful shutdown
       kill_timeout: 5000,
-      listen_timeout: 5000,
-
-      // Cron restart (optional - restart every night at 3 AM)
-      cron_restart: '0 3 * * *'
+      listen_timeout: 5000
     },
 
     // PRODUCTION Parse Dashboard

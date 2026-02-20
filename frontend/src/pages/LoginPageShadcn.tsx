@@ -53,7 +53,9 @@ export const LoginPageShadcn: React.FC = () => {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const msg = err instanceof Error ? err.message : 'Login failed';
+      const isFetchError = msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('connect');
+      setError(isFetchError ? 'Unable to reach the server. Please check your connection and try again.' : msg);
     }
   };
 

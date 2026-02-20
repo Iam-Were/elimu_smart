@@ -12,7 +12,8 @@ import {
   Search,
   TrendingUp,
   Zap,
-  FolderKanban
+  FolderKanban,
+  Building2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -243,7 +244,7 @@ const AdminPortal: React.FC = () => {
         </div>
 
         {/* Secondary Admin Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
 
           {/* Content Management - NEW */}
           <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all duration-300">
@@ -321,11 +322,28 @@ const AdminPortal: React.FC = () => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Maintenance</h4>
               <p className="text-sm text-gray-600 mb-4">System maintenance and optimization tools</p>
-              <button 
+              <button
                 onClick={() => navigate('/admin/maintenance-tools')}
                 className="text-sm text-purple-600 hover:text-purple-800 font-medium"
               >
                 Maintain →
+              </button>
+            </div>
+          </div>
+
+          {/* School Licenses */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Building2 className="h-6 w-6 text-blue-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-2">School Licenses</h4>
+              <p className="text-sm text-gray-600 mb-4">Manage schools, license codes and student tagging</p>
+              <button
+                onClick={() => navigate('/admin/schools')}
+                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                Manage Schools →
               </button>
             </div>
           </div>

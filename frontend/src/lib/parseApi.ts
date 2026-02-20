@@ -16,9 +16,9 @@ interface ParseConfig {
 }
 
 const parseConfig: ParseConfig = {
-  serverURL: import.meta.env.VITE_PARSE_SERVER_URL || 'http://localhost:1337/parse',
-  applicationId: import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-local-dev',
-  javascriptKey: import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-dev'
+  serverURL: import.meta.env.VITE_PARSE_SERVER_URL || 'https://elimu-smart.co.ke/parse',
+  applicationId: import.meta.env.VITE_PARSE_APP_ID || 'elimu-smart-production',
+  javascriptKey: import.meta.env.VITE_PARSE_JS_KEY || 'elimu-smart-js-key-prod'
 };
 
 // Parse API headers

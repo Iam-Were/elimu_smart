@@ -86,6 +86,7 @@ const SystemConfigurationPage = lazy(() => import('./pages/admin/SystemConfigura
 const AuditLogPage = lazy(() => import('./pages/admin/AuditLogPage').then(m => ({ default: m.AuditLogPage })));
 const SecurityMonitoringPage = lazy(() => import('./pages/admin/SecurityMonitoringPage').then(m => ({ default: m.SecurityMonitoringPage })));
 const MaintenanceToolsPage = lazy(() => import('./pages/admin/MaintenanceToolsPage').then(m => ({ default: m.MaintenanceToolsPage })));
+const SchoolsManagementPage = lazy(() => import('./pages/admin/SchoolsManagementPage').then(m => ({ default: m.SchoolsManagementPage })));
 
 import './styles/globals.css';
 
@@ -232,6 +233,7 @@ const AppContent: React.FC = () => {
           <Route path="/admin/audit-log" element={<AuditLogPage />} />
           <Route path="/admin/security-monitoring" element={<SecurityMonitoringPage />} />
           <Route path="/admin/maintenance-tools" element={<MaintenanceToolsPage />} />
+          <Route path="/admin/schools" element={<SchoolsManagementPage />} />
         </Route>
 
         {/* Catch-all: redirect to landing page */}

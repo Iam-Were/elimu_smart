@@ -149,6 +149,59 @@ Parse.Cloud.define('getSchoolStudents', async (request) => {
 });
 
 /**
+ * List all schools — admin dashboard
+ */
+Parse.Cloud.define('listSchools', async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Not authenticated');
+  const role = request.user.get('role');
+  if (!['admin', 'super_admin'].includes(role)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Admin access required');
+  }
+
+  const { page = 0, limit = 100, search } = request.params;
+  const School = Parse.Object.extend('School');
+  const query = new Parse.Query(School);
+
+  if (search) {
+    const nameQ = new Parse.Query(School).contains('name', search);
+    const codeQ = new Parse.Query(School).contains('code', search.toUpperCase());
+    const combined = Parse.Query.or(nameQ, codeQ);
+    combined.limit(limit);
+    combined.skip(page * limit);
+    combined.descending('createdAt');
+    const [schools, total] = await Promise.all([combined.find({ useMasterKey: true }), combined.count({ useMasterKey: true })]);
+    return {
+      schools: schools.map(s => ({ id: s.id, name: s.get('name'), code: s.get('code'), county: s.get('county'), type: s.get('type'), contactName: s.get('contactName') || '', contactEmail: s.get('contactEmail') || '', contactPhone: s.get('contactPhone') || '', seatLimit: s.get('seatLimit') || 0, isActive: s.get('isActive'), createdAt: s.get('createdAt') })),
+      total,
+      page,
+    };
+  }
+
+  query.limit(limit);
+  query.skip(page * limit);
+  query.descending('createdAt');
+  const [schools, total] = await Promise.all([query.find({ useMasterKey: true }), query.count({ useMasterKey: true })]);
+
+  return {
+    schools: schools.map(s => ({
+      id: s.id,
+      name: s.get('name'),
+      code: s.get('code'),
+      county: s.get('county'),
+      type: s.get('type'),
+      contactName: s.get('contactName') || '',
+      contactEmail: s.get('contactEmail') || '',
+      contactPhone: s.get('contactPhone') || '',
+      seatLimit: s.get('seatLimit') || 0,
+      isActive: s.get('isActive'),
+      createdAt: s.get('createdAt'),
+    })),
+    total,
+    page,
+  };
+});
+
+/**
  * Get school license status (seat usage)
  */
 Parse.Cloud.define('getSchoolLicenseStatus', async (request) => {
