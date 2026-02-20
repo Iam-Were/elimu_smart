@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Plus, Search, Building2, Users, Crown, Copy, CheckCircle2 } from 'lucide-react';
 
 interface School {
@@ -48,7 +48,7 @@ const SCHOOL_TYPES = ['public', 'private', 'national', 'county', 'sub-county'];
 const defaultForm = { name: '', county: '', type: 'public', contactName: '', contactEmail: '', contactPhone: '', seatLimit: '0' };
 
 export const SchoolsManagement: React.FC = () => {
-  const { toast } = useToast();
+
   const [schools, setSchools] = useState<School[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -68,11 +68,11 @@ export const SchoolsManagement: React.FC = () => {
       const result = await Parse.Cloud.run('listSchools', { limit: 100 });
       setSchools(result.schools || []);
     } catch {
-      toast({ title: 'Failed to load schools', variant: 'destructive' });
+      toast.error('Failed to load schools');
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => { fetchSchools(); }, [fetchSchools]);
 
@@ -98,7 +98,7 @@ export const SchoolsManagement: React.FC = () => {
       setStudents(studResult.students || []);
       setLicenseStatus(licResult);
     } catch {
-      toast({ title: 'Failed to load school details', variant: 'destructive' });
+      toast.error('Failed to load school details');
     } finally {
       setSheetLoading(false);
     }
@@ -106,7 +106,7 @@ export const SchoolsManagement: React.FC = () => {
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.county.trim()) {
-      toast({ title: 'School name and county are required', variant: 'destructive' });
+      toast.error('School name and county are required');
       return;
     }
     setCreating(true);
@@ -121,12 +121,12 @@ export const SchoolsManagement: React.FC = () => {
         contactPhone: form.contactPhone.trim(),
         seatLimit: parseInt(form.seatLimit) || 0,
       });
-      toast({ title: `School created! Share this code: ${result.code}` });
+      toast.success(`School created! Share this code: ${result.code}`);
       setShowCreateDialog(false);
       setForm(defaultForm);
       fetchSchools();
     } catch (err: unknown) {
-      toast({ title: 'Failed to create school', description: (err as Error).message, variant: 'destructive' });
+      toast.error('Failed to create school', { description: (err as Error).message });
     } finally {
       setCreating(false);
     }
