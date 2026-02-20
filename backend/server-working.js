@@ -13,9 +13,17 @@ if (!process.env.DOTENV_LOADED) {
 
 const app = express();
 
-// Enable CORS for frontend development
+// Enable CORS for frontend — production domains + local dev ports
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177'],
+  origin: [
+    'https://elimu-smart.co.ke',
+    'https://www.elimu-smart.co.ke',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
+    'http://localhost:5177',
+  ],
   credentials: true
 }));
 
