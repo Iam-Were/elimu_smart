@@ -72,6 +72,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register: registerField,
@@ -94,12 +95,17 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
+    setServerError(null);
     try {
       await register(data);
-      // Navigate immediately - App.tsx checks localStorage directly
       navigate('/dashboard');
     } catch (error: unknown) {
-      console.error('Registration error:', error instanceof Error ? error.message : error);
+      const msg = error instanceof Error ? error.message : 'Registration failed';
+      if (msg.includes('already exists') || msg.includes('Account already')) {
+        setServerError('An account with this email already exists. Please sign in instead.');
+      } else {
+        setServerError(msg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -264,6 +270,13 @@ export default function RegisterPage() {
                 <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
               )}
             </div>
+
+            {/* Server Error */}
+            {serverError && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                {serverError}
+              </div>
+            )}
 
             {/* Submit Button */}
             <Button
