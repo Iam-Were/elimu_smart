@@ -10,8 +10,9 @@ import { Label } from '@/components/ui/label';
 import Button from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, X, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, X, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -102,9 +103,12 @@ export default function RegisterPage() {
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Registration failed';
       if (msg.includes('already exists') || msg.includes('Account already')) {
-        setServerError('An account with this email already exists. Please sign in instead.');
+        const errMsg = 'An account with this email already exists. Please sign in instead.';
+        setServerError(errMsg);
+        toast.error('Account already exists', { description: errMsg });
       } else {
         setServerError(msg);
+        toast.error('Registration failed', { description: msg });
       }
     } finally {
       setIsLoading(false);
@@ -123,6 +127,14 @@ export default function RegisterPage() {
         
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Server Error */}
+            {serverError && (
+              <div className="flex items-start gap-3 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{serverError}</span>
+              </div>
+            )}
+
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -270,13 +282,6 @@ export default function RegisterPage() {
                 <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
               )}
             </div>
-
-            {/* Server Error */}
-            {serverError && (
-              <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-                {serverError}
-              </div>
-            )}
 
             {/* Submit Button */}
             <Button
