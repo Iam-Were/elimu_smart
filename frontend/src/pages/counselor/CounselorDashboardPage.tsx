@@ -109,7 +109,7 @@ const CounselorDashboardPage: React.FC = () => {
 
           {/* Footer Insights */}
           {!isLoading && !error && performance && (
-            <Card className="bg-white dark:bg-slate-900 border-slate-200/30 dark:border-slate-700/30">
+            <Card className="bg-card border-border/30">
               <CardContent className="p-3 sm:p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-8">
                   <div className="space-y-3">
@@ -125,7 +125,9 @@ const CounselorDashboardPage: React.FC = () => {
                     <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-2">
                       <li className="flex items-center gap-2">
                         <div className="h-2 w-2 bg-emerald-500 dark:bg-emerald-400 rounded-full"></div>
-                        Maintained {performance.completionRate}% session completion rate
+                        {performance.completionRate > 0
+                          ? `Maintained ${performance.completionRate}% session completion rate`
+                          : 'Getting started — book your first session with a student'}
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="h-2 w-2 bg-purple-500 dark:bg-purple-400 rounded-full"></div>

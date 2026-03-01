@@ -184,7 +184,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
         </div>
 
         {/* Welcome Back Card - View Only (edit on /profile) */}
-        <Card className="border-0 md:border md:border-gray-200 shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-white rounded-2xl">
+        <Card className="border-0 md:border shadow-sm mx-4 md:mx-auto max-w-4xl -mt-16 relative bg-card rounded-2xl">
 
           <CardContent className="pt-6 pb-6 px-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -207,18 +207,18 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
               {/* Welcome Message & Profile Info - Inline with profile picture */}
               <div className="flex-1 text-center md:text-left">
                 {/* Welcome Back Message */}
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-card-foreground mb-2">
                   Welcome Back, {userData?.firstName}!
                 </h1>
 
                 <div className="space-y-1 mb-4">
-                  <p className="text-base text-orange-600 font-medium">
+                  <p className="text-base text-orange-600 dark:text-orange-400 font-medium">
                     {userData?.grade || 'Form 4 Student'}
                   </p>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-muted-foreground">
                     {userData?.school || 'Student'}
                   </p>
-                  <p className="text-gray-600 mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                  <p className="text-muted-foreground mt-2 flex items-center justify-center md:justify-start gap-1.5 text-sm">
                     <MapPin className="h-4 w-4" />
                     {userData?.location || 'Nairobi, Kenya'}
                   </p>
@@ -228,31 +228,31 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                 {careerReadinessScore && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                     {/* Profile Completion */}
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 rounded-xl p-4 border border-blue-200 dark:border-blue-900">
                       <div className="flex items-center gap-2 mb-2">
-                        <User className="w-4 h-4 text-blue-600" />
-                        <span className="text-xs font-medium text-blue-900">Profile</span>
+                        <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-xs font-medium text-blue-900 dark:text-blue-200">Profile</span>
                       </div>
-                      <p className="text-2xl font-bold text-blue-900 mb-2">{userData?.profileCompletion || 0}%</p>
+                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-200 mb-2">{userData?.profileCompletion || 0}%</p>
                       {/* Progress Bar */}
-                      <div className="w-full bg-blue-200 rounded-full h-2 mb-1">
+                      <div className="w-full bg-blue-200 dark:bg-blue-900 rounded-full h-2 mb-1">
                         <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${userData?.profileCompletion || 0}%` }}
                         />
                       </div>
-                      <p className="text-xs text-blue-700">Complete</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">Complete</p>
                     </div>
 
                     {/* Activity Streak */}
                     {userActivities && userActivities.length > 0 && (
-                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50 rounded-xl p-4 border border-orange-200 dark:border-orange-900">
                         <div className="flex items-center gap-2 mb-1">
-                          <Activity className="w-4 h-4 text-orange-600" />
-                          <span className="text-xs font-medium text-orange-900">Activity</span>
+                          <Activity className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          <span className="text-xs font-medium text-orange-900 dark:text-orange-200">Activity</span>
                         </div>
-                        <p className="text-2xl font-bold text-orange-900">{userActivities.length} days</p>
-                        <p className="text-xs text-orange-700">Active Streak 🔥</p>
+                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-200">{userActivities.length} days</p>
+                        <p className="text-xs text-orange-700 dark:text-orange-300">Active Streak 🔥</p>
                       </div>
                     )}
 
@@ -260,33 +260,33 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                     <div className={cn(
                       "rounded-xl p-4 border",
                       careerReadinessScore.overall >= 70
-                        ? "bg-gradient-to-br from-green-50 to-green-100 border-green-200"
+                        ? "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-green-200 dark:border-green-900"
                         : careerReadinessScore.overall >= 40
-                        ? "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
-                        : "bg-gradient-to-br from-red-50 to-red-100 border-red-200"
+                        ? "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50 border-amber-200 dark:border-amber-900"
+                        : "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/50 border-red-200 dark:border-red-900"
                     )}>
                       <div className="flex items-center gap-2 mb-2">
                         <Activity className={cn(
                           "w-4 h-4",
-                          careerReadinessScore.overall >= 70 ? "text-green-600" :
-                          careerReadinessScore.overall >= 40 ? "text-amber-600" : "text-red-600"
+                          careerReadinessScore.overall >= 70 ? "text-green-600 dark:text-green-400" :
+                          careerReadinessScore.overall >= 40 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"
                         )} />
                         <span className={cn(
                           "text-xs font-medium",
-                          careerReadinessScore.overall >= 70 ? "text-green-900" :
-                          careerReadinessScore.overall >= 40 ? "text-amber-900" : "text-red-900"
+                          careerReadinessScore.overall >= 70 ? "text-green-900 dark:text-green-200" :
+                          careerReadinessScore.overall >= 40 ? "text-amber-900 dark:text-amber-200" : "text-red-900 dark:text-red-200"
                         )}>Career Readiness</span>
                       </div>
                       <p className={cn(
                         "text-2xl font-bold mb-2",
-                        careerReadinessScore.overall >= 70 ? "text-green-900" :
-                        careerReadinessScore.overall >= 40 ? "text-amber-900" : "text-red-900"
+                        careerReadinessScore.overall >= 70 ? "text-green-900 dark:text-green-200" :
+                        careerReadinessScore.overall >= 40 ? "text-amber-900 dark:text-amber-200" : "text-red-900 dark:text-red-200"
                       )}>{careerReadinessScore.overall}%</p>
                       {/* Progress Bar */}
                       <div className={cn(
                         "w-full rounded-full h-2 mb-1",
-                        careerReadinessScore.overall >= 70 ? "bg-green-200" :
-                        careerReadinessScore.overall >= 40 ? "bg-amber-200" : "bg-red-200"
+                        careerReadinessScore.overall >= 70 ? "bg-green-200 dark:bg-green-900" :
+                        careerReadinessScore.overall >= 40 ? "bg-amber-200 dark:bg-amber-900" : "bg-red-200 dark:bg-red-900"
                       )}>
                         <div
                           className={cn(
@@ -299,8 +299,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                       </div>
                       <p className={cn(
                         "text-xs",
-                        careerReadinessScore.overall >= 70 ? "text-green-700" :
-                        careerReadinessScore.overall >= 40 ? "text-amber-700" : "text-red-700"
+                        careerReadinessScore.overall >= 70 ? "text-green-700 dark:text-green-300" :
+                        careerReadinessScore.overall >= 40 ? "text-amber-700 dark:text-amber-300" : "text-red-700 dark:text-red-300"
                       )}>
                         {careerReadinessScore.overall >= 70 ? "Excellent!" :
                          careerReadinessScore.overall >= 40 ? "Good Progress" : "Getting Started"}

@@ -59,6 +59,7 @@ const ProfessionalNetworkingHub = lazy(() => import('./components/professional/P
 const CommunityQA = lazy(() => import('./components/guidance/CommunityQA'));
 const CareerResources = lazy(() => import('./components/guidance/CareerResources'));
 const BookSession = lazy(() => import('./components/guidance/BookSession'));
+const CrisisResourcesPage = lazy(() => import('./pages/CrisisResourcesPage'));
 
 // Counselor pages
 const CounselorDashboardPage = lazy(() => import('./pages/counselor/CounselorDashboardPage'));
@@ -148,6 +149,11 @@ const ProtectedRoutes: React.FC = () => {
     return <Navigate to="/onboarding" replace />;
   }
 
+  // Block students from counselor routes
+  if (userRole === 'student' && window.location.pathname.startsWith('/counselor')) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <Sprint18Layout>
       {/* Trial banner for students with active trials */}
@@ -204,6 +210,8 @@ const AppContent: React.FC = () => {
           <Route path="/guidance/community-qa" element={<CommunityQA />} />
           <Route path="/guidance/resources" element={<CareerResources />} />
           <Route path="/guidance/book-session" element={<BookSession />} />
+          <Route path="/guidance/crisis" element={<CrisisResourcesPage />} />
+          <Route path="/assessment/riasec" element={<FreeRiasecAssessment />} />
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/messages" element={<InboxPage />} />
           <Route path="/student/quick-questions" element={<QuickQuestions />} />

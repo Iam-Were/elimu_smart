@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,11 +91,11 @@ const getUrgencyLevel = (priorityScore: number): 'critical' | 'high' | 'medium' 
 const getPriorityStyles = (priority: string) => {
   switch (priority) {
     case 'high':
-      return 'ring-2 ring-amber-200 bg-gradient-to-br from-amber-25 to-white shadow-amber-100';
+      return 'ring-2 ring-amber-200 dark:ring-amber-800 shadow-amber-100';
     case 'medium':
-      return 'ring-1 ring-amber-100 bg-gradient-to-br from-amber-25/50 to-white';
+      return 'ring-1 ring-amber-100 dark:ring-amber-900';
     default:
-      return 'ring-1 ring-slate-200 bg-white';
+      return 'ring-1 ring-slate-200 dark:ring-slate-700';
   }
 };
 
@@ -130,6 +131,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
   cardOffset = 0,
   useCarousel = false
 }) => {
+  const navigate = useNavigate();
   const { stats, isLoading, error } = useCounselorStats();
 
   // Show loading state
@@ -332,10 +334,10 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-800">
+        <h1 className="text-3xl font-bold tracking-tight text-card-foreground">
           Counselor Dashboard
         </h1>
-        <p className="text-slate-600 text-lg">
+        <p className="text-muted-foreground text-lg">
           Manage your students, sessions, and track your counseling effectiveness
         </p>
       </div>
@@ -356,45 +358,45 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
           ))
         ) : (
           <>
-            <Card className={`bg-gradient-to-r from-amber-25 to-amber-50 border-amber-100 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300' : ''}`}>
+            <Card className={`bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300 dark:ring-amber-700' : ''}`}>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-700">{stats.assignedStudents}</div>
-                <div className="text-sm text-amber-600">Assigned Students</div>
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{stats.assignedStudents}</div>
+                <div className="text-sm text-amber-600 dark:text-amber-400">Assigned Students</div>
                 {getDerivedMetrics.urgentStudents > 0 && (
-                  <div className="text-xs text-amber-500 mt-1">
+                  <div className="text-xs text-amber-500 dark:text-amber-400 mt-1">
                     {getDerivedMetrics.urgentStudents} urgent
                   </div>
                 )}
               </CardContent>
             </Card>
-            
-            <Card className={`bg-gradient-to-r from-orange-25 to-orange-50 border-orange-100 ${stats.activeChats > 5 ? 'ring-2 ring-orange-300' : ''}`}>
+
+            <Card className={`bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900 ${stats.activeChats > 5 ? 'ring-2 ring-orange-300 dark:ring-orange-700' : ''}`}>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-700">{stats.activeChats}</div>
-                <div className="text-sm text-orange-600">Active Chats</div>
+                <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.activeChats}</div>
+                <div className="text-sm text-orange-600 dark:text-orange-400">Active Chats</div>
                 {stats.unreadMessages > 0 && (
-                  <div className="text-xs text-orange-500 mt-1">
+                  <div className="text-xs text-orange-500 dark:text-orange-400 mt-1">
                     {stats.unreadMessages} unread
                   </div>
                 )}
               </CardContent>
             </Card>
-            
-            <Card className="bg-gradient-to-r from-blue-25 to-blue-50 border-blue-100">
+
+            <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-700">{stats.todaySessions}</div>
-                <div className="text-sm text-blue-600">Today's Sessions</div>
-                <div className="text-xs text-blue-500 mt-1">
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.todaySessions}</div>
+                <div className="text-sm text-blue-600 dark:text-blue-400">Today's Sessions</div>
+                <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
                   KES {stats.todayEarnings.toLocaleString()}
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="bg-gradient-to-r from-emerald-25 to-emerald-50 border-emerald-100">
+
+            <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-700">{stats.premiumStudents}</div>
-                <div className="text-sm text-emerald-600">Premium Students</div>
-                <div className="text-xs text-emerald-500 mt-1">
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats.premiumStudents}</div>
+                <div className="text-sm text-emerald-600 dark:text-emerald-400">Premium Students</div>
+                <div className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">
                   KES {stats.monthlyEarnings.toLocaleString()}/mo
                 </div>
               </CardContent>
@@ -405,9 +407,9 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
 
       {/* Workload Alert */}
       {!isLoading && getDerivedMetrics.totalWorkload > 15 && (
-        <Card className="mb-6 bg-amber-50 border-amber-200">
+        <Card className="mb-6 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-amber-700">
+            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
               <Bell className="h-4 w-4" />
               <span>High workload detected ({getDerivedMetrics.totalWorkload} urgent items). Consider prioritizing urgent students and questions.</span>
             </div>
@@ -480,11 +482,11 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
             <CardContent className="space-y-2">
               {/* Centered primary metric emphasis */}
               <div className="text-center py-1">
-                <div className="text-2xl font-bold text-slate-800 mb-0.5">
+                <div className="text-2xl font-bold text-card-foreground mb-0.5">
                   {card.stats.primary}
                 </div>
                 {card.stats.secondary && (
-                  <p className="text-xs text-slate-600 leading-tight">{card.stats.secondary}</p>
+                  <p className="text-xs text-muted-foreground leading-tight">{card.stats.secondary}</p>
                 )}
               </div>
 
@@ -509,14 +511,9 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
             <CardFooter className="pt-2">
               <Button
                 className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5"
-                asChild
+                onClick={() => navigate(card.actionLink)}
               >
-                <a
-                  href={card.actionLink}
-                  className="flex items-center justify-center"
-                >
-                  {card.actionText}
-                </a>
+                {card.actionText}
               </Button>
             </CardFooter>
           </Card>
@@ -578,11 +575,11 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="text-center py-1">
-                  <div className="text-2xl font-bold text-slate-800 mb-0.5">
+                  <div className="text-2xl font-bold text-card-foreground mb-0.5">
                     {card.stats.primary}
                   </div>
                   {card.stats.secondary && (
-                    <p className="text-xs text-slate-600 leading-tight">{card.stats.secondary}</p>
+                    <p className="text-xs text-muted-foreground leading-tight">{card.stats.secondary}</p>
                   )}
                 </div>
                 {card.metadata.nextAction && card.metadata.urgent && (
@@ -594,7 +591,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
                   </div>
                 )}
                 {card.metadata.nextAction && !card.metadata.urgent && (
-                  <div className="text-xs text-slate-500 text-center">
+                  <div className="text-xs text-muted-foreground text-center">
                     {card.metadata.nextAction}
                   </div>
                 )}
@@ -602,14 +599,9 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
               <CardFooter className="pt-2">
                 <Button
                   className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5"
-                  asChild
+                  onClick={() => navigate(card.actionLink)}
                 >
-                  <a
-                    href={card.actionLink}
-                    className="flex items-center justify-center"
-                  >
-                    {card.actionText}
-                  </a>
+                  {card.actionText}
                 </Button>
               </CardFooter>
             </Card>

@@ -27,10 +27,12 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       {/* Sprint 18 Navigation */}
       <Sprint18Navigation />
 
-      {/* Persistent Search Header - Hide on messaging/inbox/counselor pages */}
-      {!location.pathname.startsWith('/inbox') &&
-       !location.pathname.startsWith('/messages') &&
-       !location.pathname.startsWith('/counselor') && <PersistentSearchHeader />}
+      {/* Persistent Search Header - Mobile only (desktop has nav search). Hide on messaging/inbox/counselor pages */}
+      <div className="md:hidden">
+        {!location.pathname.startsWith('/inbox') &&
+         !location.pathname.startsWith('/messages') &&
+         !location.pathname.startsWith('/counselor') && <PersistentSearchHeader />}
+      </div>
 
       {/* Main Content Area */}
       <main id="main-content" className="relative pt-16 md:pt-0" role="main" aria-label="Main content">

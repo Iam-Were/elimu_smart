@@ -190,24 +190,24 @@ export const StudentAssessmentCardsV2: React.FC<StudentAssessmentCardsV2Props> =
 
       {/* Stats Grid (Responsive: 2 cols mobile → 4 cols desktop) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border border-orange-200 dark:border-orange-800">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total</p>
-          <p className="text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-400">{stats.total}</p>
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/60 dark:to-orange-900/60 border border-orange-200 dark:border-orange-800">
+          <p className="text-xs sm:text-sm text-orange-700 dark:text-orange-300 mb-1">Total</p>
+          <p className="text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.total}</p>
         </div>
 
-        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border border-green-200 dark:border-green-800">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Completed</p>
-          <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-400">{stats.completed}</p>
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/60 dark:to-green-900/60 border border-green-200 dark:border-green-800">
+          <p className="text-xs sm:text-sm text-green-700 dark:text-green-300 mb-1">Completed</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300">{stats.completed}</p>
         </div>
 
-        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">In Progress</p>
-          <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-400">{stats.inProgress}</p>
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/60 dark:to-blue-900/60 border border-blue-200 dark:border-blue-800">
+          <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 mb-1">In Progress</p>
+          <p className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.inProgress}</p>
         </div>
 
-        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Not Started</p>
-          <p className="text-xl sm:text-2xl font-bold text-slate-700 dark:text-slate-400">{stats.notStarted}</p>
+        <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/60 dark:to-amber-900/60 border border-amber-200 dark:border-amber-800">
+          <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 mb-1">Not Started</p>
+          <p className="text-xl sm:text-2xl font-bold text-amber-700 dark:text-amber-300">{stats.notStarted}</p>
         </div>
       </div>
 

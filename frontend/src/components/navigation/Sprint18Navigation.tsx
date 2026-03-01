@@ -194,7 +194,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
       </div>
       
       <header
-        className={cn("bg-white sticky top-0 z-50 w-full border-b shadow-sm transition-shadow duration-200", className)}
+        className={cn("bg-background sticky top-0 z-50 w-full border-b shadow-sm transition-shadow duration-200", className)}
         style={{ borderColor: 'rgba(0,0,0,0.08)' }}
         role="banner"
         aria-label={`Navigation for ${user?.role || 'user'} role`}
@@ -233,7 +233,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     setSearchQuery('');
                   }
                 }}
-                className="pl-9 pr-4 h-9 w-full bg-slate-50 border-slate-200 focus:bg-white focus:border-slate-300 focus:shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-all"
+                className="pl-9 pr-4 h-9 w-full bg-muted border-border focus:bg-background focus:border-border focus:shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-all"
                 aria-label="Search"
               />
             </div>
@@ -249,7 +249,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <Link
                   to={user?.role === 'counselor' ? '/counselor/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                   className={cn(
-                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                     (isActive("/dashboard") || isActive("/counselor") || isActive("/admin")) && "text-primary"
                   )}
                 >
@@ -273,7 +273,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   <Link
                     to="/assessment"
                     className={cn(
-                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                       isActive("/assessment") && "text-primary"
                     )}
                   >
@@ -297,7 +297,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                   <Link
                     to="/guidance"
                     className={cn(
-                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                      "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                       isActive("/guidance") && "text-primary"
                     )}
                   >
@@ -320,7 +320,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 <Link
                   to="/inbox"
                   className={cn(
-                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                    "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                     isActive("/inbox") && "text-primary"
                   )}
                 >
@@ -331,7 +331,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     />
                     {unreadMessageCount > 0 && (
                       <Badge
-                        className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-bold bg-slate-900 text-white border-2 border-white shadow-md"
+                        className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] font-bold bg-foreground text-background border-2 border-background shadow-md"
                       >
                         {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
                       </Badge>
@@ -356,7 +356,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/students"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                         isActive("/counselor/students") && "text-primary"
                       )}
                     >
@@ -377,7 +377,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/counselor/sessions"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                         isActive("/counselor/sessions") && "text-primary"
                       )}
                     >
@@ -403,7 +403,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/admin/users"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                         isActive("/admin/users") && "text-primary"
                       )}
                     >
@@ -424,7 +424,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                     <Link
                       to="/admin/analytics"
                       className={cn(
-                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
+                        "group inline-flex flex-col items-center justify-center h-auto w-max px-4 py-2 text-sm transition-all duration-200 hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 relative",
                         isActive("/admin/analytics") && "text-primary"
                       )}
                     >
@@ -489,7 +489,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72 bg-white" align="end" forceMount>
+            <DropdownMenuContent className="w-72" align="end" forceMount>
               {/* Profile Header - LinkedIn Style (Left-aligned, non-clickable) */}
               <div className="flex items-start gap-3 p-4 border-b">
                 <Avatar className="h-14 w-14 ring-2 ring-orange-200 flex-shrink-0">

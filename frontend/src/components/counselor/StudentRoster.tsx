@@ -29,7 +29,6 @@ export const StudentRoster: React.FC = () => {
   const {
     updateStudentPriority,
     addStudentNote,
-    getStudentAssessmentResults,
     getStudentNotes,
     isLoading: managementLoading
   } = useStudentManagement();
@@ -52,10 +51,6 @@ export const StudentRoster: React.FC = () => {
     tags?: string[];
   }>>([]);
   const [recentNotes, setRecentNotes] = useState<Record<string, string>>({});
-  const [assessmentResults, setAssessmentResults] = useState<Array<{
-    type: string;
-    completedAt: Date;
-  }>>([]);
 
   // Update local students when hook data changes
   React.useEffect(() => {
@@ -83,25 +78,12 @@ export const StudentRoster: React.FC = () => {
     setNewNote('');
     setOpened(true);
 
-    // Load student notes and assessments
+    // Load student notes
     try {
-      const [notes, assessments] = await Promise.all([
-        getStudentNotes(student.id),
-        getStudentAssessmentResults(student.id)
-      ]);
+      const notes = await getStudentNotes(student.id);
       setStudentNotes(notes.notes || []);
-
-      // Handle assessments - could be an array or an object with results
-      if (Array.isArray(assessments)) {
-        setAssessmentResults(assessments);
-      } else if (assessments?.results && Array.isArray(assessments.results)) {
-        setAssessmentResults(assessments.results);
-      } else {
-        setAssessmentResults([]);
-      }
     } catch (error) {
-      console.error('Failed to load student data:', error);
-      setAssessmentResults([]);
+      console.error('Failed to load student notes:', error);
     }
   };
 
@@ -486,88 +468,6 @@ export const StudentRoster: React.FC = () => {
 
         {/* Student Detail Modal */}
         <Dialog open={opened} onOpenChange={setOpened}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            {selectedStudent && (
-              <div className="space-y-6">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      {selectedStudent.profileImage && (
-                        <img
-                          src={selectedStudent.profileImage}
-                          alt={selectedStudent.name}
-                          className="object-cover w-full h-full"
-                        />
-                      )}
-                      <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
-                        {selectedStudent.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    {selectedStudent.name}
-                  </DialogTitle>
-                </DialogHeader>
-
-                {/* Student Notes History */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Counseling Notes
-                  </h4>
-                  {studentNotes.length > 0 ? (
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                      {studentNotes.map((note) => (
-                        <Card key={note.id} className="p-3 bg-muted/30">
-                          <p className="text-sm">{note.content}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {formatDate(note.createdAt)}
-                          </p>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No notes yet</p>
-                  )}
-
-                  {/* Add New Note */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <Textarea
-                      placeholder="Add new note..."
-                      value={newNote}
-                      onChange={(e) => setNewNote(e.target.value)}
-                      className="min-h-[80px]"
-                    />
-                    <Button onClick={handleAddNote} disabled={!newNote.trim()}>
-                      Add Note
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Assessment Results */}
-                {assessmentResults.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      Assessment Results
-                    </h4>
-                    <div className="space-y-2">
-                      {assessmentResults.map((result, idx) => (
-                        <Card key={idx} className="p-3">
-                          <p className="text-sm font-medium">{result.type}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Completed: {formatDate(result.completedAt)}
-                          </p>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Student Detail Modal */}
-        <Dialog open={opened} onOpenChange={setOpened}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -716,11 +616,26 @@ export const StudentRoster: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => {
+                      setOpened(false);
+                      navigate(`/inbox?studentId=${selectedStudent?.id || ''}`);
+                    }}
+                  >
                     <ChatBubbleIcon className="w-4 h-4" />
                     Send Message
                   </Button>
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => {
+                      setStudentToBook(selectedStudent);
+                      setOpened(false);
+                      setBookingModalOpen(true);
+                    }}
+                  >
                     <CalendarIcon className="w-4 h-4" />
                     Schedule Session
                   </Button>

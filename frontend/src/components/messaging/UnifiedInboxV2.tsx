@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import Button from '@/components/ui/button';
 import { Mail, Search, Loader2 } from 'lucide-react';
 import { ConversationListItem } from '@/components/inbox/ConversationListItem';
@@ -528,7 +527,7 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
           </div>
 
           {/* Conversation list */}
-          <ScrollArea className="flex-1">
+          <div className="flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:theme(colors.border)_transparent]">
             {isLoading && conversations.length === 0 ? (
               <div className="flex items-center justify-center h-32">
                 <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
@@ -563,7 +562,7 @@ export const UnifiedInboxV2: React.FC<UnifiedInboxV2Props> = ({ className }) => 
                 />
               ))
             )}
-          </ScrollArea>
+          </div>
         </div>
 
         {/* RIGHT PANEL - Chat Thread */}

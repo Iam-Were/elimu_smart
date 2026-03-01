@@ -21,7 +21,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Button from '@/components/ui/button';
-import { ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, Lock, Users, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCardNavigation } from '@/hooks/useCardNavigation';
 import type { AssessmentCard, GuidanceCard, DashboardCard, CardData } from '@/types/CardInterfaces';
@@ -71,7 +71,23 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
           {/* Assessment Card */}
           {'assessmentType' in card && (
             <>
-              <CardHeader className="space-y-3 px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
+              {/* Gradient Banner */}
+              <div className={cn(
+                'h-20 sm:h-24 rounded-t-lg flex items-center justify-center gap-3 relative overflow-hidden',
+                `bg-gradient-to-br ${card.iconGradient}`
+              )}>
+                <div className="[&>svg]:w-8 [&>svg]:h-8 [&>svg]:text-white/90">
+                  {card.icon}
+                </div>
+                <span className="text-white/90 text-sm font-medium tracking-wide">
+                  {(card as AssessmentCard).assessmentType === 'riasec' ? 'Who Are You?' :
+                   (card as AssessmentCard).assessmentType === 'skills' ? 'What Can You Do?' :
+                   (card as AssessmentCard).assessmentType === 'university' ? 'Where Will You Go?' :
+                   (card as AssessmentCard).assessmentType === 'career' ? 'What Will You Do?' :
+                   (card as AssessmentCard).assessmentType === 'subjects' ? 'Your KCSE Path' : ''}
+                </span>
+              </div>
+              <CardHeader className="space-y-3 px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4">
                 {/* Badge - Top right corner */}
                 <div className="absolute top-2 right-2 z-10">
                   {'badge' in card && card.badge && (
@@ -82,12 +98,12 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                 </div>
 
                 {/* Title - Prominent */}
-                <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-card-foreground leading-tight">
                   {card.title}
                 </CardTitle>
 
                 {/* Duration & Questions - Metadata */}
-                <div className="flex items-center gap-3 text-sm text-slate-500">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="font-medium">{(card as AssessmentCard).duration}</span>
                   {(card as AssessmentCard).questions > 0 && (
                     <>
@@ -98,7 +114,7 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                 </div>
 
                 {/* Description */}
-                <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                <CardDescription className="text-sm leading-relaxed">
                   {card.description}
                 </CardDescription>
               </CardHeader>
@@ -135,10 +151,10 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
 
               {/* Title & Description */}
               <div className="space-y-1.5">
-                <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 leading-tight line-clamp-2">
+                <CardTitle className="text-base sm:text-lg font-semibold text-card-foreground leading-tight line-clamp-2">
                   {card.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2">
+                <CardDescription className="text-sm leading-relaxed line-clamp-2">
                   {card.description}
                 </CardDescription>
               </div>
@@ -169,10 +185,10 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 leading-tight line-clamp-2">
+                <CardTitle className="text-base sm:text-lg font-semibold text-card-foreground leading-tight line-clamp-2">
                   {card.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2">
+                <CardDescription className="text-sm leading-relaxed line-clamp-2">
                   {card.description}
                 </CardDescription>
               </div>
@@ -188,12 +204,12 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                 {(card as AssessmentCard).completionStatus && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 font-medium">Your Progress</span>
+                      <span className="text-muted-foreground font-medium">Your Progress</span>
                       <span className="font-bold text-orange-600">
                         {(card as AssessmentCard).completionStatus?.progress || 0}%
                       </span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600"
                         style={{
@@ -209,15 +225,16 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
             {/* Guidance-Specific Content */}
             {'serviceType' in card && (
               <>
-                {/* Peer Room Image */}
+                {/* Peer Room Banner */}
                 {card.id === 'community-qa' && (
-                  <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-3">
-                    <img
-                      src="/design/peer_room.jpg"
-                      alt="Peer Room"
-                      className="w-full h-full object-cover rounded-lg"
-                      loading="lazy"
-                    />
+                  <div className="w-full h-24 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-950/50 dark:to-amber-950/50 flex items-center justify-center gap-4 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-200 dark:bg-orange-900 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <MessageCircle className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+                    <div className="w-10 h-10 rounded-full bg-orange-200 dark:bg-orange-900 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
                   </div>
                 )}
 
@@ -227,9 +244,9 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                     {(card as GuidanceCard).features.slice(0, 2).map((feature, index) => (
                       <li
                         key={index}
-                        className="flex items-center gap-2 text-sm text-slate-600"
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
                       >
-                        <span className="text-green-600 font-medium">✓</span>
+                        <span className="text-green-600 dark:text-green-400 font-medium">✓</span>
                         <span className="line-clamp-1">{feature}</span>
                       </li>
                     ))}
@@ -237,7 +254,7 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
                 )}
                 {/* Response Time */}
                 {'serviceType' in card && (card as GuidanceCard).responseTime && (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     Response time: {(card as GuidanceCard).responseTime}
                   </p>
                 )}
@@ -246,11 +263,11 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
 
             {/* Dashboard-Specific Content */}
             {'metric' in card && (card as DashboardCard).metric && (
-              <div className="p-3 rounded-lg bg-slate-50">
-                <p className="text-sm text-slate-600 mb-1">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="text-sm text-muted-foreground mb-1">
                   {(card as DashboardCard).metric?.label}
                 </p>
-                <p className="text-2xl font-semibold text-slate-900">
+                <p className="text-2xl font-semibold text-card-foreground">
                   {(card as DashboardCard).metric?.value}
                 </p>
               </div>

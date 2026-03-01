@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import Button from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, X, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { CheckCircle, X, Eye, EyeOff, AlertCircle, GraduationCap, BookOpen, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import logoImage from '@/assets/logo.png';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -116,8 +117,69 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex">
+      {/* Left Panel — Brand (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 flex-col justify-between p-10 text-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
+
+        <div className="relative z-10 space-y-6">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="Elimu Smart" className="h-12 w-12 object-contain" />
+            <span className="text-2xl font-bold">Elimu Smart</span>
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold leading-tight">Begin Your Career Journey</h2>
+            <p className="text-orange-100 mt-2 text-base">
+              Join 25,000+ Kenyan students discovering their ideal path.
+            </p>
+          </div>
+          {/* Feature bullets */}
+          <ul className="space-y-4 mt-6">
+            <li className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-medium">RIASEC Career Assessment</p>
+                <p className="text-orange-100 text-sm">Discover careers that match your personality</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-medium">KUCCPS University Matching</p>
+                <p className="text-orange-100 text-sm">Find courses that match your KCSE grades</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-medium">Certified Counselors</p>
+                <p className="text-orange-100 text-sm">Get guidance from qualified career experts</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        {/* Testimonial */}
+        <div className="relative z-10 bg-white/10 rounded-xl p-5 backdrop-blur-sm">
+          <p className="text-sm italic text-orange-50 leading-relaxed">
+            "Elimu Smart helped me choose Engineering. I now study at JKUAT on a scholarship."
+          </p>
+          <p className="text-xs text-orange-200 mt-2 font-medium">— Amina W., JKUAT Mechanical Engineering</p>
+        </div>
+      </div>
+
+      {/* Right Panel — Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-background overflow-y-auto">
+      <Card className="w-full max-w-md border-0 shadow-none sm:border sm:shadow-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
@@ -308,6 +370,7 @@ export default function RegisterPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
