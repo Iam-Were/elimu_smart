@@ -128,10 +128,10 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img src={logoImage} alt="Elimu Smart" className="h-12 w-12 object-contain" />
-            <span className="text-2xl font-bold">Elimu Smart</span>
+            <span className="font-display text-2xl font-bold tracking-tight">Elimu Smart</span>
           </div>
           <div>
-            <h2 className="text-3xl font-bold leading-tight">Begin Your Career Journey</h2>
+            <h2 className="font-display text-3xl font-bold leading-[1.05] tracking-tight">Begin Your Career Journey</h2>
             <p className="text-orange-100 mt-2 text-base">
               Join 25,000+ Kenyan students discovering their ideal path.
             </p>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
                 <BookOpen className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-medium">RIASEC Career Assessment</p>
+                <p className="font-display font-bold text-sm">RIASEC Career Assessment</p>
                 <p className="text-orange-100 text-sm">Discover careers that match your personality</p>
               </div>
             </li>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                 <GraduationCap className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-medium">KUCCPS University Matching</p>
+                <p className="font-display font-bold text-sm">KUCCPS University Matching</p>
                 <p className="text-orange-100 text-sm">Find courses that match your KCSE grades</p>
               </div>
             </li>
@@ -161,7 +161,7 @@ export default function RegisterPage() {
                 <Users className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-medium">Certified Counselors</p>
+                <p className="font-display font-bold text-sm">Certified Counselors</p>
                 <p className="text-orange-100 text-sm">Get guidance from qualified career experts</p>
               </div>
             </li>

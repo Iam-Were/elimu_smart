@@ -58,7 +58,7 @@ const LandingPage: React.FC = () => {
                 alt="Elimu Smart Logo"
                 className="h-12 w-12 object-contain"
               />
-              <span className="font-bold text-2xl text-gray-900 dark:text-gray-100">
+              <span className="font-display font-bold text-2xl text-gray-900 dark:text-gray-100 tracking-tight">
                 Elimu Smart
               </span>
             </div>
@@ -103,7 +103,13 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section - Two Column Card Layout */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-orange-50/30">
+      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-amber-50/20 to-white dark:from-orange-950/30 dark:via-transparent dark:to-transparent">
+        {/* Atmospheric background orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-32 right-0 w-[500px] h-[500px] rounded-full bg-orange-300/15 blur-3xl" />
+          <div className="absolute top-40 -left-24 w-72 h-72 rounded-full bg-amber-300/10 blur-2xl" />
+          <div className="absolute bottom-0 right-1/3 w-48 h-48 rounded-full bg-orange-200/10 blur-xl" />
+        </div>
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 z-10">
           
           {/* Hero Card */}
@@ -115,16 +121,22 @@ const LandingPage: React.FC = () => {
                 
                 {/* Left Column - Content */}
                 <div>
+                  {/* Kenya badge */}
+                  <div className="inline-flex items-center gap-2 text-sm text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 rounded-full px-4 py-1.5 mb-4 font-medium">
+                    <span className="text-base">🇰🇪</span>
+                    <span>Kenya's #1 Career Guidance Platform</span>
+                  </div>
+
                   {/* Simple Badge */}
                   <Badge variant="secondary" className="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
                     <span>🎯</span>
                     <span>Find Your Perfect Career</span>
                   </Badge>
-                  
+
                   {/* Clear, Direct Headline */}
-                  <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight mb-6 text-gray-900">
+                  <h1 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight mb-6 text-gray-900 dark:text-gray-50">
                     Discover Your Ideal Career Path
-                    <span className="block bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
+                    <span className="block bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
                       In Just 15 Minutes
                     </span>
                   </h1>
@@ -224,27 +236,27 @@ const LandingPage: React.FC = () => {
           
           {/* Simple Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            
+
             <div>
-              <div className="text-3xl font-bold text-gray-900">25,000+</div>
-              <div className="text-sm text-gray-600">Students Helped</div>
+              <div className="font-display text-4xl font-bold text-gray-900 dark:text-gray-50">25,000+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Students Helped</div>
             </div>
-            
+
             <div>
-              <div className="text-3xl font-bold text-gray-900">94%</div>
-              <div className="text-sm text-gray-600">Success Rate</div>
+              <div className="font-display text-4xl font-bold text-gray-900 dark:text-gray-50">94%</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Success Rate</div>
             </div>
-            
+
             <div>
-              <div className="text-3xl font-bold text-gray-900">45+</div>
-              <div className="text-sm text-gray-600">University Partners</div>
+              <div className="font-display text-4xl font-bold text-gray-900 dark:text-gray-50">45+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">University Partners</div>
             </div>
-            
+
             <div>
-              <div className="text-3xl font-bold text-gray-900">4.9/5</div>
-              <div className="text-sm text-gray-600">Student Rating</div>
+              <div className="font-display text-4xl font-bold text-gray-900 dark:text-gray-50">4.9/5</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Student Rating</div>
             </div>
-            
+
           </div>
         </div>
       </section>
@@ -255,10 +267,10 @@ const LandingPage: React.FC = () => {
           
           {/* Simple Header */}
           <div className="text-center mb-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="font-display text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-50 mb-4">
               How Elimu Smart Helps You
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Three simple ways we guide you to your perfect career path.
             </p>
           </div>
@@ -272,7 +284,7 @@ const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Target className="w-8 h-8 text-orange-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Discover Your Strengths</h3>
+                <h3 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50 mb-4">Discover Your Strengths</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Take our 15-minute assessment to identify your natural talents, 
                   interests, and personality traits.
@@ -286,7 +298,7 @@ const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <BookOpen className="w-8 h-8 text-orange-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Get Matched</h3>
+                <h3 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50 mb-4">Get Matched</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Receive personalized career recommendations that align with 
                   your KCSE subjects and university options.
@@ -300,7 +312,7 @@ const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <GraduationCap className="w-8 h-8 text-orange-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Plan Your Path</h3>
+                <h3 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50 mb-4">Plan Your Path</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Get a clear action plan with university requirements, 
                   scholarship opportunities, and next steps.
@@ -324,9 +336,9 @@ const LandingPage: React.FC = () => {
               </svg>
               <span>Simple Process</span>
             </Badge>
-            <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="font-display text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-6">
               Your Journey to
-              <span className="block bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
                 Career Clarity
               </span>
             </h2>
@@ -346,7 +358,7 @@ const LandingPage: React.FC = () => {
                   <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl font-bold text-white">1</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Sign Up & Assess</h3>
+                  <h3 className="font-display text-lg font-bold text-gray-900 dark:text-gray-50 mb-3">Sign Up & Assess</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
                     Create your profile and complete our comprehensive AI-powered career assessment in just 15 minutes.
                   </p>
@@ -368,7 +380,7 @@ const LandingPage: React.FC = () => {
                   <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl font-bold text-white">2</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Get Matched</h3>
+                  <h3 className="font-display text-lg font-bold text-gray-900 dark:text-gray-50 mb-3">Get Matched</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
                     Receive personalized career recommendations based on your assessment results and academic performance.
                   </p>
@@ -389,7 +401,7 @@ const LandingPage: React.FC = () => {
                   <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl font-bold text-white">3</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Explore & Plan</h3>
+                  <h3 className="font-display text-lg font-bold text-gray-900 dark:text-gray-50 mb-3">Explore & Plan</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
                     Dive deep into career options and create your personalized education and university application plan.
                   </p>
@@ -410,7 +422,7 @@ const LandingPage: React.FC = () => {
                   <div className="h-16 w-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl font-bold text-white">4</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Take Action</h3>
+                  <h3 className="font-display text-lg font-bold text-gray-900 dark:text-gray-50 mb-3">Take Action</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
                     Execute your plan with ongoing support from expert counselors and track your progress toward your goals.
                   </p>
@@ -453,9 +465,9 @@ const LandingPage: React.FC = () => {
                   <Star className="h-4 w-4" />
                   <span>Student Success</span>
                 </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50 mb-6">
                   What Our Students Say
-                  <span className="block bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
                     About Their Journey
                   </span>
                 </h2>
@@ -485,7 +497,7 @@ const LandingPage: React.FC = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-display font-bold text-gray-900 dark:text-gray-50">
                             {testimonial.name}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -525,9 +537,9 @@ const LandingPage: React.FC = () => {
                 <span>Ready to Start?</span>
               </Badge>
               
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50 mb-6">
                 Ready to Discover
-                <span className="block bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
                   Your Future?
                 </span>
               </h2>
@@ -593,7 +605,7 @@ const LandingPage: React.FC = () => {
                     <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
                       <GraduationCap className="h-5 w-5 text-white" />
                     </div>
-                    <span className="font-bold text-xl text-gray-900">Elimu Smart</span>
+                    <span className="font-display font-bold text-xl text-gray-900 dark:text-gray-50">Elimu Smart</span>
                   </div>
                   <p className="text-gray-600 mb-4 leading-relaxed">
                     Empowering Kenyan students with intelligent career guidance and university pathway discovery.

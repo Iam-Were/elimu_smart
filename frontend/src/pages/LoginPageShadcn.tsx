@@ -83,14 +83,14 @@ export const LoginPageShadcn: React.FC = () => {
               className="w-16 h-16 object-contain"
             />
             <div>
-              <h2 className="text-white text-2xl font-bold">Elimu Smart</h2>
+              <h2 className="font-display text-white text-2xl font-bold tracking-tight">Elimu Smart</h2>
               <p className="text-orange-100 text-base">Career Guidance Platform</p>
             </div>
           </div>
 
           {/* Main Heading */}
           <div className="space-y-4 mb-12">
-            <h1 className="text-white text-5xl font-bold leading-tight">
+            <h1 className="font-display text-white text-5xl font-bold leading-[1.05] tracking-tight">
               Welcome Back to Your{' '}
               <span className="text-orange-200">Educational Journey</span>
             </h1>
@@ -106,7 +106,7 @@ export const LoginPageShadcn: React.FC = () => {
                 <CheckCircle2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">50,000+ Students</p>
+                <p className="font-display text-white font-bold text-lg">50,000+ Students</p>
                 <p className="text-orange-100 text-sm">Join Kenya's largest educational community</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ export const LoginPageShadcn: React.FC = () => {
                 <Star className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">Expert Guidance</p>
+                <p className="font-display text-white font-bold text-lg">Expert Guidance</p>
                 <p className="text-orange-100 text-sm">Professional career counselors available 24/7</p>
               </div>
             </div>
@@ -126,7 +126,7 @@ export const LoginPageShadcn: React.FC = () => {
                 <Globe className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">10,000+ Scholarships</p>
+                <p className="font-display text-white font-bold text-lg">10,000+ Scholarships</p>
                 <p className="text-orange-100 text-sm">Access opportunities from local and international institutions</p>
               </div>
             </div>

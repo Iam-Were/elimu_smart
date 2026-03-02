@@ -76,14 +76,14 @@ export default {
         border: 'var(--border)',
       },
       fontFamily: {
-        // Match Mantine font stack
+        // Display font: Syne — geometric, editorial, East African confidence
+        display: ['Syne', 'ui-sans-serif', 'sans-serif'],
+        // Body font: Plus Jakarta Sans — warm, modern, excellent readability
         sans: [
+          '"Plus Jakarta Sans"',
+          'ui-sans-serif',
+          'system-ui',
           '-apple-system',
-          'BlinkMacSystemFont', 
-          '"Segoe UI"',
-          'Roboto',
-          '"Helvetica Neue"',
-          'Arial',
           'sans-serif'
         ],
         mono: [
@@ -96,13 +96,17 @@ export default {
         ],
       },
       fontSize: {
-        // LinkedIn-inspired professional typography scale
+        // Typography scale
         xs: '0.75rem',     // 12px - Small labels, badges
         sm: '0.875rem',    // 14px - Body text, secondary
         base: '1rem',      // 16px - Primary body text
         lg: '1.25rem',     // 20px - Headings, emphasized
         xl: '1.5rem',      // 24px - Large headings
         '2xl': '1.875rem', // 30px - Hero text
+        '3xl': '2.25rem',  // 36px - Section headings
+        '4xl': '2.75rem',  // 44px - Large display
+        '5xl': '3.5rem',   // 56px - Hero display
+        '6xl': '4.5rem',   // 72px - Max display
       },
       fontWeight: {
         // LinkedIn-inspired weight hierarchy
