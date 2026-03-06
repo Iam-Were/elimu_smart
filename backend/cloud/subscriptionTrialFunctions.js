@@ -59,6 +59,12 @@ Parse.Cloud.define('initializePremiumTrial', async (request) => {
 
     await trial.save(null, { useMasterKey: true });
 
+    // Grant premium access on the user record
+    user.set('isPremium', true);
+    user.set('premiumSince', now);
+    user.set('premiumType', 'trial');
+    await user.save(null, { useMasterKey: true });
+
     return {
       success: true,
       trialId: trial.id,
@@ -184,11 +190,17 @@ Parse.Cloud.define('handleTrialExpiry', async (request) => {
       };
     }
 
-    // Deactivate each expired trial
-    const updates = expiredTrials.map(trial => {
+    // Deactivate each expired trial and revoke premium access
+    const updates = expiredTrials.map(async trial => {
       trial.set('isActive', false);
       trial.set('status', 'expired');
-      return trial.save(null, { useMasterKey: true });
+      await trial.save(null, { useMasterKey: true });
+
+      const trialUser = trial.get('user');
+      await trialUser.fetch({ useMasterKey: true });
+      trialUser.set('isPremium', false);
+      trialUser.set('premiumType', null);
+      await trialUser.save(null, { useMasterKey: true });
     });
 
     await Promise.all(updates);
@@ -252,6 +264,11 @@ Parse.Cloud.define('expireTrial', async (request) => {
     trial.set('isActive', false);
     trial.set('status', 'expired');
     await trial.save(null, { useMasterKey: true });
+
+    // Revoke premium access
+    user.set('isPremium', false);
+    user.set('premiumType', null);
+    await user.save(null, { useMasterKey: true });
 
     // Log activity
     await Parse.Cloud.run('logUserActivity', {
