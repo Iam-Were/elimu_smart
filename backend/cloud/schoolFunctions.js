@@ -202,6 +202,142 @@ Parse.Cloud.define('listSchools', async (request) => {
 });
 
 /**
+ * Get analytics for a specific school (admin only)
+ * Works for both coded (schoolId) and uncoded (schoolName) schools
+ */
+Parse.Cloud.define('getSchoolAnalytics', async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Not authenticated');
+  const role = request.user.get('role');
+  if (!['admin', 'super_admin'].includes(role)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Admin access required');
+  }
+
+  const { schoolId, schoolName } = request.params;
+  if (!schoolId && !schoolName) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'schoolId or schoolName required');
+
+  const User = Parse.Object.extend('_User');
+
+  // Build base student query
+  const buildQuery = () => {
+    const q = new Parse.Query(User);
+    q.equalTo('role', 'student');
+    if (schoolId) q.equalTo('schoolId', schoolId);
+    else q.equalTo('schoolName', schoolName);
+    return q;
+  };
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  // Count active this week via UserActivity
+  const UserActivity = Parse.Object.extend('UserActivity');
+  const activityQuery = new Parse.Query(UserActivity);
+  activityQuery.greaterThan('createdAt', sevenDaysAgo);
+  if (schoolId) {
+    // Join via user's schoolId — find student ids first
+    const studentIds = await buildQuery().select(['objectId']).limit(1000).find({ useMasterKey: true });
+    const userPointers = studentIds.map(s => s);
+    activityQuery.containedIn('user', userPointers);
+  }
+
+  // Run all counts in parallel
+  const [totalStudents, premiumCount, recentJoiners, allStudents] = await Promise.all([
+    buildQuery().count({ useMasterKey: true }),
+    (() => { const q = buildQuery(); q.equalTo('isPremium', true); return q.count({ useMasterKey: true }); })(),
+    (() => { const q = buildQuery(); q.greaterThan('createdAt', thirtyDaysAgo); return q.count({ useMasterKey: true }); })(),
+    buildQuery().select(['gradeLevel', 'isPremium', 'createdAt']).limit(1000).find({ useMasterKey: true }),
+  ]);
+
+  // Form distribution
+  const formDistribution = { 'Form 1': 0, 'Form 2': 0, 'Form 3': 0, 'Form 4': 0, 'Unknown': 0 };
+  for (const s of allStudents) {
+    const grade = s.get('gradeLevel');
+    if (grade && formDistribution[grade] !== undefined) formDistribution[grade]++;
+    else formDistribution['Unknown']++;
+  }
+
+  // Assessments completed — count users who have at least 1 AssessmentProgress record
+  let assessmentsCompleted = 0;
+  try {
+    const AssessmentProgress = Parse.Object.extend('AssessmentProgress');
+    const aQuery = new Parse.Query(AssessmentProgress);
+    aQuery.containedIn('user', allStudents);
+    aQuery.equalTo('status', 'completed');
+    aQuery.distinct('user', { useMasterKey: true });
+    const distinctUsers = await aQuery.distinct('user', { useMasterKey: true });
+    assessmentsCompleted = distinctUsers.length;
+  } catch {
+    assessmentsCompleted = 0;
+  }
+
+  // Active this week — students with any activity in last 7 days
+  let activeThisWeek = 0;
+  try {
+    const UserActivity2 = Parse.Object.extend('UserActivity');
+    const wQuery = new Parse.Query(UserActivity2);
+    wQuery.containedIn('user', allStudents);
+    wQuery.greaterThan('createdAt', sevenDaysAgo);
+    const activeUsers = await wQuery.distinct('user', { useMasterKey: true });
+    activeThisWeek = activeUsers.length;
+  } catch {
+    activeThisWeek = 0;
+  }
+
+  return {
+    totalStudents,
+    activeThisWeek,
+    assessmentsCompleted,
+    premiumCount,
+    recentJoiners,
+    formDistribution,
+  };
+});
+
+/**
+ * List all schools by schoolName field — includes uncoded schools
+ * Returns ranked list with student counts for sales/admin visibility
+ */
+Parse.Cloud.define('listAllSchoolNames', async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Not authenticated');
+  const role = request.user.get('role');
+  if (!['admin', 'super_admin'].includes(role)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Admin access required');
+  }
+
+  const { limit = 200 } = request.params;
+
+  const User = Parse.Object.extend('_User');
+  const query = new Parse.Query(User);
+  query.equalTo('role', 'student');
+  query.exists('schoolName');
+  query.notEqualTo('schoolName', '');
+  query.select(['schoolName', 'schoolId', 'county', 'createdAt']);
+  query.limit(Math.min(limit, 1000));
+
+  const students = await query.find({ useMasterKey: true });
+
+  // Group by schoolName
+  const schoolMap = new Map();
+  for (const s of students) {
+    const name = s.get('schoolName');
+    if (!name) continue;
+    if (!schoolMap.has(name)) {
+      schoolMap.set(name, {
+        schoolName: name,
+        schoolId: s.get('schoolId') || null, // null = uncoded
+        county: s.get('county') || null,
+        studentCount: 0,
+      });
+    }
+    schoolMap.get(name).studentCount++;
+  }
+
+  const schools = Array.from(schoolMap.values()).sort((a, b) => b.studentCount - a.studentCount);
+
+  return { schools, total: schools.length };
+});
+
+/**
  * Get school license status (seat usage)
  */
 Parse.Cloud.define('getSchoolLicenseStatus', async (request) => {

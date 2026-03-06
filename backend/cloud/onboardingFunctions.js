@@ -119,6 +119,13 @@ Parse.Cloud.define('completeOnboarding', async (request) => {
       onboardingData.set('completedAt', new Date());
       onboardingData.set('progressPercentage', 100);
       await onboardingData.save(null, { useMasterKey: true });
+
+      // Copy schoolName from onboarding data to _User for billing/analytics
+      const data = onboardingData.get('data') || {};
+      if (data.schoolName && !user.get('schoolName')) {
+        user.set('schoolName', data.schoolName);
+        await user.save(null, { useMasterKey: true });
+      }
     }
 
     // Initialize 3-month premium trial

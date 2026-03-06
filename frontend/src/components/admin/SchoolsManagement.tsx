@@ -10,8 +10,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Search, Building2, Users, Crown, Copy, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Building2, Users, Crown, Copy, CheckCircle2, TrendingUp, Activity } from 'lucide-react';
 
 interface School {
   id: string;
@@ -43,6 +44,22 @@ interface LicenseStatus {
   seatsRemaining: number | null;
 }
 
+interface SchoolAnalytics {
+  totalStudents: number;
+  activeThisWeek: number;
+  assessmentsCompleted: number;
+  premiumCount: number;
+  recentJoiners: number;
+  formDistribution: Record<string, number>;
+}
+
+interface UncodedSchool {
+  schoolName: string;
+  schoolId: string | null;
+  county: string | null;
+  studentCount: number;
+}
+
 const SCHOOL_TYPES = ['public', 'private', 'national', 'county', 'sub-county'];
 
 const defaultForm = { name: '', county: '', type: 'public', contactName: '', contactEmail: '', contactPhone: '', seatLimit: '0' };
@@ -55,11 +72,14 @@ export const SchoolsManagement: React.FC = () => {
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [students, setStudents] = useState<SchoolStudent[]>([]);
   const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null);
+  const [analytics, setAnalytics] = useState<SchoolAnalytics | null>(null);
   const [sheetLoading, setSheetLoading] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [form, setForm] = useState(defaultForm);
+  const [uncodedSchools, setUncodedSchools] = useState<UncodedSchool[]>([]);
+  const [uncodedLoading, setUncodedLoading] = useState(false);
 
   const fetchSchools = useCallback(async () => {
     setLoading(true);
@@ -71,6 +91,20 @@ export const SchoolsManagement: React.FC = () => {
       toast.error('Failed to load schools');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const fetchUncodedSchools = useCallback(async () => {
+    setUncodedLoading(true);
+    try {
+      const Parse = getParse();
+      const result = await Parse.Cloud.run('listAllSchoolNames', { limit: 200 });
+      // Only keep schools without a schoolId (uncoded)
+      setUncodedSchools((result.schools || []).filter((s: UncodedSchool) => !s.schoolId));
+    } catch {
+      toast.error('Failed to load school names');
+    } finally {
+      setUncodedLoading(false);
     }
   }, []);
 
@@ -88,15 +122,18 @@ export const SchoolsManagement: React.FC = () => {
     setSelectedSchool(school);
     setStudents([]);
     setLicenseStatus(null);
+    setAnalytics(null);
     setSheetLoading(true);
     try {
       const Parse = getParse();
-      const [studResult, licResult] = await Promise.all([
+      const [studResult, licResult, analyticsResult] = await Promise.all([
         Parse.Cloud.run('getSchoolStudents', { schoolId: school.id, limit: 100 }),
         Parse.Cloud.run('getSchoolLicenseStatus', { schoolId: school.id }),
+        Parse.Cloud.run('getSchoolAnalytics', { schoolId: school.id }),
       ]);
       setStudents(studResult.students || []);
       setLicenseStatus(licResult);
+      setAnalytics(analyticsResult);
     } catch {
       toast.error('Failed to load school details');
     } finally {
@@ -191,82 +228,135 @@ export const SchoolsManagement: React.FC = () => {
         </Card>
       </div>
 
-      {/* Search + Table */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <Input
-              placeholder="Search by name, code or county..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="max-w-sm h-9"
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-12 text-center text-gray-400 text-sm">Loading schools...</div>
-          ) : filteredSchools.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
-              {search ? 'No schools match your search' : 'No schools yet — click Add School to get started'}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>School</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>County</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSchools.map(school => (
-                  <TableRow
-                    key={school.id}
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => openSchool(school)}
-                  >
-                    <TableCell className="font-medium">{school.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <code className="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono">{school.code}</code>
-                        <button
-                          onClick={e => { e.stopPropagation(); copyCode(school.code); }}
-                          className="text-gray-400 hover:text-gray-600 p-0.5"
-                          aria-label="Copy code"
-                        >
-                          {copiedCode === school.code
-                            ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                            : <Copy className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-600 text-sm">{school.county}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize text-xs">{school.type}</Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-600 text-sm">
-                      {school.seatLimit > 0 ? school.seatLimit : 'Unlimited'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={school.isActive ? 'bg-green-100 text-green-700 border-green-200 text-xs' : 'bg-gray-100 text-gray-500 text-xs'}>
-                        {school.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Tabs: Coded Schools + All School Names */}
+      <Tabs defaultValue="coded" onValueChange={v => { if (v === 'uncoded' && uncodedSchools.length === 0) fetchUncodedSchools(); }}>
+        <TabsList>
+          <TabsTrigger value="coded">Coded Schools ({schools.length})</TabsTrigger>
+          <TabsTrigger value="uncoded">All School Names</TabsTrigger>
+        </TabsList>
+
+        {/* Coded Schools Tab */}
+        <TabsContent value="coded">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Input
+                  placeholder="Search by name, code or county..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="max-w-sm h-9"
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="py-12 text-center text-gray-400 text-sm">Loading schools...</div>
+              ) : filteredSchools.length === 0 ? (
+                <div className="py-12 text-center text-gray-400 text-sm">
+                  {search ? 'No schools match your search' : 'No schools yet — click Add School to get started'}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>School</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>County</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Seats</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSchools.map(school => (
+                      <TableRow
+                        key={school.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => openSchool(school)}
+                      >
+                        <TableCell className="font-medium">{school.name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <code className="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono">{school.code}</code>
+                            <button
+                              onClick={e => { e.stopPropagation(); copyCode(school.code); }}
+                              className="text-gray-400 hover:text-gray-600 p-0.5"
+                              aria-label="Copy code"
+                            >
+                              {copiedCode === school.code
+                                ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                                : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-600 text-sm">{school.county}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize text-xs">{school.type}</Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-600 text-sm">
+                          {school.seatLimit > 0 ? school.seatLimit : 'Unlimited'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={school.isActive ? 'bg-green-100 text-green-700 border-green-200 text-xs' : 'bg-gray-100 text-gray-500 text-xs'}>
+                            {school.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* All School Names Tab (includes uncoded) */}
+        <TabsContent value="uncoded">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-orange-500" />
+                Unpartnered Schools — Sales Leads
+              </CardTitle>
+              <p className="text-xs text-gray-400 mt-1">Schools whose students are on the platform but have no school code. Convert them to licensed partners.</p>
+            </CardHeader>
+            <CardContent className="p-0">
+              {uncodedLoading ? (
+                <div className="py-12 text-center text-gray-400 text-sm">Loading school names...</div>
+              ) : uncodedSchools.length === 0 ? (
+                <div className="py-12 text-center text-gray-400 text-sm">No uncoded schools found</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>School Name</TableHead>
+                      <TableHead>County</TableHead>
+                      <TableHead className="text-right">Students</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {uncodedSchools.map((s, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{s.schoolName}</TableCell>
+                        <TableCell className="text-gray-500 text-sm">{s.county || '—'}</TableCell>
+                        <TableCell className="text-right">
+                          <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">
+                            {s.studentCount}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* School Detail Sheet */}
-      <Sheet open={!!selectedSchool} onOpenChange={open => { if (!open) { setSelectedSchool(null); setStudents([]); setLicenseStatus(null); } }}>
+      <Sheet open={!!selectedSchool} onOpenChange={open => { if (!open) { setSelectedSchool(null); setStudents([]); setLicenseStatus(null); setAnalytics(null); } }}>
         <SheetContent className="w-full sm:max-w-[580px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="text-lg">{selectedSchool?.name}</SheetTitle>
@@ -321,6 +411,55 @@ export const SchoolsManagement: React.FC = () => {
                         </p>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Analytics Panel */}
+              {analytics && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-blue-500" />
+                      Usage Analytics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-blue-50 rounded-lg p-3 text-center">
+                        <p className="text-xl font-bold text-blue-700">{analytics.activeThisWeek}</p>
+                        <p className="text-xs text-gray-500 mt-1">Active this week</p>
+                      </div>
+                      <div className="bg-amber-50 rounded-lg p-3 text-center">
+                        <p className="text-xl font-bold text-amber-700">{analytics.assessmentsCompleted}</p>
+                        <p className="text-xs text-gray-500 mt-1">Assessments done</p>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-3 text-center">
+                        <p className="text-xl font-bold text-green-700">{analytics.recentJoiners}</p>
+                        <p className="text-xs text-gray-500 mt-1">Joined last 30d</p>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3 text-center">
+                        <p className="text-xl font-bold text-purple-700">{analytics.premiumCount}</p>
+                        <p className="text-xs text-gray-500 mt-1">Premium</p>
+                      </div>
+                    </div>
+                    {/* Form Distribution */}
+                    <div>
+                      <p className="text-xs font-medium text-gray-600 mb-2">Form Distribution</p>
+                      <div className="space-y-1.5">
+                        {(['Form 1', 'Form 2', 'Form 3', 'Form 4'] as const).map(form => {
+                          const count = analytics.formDistribution[form] || 0;
+                          const pct = analytics.totalStudents > 0 ? Math.round((count / analytics.totalStudents) * 100) : 0;
+                          return (
+                            <div key={form} className="flex items-center gap-2 text-xs">
+                              <span className="w-12 text-gray-500 shrink-0">{form}</span>
+                              <Progress value={pct} className="h-1.5 flex-1" />
+                              <span className="w-8 text-right text-gray-600">{count}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
