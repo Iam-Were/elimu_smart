@@ -26,31 +26,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to console in development
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
-      
-      // Special handling for Mantine-related errors
-      if (error.message.includes('MantineProvider') || 
-          error.message.includes('useMantineTheme') ||
-          error.message.includes('@mantine/core') ||
-          error.stack?.includes('@mantine')) {
-        
-        console.warn('🚨 MANTINE COMPONENT ERROR DETECTED:');
-        console.warn('Error:', error.message);
-        console.warn('This indicates a component is trying to use Mantine without MantineProvider');
-        console.warn('Component stack:', errorInfo.componentStack);
-        
-        // Extract component name from stack if possible
-        const componentMatch = errorInfo.componentStack?.match(/at (\w+)/);
-        if (componentMatch) {
-          console.warn(`❌ Problem component: ${componentMatch[1]}`);
-          console.warn('💡 Fix: Migrate this component to use shadcn components instead of Mantine');
-        }
-      }
     }
 
-    // Update state with error info
     this.setState({
       error,
       errorInfo,

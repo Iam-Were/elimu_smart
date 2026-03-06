@@ -214,26 +214,6 @@
   --surface-high: #333333;
 }
 
-/* Dark mode card fixes */
-.dark .mantine-Card-root {
-  background-color: var(--card) !important;
-  border-color: var(--border) !important;
-}
-
-.dark .mantine-Paper-root {
-  background-color: var(--card) !important;
-  border-color: var(--border) !important;
-}
-
-/* Dark mode welcome and content areas */
-.dark .mantine-Container-root {
-  background-color: transparent !important;
-}
-
-.dark .mantine-Stack-root {
-  background-color: transparent !important;
-}
-
 /* Ensure all cards use theme variables in dark mode */
 .dark [data-card="true"] {
   background-color: var(--card) !important;
@@ -913,18 +893,7 @@ input::placeholder, textarea::placeholder {
   }
 }
 
-/* SPRINT 13: Tailwind-Mantine Integration Utilities */
 @layer utilities {
-  /* Focus states matching Mantine design */
-  .mantine-focus {
-    @apply focus:outline-none;
-  }
-  
-  .mantine-focus:focus {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-  
   /* Role-based color utilities */
   .text-role-primary {
     color: var(--primary);
@@ -972,7 +941,7 @@ input::placeholder, textarea::placeholder {
     opacity: 1;
   }
   
-  /* Button variants matching Mantine theme */
+  /* Button variants */
   .btn-professional-primary {
     background: var(--primary);
     color: white;
@@ -1079,7 +1048,7 @@ input::placeholder, textarea::placeholder {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
   
-  /* Form elements matching Mantine style */
+  /* Form elements */
   .form-input-professional {
     width: 100%;
     padding: 8px 12px;

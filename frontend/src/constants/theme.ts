@@ -53,7 +53,7 @@ export const getRoleBadgeColor = (role: string): string => {
   }
 };
 
-// Migrated from mantineTheme.ts - integrated with shadcn system
+// Role-based theme utilities — integrated with shadcn system
 export const applyRoleTheme = (role: ThemeRole) => {
   // Remove existing theme classes
   document.body.className = document.body.className.replace(/theme-\w+/g, '');
