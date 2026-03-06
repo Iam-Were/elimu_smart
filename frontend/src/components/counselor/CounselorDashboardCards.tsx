@@ -261,7 +261,7 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
         status: 'completed',
         priority: 'medium',
         actionText: 'View Stats',
-        actionLink: '/counselor/dashboard',
+        actionLink: '/counselor/analytics',
         stats: {
           primary: `${stats.assignedStudents} Students`,
           secondary: `${stats.urgentCount} need attention`,
@@ -344,65 +344,49 @@ export const CounselorDashboardCards: React.FC<CounselorDashboardCardsProps> = (
 
       {/* Dynamic Quick Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {isLoading ? (
-          // Loading skeleton
-          Array.from({ length: 4 }, (_, i) => (
-            <Card key={i} className="bg-gradient-to-r from-gray-25 to-gray-50 border-gray-100">
-              <CardContent className="p-4 text-center">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-100 rounded w-3/4 mx-auto"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <>
-            <Card className={`bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300 dark:ring-amber-700' : ''}`}>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{stats.assignedStudents}</div>
-                <div className="text-sm text-amber-600 dark:text-amber-400">Assigned Students</div>
-                {getDerivedMetrics.urgentStudents > 0 && (
-                  <div className="text-xs text-amber-500 dark:text-amber-400 mt-1">
-                    {getDerivedMetrics.urgentStudents} urgent
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        <Card className={`bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900 ${getDerivedMetrics.urgentStudents > 0 ? 'ring-2 ring-amber-300 dark:ring-amber-700' : ''}`}>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{stats.assignedStudents}</div>
+            <div className="text-sm text-amber-600 dark:text-amber-400">Assigned Students</div>
+            {getDerivedMetrics.urgentStudents > 0 && (
+              <div className="text-xs text-amber-500 dark:text-amber-400 mt-1">
+                {getDerivedMetrics.urgentStudents} urgent
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-            <Card className={`bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900 ${stats.activeChats > 5 ? 'ring-2 ring-orange-300 dark:ring-orange-700' : ''}`}>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.activeChats}</div>
-                <div className="text-sm text-orange-600 dark:text-orange-400">Active Chats</div>
-                {stats.unreadMessages > 0 && (
-                  <div className="text-xs text-orange-500 dark:text-orange-400 mt-1">
-                    {stats.unreadMessages} unread
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        <Card className={`bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900 ${stats.activeChats > 5 ? 'ring-2 ring-orange-300 dark:ring-orange-700' : ''}`}>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.activeChats}</div>
+            <div className="text-sm text-orange-600 dark:text-orange-400">Active Chats</div>
+            {stats.unreadMessages > 0 && (
+              <div className="text-xs text-orange-500 dark:text-orange-400 mt-1">
+                {stats.unreadMessages} unread
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-            <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.todaySessions}</div>
-                <div className="text-sm text-blue-600 dark:text-blue-400">Today's Sessions</div>
-                <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                  KES {stats.todayEarnings.toLocaleString()}
-                </div>
-              </CardContent>
-            </Card>
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.todaySessions}</div>
+            <div className="text-sm text-blue-600 dark:text-blue-400">Today's Sessions</div>
+            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+              KES {stats.todayEarnings.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats.premiumStudents}</div>
-                <div className="text-sm text-emerald-600 dark:text-emerald-400">Premium Students</div>
-                <div className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">
-                  KES {stats.monthlyEarnings.toLocaleString()}/mo
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+        <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats.premiumStudents}</div>
+            <div className="text-sm text-emerald-600 dark:text-emerald-400">Premium Students</div>
+            <div className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">
+              KES {stats.monthlyEarnings.toLocaleString()}/mo
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Workload Alert */}

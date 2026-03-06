@@ -43,6 +43,7 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
   const [schoolName, setSchoolName] = useState(initialData.schoolName || '');
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initialData.kcseSubjects || []);
   const [schoolCode, setSchoolCode] = useState(initialData.schoolCode || '');
+  const [notEnrolled, setNotEnrolled] = useState(false);
   const [schoolLookup, setSchoolLookup] = useState<{ found: boolean; name?: string; id?: string } | null>(null);
   const [lookingUp, setLookingUp] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,8 +78,14 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
     }
   };
 
+  const handleNotEnrolledChange = (checked: boolean | 'indeterminate') => {
+    const isChecked = checked === true;
+    setNotEnrolled(isChecked);
+    if (isChecked) setSchoolName('');
+  };
+
   const handleSubmit = () => {
-    if (!gradeLevel || !schoolName) {
+    if (!gradeLevel || (!schoolName && !notEnrolled)) {
       alert('Please fill in all required fields');
       return;
     }
@@ -131,7 +138,8 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
         {/* School Name */}
         <div>
           <Label htmlFor="schoolName" className="text-base font-semibold mb-3 block">
-            School Name <span className="text-red-500">*</span>
+            School Name{' '}
+            {!(gradeLevel === 'Graduate' && notEnrolled) && <span className="text-red-500">*</span>}
           </Label>
           <Input
             id="schoolName"
@@ -140,7 +148,20 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
             onChange={(e) => setSchoolName(e.target.value)}
             placeholder="e.g., Alliance High School"
             className="w-full h-12 text-base"
+            disabled={notEnrolled}
           />
+          {gradeLevel === 'Graduate' && (
+            <div className="flex items-center gap-2 mt-3">
+              <Checkbox
+                id="notEnrolled"
+                checked={notEnrolled}
+                onCheckedChange={handleNotEnrolledChange}
+              />
+              <label htmlFor="notEnrolled" className="text-sm text-gray-600 cursor-pointer">
+                I'm not currently enrolled at a school
+              </label>
+            </div>
+          )}
         </div>
 
         {/* School Code (optional — for schools on the platform) */}
@@ -158,7 +179,7 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
               type="text"
               value={schoolCode}
               onChange={(e) => setSchoolCode(e.target.value.toUpperCase())}
-              placeholder="e.g., ALLI23"
+              placeholder="e.g., A3F92C"
               className="w-full h-12 text-base uppercase pr-10"
               maxLength={10}
             />
@@ -246,7 +267,7 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
 
         <Button
           onClick={handleSubmit}
-          disabled={!gradeLevel || !schoolName || selectedSubjects.length < 3}
+          disabled={!gradeLevel || (!schoolName && !(gradeLevel === 'Graduate' && notEnrolled)) || selectedSubjects.length < 3}
           className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 text-base font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue
