@@ -36,6 +36,7 @@ import {
   BookOpen,
   Lightbulb,
   Target as TargetIcon,
+  FolderOpen,
   Award
 } from 'lucide-react';
 import { ProfilePhotoUploadDialog } from '../components/common/ProfilePhotoUploadDialog';
@@ -44,6 +45,7 @@ import { EducationCard } from '../components/profile/EducationCard';
 import { AchievementsCard } from '../components/profile/AchievementsCard';
 import { PersonalityResultsDisplay } from '../components/profile/PersonalityResultsDisplay';
 import { SkillsResultsDisplay } from '../components/profile/SkillsResultsDisplay';
+import { ProfilePortfolioTab } from '../components/profile/ProfilePortfolioTab';
 import { BookingModal } from '../components/student/BookingModal';
 import { PersonalityReportModal } from '@/components/assessments/PersonalityReportModal';
 import { RiasecResultsCard } from '@/components/assessments/RiasecResultsCard';
@@ -564,7 +566,7 @@ export const ProfilePageTabbed: React.FC = () => {
           onValueChange={(value) => setSearchParams({ tab: value })}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="about" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               About
@@ -572,6 +574,10 @@ export const ProfilePageTabbed: React.FC = () => {
             <TabsTrigger value="assessments" className="flex items-center gap-2">
               <ClipboardCheck className="h-4 w-4" />
               Assessments
+            </TabsTrigger>
+            <TabsTrigger value="portfolio" className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Portfolio
             </TabsTrigger>
             <TabsTrigger value="progress" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -1415,6 +1421,11 @@ export const ProfilePageTabbed: React.FC = () => {
                 )}
               </>
             )}
+          </TabsContent>
+
+          {/* Portfolio Tab */}
+          <TabsContent value="portfolio" className="space-y-6">
+            <ProfilePortfolioTab />
           </TabsContent>
 
           {/* Progress Tab */}

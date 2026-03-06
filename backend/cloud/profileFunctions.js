@@ -149,3 +149,25 @@ Parse.Cloud.define('suggestSkills', async (request) => {
 
   return { success: true, suggestions: filtered };
 });
+
+Parse.Cloud.define('getUserProfileSkills', async (request) => {
+  const { user } = request;
+  if (!user) throw new Error('User must be authenticated');
+
+  const query = new Parse.Query('UserProfileSkill');
+  query.equalTo('user', user);
+  query.ascending('category');
+  query.limit(100);
+
+  const results = await query.find({ useMasterKey: true });
+
+  return {
+    success: true,
+    skills: results.map(s => ({
+      id: s.id,
+      name: s.get('name'),
+      category: s.get('category'),
+      level: s.get('level'),
+    }))
+  };
+});
