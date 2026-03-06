@@ -9525,3 +9525,5 @@ Parse.Cloud.define('grantPremiumSubscription', async (request) => {
   }
 });
 
+
+require('./profileFunctions');
