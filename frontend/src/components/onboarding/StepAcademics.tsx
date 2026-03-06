@@ -51,7 +51,7 @@ export function StepAcademics({ initialData, onNext, onBack }: StepAcademicsProp
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const code = schoolCode.trim().toUpperCase();
-    if (code.length < 5) { setSchoolLookup(null); return; }
+    if (code.length < 6) { setSchoolLookup(null); return; }
 
     debounceRef.current = setTimeout(async () => {
       setLookingUp(true);

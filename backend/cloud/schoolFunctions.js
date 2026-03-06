@@ -1,5 +1,50 @@
 // School License & Tagging Cloud Functions
 // Students are tagged to a school via a unique school code (no email domain needed)
+// Codes are cryptographically random hex — unguessable, no name leakage
+
+const crypto = require('crypto');
+
+// Rate limit: max 5 code lookup attempts per user per 15 minutes
+// Stored on _User to avoid an extra class. Resets on success.
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+async function checkCodeRateLimit(user) {
+  const now = Date.now();
+  const windowStart = user.get('schoolCodeWindowStart');
+  let attempts = user.get('schoolCodeAttempts') || 0;
+
+  if (!windowStart || (now - new Date(windowStart).getTime()) > RATE_LIMIT_WINDOW_MS) {
+    // Window expired — reset
+    attempts = 0;
+    user.set('schoolCodeWindowStart', new Date(now));
+  }
+
+  if (attempts >= RATE_LIMIT_MAX) {
+    const resetIn = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - new Date(user.get('schoolCodeWindowStart')).getTime())) / 60000);
+    throw new Parse.Error(429, `Too many attempts. Try again in ${resetIn} minute${resetIn === 1 ? '' : 's'}.`);
+  }
+
+  user.set('schoolCodeAttempts', attempts + 1);
+  await user.save(null, { useMasterKey: true });
+}
+
+async function resetCodeRateLimit(user) {
+  user.set('schoolCodeAttempts', 0);
+  user.unset('schoolCodeWindowStart');
+  await user.save(null, { useMasterKey: true });
+}
+
+// Generate a unique 6-char hex school code (e.g. A3F92C)
+// 16^6 = ~16.7M combinations — brute force infeasible even without rate limiting
+async function generateUniqueCode(School) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const existing = await new Parse.Query(School).equalTo('code', code).first({ useMasterKey: true });
+    if (!existing) return code;
+  }
+  throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Could not generate unique code after 10 attempts');
+}
 
 /**
  * Create a new school (admin only)
@@ -14,18 +59,8 @@ Parse.Cloud.define('createSchool', async (request) => {
   const { name, county, type, contactName, contactEmail, contactPhone, seatLimit } = request.params;
   if (!name || !county) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'name and county are required');
 
-  // Generate a unique 6-char school code: first 4 letters of name (uppercase) + 2-digit counter
-  const base = name.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X');
-  const suffix = String(Math.floor(Math.random() * 90) + 10); // 10-99
-  let code = base + suffix;
-
-  // Ensure uniqueness
   const School = Parse.Object.extend('School');
-  const existing = await new Parse.Query(School).equalTo('code', code).first({ useMasterKey: true });
-  if (existing) {
-    const suffix2 = String(Math.floor(Math.random() * 900) + 100);
-    code = base + suffix2;
-  }
+  const code = await generateUniqueCode(School);
 
   const school = new School();
   school.set('name', name);
@@ -51,10 +86,20 @@ Parse.Cloud.define('createSchool', async (request) => {
 
 /**
  * Look up a school by code — used to preview before joining
+ * Rate limited to prevent enumeration
  */
 Parse.Cloud.define('getSchoolByCode', async (request) => {
+  if (!request.user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Not authenticated');
+
   const { code } = request.params;
   if (!code) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'code is required');
+
+  // Reject obviously wrong formats early (before hitting rate limit)
+  if (!/^[A-Fa-f0-9]{6}$/.test(code.trim())) {
+    return { found: false };
+  }
+
+  await checkCodeRateLimit(request.user);
 
   const School = Parse.Object.extend('School');
   const school = await new Parse.Query(School)
@@ -63,6 +108,9 @@ Parse.Cloud.define('getSchoolByCode', async (request) => {
     .first({ useMasterKey: true });
 
   if (!school) return { found: false };
+
+  // Found — reset rate limit counter
+  await resetCodeRateLimit(request.user);
 
   return {
     found: true,
@@ -75,7 +123,7 @@ Parse.Cloud.define('getSchoolByCode', async (request) => {
 
 /**
  * Tag the current student to a school by code
- * Called during onboarding or profile update
+ * Rate limited + seat limit enforced + idempotent
  */
 Parse.Cloud.define('joinSchoolByCode', async (request) => {
   if (!request.user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Not authenticated');
@@ -83,22 +131,60 @@ Parse.Cloud.define('joinSchoolByCode', async (request) => {
   const { code } = request.params;
   if (!code) throw new Parse.Error(Parse.Error.INVALID_QUERY, 'code is required');
 
+  // Reject obviously wrong formats early
+  if (!/^[A-Fa-f0-9]{6}$/.test(code.trim())) {
+    throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Invalid school code');
+  }
+
+  const user = request.user;
+
+  // Idempotency: already tagged to this school — return success without re-writing
+  if (user.get('schoolCode') === code.toUpperCase()) {
+    return {
+      success: true,
+      alreadyJoined: true,
+      schoolId: user.get('schoolId'),
+      schoolName: user.get('schoolName'),
+    };
+  }
+
+  await checkCodeRateLimit(user);
+
   const School = Parse.Object.extend('School');
   const school = await new Parse.Query(School)
     .equalTo('code', code.toUpperCase())
     .equalTo('isActive', true)
     .first({ useMasterKey: true });
 
-  if (!school) throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Invalid or inactive school code');
+  if (!school) {
+    throw new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Invalid or inactive school code');
+  }
 
-  const user = request.user;
+  // Seat limit enforcement: count students already tagged to this school
+  const seatLimit = school.get('seatLimit') || 0;
+  if (seatLimit > 0) {
+    const User = Parse.Object.extend('_User');
+    const seated = await new Parse.Query(User)
+      .equalTo('schoolId', school.id)
+      .equalTo('role', 'student')
+      .count({ useMasterKey: true });
+    if (seated >= seatLimit) {
+      throw new Parse.Error(Parse.Error.VALIDATION_ERROR, `This school has reached its seat limit of ${seatLimit} students. Contact your school administrator.`);
+    }
+  }
+
+  // Tag student — overwrites previous school if transferring
   user.set('schoolId', school.id);
   user.set('schoolCode', code.toUpperCase());
   user.set('schoolName', school.get('name'));
   await user.save(null, { useMasterKey: true });
 
+  // Reset rate limit on success
+  await resetCodeRateLimit(user);
+
   return {
     success: true,
+    alreadyJoined: false,
     schoolId: school.id,
     schoolName: school.get('name'),
     county: school.get('county'),
