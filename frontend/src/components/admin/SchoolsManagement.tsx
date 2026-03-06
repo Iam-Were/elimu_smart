@@ -336,8 +336,8 @@ export const SchoolsManagement: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {uncodedSchools.map((s, i) => (
-                      <TableRow key={i}>
+                    {uncodedSchools.map(s => (
+                      <TableRow key={s.schoolName}>
                         <TableCell className="font-medium text-sm">{s.schoolName}</TableCell>
                         <TableCell className="text-gray-500 text-sm">{s.county || '—'}</TableCell>
                         <TableCell className="text-right">
@@ -447,12 +447,12 @@ export const SchoolsManagement: React.FC = () => {
                     <div>
                       <p className="text-xs font-medium text-gray-600 mb-2">Form Distribution</p>
                       <div className="space-y-1.5">
-                        {(['Form 1', 'Form 2', 'Form 3', 'Form 4'] as const).map(form => {
-                          const count = analytics.formDistribution[form] || 0;
+                        {(['Form 1', 'Form 2', 'Form 3', 'Form 4'] as const).map(grade => {
+                          const count = analytics.formDistribution[grade] || 0;
                           const pct = analytics.totalStudents > 0 ? Math.round((count / analytics.totalStudents) * 100) : 0;
                           return (
-                            <div key={form} className="flex items-center gap-2 text-xs">
-                              <span className="w-12 text-gray-500 shrink-0">{form}</span>
+                            <div key={grade} className="flex items-center gap-2 text-xs">
+                              <span className="w-12 text-gray-500 shrink-0">{grade}</span>
                               <Progress value={pct} className="h-1.5 flex-1" />
                               <span className="w-8 text-right text-gray-600">{count}</span>
                             </div>
