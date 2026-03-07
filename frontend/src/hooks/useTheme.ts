@@ -47,10 +47,16 @@ export const useTheme = (): UseThemeReturn => {
   });
 
   const [isDark, setIsDark] = useState(() => {
-    // Default to light mode on initial render
-    // Backend preference will be loaded in useEffect below for logged-in users
-    // System preference will be applied for anonymous users
-    return false;
+    // Read synchronously from localStorage so the initial render matches reset-theme.js
+    // This prevents a flash/override on Android before the async backend call resolves
+    try {
+      const saved = localStorage.getItem('elimu-dark-mode');
+      if (saved !== null) return saved === 'true';
+      // No saved preference — use system default
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
   });
 
   // Load dark mode preference from backend on mount
