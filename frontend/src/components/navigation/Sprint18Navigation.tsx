@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
 import Button from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,6 @@ import {
   Home,
   GraduationCap,
   Users,
-  ChevronDown,
   User,
   Settings,
   CreditCard,
@@ -36,6 +36,8 @@ import {
   Compass,
   BarChart,
   UserCog,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -57,7 +59,7 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { currentTheme } = useThemeContext();
+  const { currentTheme, isDark, toggleDarkMode } = useThemeContext();
   const { unreadCount: unreadMessageCount } = useChat();
   const { userSubscription } = useSubscription();
   const [isScrolling, setIsScrolling] = useState(false);
@@ -468,37 +470,25 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className="relative h-8 sm:h-10 px-2 sm:px-3"
-              >
-                <div className="flex items-center space-x-1 sm:space-x-2">
-                  <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
-                    <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
-                    <AvatarFallback
-                      className="text-[10px] sm:text-xs font-medium"
-                      style={{
-                        backgroundColor: getThemeColor(currentTheme),
-                        color: 'white',
-                      }}
-                    >
-                      {user?.firstName?.[0]}{user?.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50" />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72" align="end" forceMount>
-              {/* Profile Header - LinkedIn Style (Left-aligned, non-clickable) */}
-              <div className="flex items-start gap-3 p-4 border-b">
-                <Avatar className="h-14 w-14 ring-2 ring-orange-200 flex-shrink-0">
+              <Button variant="ghost" className="p-1 h-auto rounded-full hover:bg-accent">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
                   <AvatarFallback
-                    style={{
-                      backgroundColor: getThemeColor(currentTheme),
-                      color: 'white',
-                    }}
+                    className="text-sm font-medium"
+                    style={{ backgroundColor: getThemeColor(currentTheme), color: 'white' }}
+                  >
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-72" align="end">
+              {/* Profile Header — solid, no glassmorphism */}
+              <div className="flex items-start gap-3 p-4 border-b border-border">
+                <Avatar className="h-16 w-16 shrink-0">
+                  <AvatarImage src={user?.profileImage} alt={getUserDisplayName()} />
+                  <AvatarFallback
+                    style={{ backgroundColor: getThemeColor(currentTheme), color: 'white' }}
                     className="text-lg font-semibold"
                   >
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
@@ -506,77 +496,83 @@ export const Sprint18Navigation: React.FC<Sprint18NavigationProps> = ({
                 </Avatar>
                 <div className="flex flex-col space-y-1 flex-1 min-w-0">
                   <p className="font-semibold text-sm leading-tight">{getUserDisplayName()}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   <Badge className={cn("text-xs font-medium mt-1 border-0 w-fit", getSubscriptionBadgeColor(getSubscriptionStatus()))}>
                     {getSubscriptionStatus()}
                   </Badge>
                 </div>
               </div>
-              
-              <DropdownMenuSeparator />
-              
-              {/* Profile Button - LinkedIn Style Navigation */}
+
               <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
-                <span>View Profile</span>
+                View Profile
               </DropdownMenuItem>
-              
               <DropdownMenuItem onClick={() => navigate('/profile/edit')} className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Edit Profile</span>
+                Edit Profile
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Account Settings</span>
+                Account Settings
               </DropdownMenuItem>
-              
               <DropdownMenuItem onClick={() => navigate('/settings/privacy')} className="cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
-                <span>Privacy Settings</span>
+                Privacy Settings
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
-              {/* Only show subscription/billing for non-counselor users */}
+
               {user?.role !== 'counselor' && (
                 <>
                   <DropdownMenuItem onClick={() => navigate('/subscription')} className="cursor-pointer">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Subscription Status</span>
+                    Subscription
                   </DropdownMenuItem>
-
                   <DropdownMenuItem onClick={() => navigate('/billing')} className="cursor-pointer">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Billing & Invoices</span>
+                    Billing & Invoices
                   </DropdownMenuItem>
                 </>
               )}
 
               <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
-                <span>Help & Support</span>
+                Help & Support
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
 
-              {/* Sign Out - Same size as other items */}
-              <div className="p-2">
-                <button
-                  onClick={async () => {
-                    await logout();
-                    window.location.href = '/?logout=' + Date.now();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
+              {/* Dark mode toggle */}
+              <div
+                className="flex items-center justify-between px-2 py-1.5 rounded-sm cursor-pointer hover:bg-accent text-sm mx-1"
+                onClick={toggleDarkMode}
+              >
+                <div className="flex items-center gap-2">
+                  {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                </div>
+                <Switch
+                  checked={isDark}
+                  onCheckedChange={toggleDarkMode}
+                  onClick={(e) => e.stopPropagation()}
+                />
               </div>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={async () => {
+                  await logout();
+                  window.location.href = '/?logout=' + Date.now();
+                }}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950 cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
