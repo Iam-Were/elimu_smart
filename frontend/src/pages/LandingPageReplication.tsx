@@ -13,7 +13,7 @@ import Button from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import DarkModeToggle from '../components/ui/DarkModeToggle';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 import logoImage from '@/assets/logo.png';
 
 const LandingPage: React.FC = () => {
@@ -81,7 +81,7 @@ const LandingPage: React.FC = () => {
             
             {/* Actions */}
             <div className="flex items-center space-x-2 md:space-x-3">
-              <DarkModeToggle />
+              <ThemeToggle size="md" />
               <Button
                 variant="ghost"
                 onClick={() => navigate('/login')}
