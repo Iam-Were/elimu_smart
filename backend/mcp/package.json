@@ -1,0 +1,10 @@
+{
+  "name": "elimu-parse-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Elimu Smart Parse Server",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}

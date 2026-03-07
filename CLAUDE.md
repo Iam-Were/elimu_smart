@@ -131,40 +131,15 @@ node scripts/test-login.js production
 
 ## Critical Development Standards
 
-### 1. Code Quality (100% Compliance REQUIRED)
-```bash
-# MANDATORY before ANY commit:
-npm run build    # Must pass with ZERO errors
-npm run lint     # Must pass with ZERO errors and warnings
+> **Full standards guide**: See `.claude/development-standards.md`
 
-# Browser testing REQUIRED:
-- Open DevTools console
-- Check for runtime errors
-- Test navigation flows
-- Verify all interactive elements work
-```
+**Code Quality** (MANDATORY): `npm run build` + `npm run lint` — ZERO errors/warnings before any commit. Check browser DevTools console for runtime errors.
 
-### 2. Component Development Rules
+**Component Rules**: shadcn UI only, lowercase imports (`@/components/ui/button`), no `any` types, no Mantine for new dev, prefer editing files over creating new ones, no `Button asChild` + `Link` + `onClick` combination.
 
-**ALWAYS:**
-- Check CLAUDE.md FIRST before making any changes
-- Use shadcn UI for all new components
-- Use lowercase imports: `@/components/ui/button`
-- Define proper TypeScript interfaces (NEVER use `any`)
-- Include accessibility (WCAG 2.1 AA compliance)
-- Test on mobile AND desktop
-- Prefer editing existing files over creating new ones
+**UX Design**: Single-page > multi-step always. Provide immediate value before asking for input. Cards: max 6 elements, gradient icon containers. Full color mapping and icon patterns in `.claude/development-standards.md`.
 
-**NEVER:**
-- Create new files unless absolutely necessary
-- Use Mantine components for new development
-- Use `any` types (use `unknown` with type guards instead)
-- Mix uppercase/lowercase in shadcn imports
-- Create documentation files unless explicitly requested
-- Use blocking API calls in user interactions
-- Use `Button asChild` + `Link` + `onClick` combination
-
-### 3. Navigation Pattern (REQUIRED)
+### Navigation Pattern (REQUIRED)
 ```typescript
 // ✅ CORRECT: Reliable button navigation
 const navigate = useNavigate();
@@ -188,7 +163,7 @@ const navigate = useNavigate();
 </Button>
 ```
 
-### 4. Form Response Pattern (REQUIRED)
+### Form Response Pattern (REQUIRED)
 ```typescript
 // ✅ CORRECT: Non-blocking resilient pattern
 const handleResponse = async (data: FormData) => {
@@ -219,69 +194,6 @@ const handleResponse = async (data: FormData) => {
   updateUI();       // User stuck waiting
 };
 ```
-
-### 5. UX Design Philosophy
-**Single-Page > Multi-Step (ALWAYS try single-page first)**
-
-✅ **PREFER**: Immediate results without loading screens
-- Click subject → instant career display (like SubjectCareerMapper)
-- Static data for immediate value + backend for advanced features
-- Everything visible on one page with progressive enhancement
-
-❌ **AVOID**: Multi-step flows unless absolutely necessary
-- Only use when: complex data collection, legal compliance, or mobile space constraints
-
-**Key Principle**: Provide immediate value BEFORE asking for user input.
-
-### 6. Card Content & Icon System Standards (2025 Best Practices)
-
-**Minimal Card Content (REQUIRED)**
-- **Maximum 6 Elements Per Card**: Icon, Title, Badge, Description, Benefit/Metric, CTA
-- **Text Length**: Under 100 characters for descriptions
-- **No Verbose Sections**: Remove "Common Questions", "What You'll Do", bullet point lists
-- **Benefits**: Single plain text line (no boxes/containers)
-- **Cognitive Load**: 4-6 scannable elements only
-
-**Gradient Icon Containers (REQUIRED)**
-```typescript
-// ✅ CORRECT: Professional gradient icon system
-<div className={cn(
-  "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-  `bg-gradient-to-br ${card.iconGradient}`
-)}>
-  {React.cloneElement(card.icon as React.ReactElement, { className: "w-6 h-6 text-white" })}
-</div>
-
-// ❌ NEVER: Flat backgrounds (outdated pattern)
-<div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-  {card.icon}
-</div>
-```
-
-**Card Type Color Mapping**
-- **Assessment/Discovery**: Purple gradient (`from-purple-500 to-purple-600`)
-- **Subject/Academic**: Blue gradient (`from-blue-500 to-blue-600`)
-- **Skills/Development**: Green gradient (`from-green-500 to-green-600`)
-- **University/Placement**: Indigo gradient (`from-indigo-500 to-indigo-600`)
-- **Career/Exploration**: Amber gradient (`from-amber-500 to-amber-600`)
-- **Results/Dashboard**: Orange gradient (`from-orange-500 to-orange-600`)
-
-**60-30-10 Color Rule**
-- **60% Base**: White/neutral backgrounds
-- **30% Theme**: Primary user journey color (orange for students)
-- **10% Accent**: Card type specific gradients
-
-**Bento Grid Layout Standards**
-- **Tall Cards** (`row-span-2`): High complexity content (detailed results, multi-step processes)
-- **Standard Cards** (`row-span-1`): Medium complexity (balanced info + action)
-- **Compact Cards** (`row-span-1`): Low complexity (metrics, quick actions)
-- **Grid Definition**: `auto-rows-[minmax(280px,auto)]` for flexible heights
-
-**Icon Best Practices**
-- **Professional Platforms**: Use icons (NOT emojis)
-- **Size Hierarchy**: Larger icons (w-12 h-12) for primary actions, smaller (w-6 h-6) for secondary
-- **Hover Effects**: Scale transform on hover (`group-hover:scale-110`)
-- **Shadow Depth**: `shadow-lg` for gradient containers
 
 ## Key Technical Patterns
 
@@ -354,99 +266,16 @@ try {
 }
 ```
 
-### Bento Grid Layout Pattern
-Variable card heights communicate information importance (see Card Content section above for complete implementation).
-
 ## Backend Implementation Patterns (Parse Server)
 
-### Parse Cloud Function Modules (CRITICAL)
+> **Full patterns with code examples**: See `.claude/backend-patterns.md`
 
-```javascript
-// ❌ NEVER: Local Parse require in cloud function modules
-const Parse = require('parse/node');
-
-// ✅ REQUIRED: Use global Parse from main.js (NO require needed)
-Parse.Cloud.define('myFunction', async () => {
-  const query = new Parse.Query('MyClass');
-  return await query.find({ useMasterKey: true });
-});
-```
-
-**Why:** Cloud modules are loaded AFTER Parse is globally initialized. Local require creates conflicts.
-
-### Schema Creation Pattern
-
-```javascript
-// ✅ Dummy Object Pattern (when Schema API fails with "unauthorized")
-Parse.Cloud.define('initializeSchema', async () => {
-  const MyClass = Parse.Object.extend('MyClass');
-  const dummy = new MyClass();
-
-  dummy.set('field1', 'string');
-  dummy.set('field2', 0);
-  dummy.set('isDeleted', true); // Hide dummy record
-
-  await dummy.save(null, { useMasterKey: true }); // PostgreSQL auto-creates table
-  return { success: true };
-});
-```
-
-### Chat Authorization (CRITICAL Security)
-
-```javascript
-// ✅ REQUIRED: Verify user is participant BEFORE returning messages
-Parse.Cloud.define('getChatMessages', async (request) => {
-  const { chatRoomId } = request.params;
-  const user = request.user;
-
-  if (!user) {
-    throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
-  }
-
-  // Get chat room and verify participant
-  const chatRoom = await new Parse.Query('ChatRoom').get(chatRoomId, { useMasterKey: true });
-  const participants = chatRoom.get('participants') || [];
-
-  if (!participants.includes(user.id)) {
-    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Access denied');
-  }
-
-  // NOW safe to return messages
-  const query = new Parse.Query('ChatMessage');
-  query.equalTo('chatRoom', chatRoom);
-  return await query.find({ useMasterKey: true });
-});
-
-// ✅ Defense-in-depth: Add beforeFind hook
-Parse.Cloud.beforeFind('ChatMessage', async (request) => {
-  const user = request.user;
-  if (!user) throw new Parse.Error(Parse.Error.SESSION_MISSING, 'Auth required');
-
-  const chatRoomId = request.query._where?.chatRoom?.objectId;
-  if (chatRoomId) {
-    const room = await new Parse.Query('ChatRoom').get(chatRoomId, { useMasterKey: true });
-    if (!room.get('participants').includes(user.id)) {
-      throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'Access denied');
-    }
-  }
-  return request.query;
-});
-```
-
-**Why Both Layers:** Cloud function protects Parse.Cloud.run() calls, beforeFind hook protects direct client queries.
-
-### Environment Credentials
-
-```bash
-# Development:
-APP_ID=elimu_smart_app_2024
-
-# Production VPS:
-APP_ID=elimu-smart-production  # DIFFERENT!
-
-# Check VPS credentials before debugging:
-ssh root@145.239.42.121 'grep "^APP_ID=" /root/elimu_smart/backend/.env'
-```
+**Key rules**:
+- Never `require('parse/node')` in cloud modules — use global Parse (loaded AFTER initialization)
+- Dev APP_ID: `elimu_smart_app_2024` | Production APP_ID: `elimu-smart-production` (DIFFERENT!)
+- Schema creation: use Dummy Object pattern when Schema API returns "unauthorized"
+- Chat: always verify user is participant BEFORE returning messages (2-layer: Cloud function + beforeFind hook)
+- Check VPS credentials: `ssh root@145.239.42.121 'grep "^APP_ID=" /root/elimu_smart/backend/.env'`
 
 ## Kenya Educational Context Integration
 
@@ -523,279 +352,37 @@ ssh root@145.239.42.121 'grep "^APP_ID=" /root/elimu_smart/backend/.env'
 
 ## Backend-Frontend Integration Status
 
-**Last Verified**: 2025-10-08
-**Total Backend Functions**: 108 (92 in main.js + 16 in separate modules)
-**Integration Rate**: 57.4% (62/108 integrated)
-**Mobile Readiness**: 82% ✅
+**Last Verified**: 2025-10-08 | **Total**: 108 functions | **Integrated**: 62 (57.4%) | **Mobile Ready**: 82% ✅
 
-**Quick Reference Files** (Token Optimization):
-- `.claude/integration-status.json` - Complete function mapping (2K tokens vs 12K for this section)
-- `.claude/mobile-readiness.md` - Mobile dev checklist (800 tokens)
-- `.claude/quick-reference.json` - Function → file locations
+**Reference Files**:
+- `.claude/integration-status.json` — Complete function mapping (62 integrated + 46 pending)
+- `.claude/quick-reference.json` — Function → file locations
+- `/integration-status` slash command — Show integration summary
+- `/check-backend <function>` — Find function location
 
-**Slash Commands**:
-- `/integration-status` - Show integration summary
-- `/mobile-readiness` - Mobile readiness checklist
-- `/check-backend <function>` - Find function location
-- `/token-tips` - Token optimization guide
-
-### Actively Integrated (62 functions - 57.4%)
-
-**Assessment System (10 functions)**
-- `getRiasecQuestions`, `getSkillsQuestions`, `saveAssessmentResult`, `getUserAssessments`
-- `calculateRiasecScores`, `startRiasecAssessment`, `saveRiasecResponse`, `completeRiasecAssessment`
-- `getRiasecResults`, `getRiasecHistory`
-- Used by: `lib/assessmentApi.ts`, `FreeRiasecAssessment.tsx`, `SkillsAssessment.tsx`
-
-**User Preferences (3 functions)**
-- `getUserPreferences`, `saveUserPreferences`, `updateUserPreference`
-- Used by: `lib/userPreferences.ts`, `useTheme.ts`
-
-**Counselor Dashboard (10 functions)**
-- `logCounselorActivity`, `getCounselorAssignedStudents`, `getCounselorActiveChatSessions`
-- `getCounselorTodaysAppointments`, `getCounselorPendingQuestions`, `getCounselingAnalytics`
-- `getCounselorRecentActivities`, `bookCounselorSession`, `getAssignedStudents`, `getPendingSessionRequests`
-- Used by: `hooks/useCounselorDashboard.ts`, `SessionManager.tsx`, `StudentRoster.tsx`
-
-**Admin Dashboard (9 functions)**
-- `logAdminActivity`, `getAdminSystemMetrics`, `getAdminSecurityMetrics`, `getAdminBusinessMetrics`
-- `getAdminContentMetrics`, `getAdminSupportMetrics`, `getAdminAuditLogs`, `getAdminRecentActivities`, `getAdminBillingAnalytics`
-- Used by: `hooks/useAdminDashboard.ts`, `SystemAnalytics.tsx`
-
-**Q&A System (4 functions)**
-- `submitQuestion`, `answerQuestion`, `getMyQuestions`, `getStudentQuestions`
-- Used by: `QuestionQueue.tsx`, `QuickQuestions.tsx`
-
-**Messaging/Chat (8 functions)**
-- `createChatRoom`, `sendMessage`, `getChatRooms`, `getChatMessages`
-- `markMessagesAsRead`, `getInboxConversations`, `searchConversations`, `archiveConversation`
-- Used by: `CounselorChat.tsx`, `InboxPage.tsx`
-
-**Student Features (8 functions)**
-- `logUserActivity`, `calculateCareerReadinessScore`, `getCareerExplorationData`
-- `getScholarshipMatches`, `getUniversityPlacementData`, `exploreCareers`, `getCareerDetails`, `getCareerJobData`
-- Used by: `useDynamicDashboard.ts`, `ScholarshipSearch.tsx`, `CareerExploration.tsx`
-
-**Subscriptions/Billing (7 functions)**
-- `getSubscriptionPlans`, `getUserSubscription`, `initiateSubscriptionPayment`, `checkSubscriptionPaymentStatus`
-- `cancelSubscription`, `getBillingHistory`, `getInvoiceDetails`
-- Used by: `hooks/useSubscription.ts`, `SubscriptionPage.tsx`
-
-**Email Services (6 functions)**
-- `sendWelcomeEmail`, `sendAssessmentCompletionEmail`, `sendKuccpsDeadlineReminder`
-- `sendSessionBookingConfirmation`, `sendScholarshipAlert`, `getEmailStatistics`
-- Used by: `hooks/useEmailService.ts`
-
-**Professional Networking (1 function)**
-- `getLinkedInProfessionalInsights`
-- Used by: `ProfessionalNetworkingHub.tsx`
-
-### Backend Ready, Frontend Incomplete (46 functions - 42.6%)
-
-**High Priority (Implement Next)**
-
-*Notifications (2 functions)*
-- `createNotification`, `getNotifications`
-- **Impact**: Real-time alerts (assessment complete, counselor response, deadline reminders)
-- **Effort**: 1.5 hours
-
-*File Upload (2 functions)*
-- `uploadFile`, `uploadProfileImage`
-- **Impact**: Profile pictures, document uploads
-- **Effort**: 1.5 hours
-
-*Assessment Progress (3 functions)*
-- `updateAssessmentProgress`, `getAssessmentProgress`, `completeAssessment`
-- **Impact**: Resume incomplete assessments, show progress on cards
-- **Effort**: 1 hour
-
-*Advanced University Matching (3 functions)*
-- `calculateKUCCPSPoints`, `matchUniversityCourses`, `calculateCutoffPoints`
-- **Impact**: Backend-calculated cluster points, cutoff comparison
-- **Effort**: 1 hour
-
-**Medium Priority (Phase 2)**
-
-*Achievements/Gamification (5 functions)*
-- `getUserAchievements`, `addAchievementBadge`, `getUserCertifications`
-- `syncExternalCertification`, `connectLearningPlatform`
-
-*University Tools (8 functions)*
-- `analyzeSubjectCareerFit`, `findUniversityCourses`, `getCourseRecommendations`
-- `getKuccpsTimeline`, `updateCareerReadiness`, `startSkillsAssessment`, `calculateSkillProfile`, `resumeRiasecAssessment`
-
-*Billing Admin (4 functions)*
-- `generateInvoice`, `getInvoiceHTML`, `resendInvoice` (billing functions duplicated in main.js)
-
-**Low Priority (Admin/Infrastructure)**
-
-*Caching Tools (4 functions)*
-- `getCacheStats`, `clearExpiredCache`, `clearAllCache`, `cleanupExpiredCache`
-
-*Schema Initialization (2 functions)*
-- `initializeStudentCounselorSchema`, `initializeRiasecSchema`
-
-*Testing/Legacy (2 functions)*
-- `hello`, `seedDemoUsers`
+**High Priority Pending**: Notifications (2), File Upload (2), Assessment Progress (3), Advanced University Matching (3)
 
 ## Development Workflow
 
-**Troubleshooting Quick Reference:**
-- Build errors: Check shadcn import case (lowercase), missing routes, unused imports
-- Runtime errors: MantineProvider context, Parse SDK dynamic imports, navigation pattern
-- Performance: Remove unused imports, tree-shaking, useCallback/useMemo, separate utilities
+**Troubleshooting**: Build errors → check shadcn import case (lowercase), missing routes, unused imports. Runtime errors → MantineProvider context, Parse SDK dynamic imports, navigation pattern.
 
-### Before Starting Work
-1. ✅ Read CLAUDE.md for current standards and patterns
-2. ✅ Check existing components before creating new ones
-3. ✅ Understand user journey context (Student/Counselor/Admin)
-4. ✅ Plan for Kenya educational context integration
+### Workflow: Local → GitHub → VPS
+1. **Local**: `npm run lint` (0 warnings required) → fix errors → commit
+2. **Push**: `git add . && git commit -m "message" && git push origin main`
+3. **Monitor**: `gh run list --limit 1` → `gh run watch <run-id>` — Actions auto-lint + build-check
+4. **Deploy VPS**: SSH → `git pull` → `pm2 restart parse-server-prod` → build frontend → copy dist
+5. **Verify**: `curl https://elimu-smart.co.ke/parse/health` + test key features in browser
 
-### During Development
-1. ✅ Use shadcn UI components exclusively
-2. ✅ Write proper TypeScript interfaces (no `any` types)
-3. ✅ Follow navigation and form patterns documented above
-4. ✅ Test in browser DevTools continuously
-5. ✅ Ensure accessibility (ARIA labels, keyboard navigation)
+**Full workflow details**: See `.claude/deployment-workflow.md`
 
-### Development Workflow (Local → GitHub → VPS)
+## Mobile Development & Integration Roadmap
 
-**IMPORTANT**: Follow this exact workflow for all code changes:
+**Mobile Readiness**: 82% ✅ — See `.claude/mobile-readiness.md` for full component checklist and table.
 
-#### 1. Local Development (Code + Lint Only)
-```bash
-cd frontend
-npm run dev      # Test changes locally
-npm run lint     # Check for errors (MUST pass with 0 errors before commit)
-# Fix any lint errors, then commit
-```
-
-#### 2. Push to GitHub
-```bash
-git add .
-git commit -m "descriptive message"
-git push origin main
-```
-
-#### 3. Monitor GitHub Actions
-```bash
-gh run list --limit 1        # Check latest run status
-gh run watch <run-id>        # Monitor build progress
-```
-
-**GitHub Actions Workflow** (Automatic):
-- ✅ Auto-Fix Lint Errors (runs first, auto-commits fixes if needed)
-- ✅ Lint & Build Check (TypeScript + ESLint validation)
-- ✅ Node.js CI (production build test on Node 20.x)
-- ⚠️ Deploy to Staging (manual - see VPS deployment below)
-
-**Note**: If GitHub Actions fails due to billing limits, proceed with manual VPS deployment after verifying local lint passes.
-
-#### 4. Deploy to VPS (Production)
-```bash
-ssh root@145.239.42.121
-
-# Navigate to project directory
-cd /root/elimu_smart
-
-# Pull latest changes
-git pull origin main
-
-# Handle any merge conflicts
-git stash                    # If conflicts
-git pull origin main
-git stash pop               # Resolve conflicts manually if needed
-
-# Backend deployment
-cd backend
-npm install                 # If package.json changed
-pm2 restart parse-server-prod
-
-# Frontend deployment
-cd ../frontend
-npm install                 # If package.json changed
-npm run build -- --mode production
-sudo cp -r dist/* /var/www/elimu-smart/
-
-# Verify deployment
-curl https://elimu-smart.co.ke/parse/health
-curl https://elimu-smart.co.ke/
-```
-
-#### 5. Verify Production
-- **Frontend**: https://elimu-smart.co.ke
-- **Backend Health**: https://elimu-smart.co.ke/parse/health
-- **Test Key Features**: Login, assessments, navigation
-- **Check PM2 Status**: `pm2 status` and `pm2 logs parse-server-prod --lines 50`
-
-### Quick Reference Commands
-
-**Local**:
-```bash
-npm run lint              # Check code quality
-git push origin main      # Push to GitHub
-```
-
-**GitHub**:
-```bash
-gh run list              # View recent runs
-gh run watch             # Monitor active run
-```
-
-**VPS**:
-```bash
-ssh root@145.239.42.121
-cd /root/elimu_smart && git pull origin main
-pm2 restart parse-server-prod
-cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/
-```
-
-## Mobile Development Readiness
-
-**Overall Score**: 82% ✅ **READY to start mobile development**
-
-**Critical Finding**: SubjectCareerMapper has 466 lines of hardcoded career data that needs migration to Parse Class database for full mobile readiness.
-
-### Component Readiness Table
-
-| Component | Backend Logic | Data Storage | Offline Support | Mobile Ready |
-|-----------|---------------|--------------|-----------------|--------------|
-| RIASEC Assessment | ✅ Backend | ✅ Parse DB | ✅ Fallback | ✅ 100% |
-| Skills Assessment | ✅ Backend | ✅ Parse DB | ⚠️ None | ✅ 90% |
-| Career Exploration | ✅ Backend | ✅ Parse DB | ⚠️ None | ✅ 90% |
-| University Finder | ✅ Backend | ✅ Parse DB | ⚠️ None | ✅ 90% |
-| Subject Mapper | ⚠️ Partial | ❌ Hardcoded | ✅ All Local | ⚠️ 60% |
-| Chat/Inbox | ✅ Backend | ✅ Parse DB | ❌ Not integrated | ❌ 40% |
-| User Preferences | ✅ Backend | ✅ Parse DB | ✅ localStorage | ✅ 100% |
-| Dashboard | ✅ Backend | ✅ Parse DB | ⚠️ None | ✅ 90% |
-
-**Recommendation**: Start mobile development NOW. Core features (RIASEC, Skills, Career, University) are 90-100% ready. SubjectCareerMapper can ship with embedded data temporarily, migrate to Parse Classes in Sprint 2.
-
-**Full Mobile Checklist**: See `.claude/mobile-readiness.md` (saves 11K tokens vs reading this section)
-
-## Integration Roadmap
-
-**High Priority for Mobile Launch**:
-1. **SubjectCareerMapper Migration** (2-3 days):
-   - Create Parse Class `Career` database
-   - Migrate 466 lines from frontend to backend
-   - Impact: -25KB bundle, mobile-ready, dynamic updates
-
-2. **Chat/Messaging Integration** (2 days):
-   - Integrate 7 available functions: getChatMessages, getChatRooms, getInboxConversations, archiveConversation, searchConversations, markMessagesAsRead, sendMultimediaMessage
-   - Required for: Premium inbox feature
-
-3. **Assessment Progress Tracking** (1-2 days):
-   - Integrate 6 functions: startRiasecAssessment, saveRiasecResponse, completeRiasecAssessment, resumeRiasecAssessment, startSkillsAssessment, getAssessmentProgress
-   - Required for: Resume incomplete assessments across devices
-
-**Medium Priority**:
-- Gamification (3 functions - 1 day)
-- University tools enhancement (2 functions - 1 day)
-
-**Low Priority** (Admin/Infrastructure):
-- Billing admin features (5 functions)
-- Cache management (4 functions)
+**Integration Roadmap** (priority order):
+1. SubjectCareerMapper migration to Parse Classes (2-3 days) — -25KB bundle
+2. Chat/Messaging integration — 7 available functions (2 days)
+3. Assessment Progress Tracking — 6 functions for cross-device resume (1-2 days)
 
 ## Student Guidance System (Freemium Architecture)
 
@@ -866,276 +453,9 @@ Elimu Smart uses a **3-channel freemium model** based on industry best practices
 
 ---
 
-## 🚀 VPS Deployment Guide (TrueHosts)
-
-### **CRITICAL: Read This First on VPS!**
-
-When you (Claude) are logged into the VPS, follow this workflow:
-
-1. **ALWAYS Read CLAUDE.md First**
-   ```bash
-   cd ~/elimu_smart
-   cat CLAUDE.md
-   ```
-
-2. **Check Current Context**
-   ```bash
-   git status
-   git log -5
-   pm2 status
-   ```
-
-3. **VPS Deployment Checklist**
-   - [ ] Run `bash backend/setup-vps.sh` (one-time automated setup)
-   - [ ] Configure `backend/.env.production` with real credentials (template exists)
-   - [ ] Point DNS to VPS IP (elimu-smart.co.ke)
-   - [ ] Run SSL setup: `sudo certbot --nginx -d elimu-smart.co.ke -d dashboard.elimu-smart.co.ke`
-   - [ ] Build frontend: `cd frontend && npm run build`
-   - [ ] Deploy frontend: `sudo mkdir -p /var/www/elimu-smart && sudo cp -r dist/* /var/www/elimu-smart/`
-   - [ ] Start Parse Server: `cd backend && pm2 start ecosystem.config.js`
-   - [ ] Test Parse API: `curl https://elimu-smart.co.ke/parse/health`
-
-### **Production Environment Variables**
-
-All credentials are in `backend/.env` (already configured):
-- **M-Pesa Production**: Consumer Key/Secret, Shortcode 5482596, Passkey ready ✅
-- **ZeptoMail**: API token configured for emails ✅
-- **Parse Server**: App ID `elimu_smart_app_2024`, Master Key set ✅
-- **PostgreSQL**: User `elimu`, Database `elimu_smart_prod` ✅
-- **Redis**: `redis://localhost:6379` ✅
-
-### **External APIs & Caching Status**
-
-**Caching Implementation**: ✅ COMPLETE
-- Redis cache adapter configured in `server-working.js`
-- Cache utility module: `backend/utils/cache.js`
-- TTL configuration for all data types
-- Development: In-memory cache | Production: Redis
-
-**Active APIs**:
-
-1. **M-Pesa Daraja API** ✅ PRODUCTION READY
-   - Shortcode: 5482596, Environment: Production
-   - **CACHING: NO** (TTL: 0s) - Real-time payments only
-
-2. **ZeptoMail API** ✅ CONFIGURED
-   - From: noreply@elimu-smart.co.ke
-   - **CACHING: NO** (TTL: 0s) - Emails send immediately
-
-3. **CareerJet API** ✅ LIVE DATA
-   - Real API integrated in: `backend/cloud/main.js:4140`
-   - Public API (free, no key required)
-   - **CACHING: YES** (TTL: 24 hours) - Job listings cached
-
-4. **LinkedIn Insights** ✅ LIVE DATA
-   - Real verified LinkedIn profiles: John Walubengo, Juliana Rotich, Sam Gichuru, James Mwangi, Betty Maina
-   - Implementation: `backend/cloud/linkedin-professional-insights.js`
-   - **CACHING: YES** (TTL: 7 days) - Cached via `getCached()` wrapper
-
-**Data Sources (No External API)**:
-- KUCCPS Data: 7-day cache (weekly updates during admission season)
-- Universities: 24-hour cache (manual yearly updates)
-- Scholarships: 24-hour cache (manual/scraped data)
-- Kenya Careers: 24-hour cache (static database)
-
-**See**: `CACHING_IMPLEMENTATION.md` for complete details
-
-## Multi-Environment Deployment Architecture
-
-### **Environment Strategy**
-
-Elimu Smart uses a **3-tier environment** for safe, reliable deployments:
-
-| Environment | URL | Port | Database | Redis DB | Purpose |
-|-------------|-----|------|----------|----------|---------|
-| **Development** | http://localhost:5173 | 1337 | `elimu_smart_dev` | - | Local development |
-| **Staging** | https://staging.elimu-smart.co.ke | 1338 | `elimu_smart_staging` | 1 | Pre-production testing |
-| **Production** | https://elimu-smart.co.ke | 1337 | `elimu_smart_production` | 0 | Live user-facing app |
-
-### **Critical Deployment Fixes (2025-10-06)**
-
-**Problem 1: Hardcoded Port Issue**
-```javascript
-// ❌ WRONG: Line 113 in server-working.js had hardcoded port
-const port = 1337;
-
-// ✅ FIXED: Use environment variable with fallback
-const port = process.env.PORT || 1337;
-```
-- **Impact**: Staging can now run on port 1338, production on 1337
-- **File**: `backend/server-working.js:113`
-
-**Problem 2: Double Dotenv Loading**
-```javascript
-// ❌ WRONG: server-working.js always loaded .env, overriding staging vars
-require('dotenv').config();
-
-// ✅ FIXED: Conditional loading with flag check
-if (!process.env.DOTENV_LOADED) {
-  require('dotenv').config();
-}
-```
-- **Impact**: Staging environment variables no longer overridden by production .env
-- **File**: `backend/server-working.js:10-12`
-
-**Problem 3: Staging Environment Loader**
-```javascript
-// backend/server-staging.js (NEW FILE)
-// Set flag to prevent server-working.js from loading .env
-process.env.DOTENV_LOADED = 'true';
-
-// Load staging environment
-require('dotenv').config({ path: '.env.staging' });
-
-// Then start the regular server
-require('./server-working.js');
-```
-- **Why**: PM2's `env_file` feature is unreliable across versions
-- **Pattern**: Dedicated loader scripts for each environment
-- **Impact**: Clean environment isolation without PM2 workarounds
-
-### **PM2 Configuration (Dual Environment)**
-
-```javascript
-// backend/ecosystem.config.js
-module.exports = {
-  apps: [
-    // PRODUCTION Parse Server
-    {
-      name: 'parse-server-prod',
-      script: 'server-working.js',
-      instances: 2,  // Cluster mode
-      exec_mode: 'cluster',
-      env: { NODE_ENV: 'production' },
-      cron_restart: '0 3 * * *'  // Restart at 3 AM daily
-    },
-
-    // STAGING Parse Server
-    {
-      name: 'parse-server-staging',
-      script: 'server-staging.js',  // Uses dedicated loader
-      instances: 1,  // Single instance
-      exec_mode: 'fork',
-      env: { NODE_ENV: 'staging' }
-    }
-    // ... dashboards
-  ]
-};
-```
-
-**PM2 Commands**:
-```bash
-pm2 start ecosystem.config.js   # Start all services
-pm2 restart parse-server-prod    # Restart production only
-pm2 restart parse-server-staging # Restart staging only
-pm2 logs parse-server-staging    # View staging logs
-pm2 monit                        # Monitor all processes
-```
-
-### **Environment Files Structure**
-
-**Backend**:
-- `.env` → Production (port 1337, `elimu_smart_production`, Redis DB 0)
-- `.env.staging` → Staging (port 1338, `elimu_smart_staging`, Redis DB 1)
-
-**Frontend**:
-- `.env.production` → `VITE_PARSE_SERVER_URL=https://elimu-smart.co.ke/parse`
-- `.env.staging` → `VITE_PARSE_SERVER_URL=https://staging.elimu-smart.co.ke/parse`
-
-**Build Commands**:
-```bash
-cd frontend
-
-# Build for production
-npm run build -- --mode production
-sudo cp -r dist/* /var/www/elimu-smart/
-
-# Build for staging
-npm run build -- --mode staging
-sudo cp -r dist/* /var/www/elimu-smart-staging/
-```
-
-### **Deployment Workflow**
-
-**To Staging (Test Changes)**:
-```bash
-git push origin main
-ssh root@145.239.42.121
-cd /root/elimu_smart
-git pull origin main
-pm2 restart parse-server-staging
-cd frontend && npm run build -- --mode staging
-sudo cp -r dist/* /var/www/elimu-smart-staging/
-curl https://staging.elimu-smart.co.ke/health
-```
-
-**To Production (After Staging Tests Pass)**:
-```bash
-pm2 restart parse-server-prod
-cd /root/elimu_smart/frontend
-npm run build -- --mode production
-sudo cp -r dist/* /var/www/elimu-smart/
-curl https://elimu-smart.co.ke/health
-```
-
-**See**: `DEPLOYMENT_GUIDE.md` for complete VPS setup, SSL certificates, troubleshooting
-
-### **Recent Backend Migrations (2025-10-06)**
-
-1. **✅ Assessment Data** - COMPLETED
-   - RiasecQuestion, SkillQuestion classes with 132 questions
-   - Migration: `backend/migrations/seed-assessments.js` (21KB, seeded)
-
-2. **✅ LocalStorage → Parse Objects** - COMPLETED
-   - UserPreferences class with Cloud Functions (theme, darkMode, onboarding, cardOrder)
-   - Migration: `backend/migrations/create-user-preferences-schema.js`
-   - Reduced from 56+ localStorage calls to ~17 (auth tokens only)
-
-3. **✅ RIASEC Scoring Algorithms** - COMPLETED
-   - Moved 275 lines from frontend to Cloud Functions
-   - File: `backend/cloud/riasecScoringFunctions.js`
-   - Functions: calculateRiasecScores, generateCareerMatches, generateDevelopmentAreas, generateNextSteps
-
-4. **✅ Parse SDK Code-Splitting** - COMPLETED
-   - Converted all static imports to dynamic `getParse()`
-   - Files: useCounselorDashboard.ts, useEmailService.ts, useAdminDashboard.ts (27 functions)
-
-5. **✅ Route-Based Lazy Loading** - COMPLETED
-   - 35 routes converted to React.lazy()
-   - Initial bundle reduced from 1,051 KB to 525 KB (50% reduction)
-
-### **Monitoring URLs After Deployment**
-
-**Production**:
-- **Main Site**: https://elimu-smart.co.ke
-- **Parse API**: https://elimu-smart.co.ke/parse
-- **Health Check**: https://elimu-smart.co.ke/health
-- **Parse Dashboard**: https://elimu-smart.co.ke/dashboard (admin/[set-password])
-
-**Staging**:
-- **Main Site**: https://staging.elimu-smart.co.ke
-- **Parse API**: https://staging.elimu-smart.co.ke/parse
-- **Health Check**: https://staging.elimu-smart.co.ke/health
-- **Parse Dashboard**: https://staging.elimu-smart.co.ke/dashboard (admin/[set-password])
-
-**Monitoring Tools**:
-- **PM2 Monitoring**: `pm2 monit` (CLI) or https://app.pm2.io (after signup)
-- **UptimeRobot**: Configure after deployment (free tier)
-
-### **Daily Backup Schedule**
-
-Automated cron job runs at 2 AM daily:
-```bash
-/home/user/elimu_smart/backend/scripts/backup-database.sh
-```
-
-Backups stored in: `~/elimu_smart_backups/` (30-day retention)
-
----
-
 ## Quick Deployment Reference
 
-**For detailed VPS deployment steps, see: `VPS_DEPLOYMENT.md`**
+**Full VPS setup, environments, PM2 config, SSL, monitoring, backups**: See `.claude/DEPLOYMENT_CHECKLIST.md` and `.claude/deployment-workflow.md`
 
 **Quick Deploy to Production**:
 ```bash
@@ -1146,10 +466,10 @@ sudo cp -r dist/* /var/www/elimu-smart/
 curl https://elimu-smart.co.ke/parse/health
 ```
 
-**Migrations to Run** (if not already run):
+**Migrations** (if not already run):
 ```bash
 cd /root/elimu_smart/backend
-node migrations/create-user-preferences-schema.js  # NEW
+node migrations/create-user-preferences-schema.js
 node migrations/schema-assessments.js
 node migrations/seed-assessments.js
 ```

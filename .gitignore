@@ -102,3 +102,11 @@ backend/logs/
 
 # Secrets
 GITHUB_SECRETS_SETUP.md
+
+# Nested node_modules (MCP servers etc.)
+**/node_modules/
+
+# Claude Code local settings
+.claude/settings.json
+.claude/settings.local.json
+.claude/screenshots/

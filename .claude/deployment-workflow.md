@@ -24,7 +24,6 @@ npm run lint --fix  # Auto-fix issues
 1. **Auto-Fix Lint Errors** (runs first, auto-commits fixes)
 2. **Lint & Build Check** (TypeScript + ESLint validation)
 3. **Node.js CI** (production build test on Node 20.x)
-4. **Deploy to Staging** (automatic if build passes)
 
 **GitHub Actions Config**: `.github/workflows/` (already configured ✅)
 
@@ -126,9 +125,7 @@ gh run watch  # Monitor build in real-time
 # - Push again (no need to SSH into VPS)
 
 # 8. If build succeeds:
-# - Automatic deployment to staging
-# - Test on https://staging.elimu-smart.co.ke
-# - If staging OK, promote to production (manual step or auto)
+# - Deploy manually to production via SSH (see OPTION 2)
 ```
 
 ---
@@ -157,18 +154,17 @@ git push origin main
 
 ### **Scenario 2: Build Succeeds but Runtime Error**
 ```bash
-# Staging shows console error in browser
+# Production shows console error in browser
 
 # LOCAL FIX:
 # 1. Fix the runtime issue in code
 # 2. Lint
 npm run lint --fix
 
-# 3. Push
+# 3. Push then deploy to production
 git commit -am "fix: resolve runtime error in dashboard tabs"
 git push origin main
-
-# Auto-deploys to staging again
+# Then SSH deploy (OPTION 2 above)
 ```
 
 ### **Scenario 3: Hotfix Needed on Production**
@@ -252,7 +248,6 @@ ssh root@145.239.42.121 "pm2 logs parse-server-prod --lines 50"
 ```
 
 ### **Browser Testing**:
-- **Staging**: https://staging.elimu-smart.co.ke
 - **Production**: https://elimu-smart.co.ke
 
 **Test checklist** (after each deployment):
@@ -310,8 +305,8 @@ git push origin main
          ├─ Build Success ───┐
          │                   ▼
          │          ┌─────────────────┐
-         │          │ Auto-Deploy     │
-         │          │ Staging         │
+         │          │ Manual Deploy   │
+         │          │ to Production   │
          │          └─────────────────┘
          │
          └─ Build Failed ────┐
@@ -338,8 +333,8 @@ git push origin main
 1. Fix card.ts import on VPS (5 minutes)
 2. Verify build passes on GitHub Actions
 3. Start Phase 1, Task 1.1: Remove static cards from dashboard
-4. Push → GitHub builds → Auto-deploy to staging
-5. Test on staging.elimu-smart.co.ke
+4. Push → GitHub builds → verify CI passes
+5. SSH deploy to production
 6. Repeat for each task
 
 **Command to start implementation**:
