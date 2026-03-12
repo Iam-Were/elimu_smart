@@ -371,7 +371,12 @@ try {
 1. **Local**: `npm run lint` (0 warnings required) → fix errors → commit
 2. **Push**: `git add . && git commit -m "message" && git push origin main`
 3. **Monitor**: `gh run list --limit 1` → `gh run watch <run-id>` — Actions auto-lint + build-check
-4. **Deploy VPS**: SSH → `git pull` → `pm2 restart parse-server-prod` → build frontend → copy dist
+4. **Deploy VPS**: Build locally, rsync dist — **NEVER run `npm run build` on VPS** (kills SSH, crashes server):
+   ```bash
+   cd frontend && npm run build -- --mode production
+   rsync -avz --delete dist/ root@145.239.42.121:/var/www/elimu-smart/
+   ssh root@145.239.42.121 'pm2 restart parse-server-prod'
+   ```
 5. **Verify**: `curl https://elimu-smart.co.ke/parse/health` + test key features in browser
 
 **Full workflow details**: See `.claude/deployment-workflow.md`
