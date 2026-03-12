@@ -324,6 +324,7 @@ try {
 - Never block UI with API calls in user interactions
 - Type safety catches errors early, improves IDE performance
 - Simplicity > Options in user experience design
+- **Single-source navigation components**: NEVER create a standalone component (e.g. `ProfileDropdown.tsx`) alongside an inline duplicate in `Sprint18Navigation.tsx`. The inline one is what renders — standalone files become dead code that causes confusion and recurring fixes. The profile dropdown lives **only** in `Sprint18Navigation.tsx` (lines ~471–577). If you need to change it, edit there only. Delete any extracted duplicate immediately.
 
 ## Production Status
 
