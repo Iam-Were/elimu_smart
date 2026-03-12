@@ -149,21 +149,21 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={(value) => setSearchParams({ tab: value })} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="services" className="flex items-center gap-2">
+          <TabsTrigger value="services" className="flex flex-col items-center gap-0.5 py-2 px-1">
             <Heart className="h-4 w-4" />
-            <span className="hidden sm:inline">Services</span>
+            <span className="text-[10px] sm:text-xs leading-none">Services</span>
           </TabsTrigger>
-          <TabsTrigger value="resources" className="flex items-center gap-2">
+          <TabsTrigger value="resources" className="flex flex-col items-center gap-0.5 py-2 px-1">
             <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Resources</span>
+            <span className="text-[10px] sm:text-xs leading-none">Resources</span>
           </TabsTrigger>
-          <TabsTrigger value="bookings" className="flex items-center gap-2">
+          <TabsTrigger value="bookings" className="flex flex-col items-center gap-0.5 py-2 px-1">
             <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Bookings</span>
+            <span className="text-[10px] sm:text-xs leading-none">Bookings</span>
           </TabsTrigger>
-          <TabsTrigger value="network" className="flex items-center gap-2">
+          <TabsTrigger value="network" className="flex flex-col items-center gap-0.5 py-2 px-1">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Network</span>
+            <span className="text-[10px] sm:text-xs leading-none">Network</span>
           </TabsTrigger>
         </TabsList>
 

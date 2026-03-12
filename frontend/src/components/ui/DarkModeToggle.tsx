@@ -9,7 +9,7 @@ const DarkModeToggle: React.FC<DarkModeToggleProps> = ({ className = '' }) => {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' || 'system';
+    const savedTheme = localStorage.getItem('elimu-theme') as 'light' | 'dark' | 'system' || 'system';
     setTheme(savedTheme);
     applyTheme(savedTheme);
 
@@ -35,7 +35,7 @@ const DarkModeToggle: React.FC<DarkModeToggleProps> = ({ className = '' }) => {
       root.classList.toggle('dark', newTheme === 'dark');
     }
     
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem('elimu-theme', newTheme);
   };
 
   const applySystemTheme = () => {

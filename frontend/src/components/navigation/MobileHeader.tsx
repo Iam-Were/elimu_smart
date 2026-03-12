@@ -8,6 +8,8 @@ import {
   HelpCircle,
   CreditCard,
   Shield,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -33,7 +35,7 @@ import { NotificationCenter } from '@/components/common/NotificationCenter';
 export const MobileHeader: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { currentTheme } = useThemeContext();
+  const { currentTheme, isDark, toggleDarkMode } = useThemeContext();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -56,7 +58,7 @@ export const MobileHeader: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm md:hidden">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -167,6 +169,13 @@ export const MobileHeader: React.FC = () => {
               <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Help & Support</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={toggleDarkMode} className="cursor-pointer">
+                {isDark ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
