@@ -271,7 +271,7 @@ const StudentDashboard: React.FC = () => {
               <div className="flex-1 w-full">
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   {/* Metric 1: Assessments */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Assessments</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
@@ -282,7 +282,7 @@ const StudentDashboard: React.FC = () => {
                   </div>
 
                   {/* Metric 2: Research */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Research</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
@@ -293,7 +293,7 @@ const StudentDashboard: React.FC = () => {
                   </div>
 
                   {/* Metric 3: Exploration */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Exploration</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
@@ -304,7 +304,7 @@ const StudentDashboard: React.FC = () => {
                   </div>
 
                   {/* Metric 4: Actions */}
-                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 transition-colors">
+                  <div className="bg-white rounded-lg p-3 sm:p-4 border-2 border-slate-200 hover:border-orange-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Actions</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
@@ -408,7 +408,7 @@ const StudentDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 transition-colors cursor-pointer"
+              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                    onClick={() => window.location.href = '/assessment'}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -419,7 +419,7 @@ const StudentDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">15 min personality assessment</p>
               </div>
 
-              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 transition-colors cursor-pointer"
+              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                    onClick={() => window.location.href = '/assessment'}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -430,7 +430,7 @@ const StudentDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Explore Kenya universities</p>
               </div>
 
-              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 transition-colors cursor-pointer"
+              <div className="p-4 bg-white rounded-lg border border-purple-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                    onClick={() => window.location.href = '/guidance'}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
