@@ -1,11 +1,7 @@
 # Claude Code Development Guide - Elimu Smart
 
 > **🚨 CRITICAL: READ FIRST 🚨**
-> **Project Tracking System**: To prevent context loss and incorrect recommendations, **ALWAYS** read `.claude/project-status.json` at the start of EVERY session.
-> ```bash
-> cat .claude/project-status.json  # See what's completed, what's next
-> ```
-> See `.claude/TRACKING_SYSTEM.md` for full workflow guide.
+> Read this file top-to-bottom before starting any session. It is the single source of truth for project state.
 
 ## Claude Code Workflow Rules
 
@@ -353,15 +349,10 @@ try {
 
 ## Backend-Frontend Integration Status
 
-**Last Verified**: 2025-10-08 | **Total**: 108 functions | **Integrated**: 62 (57.4%) | **Mobile Ready**: 82% ✅
+**Actual count (grep-verified)**: 258 cloud functions in backend | 203 called from frontend
 
-**Reference Files**:
-- `.claude/integration-status.json` — Complete function mapping (62 integrated + 46 pending)
-- `.claude/quick-reference.json` — Function → file locations
-- `/integration-status` slash command — Show integration summary
-- `/check-backend <function>` — Find function location
-
-**High Priority Pending**: Notifications (2), File Upload (2), Assessment Progress (3), Advanced University Matching (3)
+To find where a function is defined: `grep -r "Cloud.define('functionName'" backend/cloud/`
+To find where it's called: `grep -r "'functionName'" frontend/src/`
 
 ## Development Workflow
 
@@ -383,7 +374,7 @@ try {
 
 ## Mobile Development & Integration Roadmap
 
-**Mobile Readiness**: 82% ✅ — See `.claude/mobile-readiness.md` for full component checklist and table.
+**Mobile Readiness**: `.claude/mobile-readiness.md` exists but was last updated 2025-10-08 — treat as a starting reference only, not ground truth.
 
 **Integration Roadmap** (priority order):
 1. SubjectCareerMapper migration to Parse Classes (2-3 days) — -25KB bundle
