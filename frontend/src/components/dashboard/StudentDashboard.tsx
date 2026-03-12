@@ -4,6 +4,7 @@ import { Target, AlertCircle, Clock, CheckCircle, Sparkles, User, Activity } fro
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Button from '@/components/ui/button';
 import { useDynamicDashboard } from '@/hooks/useDynamicDashboard';
@@ -211,7 +212,15 @@ const StudentDashboard: React.FC = () => {
         </CardHeader>
         <CardContent className="pt-6 pb-4">
           {loading ? (
-            <div className="text-center py-4 text-muted-foreground text-sm">Loading your progress...</div>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Skeleton className="w-36 h-36 sm:w-44 sm:h-44 rounded-full flex-shrink-0" />
+              <div className="flex-1 w-full grid grid-cols-2 gap-3 sm:gap-4">
+                <Skeleton className="h-16 rounded-lg" />
+                <Skeleton className="h-16 rounded-lg" />
+                <Skeleton className="h-16 rounded-lg" />
+                <Skeleton className="h-16 rounded-lg" />
+              </div>
+            </div>
           ) : careerReadinessScore ? (
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* Enhanced Progress Ring - Larger & More Prominent */}

@@ -197,10 +197,10 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
             ) : (
               <Card>
                 <CardContent className="pt-12 pb-12 text-center">
-                  <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Resource Library Coming Soon</h3>
-                  <p className="text-muted-foreground">
-                    We're building a comprehensive library of career guides and tools
+                  <BookOpen className="h-16 w-16 text-orange-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Career Resources Coming Soon</h3>
+                  <p className="text-muted-foreground max-w-sm mx-auto">
+                    We're putting together KCSE guides, university comparison tools, and scholarship info — check back soon.
                   </p>
                 </CardContent>
               </Card>
@@ -231,18 +231,21 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
                 <CardContent>
                   {upcomingSessionsCount === 0 ? (
                     <div className="text-center py-8">
-                      <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                      <p className="text-muted-foreground mb-2">No upcoming sessions</p>
+                      <Calendar className="h-12 w-12 mx-auto mb-3 text-orange-400" />
+                      <p className="font-semibold text-slate-800 mb-1">No sessions booked yet</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Your counselor is ready when you are — book a 30-minute session to get started.
+                      </p>
                       {nextAvailableSlot && (
-                        <p className="text-sm text-gray-600 mb-4">
-                          Next available: <strong>{nextAvailableSlot}</strong>
+                        <p className="text-sm text-orange-700 mb-4">
+                          Next available slot: <strong>{nextAvailableSlot}</strong>
                         </p>
                       )}
                       <Button
                         onClick={() => (window.location.href = '/guidance/book-session')}
-                        className="mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
+                        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90"
                       >
-                        Book a Session
+                        Book Your First Session
                       </Button>
                     </div>
                   ) : (
@@ -297,7 +300,7 @@ const Sprint18GuidancePageTabbed: React.FC = () => {
                 <CardContent>
                   {pastSessionsCount === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      <p>No past sessions</p>
+                      <p>Your completed sessions will appear here after your first booking.</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
