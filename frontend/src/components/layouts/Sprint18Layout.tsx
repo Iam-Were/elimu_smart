@@ -37,7 +37,7 @@ export const Sprint18Layout: React.FC<Sprint18LayoutProps> = ({
       {/* Main Content Area */}
       <main id="main-content" className="relative pt-16 md:pt-0" role="main" aria-label="Main content">
         {/* Content Container - More horizontal padding on mobile */}
-        <div className="max-w-5xl mx-auto px-6 sm:px-8 md:px-12 pb-20 md:pb-0">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 md:px-12 pb-20 md:pb-0">
           {children || <Outlet />}
         </div>
       </main>

@@ -566,26 +566,26 @@ export const ProfilePageTabbed: React.FC = () => {
           onValueChange={(value) => setSearchParams({ tab: value })}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-5 mb-6">
-            <TabsTrigger value="about" className="flex items-center gap-2">
+          <TabsList className="flex overflow-x-auto mb-6 w-full scrollbar-none">
+            <TabsTrigger value="about" className="flex flex-col items-center gap-0.5 py-2 px-3 flex-shrink-0">
               <User className="h-4 w-4" />
-              About
+              <span className="text-[10px] sm:text-xs leading-none whitespace-nowrap">About</span>
             </TabsTrigger>
-            <TabsTrigger value="assessments" className="flex items-center gap-2">
+            <TabsTrigger value="assessments" className="flex flex-col items-center gap-0.5 py-2 px-3 flex-shrink-0">
               <ClipboardCheck className="h-4 w-4" />
-              Assessments
+              <span className="text-[10px] sm:text-xs leading-none whitespace-nowrap">Assessments</span>
             </TabsTrigger>
-            <TabsTrigger value="portfolio" className="flex items-center gap-2">
+            <TabsTrigger value="portfolio" className="flex flex-col items-center gap-0.5 py-2 px-3 flex-shrink-0">
               <FolderOpen className="h-4 w-4" />
-              Portfolio
+              <span className="text-[10px] sm:text-xs leading-none whitespace-nowrap">Portfolio</span>
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2">
+            <TabsTrigger value="progress" className="flex flex-col items-center gap-0.5 py-2 px-3 flex-shrink-0">
               <TrendingUp className="h-4 w-4" />
-              Progress
+              <span className="text-[10px] sm:text-xs leading-none whitespace-nowrap">Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
+            <TabsTrigger value="activity" className="flex flex-col items-center gap-0.5 py-2 px-3 flex-shrink-0">
               <Activity className="h-4 w-4" />
-              Activity
+              <span className="text-[10px] sm:text-xs leading-none whitespace-nowrap">Activity</span>
             </TabsTrigger>
           </TabsList>
 
