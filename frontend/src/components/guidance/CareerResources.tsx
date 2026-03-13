@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Search,
   BookOpen,
@@ -15,6 +16,7 @@ import {
   Briefcase,
   Calendar,
 } from 'lucide-react';
+import { getParse } from '@/config/parse';
 
 interface Resource {
   id: string;
@@ -22,15 +24,16 @@ interface Resource {
   type: 'guide' | 'video' | 'pdf' | 'tool';
   category: 'career' | 'university' | 'kcse' | 'kuccps' | 'skills';
   description: string;
-  url?: string;
-  downloadUrl?: string;
-  duration?: string;
-  pages?: number;
+  url?: string | null;
+  downloadUrl?: string | null;
+  duration?: string | null;
+  pages?: number | null;
   popularity: number;
   tags: string[];
+  popular?: boolean;
 }
 
-const sampleResources: Resource[] = [
+const fallbackResources: Resource[] = [
   {
     id: '1',
     title: 'Complete KCSE Subject Combination Guide 2025',
@@ -98,14 +101,59 @@ const sampleResources: Resource[] = [
 const CareerResources: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [resources, setResources] = useState<Resource[]>(fallbackResources);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const Parse = getParse();
+        const result = await Parse.Cloud.run('getCareerResources', {});
+        if (result.success && result.resources?.length > 0) {
+          setResources(result.resources);
+          setTotalCount(result.total);
+        }
+      } catch {
+        // silently fall back to hardcoded resources already in state
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResources();
+  }, []);
+
+  const filteredResources = resources.filter((r) => {
+    const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
+    const matchesSearch =
+      !searchTerm ||
+      r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.tags.some((t) => t.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
+
+  const counts = {
+    all: resources.length,
+    career: resources.filter((r) => r.category === 'career').length,
+    university: resources.filter((r) => r.category === 'university').length,
+    kcse: resources.filter((r) => r.category === 'kcse').length,
+    kuccps: resources.filter((r) => r.category === 'kuccps').length,
+    skills: resources.filter((r) => r.category === 'skills').length,
+  };
+
+  const statVideos = resources.filter((r) => r.type === 'video').length;
+  const statPdfs = resources.filter((r) => r.type === 'pdf').length;
+  const statTools = resources.filter((r) => r.type === 'tool').length;
+  const displayTotal = totalCount > 0 ? totalCount : resources.length;
 
   const categories = [
-    { value: 'all', label: 'All Resources', count: 45 },
-    { value: 'career', label: 'Careers', count: 15 },
-    { value: 'university', label: 'Universities', count: 12 },
-    { value: 'kcse', label: 'KCSE', count: 8 },
-    { value: 'kuccps', label: 'KUCCPS', count: 6 },
-    { value: 'skills', label: 'Skills', count: 4 },
+    { value: 'all', label: 'All Resources', count: counts.all },
+    { value: 'career', label: 'Careers', count: counts.career },
+    { value: 'university', label: 'Universities', count: counts.university },
+    { value: 'kcse', label: 'KCSE', count: counts.kcse },
+    { value: 'kuccps', label: 'KUCCPS', count: counts.kuccps },
+    { value: 'skills', label: 'Skills', count: counts.skills },
   ];
 
   const getTypeIcon = (type: string) => {
@@ -143,57 +191,73 @@ const CareerResources: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <BookOpen className="h-5 w-5 text-orange-600" />
+            {loading ? (
+              <Skeleton className="h-12 w-full" />
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <BookOpen className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{displayTotal}+</p>
+                  <p className="text-sm text-muted-foreground">Resources</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">45+</p>
-                <p className="text-sm text-muted-foreground">Resources</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Video className="h-5 w-5 text-purple-600" />
+            {loading ? (
+              <Skeleton className="h-12 w-full" />
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Video className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{statVideos}</p>
+                  <p className="text-sm text-muted-foreground">Videos</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">12</p>
-                <p className="text-sm text-muted-foreground">Videos</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FileText className="h-5 w-5 text-green-600" />
+            {loading ? (
+              <Skeleton className="h-12 w-full" />
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <FileText className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{statPdfs}</p>
+                  <p className="text-sm text-muted-foreground">PDF Guides</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">18</p>
-                <p className="text-sm text-muted-foreground">PDF Guides</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-amber-600" />
+            {loading ? (
+              <Skeleton className="h-12 w-full" />
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{statTools}</p>
+                  <p className="text-sm text-muted-foreground">Tools</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">8</p>
-                <p className="text-sm text-muted-foreground">Tools</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -225,74 +289,98 @@ const CareerResources: React.FC = () => {
         ))}
       </div>
 
-      {/* Featured Resources */}
+      {/* Resource Grid */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Popular Resources</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sampleResources.map((resource) => (
-            <Card key={resource.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <div className={`p-2 rounded-lg ${getTypeColor(resource.type)}`}>
-                    {getTypeIcon(resource.type)}
+        <h2 className="text-xl font-semibold mb-4">
+          {selectedCategory === 'all' ? 'Popular Resources' : categories.find((c) => c.value === selectedCategory)?.label}
+        </h2>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-8 w-8 rounded-lg mb-2" />
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-9 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredResources.length === 0 ? (
+          <Card>
+            <CardContent className="pt-12 pb-12 text-center">
+              <Search className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-muted-foreground">No resources found. Try a different search or category.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredResources.map((resource) => (
+              <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className={`p-2 rounded-lg ${getTypeColor(resource.type)}`}>
+                      {getTypeIcon(resource.type)}
+                    </div>
+                    <Badge variant="outline" className="capitalize">
+                      {resource.category}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="capitalize">
-                    {resource.category}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg">{resource.title}</CardTitle>
-                <CardDescription>{resource.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Meta Info */}
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                  {resource.duration && (
-                    <>
+                  <CardTitle className="text-lg">{resource.title}</CardTitle>
+                  <CardDescription>{resource.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {/* Meta Info */}
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                    {resource.duration && (
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {resource.duration}
                       </span>
-                    </>
-                  )}
-                  {resource.pages && (
-                    <>
+                    )}
+                    {resource.pages && (
                       <span className="flex items-center gap-1">
                         <FileText className="h-4 w-4" />
                         {resource.pages} pages
                       </span>
-                    </>
-                  )}
-                  <span>{resource.popularity.toLocaleString()} views</span>
-                </div>
+                    )}
+                    <span>{resource.popularity.toLocaleString()} views</span>
+                  </div>
 
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {resource.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {resource.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  {resource.url && (
-                    <Button className="flex-1" size="sm">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open
-                    </Button>
-                  )}
-                  {resource.downloadUrl && (
-                    <Button className="flex-1" size="sm" variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    {resource.url && (
+                      <Button className="flex-1" size="sm">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open
+                      </Button>
+                    )}
+                    {resource.downloadUrl && (
+                      <Button className="flex-1" size="sm" variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Quick Links Section */}

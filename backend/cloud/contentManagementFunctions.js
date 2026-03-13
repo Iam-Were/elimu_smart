@@ -979,4 +979,195 @@ Parse.Cloud.define('deleteAssessmentQuestion', async (request) => {
   }
 });
 
+// ============================================
+// CAREER RESOURCES
+// ============================================
+
+const DEFAULT_RESOURCES = [
+  {
+    title: 'KUCCPS Application Guide 2025',
+    type: 'pdf',
+    category: 'kuccps',
+    description: 'Step-by-step guide to the KUCCPS university placement application process. Covers deadlines, cluster points, and how to maximise your choices.',
+    url: null,
+    downloadUrl: '/resources/kuccps-application-guide.pdf',
+    pages: 32,
+    duration: null,
+    popularity: 1840,
+    tags: ['kuccps', 'application', 'deadlines'],
+    popular: true
+  },
+  {
+    title: 'Kenya Career Handbook 2025',
+    type: 'guide',
+    category: 'career',
+    description: 'Comprehensive overview of 200+ careers available in Kenya: education requirements, salary ranges, growth prospects, and real employer insights.',
+    url: 'https://kuccps.ac.ke',
+    downloadUrl: null,
+    pages: 120,
+    duration: null,
+    popularity: 1320,
+    tags: ['careers', 'kenya', 'salary'],
+    popular: true
+  },
+  {
+    title: 'University Course Comparison Tool',
+    type: 'tool',
+    category: 'university',
+    description: 'Compare Kenyan universities side-by-side: fees, programmes, accommodation, student life, and graduate outcomes. Updated for 2025 intake.',
+    url: '/assessment/university',
+    downloadUrl: null,
+    pages: null,
+    duration: null,
+    popularity: 2100,
+    tags: ['university', 'comparison', 'fees'],
+    popular: true
+  },
+  {
+    title: 'KCSE Grade & Cluster Points Calculator',
+    type: 'tool',
+    category: 'kcse',
+    description: 'Calculate your cluster points from KCSE grades and see which university programmes you qualify for. Supports all 8 subject clusters.',
+    url: '/assessment/subjects',
+    downloadUrl: null,
+    pages: null,
+    duration: null,
+    popularity: 1650,
+    tags: ['kcse', 'grades', 'cluster-points'],
+    popular: true
+  },
+  {
+    title: 'How to Choose a Career in Kenya',
+    type: 'video',
+    category: 'career',
+    description: 'Expert counselors walk you through a proven decision-making framework for choosing a career that fits your personality, skills, and family expectations.',
+    url: '/resources/videos/choose-career',
+    downloadUrl: null,
+    pages: null,
+    duration: '22 mins',
+    popularity: 980,
+    tags: ['career-planning', 'decision-making'],
+    popular: false
+  },
+  {
+    title: 'Scholarship Opportunities for Kenyan Students',
+    type: 'guide',
+    category: 'career',
+    description: 'Curated list of scholarships available to Kenyan students: government bursaries, university grants, NGO funding, and international scholarships.',
+    url: null,
+    downloadUrl: '/resources/scholarships-guide.pdf',
+    pages: 48,
+    duration: null,
+    popularity: 1450,
+    tags: ['scholarships', 'funding', 'bursaries'],
+    popular: true
+  },
+  {
+    title: 'Form 4 to University: What to Expect',
+    type: 'guide',
+    category: 'university',
+    description: 'A realistic guide for Form 4 students: KCSE results day, KUCCPS placement, reporting to university, and surviving first semester.',
+    url: null,
+    downloadUrl: '/resources/form4-to-university.pdf',
+    pages: 28,
+    duration: null,
+    popularity: 870,
+    tags: ['transition', 'university', 'form-4'],
+    popular: false
+  },
+  {
+    title: 'Skills for the Kenyan Job Market',
+    type: 'guide',
+    category: 'skills',
+    description: 'What employers in Kenya are looking for in 2025. Practical tips on building digital skills, communication, and leadership while still in school.',
+    url: null,
+    downloadUrl: '/resources/job-market-skills.pdf',
+    pages: 36,
+    duration: null,
+    popularity: 720,
+    tags: ['skills', 'employability', 'job-market'],
+    popular: false
+  }
+];
+
+/**
+ * Get career resources — public, no auth required
+ * Falls back to seeded defaults if CareerResource class is empty
+ */
+Parse.Cloud.define('getCareerResources', async (request) => {
+  const { params } = request;
+  const { category, search, limit: rawLimit } = params || {};
+  const limit = Math.min(parseInt(rawLimit) || 50, 100);
+
+  try {
+    const CareerResource = Parse.Object.extend('CareerResource');
+    const query = new Parse.Query(CareerResource);
+
+    if (category && category !== 'all') {
+      query.equalTo('category', category);
+    }
+    if (search) {
+      query.matches('title', new RegExp(search, 'i'));
+    }
+    query.limit(limit);
+    query.descending('popularity');
+
+    const results = await query.find({ useMasterKey: true });
+
+    // Seed defaults on first call if class is empty
+    if (results.length === 0) {
+      const seedObjs = DEFAULT_RESOURCES.map(r => {
+        const obj = new CareerResource();
+        Object.entries(r).forEach(([k, v]) => obj.set(k, v));
+        return obj;
+      });
+      await Parse.Object.saveAll(seedObjs, { useMasterKey: true });
+
+      const allResults = await query.find({ useMasterKey: true });
+      const resources = allResults.map(r => ({
+        id: r.id,
+        title: r.get('title'),
+        type: r.get('type'),
+        category: r.get('category'),
+        description: r.get('description'),
+        url: r.get('url'),
+        downloadUrl: r.get('downloadUrl'),
+        pages: r.get('pages'),
+        duration: r.get('duration'),
+        popularity: r.get('popularity') || 0,
+        tags: r.get('tags') || [],
+        popular: r.get('popular') || false
+      }));
+
+      return { success: true, resources, total: resources.length, seeded: true };
+    }
+
+    const resources = results.map(r => ({
+      id: r.id,
+      title: r.get('title'),
+      type: r.get('type'),
+      category: r.get('category'),
+      description: r.get('description'),
+      url: r.get('url'),
+      downloadUrl: r.get('downloadUrl'),
+      pages: r.get('pages'),
+      duration: r.get('duration'),
+      popularity: r.get('popularity') || 0,
+      tags: r.get('tags') || [],
+      popular: r.get('popular') || false
+    }));
+
+    return { success: true, resources, total: resources.length, seeded: false };
+  } catch (error) {
+    console.error('Error fetching career resources:', error);
+    // Return hardcoded defaults on any error
+    return {
+      success: true,
+      resources: DEFAULT_RESOURCES.map((r, i) => ({ ...r, id: String(i + 1) })),
+      total: DEFAULT_RESOURCES.length,
+      fallback: true
+    };
+  }
+}, { requireUser: false });
+
 }; // End of module.exports function
