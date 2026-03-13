@@ -142,8 +142,9 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-500 mb-4">No upcoming sessions</p>
+            <Calendar className="h-12 w-12 text-orange-300 mx-auto mb-3" />
+            <p className="text-base font-medium text-gray-700 mb-1">No sessions booked yet</p>
+            <p className="text-sm text-gray-500 mb-4">Your counselor is ready when you are — book your first session today.</p>
             <Button
               size="sm"
               className="bg-orange-600 hover:bg-orange-700"
