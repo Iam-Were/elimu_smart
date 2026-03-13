@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /counselor/dashboard
+Disallow: /inbox
+
+Sitemap: https://elimu-smart.co.ke/sitemap.xml

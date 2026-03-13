@@ -30,7 +30,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <Button
       variant="ghost"
       onClick={toggleDarkMode}
-      className={`theme-toggle rounded-lg transition-colors hover:bg-muted ${sizeMap[size]} ${className}`}
+      className={`theme-toggle rounded-lg transition-colors hover:bg-muted text-gray-700 dark:text-gray-200 ${sizeMap[size]} ${className}`}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (

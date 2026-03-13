@@ -102,6 +102,7 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
+      <main>
       {/* Hero Section - Two Column Card Layout */}
       <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-amber-50/20 to-white dark:from-orange-950/30 dark:via-transparent dark:to-transparent">
         {/* Atmospheric background orbs */}
@@ -186,7 +187,7 @@ const LandingPage: React.FC = () => {
                         <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Target className="h-10 w-10 text-white" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">Career Assessment</h3>
+                        <p className="text-xl font-bold mb-2">Career Assessment</p>
                         <p className="text-orange-100 mb-4">Discover careers that match your unique personality and interests</p>
                         
                         {/* Mini Feature Cards */}
@@ -700,7 +701,7 @@ const LandingPage: React.FC = () => {
               
         </div>
       </footer>
-      
+      </main>
     </div>
   );
 };
