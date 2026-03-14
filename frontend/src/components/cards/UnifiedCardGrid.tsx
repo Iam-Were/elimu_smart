@@ -64,7 +64,7 @@ export const UnifiedCardGrid: React.FC<UnifiedCardGridProps> = ({
           key={card.id}
           className={cn(
             'group relative overflow-hidden transition-all duration-200',
-            'border shadow-sm hover:shadow-md', // Subtle LinkedIn shadow
+            'border shadow-sm hover:shadow-md hover:-translate-y-0.5', // Subtle lift + shadow
             'rowSpan' in card && card.rowSpan === 2 && 'row-span-2'
           )}
         >
