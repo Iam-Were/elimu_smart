@@ -30,7 +30,7 @@ npm run lint --fix  # Auto-fix issues
 ---
 
 ## Production Deployment: VPS (Linux)
-**Server**: root@145.239.42.121 (TrueHosts)
+**Server**: ubuntu@3.91.52.5 (TrueHosts)
 
 ### Deployment Process:
 
@@ -52,10 +52,10 @@ git push origin main
 #### **OPTION 2: Manual SSH Deploy** (If Actions fail)
 ```bash
 # SSH into VPS
-ssh root@145.239.42.121
+ssh ubuntu@3.91.52.5
 
 # Pull latest code
-cd /root/elimu_smart
+cd /home/ubuntu/elimu_smart
 git pull origin main
 
 # If merge conflicts:
@@ -180,8 +180,8 @@ git push origin hotfix/critical-bug
 
 # If GitHub Actions takes too long:
 # SSH into VPS and deploy directly:
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git fetch origin
 git checkout hotfix/critical-bug
 git pull
@@ -198,19 +198,19 @@ pm2 restart parse-server-prod
 
 **Fix on VPS** (before starting Phase 1):
 ```bash
-ssh root@145.239.42.121
-cd /root/elimu_smart/frontend/src/components/ui
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart/frontend/src/components/ui
 
 # Fix card.ts export
 echo "// Re-export from card.tsx for case-insensitive imports
 export * from './card';" > card.ts
 
 # Test build
-cd /root/elimu_smart/frontend
+cd /home/ubuntu/elimu_smart/frontend
 npm run build
 
 # If successful, commit fix
-cd /root/elimu_smart
+cd /home/ubuntu/elimu_smart
 git add frontend/src/components/ui/card.ts
 git commit -m "fix: correct card.tsx import path (Linux case-sensitive)"
 git push origin main
@@ -241,10 +241,10 @@ curl https://elimu-smart.co.ke/parse/health
 # Expected: {"status":"ok"}
 
 # Check PM2 processes
-ssh root@145.239.42.121 "pm2 status"
+ssh ubuntu@3.91.52.5 "pm2 status"
 
 # View logs
-ssh root@145.239.42.121 "pm2 logs parse-server-prod --lines 50"
+ssh ubuntu@3.91.52.5 "pm2 logs parse-server-prod --lines 50"
 ```
 
 ### **Browser Testing**:

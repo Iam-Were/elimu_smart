@@ -14,7 +14,7 @@ Elimu Smart is an AI-ready career guidance platform for Kenyan students built wi
 ### Tech Stack
 - **Frontend**: React 19, TypeScript, Vite
 - **UI**: shadcn UI (migrated from Mantine), TailwindCSS 4.x
-- **Backend**: Parse Server + PostgreSQL (3,700+ lines of cloud functions)
+- **Backend**: Parse Server + PostgreSQL (239 cloud functions; main.js ~9,500 lines)
 - **Database**: PostgreSQL 17.6 (`postgres://postgres:password@localhost:5432/elimu_smart_dev`)
 - **Routing**: React Router DOM v7
 - **State**: React Context API with hooks
@@ -77,7 +77,7 @@ Password: safety2024
 2. **Role-specific testing**: Switch to appropriate admin/counselor account as needed
 3. **Never commit real credentials**: These are demo accounts only
 4. **Login shortcuts**: When Claude tests features, always login with student account first
-5. **Production testing**: Use VPS test script: `ssh root@145.239.42.121 'cd /root/elimu_smart/backend && node scripts/test-login.js production'`
+5. **Production testing**: Use server test script: `ssh elimu-aws 'cd /home/ubuntu/elimu_smart/backend && node scripts/test-login.js production'`
 6. **MCP Browser Testing**: When using Chrome DevTools MCP, navigate to https://elimu-smart.co.ke/login and use student credentials
 
 ### Why This Rule Exists
@@ -271,7 +271,7 @@ try {
 - Dev APP_ID: `elimu_smart_app_2024` | Production APP_ID: `elimu-smart-production` (DIFFERENT!)
 - Schema creation: use Dummy Object pattern when Schema API returns "unauthorized"
 - Chat: always verify user is participant BEFORE returning messages (2-layer: Cloud function + beforeFind hook)
-- Check VPS credentials: `ssh root@145.239.42.121 'grep "^APP_ID=" /root/elimu_smart/backend/.env'`
+- Check server credentials: `ssh elimu-aws 'grep "^APP_ID=" /home/ubuntu/elimu_smart/backend/.env'`
 
 ## Kenya Educational Context Integration
 
@@ -333,12 +333,17 @@ try {
 - All guidance pages implemented (Q&A, Resources, Crisis, Booking)
 
 ### Backend: Operational ✅
-- Parse Server with 111 cloud functions (7,700+ lines)
+- Parse Server with 239 unique cloud functions (run `/integration-status` for live count)
 - 5 complete assessment systems with scoring algorithms
 - PostgreSQL database integration (password="password")
 - Dynamic dashboard with real-time calculations
 - User activity tracking and analytics
 - External APIs: CareerJet, LinkedIn, M-Pesa, ZeptoMail
+
+> **⚠️ Known non-production data (verify before trusting):**
+> - `findScholarshipMatches` (main.js:7887) returns **3 hardcoded scholarships** — no `Scholarship` class exists yet.
+> - `calculateKUCCPSPoints` (main.js:346) uses a **simplified average**, NOT the official KUCCPS cluster formula. Do not treat its "Eligible/Not Eligible" output as authoritative.
+> - Everything else in the core journey (RIASEC, skills, careers, university matching, Q&A, booking, inbox) is genuinely DB-backed.
 
 ### Assessments Fully Implemented ✅
 1. **RIASEC Career Assessment** - 60-question personality-based career matching
@@ -349,10 +354,11 @@ try {
 
 ## Backend-Frontend Integration Status
 
-**Actual count (grep-verified)**: 258 cloud functions in backend | 203 called from frontend
+Run `/integration-status` for live counts (greps codebase directly — no stale numbers).
 
 To find where a function is defined: `grep -r "Cloud.define('functionName'" backend/cloud/`
 To find where it's called: `grep -r "'functionName'" frontend/src/`
+Or use `/check-backend functionName` for a combined lookup.
 
 ## Development Workflow
 
@@ -365,8 +371,8 @@ To find where it's called: `grep -r "'functionName'" frontend/src/`
 4. **Deploy VPS**: Build locally, rsync dist — **NEVER run `npm run build` on VPS** (kills SSH, crashes server):
    ```bash
    cd frontend && npm run build -- --mode production
-   rsync -avz --delete dist/ root@145.239.42.121:/var/www/elimu-smart/
-   ssh root@145.239.42.121 'pm2 restart parse-server-prod'
+   rsync -avz --delete dist/ ubuntu@3.91.52.5:/var/www/elimu-smart/
+   ssh elimu-aws 'pm2 restart parse-server-prod'
    ```
 5. **Verify**: `curl https://elimu-smart.co.ke/parse/health` + test key features in browser
 
@@ -374,7 +380,7 @@ To find where it's called: `grep -r "'functionName'" frontend/src/`
 
 ## Mobile Development & Integration Roadmap
 
-**Mobile Readiness**: `.claude/mobile-readiness.md` exists but was last updated 2025-10-08 — treat as a starting reference only, not ground truth.
+**Mobile Readiness**: Use `/pm-status` for a live code-grounded audit of route completion and integration gaps.
 
 **Integration Roadmap** (priority order):
 1. SubjectCareerMapper migration to Parse Classes (2-3 days) — -25KB bundle
@@ -473,14 +479,14 @@ node migrations/seed-assessments.js
 
 ---
 
-**Last Updated**: 2025-10-06
-**Platform Status**: ✅ PRODUCTION LIVE (https://elimu-smart.co.ke)
+**Last Updated**: 2026-06-18
+**Platform Status**: ⚠️ MIGRATING — TrueHosts VPS down; redeployed on AWS EC2 `3.91.52.5` (DNS for elimu-smart.co.ke still propagating, SSL pending)
 **Code Quality**: 100% Lint Compliance, Zero TypeScript Errors
 **Migration Status**: shadcn Complete (Student/Counselor), Admin Hybrid Functional
-**Assessment Data**: ✅ MIGRATED (132 questions API-driven)
+**Assessment Data**: ✅ MIGRATED (questions API-driven from RiasecQuestion class)
 **Demo Users**: ✅ 8 accounts seeded and tested (student/counselor/admin)
 **Monetization**: Freemium model (Free assessments + Paid counselor services)
-**External APIs**: All live with caching (CareerJet, LinkedIn, M-Pesa, ZeptoMail)
-**VPS Deployment**: ✅ Production (2 cluster instances) + Staging on TrueHosts VPS
-**Database**: PostgreSQL 17.6 (RiasecQuestion, RiasecAssessment, Career, AssessmentProgress, _User)
-**SSL Certificates**: Valid until 2026-01-04 (auto-renewing)
+**External APIs**: CareerJet, LinkedIn, M-Pesa, ZeptoMail
+**Production Server**: AWS EC2 `3.91.52.5` (Ubuntu 26.04). Old TrueHosts VPS `145.239.42.121` is DOWN — do not use.
+**Database**: PostgreSQL 18.4 on AWS (RiasecQuestion, RiasecTypeInfo, Career, Course, AssessmentProgress, _User)
+**SSL Certificates**: Pending — issue via `certbot --nginx` once DNS points to AWS

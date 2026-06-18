@@ -1,7 +1,7 @@
 # Counselor Backend Integration Guide
 **Implementation Date:** October 31, 2025  
 **Status:** ✅ Phase 1 & 2 Complete | 🔄 Phase 3-5 Pending  
-**Deployed:** Production (root@145.239.42.121)
+**Deployed:** Production (ubuntu@3.91.52.5)
 
 ---
 
@@ -1024,7 +1024,7 @@ await Parse.Cloud.run('deleteMessageTemplate', {
 
 **Backend Issues:** Check Parse Server logs
 ```bash
-ssh root@145.239.42.121
+ssh ubuntu@3.91.52.5
 pm2 logs parse-server-prod
 ```
 

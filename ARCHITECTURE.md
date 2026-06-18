@@ -10,7 +10,7 @@
                                        ▼
                         ┌──────────────────────────────┐
                         │   DNS (elimu-smart.co.ke)    │
-                        │   145.239.42.121             │
+                        │   3.91.52.5             │
                         └──────────────┬───────────────┘
                                        │
                                        ▼
@@ -96,14 +96,14 @@
 **Production Instance:**
 - Port: 1337
 - PM2 Mode: Cluster (2 instances)
-- Script: `/root/elimu_smart/backend/server-working.js`
+- Script: `/home/ubuntu/elimu_smart/backend/server-working.js`
 - Database: elimu_smart_production
 - Environment: `.env`
 
 **Staging Instance:**
 - Port: 1338
 - PM2 Mode: Fork (1 instance)
-- Script: `/root/elimu_smart/backend/server-staging.js`
+- Script: `/home/ubuntu/elimu_smart/backend/server-staging.js`
 - Database: elimu_smart_staging
 - Environment: `.env.staging`
 
@@ -303,8 +303,8 @@ curl https://staging.elimu-smart.co.ke/parse/health
 ### Automated Backups
 
 **Schedule:** Daily at 2:00 AM
-**Script:** `/root/elimu_smart/backend/scripts/backup-database.sh`
-**Storage:** `/root/elimu_smart_backups/`
+**Script:** `/home/ubuntu/elimu_smart/backend/scripts/backup-database.sh`
+**Storage:** `/home/ubuntu/elimu_smart_backups/`
 **Retention:** 30 days
 **Format:** Gzipped SQL dumps
 
@@ -331,8 +331,8 @@ git commit -m "Build: Production frontend"
 git push origin main
 
 # VPS
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git pull origin main
 sudo cp -r frontend/dist/* /var/www/elimu-smart/
 ```
@@ -347,8 +347,8 @@ git commit -am "Backend: Your changes"
 git push origin main
 
 # VPS
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git pull origin main
 pm2 restart parse-server-prod
 pm2 logs parse-server-prod --lines 50
@@ -358,8 +358,8 @@ pm2 logs parse-server-prod --lines 50
 
 ```bash
 # VPS
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git pull origin main
 
 # Run migration
@@ -372,7 +372,7 @@ PGPASSWORD="El1musmart2024" psql -U postgres -h localhost \
 
 ### Horizontal Scaling (Future)
 
-**Current:** Single VPS (145.239.42.121)
+**Current:** Single VPS (3.91.52.5)
 
 **Future Options:**
 1. Add more Parse Server instances via PM2 cluster mode
@@ -417,7 +417,7 @@ PGPASSWORD="El1musmart2024" psql -U postgres -h localhost \
 
 ```bash
 # On VPS
-cd /root/elimu_smart
+cd /home/ubuntu/elimu_smart
 git log -5  # Find previous working commit
 git checkout <commit-hash>
 pm2 restart all

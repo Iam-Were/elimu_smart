@@ -88,5 +88,5 @@ APP_ID=elimu_smart_app_2024
 APP_ID=elimu-smart-production  # DIFFERENT!
 
 # Check VPS credentials before debugging:
-ssh root@145.239.42.121 'grep "^APP_ID=" /root/elimu_smart/backend/.env'
+ssh ubuntu@3.91.52.5 'grep "^APP_ID=" /home/ubuntu/elimu_smart/backend/.env'
 ```

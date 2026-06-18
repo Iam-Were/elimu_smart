@@ -71,8 +71,8 @@ git push origin main
 
 ### Step 2: VPS Pull & Build
 ```bash
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git pull origin main
 
 # Check for conflicts
@@ -90,7 +90,7 @@ npm run build -- --mode production  # MUST succeed
 
 ### Step 3: Deploy Frontend
 ```bash
-cd /root/elimu_smart/frontend
+cd /home/ubuntu/elimu_smart/frontend
 sudo cp -r dist/* /var/www/elimu-smart/
 
 # Verify deployment
@@ -128,8 +128,8 @@ curl https://elimu-smart.co.ke/assessment
 
 **Solution**:
 ```bash
-ssh root@145.239.42.121
-cd /root/elimu_smart/frontend/src/components/ui
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart/frontend/src/components/ui
 
 # Remove duplicate lowercase file
 rm button.tsx
@@ -142,7 +142,7 @@ export * from './Button.tsx';
 EOF
 
 # Rebuild
-cd /root/elimu_smart/frontend && npm run build -- --mode production
+cd /home/ubuntu/elimu_smart/frontend && npm run build -- --mode production
 ```
 
 **Prevention**:
@@ -167,8 +167,8 @@ git commit -m "fix(dashboard): restore missing cards"
 git push origin main
 
 # Redeploy on VPS
-ssh root@145.239.42.121
-cd /root/elimu_smart && git pull origin main
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart && git pull origin main
 cd frontend && npm run build -- --mode production
 sudo cp -r dist/* /var/www/elimu-smart/
 ```
@@ -185,8 +185,8 @@ sudo cp -r dist/* /var/www/elimu-smart/
 **Solution**:
 ```bash
 # Remove unused imports on VPS
-ssh root@145.239.42.121
-cd /root/elimu_smart/frontend/src/pages
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart/frontend/src/pages
 
 # Example: Fix AssessmentResultsPage
 sed -i 's/, CardDescription//' AssessmentResultsPage.tsx
@@ -237,7 +237,7 @@ git add . && git commit -m "message" && git push origin main
 
 **VPS Deployment**:
 ```bash
-ssh root@145.239.42.121 "cd /root/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/"
+ssh ubuntu@3.91.52.5 "cd /home/ubuntu/elimu_smart && git pull origin main && cd frontend && npm run build -- --mode production && sudo cp -r dist/* /var/www/elimu-smart/"
 ```
 
 **Verify**:

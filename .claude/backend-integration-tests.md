@@ -29,7 +29,7 @@
 4. Observe toast notification: "Conversation pinned"
 5. Verify database on VPS:
    ```bash
-   ssh root@145.239.42.121
+   ssh ubuntu@3.91.52.5
    psql -U elimu -d elimu_smart_production -c \
      "SELECT userId, conversationId, type, \"createdAt\" FROM \"ConversationPreference\" ORDER BY \"createdAt\" DESC LIMIT 5;"
    ```
@@ -202,7 +202,7 @@ localStorage.setItem('elimu_smart_starred_messages', JSON.stringify({
 **Purpose:** Verify localStorage fallback when backend unavailable
 
 **Steps:**
-1. Stop Parse Server: `ssh root@145.239.42.121 "pm2 stop parse-server-prod"`
+1. Stop Parse Server: `ssh ubuntu@3.91.52.5 "pm2 stop parse-server-prod"`
 2. In browser: Try to pin a conversation
 3. Observe error handling
 4. Restart Parse Server: `pm2 start parse-server-prod`
@@ -258,7 +258,7 @@ localStorage.setItem('elimu_smart_starred_messages', JSON.stringify({
 
 **Steps:**
 ```bash
-ssh root@145.239.42.121
+ssh ubuntu@3.91.52.5
 psql -U elimu -d elimu_smart_production
 
 # List all tables
@@ -354,7 +354,7 @@ GROUP BY emoji;
 
 ### Check Parse Server Logs
 ```bash
-ssh root@145.239.42.121
+ssh ubuntu@3.91.52.5
 pm2 logs parse-server-prod --lines 100
 pm2 logs parse-server-prod --lines 100 | grep -i error
 ```
@@ -367,7 +367,7 @@ psql -U elimu -d elimu_smart_production -c "SELECT COUNT(*) FROM \"MessagePrefer
 
 ### Restart Parse Server
 ```bash
-ssh root@145.239.42.121
+ssh ubuntu@3.91.52.5
 pm2 restart parse-server-prod
 pm2 status
 ```
@@ -375,7 +375,7 @@ pm2 status
 ### Check Cloud Functions Loaded
 ```bash
 # Check if chatPreferencesFunctions imported
-grep -n "chatPreferencesFunctions" /root/elimu_smart/backend/cloud/main.js
+grep -n "chatPreferencesFunctions" /home/ubuntu/elimu_smart/backend/cloud/main.js
 ```
 
 ### Clear Database (CAUTION: Production)

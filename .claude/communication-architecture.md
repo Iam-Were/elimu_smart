@@ -444,8 +444,8 @@ npm run dev
 ### Production Testing (After VPS Deploy)
 
 ```bash
-ssh root@145.239.42.121
-cd /root/elimu_smart
+ssh ubuntu@3.91.52.5
+cd /home/ubuntu/elimu_smart
 git pull origin main
 cd frontend
 npm run build -- --mode production
