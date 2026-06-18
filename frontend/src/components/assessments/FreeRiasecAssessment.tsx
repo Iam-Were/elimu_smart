@@ -399,7 +399,7 @@ export const FreeRiasecAssessment: React.FC = () => {
 
         // Add 10-second timeout protection
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+          setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
         );
 
         const questionsPromise = getRiasecQuestions();
@@ -526,10 +526,11 @@ export const FreeRiasecAssessment: React.FC = () => {
       console.log(`✅ Started new assessment ${result.assessmentId} with ${currentTotalQuestions} questions`);
     } catch (error) {
       console.warn('Failed to start/resume assessment, using local fallback:', error);
-      // Always provide fallback to prevent blocking
+      // Non-blocking: questions are already loaded, so continue with a local
+      // assessment id (progress saves locally). Do NOT setError here — it would
+      // trigger the full-screen "Connection Issue" card and block the assessment.
       const fallbackId = `local-${Date.now()}`;
       setAssessmentId(fallbackId);
-      setError('Assessment initialized in offline mode. Your progress will be saved locally.');
     } finally {
       // Always clear loading state
       setAssessmentLoading(false);

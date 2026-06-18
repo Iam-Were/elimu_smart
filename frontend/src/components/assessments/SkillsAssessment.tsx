@@ -173,11 +173,13 @@ export const SkillsAssessment: React.FC = () => {
       if (result && result.id) {
         setAssessmentId(result.id);
       } else {
-        setError('Failed to start assessment. Please try again.');
+        // Non-blocking: questions are loaded, continue with a local id (saves locally).
+        setAssessmentId(`local-${Date.now()}`);
       }
     } catch (error) {
-      console.error('Failed to start assessment:', error);
-      setError('Unable to connect to the server. Please try again.');
+      console.warn('Failed to start Skills assessment, using local fallback:', error);
+      // Non-blocking fallback so the user can still take the assessment offline.
+      setAssessmentId(`local-${Date.now()}`);
     } finally {
       setIsLoading(false);
     }
