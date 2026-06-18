@@ -74,6 +74,20 @@ export default {
         muted: 'var(--muted)',
         'muted-foreground': 'var(--muted-foreground)',
         border: 'var(--border)',
+        // Semantic shadcn tokens — wired to globals.css vars (light + .dark)
+        card: 'var(--card)',
+        'card-foreground': 'var(--card-foreground)',
+        popover: 'var(--popover)',
+        'popover-foreground': 'var(--popover-foreground)',
+        'primary-foreground': 'var(--primary-foreground)',
+        secondary: 'var(--secondary)',
+        'secondary-foreground': 'var(--secondary-foreground)',
+        accent: 'var(--accent)',
+        'accent-foreground': 'var(--accent-foreground)',
+        destructive: 'var(--destructive)',
+        'destructive-foreground': 'var(--destructive-foreground)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
       },
       fontFamily: {
         // Display font: Syne — geometric, editorial, East African confidence

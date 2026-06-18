@@ -208,7 +208,7 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
               <div className="flex-1 text-center md:text-left">
                 {/* Welcome Back Message */}
                 <h1 className="text-3xl md:text-4xl font-bold text-card-foreground mb-2">
-                  Welcome Back, {userData?.firstName}!
+                  Welcome Back, {userData?.firstName || userData?.lastName || 'Student'}!
                 </h1>
 
                 <div className="space-y-1 mb-4">
@@ -251,8 +251,8 @@ export const StudentDashboardCardsV2: React.FC<StudentDashboardCardsV2Props> = (
                           <Activity className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                           <span className="text-xs font-medium text-orange-900 dark:text-orange-200">Activity</span>
                         </div>
-                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-200">{userActivities.length} days</p>
-                        <p className="text-xs text-orange-700 dark:text-orange-300">Active Streak 🔥</p>
+                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-200">{userActivities.length}</p>
+                        <p className="text-xs text-orange-700 dark:text-orange-300">Activities logged 🔥</p>
                       </div>
                     )}
 
