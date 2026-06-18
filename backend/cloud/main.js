@@ -5988,78 +5988,95 @@ Parse.Cloud.define('getCounselorDashboardStats', async (request) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    // Resilient count helper: returns 0 if a class doesn't exist yet (e.g. no
+    // Subscription/Session table on a fresh production DB) instead of throwing.
+    // Parse `.count()` raises when the underlying class is missing — that single
+    // throw used to blow up the whole dashboard with "Failed to get dashboard stats".
+    const safeCount = async (className, build) => {
+      try {
+        const q = new Parse.Query(Parse.Object.extend(className));
+        build(q);
+        return await q.count({ useMasterKey: true });
+      } catch (e) {
+        console.warn(`[counselorStats] ${className} count skipped: ${e.message}`);
+        return 0;
+      }
+    };
+
     // Get assigned students count
-    const User = Parse.Object.extend('_User');
-    const studentQuery = new Parse.Query(User);
-    studentQuery.equalTo('assignedCounselorId', counselor.id);
-    const assignedStudents = await studentQuery.count({ useMasterKey: true });
+    const assignedStudents = await safeCount('_User', (q) => {
+      q.equalTo('assignedCounselorId', counselor.id);
+    });
 
-    // Get premium students
-    const Subscription = Parse.Object.extend('Subscription');
-    const premiumQuery = new Parse.Query(Subscription);
-    premiumQuery.equalTo('status', 'active');
-    premiumQuery.greaterThan('expiresAt', new Date());
-    
-    const premiumSubs = await premiumQuery.find({ useMasterKey: true });
-    const premiumStudentIds = premiumSubs.map(sub => sub.get('user').id);
-    
-    const premiumStudentQuery = new Parse.Query(User);
-    premiumStudentQuery.equalTo('assignedCounselorId', counselor.id);
-    premiumStudentQuery.containedIn('objectId', premiumStudentIds);
-    const premiumStudents = await premiumStudentQuery.count({ useMasterKey: true });
-
-    // Get today's sessions
-    const Session = Parse.Object.extend('Session');
-    const todaySessionQuery = new Parse.Query(Session);
-    todaySessionQuery.equalTo('counselorId', counselor.id);
-    todaySessionQuery.greaterThanOrEqualTo('scheduledTime', today);
-    todaySessionQuery.lessThan('scheduledTime', tomorrow);
-    const todaySessions = await todaySessionQuery.count({ useMasterKey: true });
-
-    // Get active chats (counselor is participant)
-    const ChatRoom = Parse.Object.extend('ChatRoom');
-    const chatQuery = new Parse.Query(ChatRoom);
-    chatQuery.containsAll('participants', [counselor.id]);
-    chatQuery.equalTo('isActive', true);
-    const activeChats = await chatQuery.count({ useMasterKey: true });
-
-    // Get unread messages count from chat rooms where counselor is participant
-    // First get all counselor's chat rooms
-    const counselorRooms = await chatQuery.find({ useMasterKey: true });
-    
-    // Count unread messages in those rooms (not sent by counselor)
-    let unreadMessages = 0;
-    if (counselorRooms.length > 0) {
-      const ChatMessage = Parse.Object.extend('ChatMessage');
-      const unreadQuery = new Parse.Query(ChatMessage);
-      
-      // Message sender is NOT the counselor
-      unreadQuery.notEqualTo('sender', counselor);
-      
-      // Message is not read yet
-      unreadQuery.equalTo('isRead', false);
-      
-      // Message is in one of counselor's chat rooms
-      unreadQuery.containedIn('chatRoom', counselorRooms);
-      
-      unreadMessages = await unreadQuery.count({ useMasterKey: true });
+    // Get premium students (Subscription class may not exist yet — degrade to 0)
+    let premiumStudents = 0;
+    try {
+      const Subscription = Parse.Object.extend('Subscription');
+      const premiumQuery = new Parse.Query(Subscription);
+      premiumQuery.equalTo('status', 'active');
+      premiumQuery.greaterThan('expiresAt', new Date());
+      const premiumSubs = await premiumQuery.find({ useMasterKey: true });
+      const premiumStudentIds = premiumSubs
+        .map((sub) => (sub.get('user') ? sub.get('user').id : null))
+        .filter(Boolean);
+      if (premiumStudentIds.length > 0) {
+        premiumStudents = await safeCount('_User', (q) => {
+          q.equalTo('assignedCounselorId', counselor.id);
+          q.containedIn('objectId', premiumStudentIds);
+        });
+      }
+    } catch (e) {
+      console.warn(`[counselorStats] premium students skipped: ${e.message}`);
     }
 
-    // Calculate monthly earnings (mock for now - would integrate with payment system)
+    // Get today's sessions (Session class may not exist yet — degrade to 0)
+    const todaySessions = await safeCount('Session', (q) => {
+      q.equalTo('counselorId', counselor.id);
+      q.greaterThanOrEqualTo('scheduledTime', today);
+      q.lessThan('scheduledTime', tomorrow);
+    });
+
+    // Get active chats (counselor is participant)
+    const activeChats = await safeCount('ChatRoom', (q) => {
+      q.containsAll('participants', [counselor.id]);
+      q.equalTo('isActive', true);
+    });
+
+    // Get unread messages count from chat rooms where counselor is participant
+    let unreadMessages = 0;
+    try {
+      const ChatRoom = Parse.Object.extend('ChatRoom');
+      const roomsQuery = new Parse.Query(ChatRoom);
+      roomsQuery.containsAll('participants', [counselor.id]);
+      roomsQuery.equalTo('isActive', true);
+      const counselorRooms = await roomsQuery.find({ useMasterKey: true });
+
+      if (counselorRooms.length > 0) {
+        unreadMessages = await safeCount('ChatMessage', (q) => {
+          q.notEqualTo('sender', counselor);
+          q.equalTo('isRead', false);
+          q.containedIn('chatRoom', counselorRooms);
+        });
+      }
+    } catch (e) {
+      console.warn(`[counselorStats] unread messages skipped: ${e.message}`);
+    }
+
+    // Calculate monthly earnings from completed sessions (degrades to 0 cleanly)
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthSessionQuery = new Parse.Query(Session);
-    monthSessionQuery.equalTo('counselorId', counselor.id);
-    monthSessionQuery.equalTo('status', 'completed');
-    monthSessionQuery.greaterThanOrEqualTo('scheduledTime', monthStart);
-    const monthSessions = await monthSessionQuery.count({ useMasterKey: true });
+    const monthSessions = await safeCount('Session', (q) => {
+      q.equalTo('counselorId', counselor.id);
+      q.equalTo('status', 'completed');
+      q.greaterThanOrEqualTo('scheduledTime', monthStart);
+    });
     const estimatedEarnings = monthSessions * 1500; // KES 1,500 per session
 
-    // Get pending questions count
-    const Question = Parse.Object.extend('Question');
-    const questionQuery = new Parse.Query(Question);
-    questionQuery.equalTo('status', 'pending');
-    questionQuery.doesNotExist('answeredBy'); // Not yet answered
-    const pendingQuestions = await questionQuery.count({ useMasterKey: true });
+    // Get pending community questions count (CommunityQuestion is the real class;
+    // "pending" = no best answer yet and not soft-deleted)
+    const pendingQuestions = await safeCount('CommunityQuestion', (q) => {
+      q.notEqualTo('hasBestAnswer', true);
+      q.notEqualTo('isDeleted', true);
+    });
 
     return {
       assignedStudents,
