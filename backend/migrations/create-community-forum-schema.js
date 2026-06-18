@@ -19,17 +19,17 @@ require('dotenv').config();
 const Parse = require('parse/node');
 
 // Initialize Parse (check both PARSE_MASTER_KEY and MASTER_KEY)
-const masterKey = process.env.PARSE_MASTER_KEY || process.env.MASTER_KEY || 'elimu_smart_master_key_2024';
+const masterKey = process.env.PARSE_MASTER_KEY || process.env.MASTER_KEY;
 
 Parse.initialize(
-  process.env.PARSE_APP_ID || 'elimu_smart_app_2024',
+  process.env.PARSE_APP_ID || 'elimu-smart-production',
   null, // JavaScript key (not needed for Node.js)
   masterKey
 );
 Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
 
 console.log('📋 Using Parse configuration:');
-console.log('  - App ID:', process.env.PARSE_APP_ID || 'elimu_smart_app_2024');
+console.log('  - App ID:', process.env.PARSE_APP_ID || 'elimu-smart-production');
 console.log('  - Server URL:', process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse');
 console.log('  - Master Key:', masterKey ? '✓ Set' : '✗ Missing');
 console.log('');

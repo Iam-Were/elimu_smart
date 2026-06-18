@@ -181,24 +181,12 @@ async function createRiasecTypeInfoSchema() {
     // Create schema using dummy object pattern (since Schema API often fails)
     const RiasecTypeInfo = Parse.Object.extend('RiasecTypeInfo');
 
-    // Check if data already exists
-    const query = new Parse.Query(RiasecTypeInfo);
-    const existingCount = await query.count({ useMasterKey: true });
-
-    if (existingCount > 0) {
-      console.log(`⚠️  Found ${existingCount} existing RiasecTypeInfo records`);
-      console.log('   Delete existing records? This will re-seed all data.\n');
-
-      // Delete existing records
-      const existingRecords = await query.limit(10).find({ useMasterKey: true });
-      await Parse.Object.destroyAll(existingRecords, { useMasterKey: true });
-      console.log('✅ Deleted existing records\n');
-    }
-
-    // Seed all 6 RIASEC types
+    // Idempotent upsert by code — never duplicates on re-run.
     const savedRecords = [];
     for (const [typeCode, typeData] of Object.entries(RIASEC_TYPE_DATA)) {
-      const typeInfo = new RiasecTypeInfo();
+      const existing = new Parse.Query(RiasecTypeInfo);
+      existing.equalTo('code', typeData.code);
+      const typeInfo = (await existing.first({ useMasterKey: true })) || new RiasecTypeInfo();
 
       typeInfo.set('code', typeData.code);
       typeInfo.set('name', typeData.name);

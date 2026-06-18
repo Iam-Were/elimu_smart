@@ -241,10 +241,10 @@ module.exports = { migrateAssessments, riasecQuestions, skillsQuestions };
 // Run if executed directly
 if (require.main === module) {
   const config = {
-    appId: process.env.APP_ID || 'elimu-smart-staging',
+    appId: process.env.APP_ID || 'elimu-smart-production',
     javascriptKey: process.env.JAVASCRIPT_KEY || 'elimu-smart-js-key',
-    masterKey: process.env.MASTER_KEY || 'ElImuSmartStagingMasterKey2024Secure',
-    serverURL: process.env.SERVER_URL || 'http://localhost:1338/parse'
+    masterKey: process.env.MASTER_KEY,
+    serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse'
   };
 
   const environment = process.argv[2] || 'staging';

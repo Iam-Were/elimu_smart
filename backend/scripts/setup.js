@@ -32,13 +32,13 @@ function checkPostgreSQL() {
 // Create database
 function createDatabase() {
   return new Promise((resolve) => {
-    console.log('📅 Creating database elimu_smart_dev...');
+    console.log('📅 Creating database elimu_smart_prod...');
     
-    const createDb = spawn('createdb', ['-U', 'postgres', 'elimu_smart_dev']);
+    const createDb = spawn('createdb', ['-U', 'postgres', 'elimu_smart_prod']);
     
     createDb.on('close', (code) => {
       if (code === 0) {
-        console.log('✅ Database elimu_smart_dev created');
+        console.log('✅ Database elimu_smart_prod created');
         resolve(true);
       } else {
         console.log('ℹ️  Database may already exist (this is okay)');
@@ -48,7 +48,7 @@ function createDatabase() {
 
     createDb.on('error', () => {
       console.log('❌ Failed to create database');
-      console.log('Please create database manually: createdb -U postgres elimu_smart_dev');
+      console.log('Please create database manually: createdb -U postgres elimu_smart_prod');
       resolve(false);
     });
   });

@@ -10,7 +10,7 @@ const Parse = require('parse/node');
 
 // Initialize Parse
 Parse.initialize(
-  process.env.APP_ID || 'elimu_smart_app_2024',
+  process.env.APP_ID || 'elimu-smart-production',
   process.env.JAVASCRIPT_KEY,
   process.env.MASTER_KEY
 );

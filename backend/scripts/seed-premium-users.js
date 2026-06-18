@@ -24,17 +24,17 @@ if (environment === 'staging') {
 
 const configs = {
   development: {
-    appId: 'elimu-smart-local-dev',
+    appId: 'elimu-smart-production',
     serverURL: 'http://localhost:1337/parse',
-    masterKey: 'elimu-smart-master-key-dev'
+    masterKey: process.env.MASTER_KEY
   },
   staging: {
-    appId: process.env.APP_ID || 'elimu-smart-staging',
-    serverURL: 'http://localhost:1338/parse',
-    masterKey: process.env.MASTER_KEY || 'ElImuSmartStagingMasterKey2024Secure'
+    appId: process.env.APP_ID || 'elimu-smart-production',
+    serverURL: 'http://localhost:1337/parse',
+    masterKey: process.env.MASTER_KEY
   },
   production: {
-    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    appId: process.env.APP_ID || 'elimu-smart-production',
     serverURL: process.env.PARSE_SERVER_URL || 'https://elimu-smart.co.ke/parse',
     masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   }

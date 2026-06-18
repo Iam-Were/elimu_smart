@@ -15,7 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Initialize Parse with production credentials
 Parse.initialize(
-  process.env.APP_ID || 'elimu_smart_app_2024',
+  process.env.APP_ID || 'elimu-smart-production',
   'javascript_key_2024', // JS key not needed for Node.js
   process.env.MASTER_KEY || 'master_key_2024'
 );

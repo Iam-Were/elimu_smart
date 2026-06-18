@@ -18,9 +18,9 @@ const parseConfig = {
     masterKey: process.env.MASTER_KEY
   },
   staging: {
-    serverURL: process.env.STAGING_PARSE_SERVER_URL || 'http://localhost:1338/parse',
-    appId: process.env.STAGING_APP_ID || process.env.APP_ID,
-    masterKey: process.env.STAGING_MASTER_KEY || process.env.MASTER_KEY
+    serverURL: process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse',
+    appId: process.env.APP_ID,
+    masterKey: process.env.MASTER_KEY
   }
 };
 

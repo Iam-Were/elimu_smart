@@ -52,7 +52,7 @@ export const initializeParse = () => {
     Parse.serverURL = serverURL;
     
     // Enable Live Query WebSocket connection
-    Parse.liveQueryServerURL = import.meta.env.VITE_LIVE_QUERY_URL || 'ws://localhost:1337';
+    Parse.liveQueryServerURL = import.meta.env.VITE_LIVE_QUERY_URL || 'wss://elimu-smart.co.ke/parse';
 
     parseInitialized = true;
     

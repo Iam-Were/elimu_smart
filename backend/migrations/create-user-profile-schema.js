@@ -15,17 +15,17 @@ const environment = process.argv[2] || 'development';
 
 const configs = {
   development: {
-    appId: process.env.APP_ID || 'elimu-smart-local-dev',
+    appId: process.env.APP_ID || 'elimu-smart-production',
     serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
-    masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev-change-in-production'
+    masterKey: process.env.MASTER_KEY
   },
   staging: {
-    appId: process.env.APP_ID || 'elimu_smart_app_2024',
-    serverURL: 'http://localhost:1338/parse',
+    appId: process.env.APP_ID || 'elimu-smart-production',
+    serverURL: 'http://localhost:1337/parse',
     masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   },
   production: {
-    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    appId: process.env.APP_ID || 'elimu-smart-production',
     serverURL: 'http://localhost:1337/parse',
     masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   }

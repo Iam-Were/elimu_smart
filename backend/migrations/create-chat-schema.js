@@ -9,7 +9,7 @@ const Parse = require('parse/node');
 require('dotenv').config();
 
 // Initialize Parse with master key
-const masterKey = process.env.MASTER_KEY || process.env.PARSE_MASTER_KEY || 'elimu-smart-master-key-dev';
+const masterKey = process.env.MASTER_KEY || process.env.PARSE_MASTER_KEY;
 Parse.initialize(
   process.env.APP_ID || process.env.PARSE_APP_ID || 'elimu-smart-app',
   process.env.JAVASCRIPT_KEY || process.env.PARSE_JAVASCRIPT_KEY || 'unused',

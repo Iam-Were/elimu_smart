@@ -4,7 +4,7 @@
 const { Client } = require('pg');
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_dev'
+  connectionString: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_prod'
 });
 
 async function migrate() {

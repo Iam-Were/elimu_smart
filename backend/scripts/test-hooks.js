@@ -2,9 +2,9 @@
 const Parse = require('parse/node');
 
 // Initialize Parse
-Parse.initialize('elimu-smart-local-dev');
+Parse.initialize('elimu-smart-production');
 Parse.serverURL = 'http://localhost:1337/parse';
-Parse.masterKey = 'elimu-smart-master-key-dev';
+Parse.masterKey = process.env.MASTER_KEY;
 
 async function testHooks() {
   try {

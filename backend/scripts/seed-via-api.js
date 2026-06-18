@@ -26,21 +26,21 @@ const configs = {
     host: 'localhost',
     port: 1337,
     protocol: 'http',
-    appId: 'elimu-smart-local-dev',
-    masterKey: 'elimu-smart-master-key-dev'
+    appId: 'elimu-smart-production',
+    masterKey: process.env.MASTER_KEY
   },
   staging: {
     host: 'staging.elimu-smart.co.ke',
     port: 443,
     protocol: 'https',
-    appId: process.env.APP_ID || 'elimu-smart-staging',
-    masterKey: process.env.MASTER_KEY || 'ElImuSmartStagingMasterKey2024Secure'
+    appId: process.env.APP_ID || 'elimu-smart-production',
+    masterKey: process.env.MASTER_KEY
   },
   production: {
     host: 'elimu-smart.co.ke',
     port: 443,
     protocol: 'https',
-    appId: process.env.APP_ID || 'elimu_smart_app_2024',
+    appId: process.env.APP_ID || 'elimu-smart-production',
     masterKey: process.env.MASTER_KEY || 'CHANGE_THIS_MASTER_KEY'
   }
 };

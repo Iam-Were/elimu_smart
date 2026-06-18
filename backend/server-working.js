@@ -6,9 +6,17 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-// Load environment variables (unless already loaded by server-staging.js)
+// Load environment variables
 if (!process.env.DOTENV_LOADED) {
   require('dotenv').config();
+}
+
+// Production-only: fail fast if required config is missing (no non-production fallbacks).
+for (const key of ['APP_ID', 'MASTER_KEY', 'DATABASE_URI', 'SERVER_URL']) {
+  if (!process.env[key]) {
+    console.error(`❌ Missing required env var ${key}. Production config only — set it in .env.`);
+    process.exit(1);
+  }
 }
 
 const app = express();
@@ -39,11 +47,11 @@ async function startServer() {
 
     // Parse Server configuration - using confirmed working connection
     const parseServer = new ParseServer({
-      databaseURI: process.env.DATABASE_URI || 'postgres://postgres:password@localhost:5432/elimu_smart_dev',
+      databaseURI: process.env.DATABASE_URI,
       cloud: path.join(__dirname, 'cloud/main.js'),
-      appId: process.env.APP_ID || 'elimu-smart-local-dev',
-      masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev',
-      serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
+      appId: process.env.APP_ID,
+      masterKey: process.env.MASTER_KEY,
+      serverURL: process.env.SERVER_URL,
 
       // Redis caching (production only)
       cacheAdapter: cacheAdapter,
@@ -95,9 +103,9 @@ async function startServer() {
     const dashboard = new ParseDashboard({
       apps: [
         {
-          serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
-          appId: process.env.APP_ID || 'elimu-smart-local-dev',
-          masterKey: process.env.MASTER_KEY || 'elimu-smart-master-key-dev',
+          serverURL: process.env.SERVER_URL,
+          appId: process.env.APP_ID,
+          masterKey: process.env.MASTER_KEY,
           appName: 'Elimu Smart',
           iconName: 'brain'
         }
@@ -168,7 +176,7 @@ async function startServer() {
     if (error.message && error.message.includes('password authentication failed')) {
       console.log('📋 Database Issue: Check PostgreSQL service and password');
       console.log('   Try: net start postgresql-x64-17');
-      console.log('   Connection: postgres://postgres:password@localhost:5432/elimu_smart_dev');
+      console.log('   Connection: postgres://postgres:password@localhost:5432/elimu_smart_prod');
     }
     
     process.exit(1);

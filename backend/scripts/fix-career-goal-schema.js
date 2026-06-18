@@ -1,7 +1,7 @@
 const Parse = require('parse/node');
 
 // Initialize Parse
-Parse.initialize('elimu_smart_app_2024');
+Parse.initialize('elimu-smart-production');
 Parse.serverURL = 'https://elimu-smart.co.ke/parse';
 Parse.masterKey = 'ElImuSmartMasterKey2024Secure';
 
