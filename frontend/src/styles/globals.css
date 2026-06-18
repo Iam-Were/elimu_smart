@@ -4,6 +4,33 @@
 /* Tailwind CSS Directives - Added in Sprint 13 */
 @import 'tailwindcss';
 
+/* Tailwind v4: wire shadcn semantic color tokens to the CSS vars defined below.
+   Without this, bg-card/text-card-foreground/etc. compile to no-ops (v4 ignores
+   tailwind.config.js). `inline` makes them resolve at use-site so .dark overrides work.
+   COLORS ONLY — do NOT pull spacing/fontSize from the legacy config (those are
+   non-standard and would resize the whole app). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
 :root {
   /* Base Configuration */
   --font-size: 14px;
