@@ -8,31 +8,11 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  // `useTheme` is the single theme controller — it owns the `.dark` class and
+  // the role `.theme-*` class. Role + dark-mode colors come entirely from the
+  // CSS cascade in globals.css. We deliberately do NOT set inline `--primary`
+  // here: inline styles outrank `.dark`, which was the recurring dark-mode bug.
   const themeHook = useTheme();
-
-  // Apply CSS custom properties for role-based theming
-  React.useEffect(() => {
-    const root = document.documentElement;
-    
-    // Apply theme-specific CSS variables
-    if (themeHook.currentTheme === 'student') {
-      root.style.setProperty('--primary', '#f97316'); // Orange-500
-      root.style.setProperty('--primary-foreground', '#ffffff');
-    } else if (themeHook.currentTheme === 'counselor') {
-      root.style.setProperty('--primary', '#eab308'); // Yellow-500
-      root.style.setProperty('--primary-foreground', '#ffffff');
-    } else if (themeHook.currentTheme === 'admin') {
-      root.style.setProperty('--primary', '#8b5cf6'); // Purple-500
-      root.style.setProperty('--primary-foreground', '#ffffff');
-    }
-
-    // Dark mode support
-    if (themeHook.isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [themeHook.currentTheme, themeHook.isDark]);
 
   return (
     <ThemeContext.Provider value={themeHook}>

@@ -53,7 +53,11 @@ export const getRoleBadgeColor = (role: string): string => {
   }
 };
 
-// Role-based theme utilities — integrated with shadcn system
+// Role-based theme utilities — integrated with shadcn system.
+// Colors come ONLY from the CSS cascade (:root / .dark / .theme-* in
+// globals.css). We never set --primary as an inline style here: inline styles
+// outrank class selectors, so an inline --primary would override the .dark
+// overrides and break dark mode — the recurring bug across 15+ prior fixes.
 export const applyRoleTheme = (role: ThemeRole) => {
   // Remove existing theme classes
   document.body.className = document.body.className.replace(/theme-\w+/g, '');
@@ -61,19 +65,12 @@ export const applyRoleTheme = (role: ThemeRole) => {
   // Add smooth transition
   document.body.style.transition = 'all 0.3s ease-in-out';
 
-  // Apply role-specific theme class
+  // Apply role-specific theme class (student is the default — no class needed)
   if (role === 'admin') {
     document.body.classList.add('theme-admin');
   } else if (role === 'counselor') {
     document.body.classList.add('theme-counselor');
   }
-  // Student theme is default (no class needed)
-
-  // Update CSS custom properties to work with ThemeProvider
-  const root = document.documentElement;
-  const colors = getRoleCSSColors(role);
-  root.style.setProperty('--primary', colors.primary);
-  root.style.setProperty('--primary-foreground', '#ffffff');
 
   // Remove transition after animation completes
   setTimeout(() => {
