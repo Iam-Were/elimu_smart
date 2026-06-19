@@ -6237,8 +6237,11 @@ Parse.Cloud.define('searchStudents', async (request) => {
     // Only search students (not counselors/admins)
     query.equalTo('role', 'student');
 
-    // Exclude students already assigned to this counselor
-    query.notEqualTo('assignedCounselorId', counselor.id);
+    // NOTE: students already assigned to this counselor are excluded in code
+    // below (see filter after .find()). We can't add a `notEqualTo
+    // assignedCounselorId` constraint here because that column may not exist on
+    // a fresh DB — a query constraint on a missing column throws at the DB level
+    // ("column assignedCounselorId does not exist"), which broke the whole search.
 
     // Search by name or email
     if (searchTerm.trim()) {
@@ -6282,7 +6285,13 @@ Parse.Cloud.define('searchStudents', async (request) => {
     query.limit(limit);
     query.skip(skip);
 
-    const students = await query.find({ useMasterKey: true });
+    const studentsRaw = await query.find({ useMasterKey: true });
+
+    // Exclude students already assigned to this counselor. Reading a field whose
+    // column doesn't exist returns undefined (safe), unlike a query constraint.
+    const students = studentsRaw.filter(
+      (s) => s.get('assignedCounselorId') !== counselor.id
+    );
 
     // Get detailed data for each student
     const studentData = await Promise.all(students.map(async (student) => {
@@ -6391,7 +6400,7 @@ Parse.Cloud.define('searchStudents', async (request) => {
     return {
       students: filteredData,
       total: filteredData.length,
-      hasMore: students.length === limit
+      hasMore: studentsRaw.length === limit
     };
   } catch (error) {
     console.error('Error searching students:', error);
