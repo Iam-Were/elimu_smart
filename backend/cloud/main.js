@@ -1452,38 +1452,48 @@ Parse.Cloud.define('deleteConversation', async (request) => {
 
 // User Activity Tracking
 Parse.Cloud.define('logUserActivity', async (request) => {
-  const { activityType, data, pageUrl, duration } = request.params;
+  const { activityType, data, pageUrl, duration, userId } = request.params;
   const user = request.user;
-  
-  if (!user) {
+  // Trusted server-side callers (master key — e.g. the assessment flows) carry
+  // no request.user, so they pass userId in params. Accept either; only reject
+  // when we genuinely can't attribute the activity to a user.
+  const effectiveUserId = (user && user.id) || userId;
+
+  if (!effectiveUserId) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
   try {
     const UserActivity = Parse.Object.extend('UserActivity');
     const activity = new UserActivity();
-    
-    activity.set('user', user);
+
+    const userPointer = user || { __type: 'Pointer', className: '_User', objectId: effectiveUserId };
+    const activityData = data || {};
+
+    activity.set('user', userPointer);
     activity.set('activityType', activityType);
-    activity.set('data', data || {});
+    activity.set('data', activityData);
     activity.set('pageUrl', pageUrl);
     activity.set('duration', duration || 0);
     activity.set('timestamp', new Date());
-    
+
     await activity.save(null, { useMasterKey: true });
-    
-    // Update assessment progress if this is an assessment activity
-    if (activityType.includes('assessment')) {
-      await Parse.Cloud.run('updateAssessmentProgress', { 
-        userId: user.id, 
-        cardId: data.cardId,
-        progress: data.progress
+
+    // Update assessment progress only when we actually have a cardId to track
+    // (many assessment activities — e.g. riasec_assessment_started — carry no
+    // cardId, and querying progress on an undefined cardId both throws and
+    // creates junk progress rows).
+    if (activityType && activityType.includes('assessment') && activityData.cardId) {
+      await Parse.Cloud.run('updateAssessmentProgress', {
+        userId: effectiveUserId,
+        cardId: activityData.cardId,
+        progress: activityData.progress
       }, { useMasterKey: true });
     }
-    
+
     // Note: Career readiness score will be recalculated on-demand when dashboard loads
     // No need to update it here to avoid unnecessary compute
-    
+
     return { success: true };
   } catch (error) {
     console.error('Log activity error:', error);
@@ -3039,27 +3049,32 @@ Parse.Cloud.define('startRiasecAssessment', async (request) => {
     assessment.set('status', 'in_progress');
     assessment.set('startedAt', new Date());
     assessment.set('version', 'IIP_RIASEC_Markers');
-    assessment.set('totalQuestions', 96);
+    assessment.set('totalQuestions', 100);
     assessment.set('responses', {});
     assessment.set('currentQuestion', 0);
-    
+
     await assessment.save(null, { useMasterKey: true });
-    
-    // Log assessment start activity
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'riasec_assessment_started',
-      data: {
-        assessmentId: assessment.id,
-        version: 'IIP_RIASEC_Markers',
-        totalQuestions: 96
-      }
-    }, { useMasterKey: true });
+
+    // Log assessment start activity (non-blocking: analytics must never fail
+    // the core journey — a logging error previously failed the whole start).
+    try {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'riasec_assessment_started',
+        data: {
+          assessmentId: assessment.id,
+          version: 'IIP_RIASEC_Markers',
+          totalQuestions: 100
+        }
+      }, { useMasterKey: true });
+    } catch (logError) {
+      console.warn('logUserActivity failed (non-fatal) on RIASEC start:', logError.message);
+    }
 
     return {
       assessmentId: assessment.id,
       status: 'started',
-      totalQuestions: 96,
+      totalQuestions: 100,
       currentQuestion: 0
     };
   } catch (error) {
@@ -3101,19 +3116,23 @@ Parse.Cloud.define('saveRiasecResponse', async (request) => {
     assessment.set('lastUpdated', new Date());
     
     await assessment.save(null, { useMasterKey: true });
-    
-    // Log individual response
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'riasec_question_answered',
-      data: {
-        assessmentId: assessmentId,
-        questionId: questionId,
-        response: response,
-        riasecType: questionData.riasecType,
-        questionNumber: questionData.questionNumber
-      }
-    }, { useMasterKey: true });
+
+    // Log individual response (non-blocking — never fail a saved answer over analytics)
+    try {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'riasec_question_answered',
+        data: {
+          assessmentId: assessmentId,
+          questionId: questionId,
+          response: response,
+          riasecType: questionData.riasecType,
+          questionNumber: questionData.questionNumber
+        }
+      }, { useMasterKey: true });
+    } catch (logError) {
+      console.warn('logUserActivity failed (non-fatal) on RIASEC response:', logError.message);
+    }
 
     return {
       success: true,
@@ -3267,20 +3286,24 @@ Parse.Cloud.define('completeRiasecAssessment', async (request) => {
       await progress.save(null, { useMasterKey: true });
     }
     
-    // Log completion
+    // Log completion (non-blocking — results are already saved above)
     const duration = new Date() - assessment.get('startedAt');
-    await Parse.Cloud.run('logUserActivity', {
-      userId: user.id,
-      activityType: 'riasec_assessment_completed',
-      data: {
-        assessmentId: assessmentId,
-        hollandCode: hollandCode,
-        primaryType: primaryType,
-        scores: scores,
-        duration: duration,
-        careerMatchesCount: careerMatches.length
-      }
-    }, { useMasterKey: true });
+    try {
+      await Parse.Cloud.run('logUserActivity', {
+        userId: user.id,
+        activityType: 'riasec_assessment_completed',
+        data: {
+          assessmentId: assessmentId,
+          hollandCode: hollandCode,
+          primaryType: primaryType,
+          scores: scores,
+          duration: duration,
+          careerMatchesCount: careerMatches.length
+        }
+      }, { useMasterKey: true });
+    } catch (logError) {
+      console.warn('logUserActivity failed (non-fatal) on RIASEC completion:', logError.message);
+    }
     
     // Note: Career readiness score will be recalculated on-demand when dashboard loads
     
@@ -3449,7 +3472,7 @@ Parse.Cloud.define('resumeRiasecAssessment', async (request) => {
       assessment: {
         id: assessment.id,
         currentQuestion: assessment.get('currentQuestion') || 0,
-        totalQuestions: assessment.get('totalQuestions') || 96,
+        totalQuestions: assessment.get('totalQuestions') || 100,
         responses: Object.keys(responses),
         startedAt: assessment.get('startedAt')
       }
