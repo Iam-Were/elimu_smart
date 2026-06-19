@@ -403,7 +403,7 @@ export const FreeRiasecAssessment: React.FC = () => {
   // connections), then refresh from the backend in the background. The server
   // is the source of truth — cache only removes the blocking wait.
   useEffect(() => {
-    const CACHE_KEY = 'riasec-questions-v2';
+    const CACHE_KEY = 'riasec-questions-v3';
     let haveQuestions = false;
 
     const loadQuestions = async () => {
