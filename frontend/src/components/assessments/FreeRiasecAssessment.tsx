@@ -390,31 +390,57 @@ export const FreeRiasecAssessment: React.FC = () => {
   // Combined loading state for UI
   const isLoading = questionsLoading || assessmentLoading;
 
-  // Load questions from API on mount with timeout protection
+  // Load questions on mount. Stale-while-revalidate: paint cached questions
+  // instantly (so the assessment is usable in <1s on repeat visits / slow
+  // connections), then refresh from the backend in the background. The server
+  // is the source of truth — cache only removes the blocking wait.
   useEffect(() => {
-    const loadQuestions = async () => {
-      try {
-        setQuestionsLoading(true);
-        setError(null);
+    const CACHE_KEY = 'riasec-questions-v1';
+    let haveQuestions = false;
 
-        // Add 10-second timeout protection
+    const loadQuestions = async () => {
+      // 1. Instant paint from cache if present.
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as RiasecQuestion[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(interleaveQuestions(parsed));
+            setQuestionsLoading(false); // unblock UI immediately
+            haveQuestions = true;
+          }
+        }
+      } catch {
+        // ignore corrupt cache
+      }
+
+      // 2. Always revalidate from backend (timeout-protected).
+      try {
+        setError(null);
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
         );
-
-        const questionsPromise = getRiasecQuestions();
-
         const apiQuestions = await Promise.race([
-          questionsPromise,
+          getRiasecQuestions(),
           timeoutPromise
         ]) as RiasecQuestion[];
 
-        const interleavedQuestions = interleaveQuestions(apiQuestions);
-        setQuestions(interleavedQuestions);
-        console.log(`✅ Loaded ${apiQuestions.length} RIASEC questions successfully`);
+        if (Array.isArray(apiQuestions) && apiQuestions.length > 0) {
+          setQuestions(interleaveQuestions(apiQuestions));
+          haveQuestions = true;
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(apiQuestions));
+          } catch {
+            // storage full / unavailable — non-fatal
+          }
+          console.log(`✅ Loaded ${apiQuestions.length} RIASEC questions successfully`);
+        }
       } catch (err) {
         console.error('Failed to load RIASEC questions:', err);
-        setError('Failed to load assessment questions. Please refresh the page or try again.');
+        // Only surface an error if we have nothing to show.
+        if (!haveQuestions) {
+          setError('Failed to load assessment questions. Please refresh the page or try again.');
+        }
       } finally {
         setQuestionsLoading(false);
       }
@@ -996,8 +1022,10 @@ export const FreeRiasecAssessment: React.FC = () => {
   const getCurrentQuestion = () => questions[currentQuestion];
   const currentResponse = responses[getCurrentQuestion()?.id];
 
-  // Loading state
-  if (isLoading) {
+  // Loading state — only block while we genuinely have no questions yet.
+  // The assessment-start/resume call runs in the background and must NOT keep
+  // the user staring at a skeleton (that was the bulk of the perceived wait).
+  if (questionsLoading && questions.length === 0) {
     return <AssessmentLoadingSkeleton />;
   }
 
@@ -1517,24 +1545,11 @@ export const FreeRiasecAssessment: React.FC = () => {
     );
   }
 
-  // Show loading while starting assessment
-  if (isLoading && !assessmentId) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card className="text-center py-8">
-          <CardContent>
-            <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-              <h3 className="text-lg font-medium">Starting your RIASEC Career Assessment...</h3>
-              <p className="text-muted-foreground">
-                This will take just a moment while we prepare your personalized assessment.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // NOTE: we intentionally do NOT block the UI while the assessment record is
+  // being created/resumed on the server. Questions are already on screen and
+  // answerable; the assessmentId is wired in the background (responses are kept
+  // in state and persist once it resolves). This removes ~2 round-trips of
+  // perceived load time.
 
   // Show error if assessment failed to start
   if (error && !assessmentId) {

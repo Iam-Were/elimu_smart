@@ -138,16 +138,43 @@ export const SkillsAssessment: React.FC = () => {
   const totalQuestions = questions.length;
   const progressPercentage = totalQuestions > 0 ? ((currentQuestion + 1) / totalQuestions) * 100 : 0;
 
-  // Load questions from API on mount
+  // Load questions on mount. Stale-while-revalidate: paint cached questions
+  // instantly, then refresh from the backend (server stays source of truth).
   useEffect(() => {
+    const CACHE_KEY = 'skills-questions-v1';
+    let haveQuestions = false;
     const loadQuestions = async () => {
+      // 1. Instant paint from cache.
       try {
-        setIsLoading(true);
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as SkillQuestion[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(parsed);
+            setIsLoading(false);
+            haveQuestions = true;
+          }
+        }
+      } catch {
+        // ignore corrupt cache
+      }
+      // 2. Revalidate from backend.
+      try {
         const apiQuestions = await getSkillsQuestions();
-        setQuestions(apiQuestions);
+        if (Array.isArray(apiQuestions) && apiQuestions.length > 0) {
+          setQuestions(apiQuestions);
+          haveQuestions = true;
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(apiQuestions));
+          } catch {
+            // storage unavailable — non-fatal
+          }
+        }
         setError(null);
       } catch (err) {
-        setError('Failed to load Skills questions. Please refresh the page.');
+        if (!haveQuestions) {
+          setError('Failed to load Skills questions. Please refresh the page.');
+        }
         console.error('Failed to load questions:', err);
       } finally {
         setIsLoading(false);
