@@ -5833,7 +5833,7 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
     const User = Parse.Object.extend('_User');
     const studentQuery = new Parse.Query(User);
     studentQuery.equalTo('role', 'student');
-    studentQuery.select(['id', 'firstName', 'lastName', 'email', 'gradeLevel', 'createdAt']);
+    studentQuery.select(['id', 'firstName', 'lastName', 'email', 'gradeLevel', 'school', 'createdAt']);
     studentQuery.limit(100);
     studentQuery.descending('createdAt');
 
@@ -5897,6 +5897,7 @@ Parse.Cloud.define('getCounselorAssignedStudents', async (request) => {
         name: `${student.get('firstName') || ''} ${student.get('lastName') || ''}`.trim() || 'Student',
         email: student.get('email'),
         gradeLevel: student.get('gradeLevel') || 'Form 4',
+        schoolName: student.get('school') || null,
         status: assignment ? assignment.status : 'unassigned',
         lastContact: assignment ? assignment.lastContact : null,
         careerReadiness: progress?.get('careerReadinessScore') || 0,
@@ -6285,18 +6286,32 @@ Parse.Cloud.define('searchStudents', async (request) => {
 
     // Get detailed data for each student
     const studentData = await Promise.all(students.map(async (student) => {
-      // Get assessment count
-      const Assessment = Parse.Object.extend('Assessment');
-      const assessmentQuery = new Parse.Query(Assessment);
-      assessmentQuery.equalTo('userId', student.id);
-      const assessmentCount = await assessmentQuery.count({ useMasterKey: true });
+      // Get assessment count from StudentProgress (the Assessment class doesn't
+      // exist on a fresh prod DB; .count() on a missing class throws and used to
+      // break the whole search). StudentProgress.assessmentsCompleted is the real
+      // source; fall back to 0 if the class/record is absent.
+      let assessmentCount = 0;
+      try {
+        const progressQuery = new Parse.Query('StudentProgress');
+        progressQuery.equalTo('user', student);
+        const progress = await progressQuery.first({ useMasterKey: true });
+        assessmentCount = progress?.get('assessmentsCompleted') || 0;
+      } catch (e) {
+        console.warn(`[searchStudents] assessment count skipped: ${e.message}`);
+      }
 
-      // Get subscription status
-      const Subscription = Parse.Object.extend('Subscription');
-      const subQuery = new Parse.Query(Subscription);
-      subQuery.equalTo('userId', student.id);
-      subQuery.equalTo('status', 'active');
-      const hasActiveSub = await subQuery.first({ useMasterKey: true });
+      // Get subscription status (Subscription class may not exist yet — .first()
+      // returns undefined on a missing class, so this degrades safely to false)
+      let hasActiveSub = null;
+      try {
+        const Subscription = Parse.Object.extend('Subscription');
+        const subQuery = new Parse.Query(Subscription);
+        subQuery.equalTo('userId', student.id);
+        subQuery.equalTo('status', 'active');
+        hasActiveSub = await subQuery.first({ useMasterKey: true });
+      } catch (e) {
+        console.warn(`[searchStudents] subscription check skipped: ${e.message}`);
+      }
 
       // Get RIASEC results for career interests
       const RiasecAssessment = Parse.Object.extend('RiasecAssessment');
