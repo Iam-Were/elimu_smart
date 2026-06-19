@@ -194,40 +194,61 @@ const migrateAssessments = async (config, environment = 'staging') => {
   try {
     initializeParse(config);
 
-    // Create RIASEC Questions
-    console.log('Migrating RIASEC questions...');
-    const RiasecQuestion = Parse.Object.extend('RiasecQuestion');
+    // Idempotent upsert+dedupe keyed by questionId. Re-running is safe: it
+    // updates the canonical row in place, deactivates any duplicate copies
+    // (left over from earlier non-idempotent runs), and creates only what's
+    // missing. This is what prevents the duplicate-question bug from ever
+    // recurring on a restart or a fresh server.
+    const upsertQuestions = async (className, items, applyFields) => {
+      const Cls = Parse.Object.extend(className);
+      let created = 0, updated = 0, dupsRemoved = 0;
 
-    for (const q of riasecQuestions) {
-      const question = new RiasecQuestion();
-      question.set('questionId', q.questionId);
-      question.set('category', q.category);
-      question.set('statement', q.statement);
-      question.set('riasecType', q.riasecType);
-      if (q.kenyaContext) question.set('kenyaContext', q.kenyaContext);
-      question.set('isActive', true);
+      for (const item of items) {
+        // Query PER questionId — a handful of rows each, so this is immune to
+        // the server's maxLimit (100) cap that makes a single bulk read silently
+        // truncate a duplicated table.
+        const query = new Parse.Query(Cls);
+        query.equalTo('questionId', item.questionId);
+        query.limit(1000);
+        const existing = await query.find({ useMasterKey: true });
 
-      await question.save(null, { useMasterKey: true });
-    }
-    console.log(`✓ Migrated ${riasecQuestions.length} RIASEC questions`);
+        // Keep the first row as canonical; hard-remove every duplicate copy so
+        // the table ends with exactly one row per questionId. Idempotent: on a
+        // clean DB there are no extras and nothing is deleted.
+        const canonical = existing[0] || new Cls();
+        for (let i = 1; i < existing.length; i++) {
+          await existing[i].destroy({ useMasterKey: true });
+          dupsRemoved++;
+        }
 
-    // Create Skills Questions
-    console.log('Migrating Skills questions...');
-    const SkillQuestion = Parse.Object.extend('SkillQuestion');
+        canonical.set('questionId', item.questionId);
+        applyFields(canonical, item);
+        canonical.set('isActive', true);
+        await canonical.save(null, { useMasterKey: true });
 
-    for (const q of skillsQuestions) {
-      const question = new SkillQuestion();
-      question.set('questionId', q.questionId);
-      question.set('text', q.text);
-      question.set('category', q.category);
-      question.set('isActive', true);
+        if (existing[0]) updated++; else created++;
+      }
 
-      await question.save(null, { useMasterKey: true });
-    }
-    console.log(`✓ Migrated ${skillsQuestions.length} Skills questions`);
+      console.log(`✓ ${className}: ${created} created, ${updated} updated, ${dupsRemoved} duplicate rows removed`);
+      return { created, updated, dupsRemoved };
+    };
 
-    console.log(`\n✅ Migration completed successfully!`);
-    console.log(`Total: ${riasecQuestions.length + skillsQuestions.length} questions migrated\n`);
+    console.log('Reconciling RIASEC questions...');
+    await upsertQuestions('RiasecQuestion', riasecQuestions, (obj, q) => {
+      obj.set('category', q.category);
+      obj.set('statement', q.statement);
+      obj.set('riasecType', q.riasecType);
+      obj.set('kenyaContext', q.kenyaContext || null);
+    });
+
+    console.log('Reconciling Skills questions...');
+    await upsertQuestions('SkillQuestion', skillsQuestions, (obj, q) => {
+      obj.set('text', q.text);
+      obj.set('category', q.category);
+    });
+
+    console.log(`\n✅ Reconcile completed successfully (idempotent — safe to re-run).`);
+    console.log(`Canonical set: ${riasecQuestions.length} RIASEC + ${skillsQuestions.length} Skills questions\n`);
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
@@ -240,14 +261,24 @@ module.exports = { migrateAssessments, riasecQuestions, skillsQuestions };
 
 // Run if executed directly
 if (require.main === module) {
+  // Load the server's .env so APP_ID / MASTER_KEY are available.
+  try { require('dotenv').config(); } catch { /* dotenv optional */ }
+
+  if (!process.env.MASTER_KEY) {
+    console.error('❌ MASTER_KEY is required (set it in backend/.env). Aborting.');
+    process.exit(1);
+  }
+
   const config = {
     appId: process.env.APP_ID || 'elimu-smart-production',
     javascriptKey: process.env.JAVASCRIPT_KEY || 'elimu-smart-js-key',
     masterKey: process.env.MASTER_KEY,
-    serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse'
+    // Migrations run ON the server — always hit Parse directly on localhost so
+    // bulk writes bypass nginx's rate limiter (the public SERVER_URL trips 503s).
+    serverURL: 'http://localhost:1337/parse'
   };
 
-  const environment = process.argv[2] || 'staging';
+  const environment = process.argv[2] || 'production';
 
   migrateAssessments(config, environment)
     .then(() => process.exit(0))
