@@ -370,12 +370,20 @@ const interleaveQuestions = (questions: RiasecQuestion[]): RiasecQuestion[] => {
   return interleaved;
 };
 
+// Stable unique key for a response. The backend numbers `activities` and
+// `occupations` questions with the SAME id (1..50, each used twice), so keying
+// responses by id alone collides — the second answer for each id overwrites the
+// first and is silently lost from scoring (both locally and on the backend,
+// which stores responses[questionId]). The id+category composite is unique
+// across all 100 questions and keeps every answer distinct.
+const questionKey = (q: RiasecQuestion): string => `${q.id}-${q.category}`;
+
 export const FreeRiasecAssessment: React.FC = () => {
   const navigate = useNavigate();
   const { logActivity } = useDynamicDashboard();
   const [questions, setQuestions] = useState<RiasecQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [responses, setResponses] = useState<Record<number, number>>({});
+  const [responses, setResponses] = useState<Record<string, number>>({});
   const [results, setResults] = useState<RiasecResults | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
@@ -525,10 +533,22 @@ export const FreeRiasecAssessment: React.FC = () => {
           // Resume incomplete assessment silently
           setAssessmentId(resumeResult.assessment.id);
           setCurrentQuestion(resumeResult.assessment.currentQuestion);
-          // Reconstruct responses from backend
-          const resumedResponses: Record<number, number> = {};
-          resumeResult.assessment.responses.forEach((qId: string, index: number) => {
-            resumedResponses[parseInt(qId)] = index;
+          // resumeRiasecAssessment returns only the answered question KEYS (not
+          // the values), so recover the actual answer values from the local
+          // progress cache when present. Key by the composite question key to
+          // match how responses are now stored.
+          const resumedResponses: Record<string, number> = {};
+          let cachedResponses: Record<string, number> = {};
+          try {
+            const raw = localStorage.getItem('riasec_progress');
+            if (raw) cachedResponses = (JSON.parse(raw).responses as Record<string, number>) || {};
+          } catch {
+            // ignore corrupt local progress
+          }
+          (resumeResult.assessment.responses as string[]).forEach((qKey: string) => {
+            if (cachedResponses[qKey] !== undefined) {
+              resumedResponses[qKey] = cachedResponses[qKey];
+            }
           });
           setResponses(resumedResponses);
           console.log(`✅ Resumed assessment ${resumeResult.assessment.id} at question ${resumeResult.assessment.currentQuestion}`);
@@ -570,7 +590,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
   }, [questionsLoading, questions.length, assessmentId, startAssessment]);
 
-  const handleResponse = (questionId: number, response: number) => {
+  const handleResponse = (questionId: string, response: number) => {
     const newResponses = { ...responses, [questionId]: response };
     setResponses(newResponses);
 
@@ -592,7 +612,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     if (assessmentId && !assessmentId.startsWith('local-')) {
       saveRiasecResponse(
         assessmentId,
-        questionId.toString(),
+        questionId,
         response,
         {
           questionNumber: currentQuestion + 1,
@@ -713,12 +733,12 @@ export const FreeRiasecAssessment: React.FC = () => {
     }
   };
 
-  const calculateResults = (finalResponses: Record<number, number>) => {
+  const calculateResults = (finalResponses: Record<string, number>) => {
     // Fallback local calculation when backend is unavailable
     const scores: RiasecScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
 
     questions.forEach(question => {
-      const response = finalResponses[question.id];
+      const response = finalResponses[questionKey(question)];
       if (response !== undefined) {
         const type = question.riasecType as keyof RiasecScores;
         scores[type] += response;
@@ -1020,7 +1040,8 @@ export const FreeRiasecAssessment: React.FC = () => {
   };
 
   const getCurrentQuestion = () => questions[currentQuestion];
-  const currentResponse = responses[getCurrentQuestion()?.id];
+  const activeQuestion = getCurrentQuestion();
+  const currentResponse = activeQuestion ? responses[questionKey(activeQuestion)] : undefined;
 
   // Loading state — only block while we genuinely have no questions yet.
   // The assessment-start/resume call runs in the background and must NOT keep
@@ -1709,7 +1730,7 @@ export const FreeRiasecAssessment: React.FC = () => {
           {/* Response Options */}
           <RadioGroup
             value={currentResponse !== undefined ? currentResponse.toString() : ""}
-            onValueChange={(value) => handleResponse(question.id, parseInt(value))}
+            onValueChange={(value) => handleResponse(questionKey(question), parseInt(value))}
             className="grid grid-cols-2 md:flex md:flex-col gap-3"
           >
             {[
@@ -1727,7 +1748,7 @@ export const FreeRiasecAssessment: React.FC = () => {
                     ? "border-orange-500 bg-orange-50 shadow-lg"
                     : "border-gray-200 hover:border-orange-300 hover:bg-gray-50"
                 )}
-                onClick={() => handleResponse(question.id, option.value)}
+                onClick={() => handleResponse(questionKey(question), option.value)}
               >
                 <RadioGroupItem value={option.value.toString()} id={`option-${option.value}`} className="hidden md:block md:mt-1" />
                 <Label htmlFor={`option-${option.value}`} className="flex-1 flex flex-col md:flex-row items-center gap-2 md:gap-3 cursor-pointer text-center md:text-left w-full">

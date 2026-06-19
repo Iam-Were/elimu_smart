@@ -36,6 +36,13 @@ const getHeaders = (sessionToken?: string): HeadersInit => {
   return headers;
 };
 
+// Error raised by getCurrentUser so callers can distinguish a genuinely dead
+// session (clear the token) from a transient failure (keep the token).
+export interface SessionError extends Error {
+  invalidSession?: boolean;
+  transient?: boolean;
+}
+
 // Parse User types
 export interface ParseUser {
   objectId: string;
@@ -112,15 +119,48 @@ export class ParseApi {
   }
   
   static async getCurrentUser(sessionToken: string): Promise<ParseUser> {
-    const response = await fetch(`${parseConfig.serverURL}/users/me`, {
-      method: 'GET',
-      headers: getHeaders(sessionToken)
-    });
-    
-    if (!response.ok) {
-      throw new Error('Invalid session');
+    // Time-box the request so a cold/slow server can't hang the boot screen.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    let response: Response;
+    try {
+      response = await fetch(`${parseConfig.serverURL}/users/me`, {
+        method: 'GET',
+        headers: getHeaders(sessionToken),
+        signal: controller.signal,
+      });
+    } catch {
+      // Network failure or timeout/abort — transient, NOT an invalid session.
+      // Caller must keep the token so a flaky connection doesn't log the user out.
+      const err = new Error('SESSION_TRANSIENT');
+      (err as SessionError).transient = true;
+      throw err;
+    } finally {
+      clearTimeout(timeout);
     }
-    
+
+    if (!response.ok) {
+      // Parse signals a genuinely invalid/expired session as HTTP 403 with
+      // body { code: 209 }. Everything else (5xx, 502/504 cold-start, 429
+      // rate-limit) is transient and must NOT clear the session.
+      let code: number | undefined;
+      try {
+        const body = await response.json();
+        code = body?.code;
+      } catch {
+        // body not JSON — fall through to status-based check
+      }
+      if (code === 209 || response.status === 401) {
+        const err = new Error('SESSION_INVALID');
+        (err as SessionError).invalidSession = true;
+        throw err;
+      }
+      const err = new Error('SESSION_TRANSIENT');
+      (err as SessionError).transient = true;
+      throw err;
+    }
+
     return response.json();
   }
   

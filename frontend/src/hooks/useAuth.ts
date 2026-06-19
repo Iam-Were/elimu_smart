@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import ParseApi, { type ParseUser } from '../lib/parseApi';
+import ParseApi, { type ParseUser, type SessionError } from '../lib/parseApi';
 import type { User, AuthState, LoginCredentials, RegisterData } from '../types';
 
 // Convert ParseUser to our User type
@@ -23,6 +23,32 @@ const parseUserToUser = (parseUser: ParseUser): User => {
 
 // Authentication service using REST ParseApi + demo fallback
 const SESSION_TOKEN_KEY = 'parse-session-token';
+// Cached identity so we can render an authenticated shell immediately on boot
+// and survive a transient /users/me failure without logging the user out.
+// (App.tsx ProtectedRoutes already reads this key for its synchronous check.)
+const USER_CACHE_KEY = 'elimu-user';
+
+const cacheUser = (user: User): void => {
+  try {
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+  } catch {
+    // storage unavailable/full — non-fatal
+  }
+};
+
+const readCachedUser = (): User | null => {
+  try {
+    const raw = localStorage.getItem(USER_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as User) : null;
+  } catch {
+    return null;
+  }
+};
+
+const clearSession = (): void => {
+  localStorage.removeItem(SESSION_TOKEN_KEY);
+  localStorage.removeItem(USER_CACHE_KEY);
+};
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
@@ -47,6 +73,7 @@ const authService = {
         lastName: parseUser.lastName as string,
         role: parseUser.role as string
       } as ParseUser);
+      cacheUser(user);
       console.log('✅ Parse REST login successful:', user.email);
       return user;
     } catch (error) {
@@ -91,6 +118,7 @@ const authService = {
         }
       }
       const user = parseUserToUser(parseUser as ParseUser);
+      cacheUser(user);
       console.log('✅ Parse REST registration successful:', user.email);
       return user;
     } catch (error) {
@@ -112,40 +140,58 @@ const authService = {
     } catch (error) {
       console.warn('Parse REST logout failed (non-fatal):', error);
     } finally {
-      localStorage.removeItem(SESSION_TOKEN_KEY);
+      clearSession();
     }
   },
 
   getCurrentUser: async (): Promise<User | null> => {
     const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
-    if (sessionToken) {
-      try {
-        const parseUser = await ParseApi.getCurrentUser(sessionToken);
-        // ✅ Sync existing session with Parse SDK
-        try {
-          const { getParse } = await import('@/config/parse');
-          const Parse = getParse();
-          await Parse.User.become(sessionToken);
-        } catch (sdkError) {
-          console.warn('⚠️  Parse SDK sync failed:', sdkError);
-        }
+    if (!sessionToken) return null;
 
-        return parseUserToUser(parseUser as ParseUser);
-      } catch (error) {
-        console.warn('Parse REST session invalid, clearing token:', error);
-        localStorage.removeItem(SESSION_TOKEN_KEY);
+    try {
+      const parseUser = await ParseApi.getCurrentUser(sessionToken);
+      // ✅ Sync existing session with Parse SDK
+      try {
+        const { getParse } = await import('@/config/parse');
+        const Parse = getParse();
+        await Parse.User.become(sessionToken);
+      } catch (sdkError) {
+        console.warn('⚠️  Parse SDK sync failed:', sdkError);
       }
+
+      const user = parseUserToUser(parseUser as ParseUser);
+      cacheUser(user); // refresh cache on successful revalidation
+      return user;
+    } catch (error) {
+      // Only a genuinely dead session (Parse code 209) clears the token.
+      // Transient failures (cold-start timeout, 5xx, rate-limit, network) keep
+      // the session and fall back to the cached identity so a refresh on a slow
+      // connection doesn't bounce the user to the login screen.
+      if ((error as SessionError).invalidSession) {
+        console.warn('Parse session invalid (209) — clearing session');
+        clearSession();
+        return null;
+      }
+      console.warn('Session revalidation failed (transient) — keeping session, using cached user:', error);
+      return readCachedUser();
     }
-    return null;
   },
 };
 
 export const useAuth = () => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-    error: null,
+  // Hydrate from the cached identity synchronously so a returning user sees the
+  // authenticated app immediately and revalidation happens in the background.
+  const [authState, setAuthState] = useState<AuthState>(() => {
+    const cachedUser = readCachedUser();
+    const hasToken = !!localStorage.getItem(SESSION_TOKEN_KEY);
+    return {
+      user: cachedUser,
+      isAuthenticated: !!(cachedUser && hasToken),
+      // Only block on the initial fetch when we have a token but no cached
+      // identity yet (e.g. a session created before this change).
+      isLoading: hasToken && !cachedUser,
+      error: null,
+    };
   });
 
   const [isAuthReady, setIsAuthReady] = useState(false);
