@@ -48,11 +48,23 @@ Parse.Cloud.define('getSkillsQuestions', async (request) => {
 
     const questions = await query.find();
 
-    return questions.map(q => ({
-      id: q.get('questionId'),
-      text: q.get('text'),
-      category: q.get('category')
-    }));
+    // Deduplicate by questionId — same non-idempotent-seed issue as RIASEC: the
+    // SkillQuestion seed double-ran, storing each of the 36 unique questions
+    // twice (72 rows). Keep the first occurrence of each id.
+    const seen = new Set();
+    const unique = [];
+    for (const q of questions) {
+      const qid = q.get('questionId');
+      if (seen.has(qid)) continue;
+      seen.add(qid);
+      unique.push({
+        id: qid,
+        text: q.get('text'),
+        category: q.get('category')
+      });
+    }
+
+    return unique;
   } catch (error) {
     console.error('Error fetching Skills questions:', error);
     throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch Skills questions');

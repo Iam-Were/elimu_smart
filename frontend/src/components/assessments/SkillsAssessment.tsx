@@ -141,7 +141,7 @@ export const SkillsAssessment: React.FC = () => {
   // Load questions on mount. Stale-while-revalidate: paint cached questions
   // instantly, then refresh from the backend (server stays source of truth).
   useEffect(() => {
-    const CACHE_KEY = 'skills-questions-v1';
+    const CACHE_KEY = 'skills-questions-v2';
     let haveQuestions = false;
     const loadQuestions = async () => {
       // 1. Instant paint from cache.
