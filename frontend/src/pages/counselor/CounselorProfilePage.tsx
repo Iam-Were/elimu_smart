@@ -58,10 +58,11 @@ export const CounselorProfilePage = () => {
   const rating = user?.get('rating') || 4.7;
   const yearsExperience = user?.get('yearsExperience') || 10;
 
-  // Real stats from API
+  // Real stats from API only — metrics the backend doesn't track are not shown
+  // (no fabricated session-completion / response-time numbers).
   const studentsHelped = stats?.assignedStudents || 0;
-  const sessionCompletion = 92; // TODO: Add completionRate to backend stats
-  const avgResponseTime = 2; // TODO: Add avgResponseTime to backend stats
+  const activeChats = stats?.activeChats || 0;
+  const pendingQuestions = stats?.pendingQuestions || 0;
   const totalSessions = stats?.todaySessions || 0;
 
   // Profile completion calculation
@@ -338,17 +339,17 @@ export const CounselorProfilePage = () => {
                     "bg-green-50 border-green-100"
                   )}>
                     <div className="text-2xl font-bold text-green-700">
-                      {sessionCompletion}%
+                      {activeChats}
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">Session completion</div>
+                    <div className="text-sm text-gray-600 mt-1">Active chats</div>
                   </div>
 
                   <div className={cn(
                     "p-4 rounded-lg text-center border",
                     "bg-blue-50 border-blue-100"
                   )}>
-                    <div className="text-2xl font-bold text-blue-700">{avgResponseTime}h</div>
-                    <div className="text-sm text-gray-600 mt-1">Avg response time</div>
+                    <div className="text-2xl font-bold text-blue-700">{pendingQuestions}</div>
+                    <div className="text-sm text-gray-600 mt-1">Pending Q&amp;A</div>
                   </div>
 
                   <div className={cn(

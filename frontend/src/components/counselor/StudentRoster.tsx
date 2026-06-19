@@ -21,7 +21,7 @@ import {
   EyeOpenIcon,
   ReloadIcon,
 } from '@radix-ui/react-icons';
-import { Loader2, FileText, Target, CheckCircle2, Circle } from 'lucide-react';
+import { Loader2, FileText, CheckCircle2, Circle } from 'lucide-react';
 
 export const StudentRoster: React.FC = () => {
   const navigate = useNavigate();
@@ -354,11 +354,7 @@ export const StudentRoster: React.FC = () => {
                         <div className="flex items-center gap-3 mt-2 text-xs">
                           <span className="text-muted-foreground">
                             <FileText className="h-3 w-3 inline mr-1" />
-                            {student.assessments}
-                          </span>
-                          <span className="text-muted-foreground">
-                            <Target className="h-3 w-3 inline mr-1" />
-                            {student.careerMatches}
+                            {student.assessments} assessment{student.assessments === 1 ? '' : 's'}
                           </span>
                         </div>
 
@@ -530,7 +526,7 @@ export const StudentRoster: React.FC = () => {
                 {/* Progress Overview */}
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="text-center space-y-1">
                         <p className="text-xs text-muted-foreground">Profile</p>
                         <p className="font-medium text-primary">
@@ -541,12 +537,6 @@ export const StudentRoster: React.FC = () => {
                         <p className="text-xs text-muted-foreground">Assessments</p>
                         <p className="font-medium text-primary">
                           {selectedStudent.assessments}
-                        </p>
-                      </div>
-                      <div className="text-center space-y-1">
-                        <p className="text-xs text-muted-foreground">Career Matches</p>
-                        <p className="font-medium text-primary">
-                          {selectedStudent.careerMatches}
                         </p>
                       </div>
                     </div>

@@ -12,7 +12,6 @@ export interface Student {
   priority: 'high' | 'medium' | 'low' | 'urgent';
   status: 'active' | 'pending' | 'inactive' | 'unassigned';
   assessments: number;
-  careerMatches: number;
   completedAssessments?: string[]; // NEW: Array of completed assessment types
   lastContact: Date | null;
   isAssignedToMe?: boolean;
@@ -65,6 +64,7 @@ export const useAssignedStudents = (
         name: string;
         email: string;
         gradeLevel: string;
+        schoolName: string | null;
         status: string;
         lastContact: string | null;
         careerReadiness: number;
@@ -77,12 +77,11 @@ export const useAssignedStudents = (
         name: student.name,
         email: student.email,
         grade: student.gradeLevel,
-        school: 'Unknown School', // TODO: Add schoolName to backend response
+        school: student.schoolName || 'Not specified', // Real value from backend (_User.school)
         profileCompletion: student.careerReadiness || 0,
         priority: 'medium' as const,
         status: student.status as 'active' | 'pending' | 'inactive' | 'unassigned',
         assessments: student.assessmentsCompleted || 0,
-        careerMatches: 0, // TODO: Add to backend response
         completedAssessments: student.completedAssessments || [],
         lastContact: student.lastContact ? new Date(student.lastContact) : null,
         isAssignedToMe: student.isAssignedToMe,
