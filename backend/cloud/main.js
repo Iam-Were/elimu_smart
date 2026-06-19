@@ -3049,7 +3049,7 @@ Parse.Cloud.define('startRiasecAssessment', async (request) => {
     assessment.set('status', 'in_progress');
     assessment.set('startedAt', new Date());
     assessment.set('version', 'IIP_RIASEC_Markers');
-    assessment.set('totalQuestions', 100);
+    assessment.set('totalQuestions', 50);
     assessment.set('responses', {});
     assessment.set('currentQuestion', 0);
 
@@ -3064,7 +3064,7 @@ Parse.Cloud.define('startRiasecAssessment', async (request) => {
         data: {
           assessmentId: assessment.id,
           version: 'IIP_RIASEC_Markers',
-          totalQuestions: 100
+          totalQuestions: 50
         }
       }, { useMasterKey: true });
     } catch (logError) {
@@ -3074,7 +3074,7 @@ Parse.Cloud.define('startRiasecAssessment', async (request) => {
     return {
       assessmentId: assessment.id,
       status: 'started',
-      totalQuestions: 100,
+      totalQuestions: 50,
       currentQuestion: 0
     };
   } catch (error) {
@@ -3472,7 +3472,7 @@ Parse.Cloud.define('resumeRiasecAssessment', async (request) => {
       assessment: {
         id: assessment.id,
         currentQuestion: assessment.get('currentQuestion') || 0,
-        totalQuestions: assessment.get('totalQuestions') || 100,
+        totalQuestions: assessment.get('totalQuestions') || 50,
         responses: Object.keys(responses),
         startedAt: assessment.get('startedAt')
       }

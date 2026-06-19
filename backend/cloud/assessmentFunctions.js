@@ -12,13 +12,27 @@ Parse.Cloud.define('getRiasecQuestions', async (request) => {
 
     const questions = await query.find();
 
-    return questions.map(q => ({
-      id: q.get('questionId'),
-      category: q.get('category'),
-      statement: q.get('statement'),
-      riasecType: q.get('riasecType'),
-      kenyaContext: q.get('kenyaContext') || null
-    }));
+    // Deduplicate by questionId. The RiasecQuestion seed was historically run
+    // more than once (non-idempotent), leaving each of the ~50 unique questions
+    // stored twice. Returning the raw rows made students answer everything
+    // twice and re-show already-answered questions pre-filled. Keep the first
+    // occurrence of each questionId so the assessment is the real unique set.
+    const seen = new Set();
+    const unique = [];
+    for (const q of questions) {
+      const qid = q.get('questionId');
+      if (seen.has(qid)) continue;
+      seen.add(qid);
+      unique.push({
+        id: qid,
+        category: q.get('category'),
+        statement: q.get('statement'),
+        riasecType: q.get('riasecType'),
+        kenyaContext: q.get('kenyaContext') || null
+      });
+    }
+
+    return unique;
   } catch (error) {
     console.error('Error fetching RIASEC questions:', error);
     throw new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, 'Failed to fetch RIASEC questions');
