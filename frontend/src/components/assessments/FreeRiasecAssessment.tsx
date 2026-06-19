@@ -807,7 +807,8 @@ export const FreeRiasecAssessment: React.FC = () => {
     primaryCareers.slice(0, 5).forEach(career => {
       matches.push({
         career,
-        compatibility: 85 + Math.random() * 15,
+        // Honest fit = this career's RIASEC type score (0-100), not a random number
+        compatibility: Math.round(scores[primaryType as keyof RiasecScores]),
         kuccpsPathway: riasecTypes[primaryType].kuccpsPathways[0],
         reasonsForMatch: [
           `Strong ${riasecTypes[primaryType].name} personality fit`,
@@ -824,7 +825,7 @@ export const FreeRiasecAssessment: React.FC = () => {
     riasecTypes[secondaryType].kenyaCareers.slice(0, 3).forEach(career => {
       matches.push({
         career,
-        compatibility: 70 + Math.random() * 15,
+        compatibility: Math.round(scores[secondaryType as keyof RiasecScores]),
         kuccpsPathway: riasecTypes[secondaryType].kuccpsPathways[0],
         reasonsForMatch: [
           `Good ${riasecTypes[secondaryType].name} secondary fit`,

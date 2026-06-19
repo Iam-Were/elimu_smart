@@ -3570,7 +3570,8 @@ function generateCareerMatches(scores, primaryType) {
   primaryCareers.slice(0, 5).forEach((career, index) => {
     matches.push({
       career: career,
-      compatibility: 85 + Math.random() * 15,
+      // Honest fit = this career's RIASEC type score (0-100), not a random number
+      compatibility: Math.round(scores[primaryType]),
       kuccpsPathway: RIASEC_TYPES[primaryType].kuccpsPathways[0],
       reasonsForMatch: [
         `Strong ${RIASEC_TYPES[primaryType].name} personality fit`,
@@ -3589,7 +3590,7 @@ function generateCareerMatches(scores, primaryType) {
   secondaryCareers.slice(0, 3).forEach((career, index) => {
     matches.push({
       career: career,
-      compatibility: 70 + Math.random() * 15,
+      compatibility: Math.round(scores[secondaryType]),
       kuccpsPathway: RIASEC_TYPES[secondaryType].kuccpsPathways[0],
       reasonsForMatch: [
         `Good ${RIASEC_TYPES[secondaryType].name} secondary fit`,
