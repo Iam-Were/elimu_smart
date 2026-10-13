@@ -79,7 +79,7 @@ async function startServer() {
 
       // Future-proof configuration options
       encodeParseObjectInCloudFunction: false, // Keep current behavior, suppress warning
-      enableInsecureAuthAdapters: true, // Allow anonymous auth for development
+      enableInsecureAuthAdapters: false, // No third-party auth adapters in use; insecure ones stay off
 
       // Enable live query for real-time updates
       liveQuery: {
@@ -99,28 +99,33 @@ async function startServer() {
     app.use('/parse', parseServer.app);
     console.log('✅ Parse Server mounted at /parse');
 
-    // Parse Dashboard configuration
-    const dashboard = new ParseDashboard({
-      apps: [
-        {
-          serverURL: process.env.SERVER_URL,
-          appId: process.env.APP_ID,
-          masterKey: process.env.MASTER_KEY,
-          appName: 'Elimu Smart',
-          iconName: 'brain'
-        }
-      ],
-      users: [
-        {
-          user: process.env.DASHBOARD_USER || 'admin',
-          pass: process.env.DASHBOARD_PASS || 'admin123'
-        }
-      ]
-    }, { allowInsecureHTTP: true }); // Allow HTTP for local development
+    // Parse Dashboard holds the master key — never mount it with default credentials
+    if (process.env.DASHBOARD_USER && process.env.DASHBOARD_PASS) {
+      // Parse Dashboard configuration
+      const dashboard = new ParseDashboard({
+        apps: [
+          {
+            serverURL: process.env.SERVER_URL,
+            appId: process.env.APP_ID,
+            masterKey: process.env.MASTER_KEY,
+            appName: 'Elimu Smart',
+            iconName: 'brain'
+          }
+        ],
+        users: [
+          {
+            user: process.env.DASHBOARD_USER,
+            pass: process.env.DASHBOARD_PASS
+          }
+        ]
+      }, { allowInsecureHTTP: true }); // Allow HTTP for local development
 
-    // Mount Parse Dashboard
-    app.use('/dashboard', dashboard);
-    console.log('✅ Parse Dashboard mounted at /dashboard');
+      // Mount Parse Dashboard
+      app.use('/dashboard', dashboard);
+      console.log('✅ Parse Dashboard mounted at /dashboard');
+    } else {
+      console.warn('⚠️ Parse Dashboard NOT mounted: set DASHBOARD_USER and DASHBOARD_PASS to enable it');
+    }
 
     // Health check endpoint
     app.get('/health', (req, res) => {
@@ -163,7 +168,7 @@ async function startServer() {
       console.log('☁️ Cloud Functions: Loaded (1881+ lines)');
       console.log('🌐 CORS: Frontend ports enabled');
       console.log('🔴 Real-time: Live Query enabled for ChatMessage, ChatRoom');
-      console.log(`🔐 Dashboard Login: ${process.env.DASHBOARD_USER || 'admin'} / ${process.env.DASHBOARD_PASS || 'admin123'}`);
+      console.log(`🔐 Dashboard: ${process.env.DASHBOARD_USER && process.env.DASHBOARD_PASS ? `enabled for ${process.env.DASHBOARD_USER}` : 'disabled'}`); // never log the password
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('✅ Production server ready');
       console.log('');

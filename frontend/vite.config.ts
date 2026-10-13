@@ -78,8 +78,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      // Use minified Parse build for better Vite compatibility
-      'parse': path.resolve(__dirname, './node_modules/parse/dist/parse.min.js'),
+      // No 'parse' alias: since SDK 7 dist/parse.min.js only sets globalThis.Parse and exports
+      // nothing, so aliasing to it makes `import Parse from 'parse'` undefined at runtime.
     },
   },
   define: {
