@@ -13,7 +13,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 Parse.initialize(
   process.env.APP_ID || 'elimu-smart-production',
   'javascript_key_2024',
-  process.env.MASTER_KEY || 'ElImuSmartMasterKey2024Secure'
+  process.env.MASTER_KEY ?? (() => { throw new Error('MASTER_KEY env var is required'); })()
 );
 Parse.serverURL = 'http://localhost:1337/parse';
 

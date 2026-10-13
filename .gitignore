@@ -121,3 +121,6 @@ add-github-secrets.sh
 .claude/settings.json
 .claude/settings.local.json
 .claude/screenshots/
+
+# Real Parse Dashboard config holds the master key
+backend/parse-dashboard-config.json

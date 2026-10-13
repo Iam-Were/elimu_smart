@@ -22,7 +22,7 @@ if ssh -o BatchMode=yes -o ConnectTimeout=5 elimusmart-prod exit 2>/dev/null; th
 else
     echo -e "${RED}❌ SSH key not set up yet!${NC}"
     echo ""
-    echo "Please run this command first (password: El1musmart):"
+    echo "Please run this command first:"
     echo "  ssh-copy-id -i ~/.ssh/elimu_vps.pub root@145.239.42.121"
     echo ""
     exit 1

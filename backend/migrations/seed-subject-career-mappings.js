@@ -13,7 +13,7 @@ const Parse = require('parse/node');
 Parse.initialize(
   process.env.APP_ID || 'elimu-smart-production',
   null,
-  process.env.MASTER_KEY || 'ElImuSmartMasterKey2024Secure'
+  process.env.MASTER_KEY ?? (() => { throw new Error('MASTER_KEY env var is required'); })()
 );
 Parse.serverURL = process.env.PARSE_SERVER_URL || 'http://localhost:1337/parse';
 

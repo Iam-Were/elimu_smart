@@ -136,7 +136,7 @@
 - Host: localhost
 - Port: 5432
 - User: postgres
-- Password: El1musmart2024
+- Password: kept in Bitwarden Secrets Manager (never in the repo)
 
 ## Request Flow
 
@@ -315,7 +315,7 @@ curl https://staging.elimu-smart.co.ke/parse/health
 **Restore Command:**
 ```bash
 gunzip < ~/elimu_smart_backups/prod_2025-10-06_02-00.sql.gz | \
-  PGPASSWORD="El1musmart2024" psql -U postgres -h localhost -d elimu_smart_production
+  PGPASSWORD="$DB_PASSWORD" psql -U postgres -h localhost -d elimu_smart_production
 ```
 
 ## Deployment Workflow
@@ -363,7 +363,7 @@ cd /home/ubuntu/elimu_smart
 git pull origin main
 
 # Run migration
-PGPASSWORD="El1musmart2024" psql -U postgres -h localhost \
+PGPASSWORD="$DB_PASSWORD" psql -U postgres -h localhost \
   -d elimu_smart_production \
   -f backend/migrations/your-migration.sql
 ```
