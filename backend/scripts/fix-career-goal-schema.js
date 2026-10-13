@@ -3,7 +3,7 @@ const Parse = require('parse/node');
 // Initialize Parse
 Parse.initialize('elimu-smart-production');
 Parse.serverURL = 'https://elimu-smart.co.ke/parse';
-Parse.masterKey = 'ElImuSmartMasterKey2024Secure';
+Parse.masterKey = process.env.MASTER_KEY ?? (() => { throw new Error('MASTER_KEY env var is required'); })();
 
 async function fixCareerGoalSchema() {
   try {
