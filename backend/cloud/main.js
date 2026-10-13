@@ -499,14 +499,34 @@ Parse.Cloud.define('createChatRoom', async (request) => {
 });
 
 // Send a message
+// 🔒 Load a chat room and verify the user is a participant. Message writes use the master key
+// (bypassing ACLs), so this check is the only thing stopping writes into other people's chats.
+// Also rejects a missing chatRoomId, which otherwise saves an unsaved pointer and crashes the process.
+async function getChatRoomForParticipant(chatRoomId, user) {
+  if (typeof chatRoomId !== 'string' || !chatRoomId) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'chatRoomId is required');
+  }
+  const chatRoom = await new Parse.Query('ChatRoom').get(chatRoomId, { useMasterKey: true });
+  const participants = chatRoom.get('participants') || [];
+  if (!participants.includes(user.id)) {
+    throw new Parse.Error(Parse.Error.OPERATION_FORBIDDEN, 'You do not have access to this conversation');
+  }
+  return chatRoom;
+}
+
 Parse.Cloud.define('sendMessage', async (request) => {
   const { chatRoomId, message, messageType = 'text' } = request.params;
   const user = request.user;
-  
+
   if (!user) {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
-  
+
+  if (typeof message !== 'string' || !message.trim()) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'message is required');
+  }
+  const chatRoom = await getChatRoomForParticipant(chatRoomId, user);
+
   const ChatMessage = Parse.Object.extend('ChatMessage');
   const chatMessage = new ChatMessage();
   
@@ -528,9 +548,6 @@ Parse.Cloud.define('sendMessage', async (request) => {
   const savedMessage = await chatMessage.save(null, { useMasterKey: true });
   
   // Update chat room last activity and message count
-  const ChatRoom = Parse.Object.extend('ChatRoom');
-  const query = new Parse.Query(ChatRoom);
-  const chatRoom = await query.get(chatRoomId, { useMasterKey: true });
   chatRoom.set('lastActivity', new Date());
   chatRoom.set('lastMessage', message);
   chatRoom.increment('messageCount');
@@ -1234,6 +1251,11 @@ Parse.Cloud.define('sendMultimediaMessage', async (request) => {
     throw new Parse.Error(Parse.Error.SESSION_MISSING, 'User must be authenticated');
   }
   
+  if (!fileUrl && (typeof message !== 'string' || !message.trim())) {
+    throw new Parse.Error(Parse.Error.INVALID_QUERY, 'message or fileUrl is required');
+  }
+  const chatRoom = await getChatRoomForParticipant(chatRoomId, user);
+
   const ChatMessage = Parse.Object.extend('ChatMessage');
   const chatMessage = new ChatMessage();
   
@@ -1261,10 +1283,6 @@ Parse.Cloud.define('sendMultimediaMessage', async (request) => {
   const savedMessage = await chatMessage.save(null, { useMasterKey: true });
   
   // Update chat room
-  const ChatRoom = Parse.Object.extend('ChatRoom');
-  const query = new Parse.Query(ChatRoom);
-  const chatRoom = await query.get(chatRoomId, { useMasterKey: true });
-  
   let lastMessageText = message;
   if (messageType === 'image') {
     lastMessageText = '📷 Image';
